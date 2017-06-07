@@ -3,4 +3,5 @@ Build instructions:
 
 cd build                    
 cmake ../src        #exec cmake on src folder
+///> Currently cmake has to be run twice is order for blaze being build properly
 make -j4            #compile using 4 threads

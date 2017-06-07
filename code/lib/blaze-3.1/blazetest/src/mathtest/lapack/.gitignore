@@ -1,0 +1,9 @@
+*.d
+*.o
+DecompositionTest
+EigenvalueTest
+InversionTest
+SingularValueTest
+SolverTest
+SubstitutionTest
+
