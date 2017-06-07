@@ -11,13 +11,14 @@ set ( UQCreator_SRCS
 	  main.cpp
 	)
 
-find_package( blaze QUIET )
-if( blaze_FOUND )
-    add_library( blaze_target INTERFACE )
-    target_link_libraries( blaze_target INTERFACE blaze::blaze )
-    add_executable ( UQCreator ${UQCreator_SRCS} )
-    target_link_libraries( UQCreator blaze_target )
-else()
-    include( ${CMAKE_CURRENT_SOURCE_DIR}/../lib/blaze-3.1/CMakeLists.txt )
-endif()
+include(ExternalProject)
+ExternalProject_Add(blaze
+  GIT_REPOSITORY https://bitbucket.org/blaze-lib/blaze
+  UPDATE_COMMAND git pull
+  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/blaze
+)
 
+include_directories(${CMAKE_BINARY_DIR}/blaze/include)
+link_directories(${CMAKE_BINARY_DIR}/blaze/share)
+add_executable ( UQCreator ${UQCreator_SRCS} )
+add_dependencies ( UQCreator blaze )
