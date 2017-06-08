@@ -48,3 +48,4 @@ code/build/*
 .fuse_hidden*
 /.DS_Store
 ._.DS_Store
+._*
