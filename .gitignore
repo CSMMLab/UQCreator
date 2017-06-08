@@ -47,3 +47,4 @@ code/build/*
 # tmp data
 .fuse_hidden*
 /.DS_Store
+._.DS_Store
