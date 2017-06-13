@@ -1,0 +1,16 @@
+title = "UQCreator input file"
+
+[general]
+problem = "Burgers"
+outputFolder = "results"
+
+[space-time]
+dimension = 1
+xCells = 10
+tEnd = 1
+CFL = 0.9
+limiter = "none"
+
+[moment system]
+moments = 1
+quadPoints = 1
