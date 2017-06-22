@@ -1,9 +1,11 @@
 #include <blaze/Blaze.h>
 #include <cpptoml.h>
+#include "burgerssolver.h"
+#include <omp.h>
 
 int main(int argc, char* argv[]){
-    std::string inputFile = "";
-
+    std::string configFile = "";
+/*
     std::string usage_help =
         "\n"
         "Usage: " + std::string(argv[0]) + " -i inputfile\n\n"
@@ -23,7 +25,7 @@ int main(int argc, char* argv[]){
         if (arg == "-h")
         {
             std::cout << usage_help;
-            return 0;
+            //return 0;
         }
         else if (arg == "-i")
         {
@@ -34,10 +36,22 @@ int main(int argc, char* argv[]){
              omp_set_num_threads(std::atoi(argv[++i]));
         }
         else{
-            std::cout << usage_help;
-            return 0;
+            //std::cout << usage_help;
+            //return 0;
         }
-    }
+    }*/
+
+    int nCells = 100;
+    double tEnd = 0.1;
+    double cfl = 0.8;
+    double a = 0.0;
+    double b = 3.0;
+    double uL = 12.0;
+    double uR = 3.0;
+    BurgersSolver s(nCells, tEnd, cfl, a, b,uL,uR);
+    s.Solve();
+    s.Print();
+
 
     return 0;
 }

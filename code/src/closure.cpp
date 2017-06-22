@@ -6,7 +6,6 @@ Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNM
 {
     //
     // initialize classes
-    _newton = new Newton(_problem);
     _quadrature = new Quadrature(_problem);
     _basis = new BasisFunctions(_problem);
 
@@ -33,17 +32,17 @@ Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNM
 
 double Closure::UKinetic(double Lambda){
     if(Lambda > 0){
-        return exp(Lambda); //TODO
+        return _uPlus/(exp(-Lambda)+1.0)+_uMinus*exp(-Lambda)/(1.0+exp(-Lambda));
     }else{
-
+        return _uMinus/(exp(Lambda)+1.0)+_uPlus*exp(Lambda)/(1.0+exp(Lambda));
     }
 }
 
 double Closure::DUKinetic(double Lambda){
     if(Lambda > 0){
-        return exp(Lambda); //TODO
+        return exp(-Lambda)*(_uPlus - _uMinus )/(exp(-2.0*Lambda)+2.0*exp(-Lambda)+1.0);
     }else{
-
+        return exp(Lambda)*( _uPlus - _uMinus )/(1.0+2.0*exp(Lambda)+exp(2.0*Lambda));
     }
 }
 

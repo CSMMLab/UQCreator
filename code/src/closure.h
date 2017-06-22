@@ -13,7 +13,6 @@ class Closure
 private:
     Problem* _problem;
     Quadrature* _quadrature;
-    Newton* _newton;
     BasisFunctions* _basis;
     std::vector<vector> _phi; // stores basis functions evaluated at quadrature points
     std::vector<matrix> _hPartial; // stores partial matrices for Hessian computation
@@ -26,7 +25,6 @@ public:
     /**
      * constructor of class Closure
      * @param pointer to problem class
-     * @return The test results
      */
     Closure(Problem *problem);
     /**
@@ -36,8 +34,23 @@ public:
      * @return correct dual vector
      */
     vector SolveClosure(vector u, vector lambda);
+    /**
+     * calculate entropic variable from given dual vector
+     * @param dual variable
+     * @return entropic state
+     */
     double EvaluateLambda(vector lambda,double xi);
+    /**
+     * calculate solution for kinetic entropy with given entropic variable
+     * @param entropic variable
+     * @return solution
+     */
     double UKinetic(double Lambda);
+    /**
+     * calculate derivative of solution for kinetic entropy with given entropic variable
+     * @param entropic variable
+     * @return derivative of solution
+     */
     double DUKinetic(double Lambda);
 };
 
