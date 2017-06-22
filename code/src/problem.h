@@ -1,6 +1,9 @@
 #ifndef PROBLEM_H
 #define PROBLEM_H
 
+#include <cpptoml.h>
+#include <string>
+#include <iostream>
 
 class Problem
 {
@@ -20,6 +23,7 @@ private:
 
 public:
     Problem(std::string inputFile);
+    static Problem* create(std::string inputFile);
     ~Problem();
 };
 

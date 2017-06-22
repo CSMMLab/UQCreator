@@ -1,14 +1,17 @@
 #ifndef LEGENDRE_H
 #define LEGENDRE_H
 
+#include "quadrature.h"
 #include "mathtools.h"
 
-class Legendre : public Quadrature{
+class Legendre : private Quadrature{
 private:
     void computeNodes(int degree);
 public:
+    Legendre(int degree);
+
     virtual double evaluate();
-    virtual vector getRoots();
+    virtual vector getNodes();
     virtual vector getWeights();
 };
 

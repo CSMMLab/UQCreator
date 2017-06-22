@@ -5,13 +5,14 @@ Problem::Problem(std::string inputFile) : _inputFile(inputFile){
 }
 
 Problem::~Problem(){
-    delete _dimension;
+    delete _discretization;
 }
 
 Problem* Problem::create(std::string inputFile){
     auto file = cpptoml::parse_file(inputFile);
     auto general = file->get_table("general");
     std::string problem = general->get_as<std::string>("problem").value_or("");
+    /*
     if(problem.compare("Burgers") == 0)
         return new Burgers(inputFile);
     else{
@@ -19,6 +20,7 @@ Problem* Problem::create(std::string inputFile){
         exit(EXIT_FAILURE);
         return NULL;
     }
+    */
 }
 
 void Problem::parse(){
@@ -37,14 +39,14 @@ void Problem::parse(){
             case 3: _discretization[2] = spaceTime->get_as<int>("zCells").value_or(-1);
             default: cpptoml::parse_exception("Invalid dimension");
         }
-        _tEnd = spaceTime->get_as<double>("tEnd").value_or("-1");
-        _CFL = spaceTime->get_as<double>("CFL").value_or("-1");
+        _tEnd = spaceTime->get_as<double>("tEnd").value_or(-1.0);
+        _CFL = spaceTime->get_as<double>("CFL").value_or(-1.0);
         _limiter = spaceTime->get_as<std::string>("limiter").value_or("none");
 
     }
     catch (const cpptoml::parse_exception& e){
-        std::cerr << "Failed to parse " << argv[1] << ": " << e.what() << std::endl;
-        return 1;
+        std::cerr << "Failed to parse " << _inputFile << ": " << e.what() << std::endl;
+        exit(EXIT_FAILURE);
     }
 }
 

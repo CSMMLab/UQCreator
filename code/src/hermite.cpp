@@ -1,5 +1,11 @@
 #include "hermite.h"
 
+Hermite::Hermite(int degree){
+    _nodes = vector(degree);
+    _weights = vector(degree);
+    computeNodes(degree);
+}
+
 void Hermite::computeNodes(int degree){
 
     //construct companion matrix
@@ -13,7 +19,19 @@ void Hermite::computeNodes(int degree){
     auto evSys = MathTools::computeEigenValTriDiagMatrix(CM);
 
     for(int i=0; i<degree; ++i){
-        _nodes(i) = evSys.first[i]*std::sqrt(2);
-        _weights(i) = std::pow(evSys.second[0][i],2);
+        _nodes[i] = evSys.first[i]*std::sqrt(2);
+        _weights[i] = std::pow(evSys.second(0,i),2);
     }
+}
+
+double Hermite::evaluate(){
+    return -1.0;
+}
+
+vector Hermite::getNodes(){
+    return _nodes;
+}
+
+vector Hermite::getWeights(){
+    return _weights;
 }

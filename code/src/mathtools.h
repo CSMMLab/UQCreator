@@ -14,7 +14,7 @@ private:
 public:
     ~MathTools(){}
     static double pythag(const double a, const double b);
-    static void computeEigenValTriDiagMatrix(const matrix CM);
+    static std::pair<vector,matrix> computeEigenValTriDiagMatrix(const matrix CM);
 
 };
 

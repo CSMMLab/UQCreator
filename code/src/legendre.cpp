@@ -1,6 +1,12 @@
 #include "legendre.h"
 
-void Legendre::computeNotes(int degree){
+Legendre::Legendre(int degree){
+    _nodes = vector(degree);
+    _weights = vector(degree);
+    computeNodes(degree);
+}
+
+void Legendre::computeNodes(int degree){
 
     //construct companion matrix
     blaze::DynamicMatrix<double> CM(degree, degree);
@@ -13,7 +19,19 @@ void Legendre::computeNotes(int degree){
     auto evSys = MathTools::computeEigenValTriDiagMatrix(CM);
 
     for(int i=0; i<degree; ++i){
-        _nodes(i) = evSys.first[i];
-        _weights(i) = 2*std::pow(evSys.second[0][i],2);
+        _nodes[i] = evSys.first[i];
+        _weights[i] = 2*std::pow(evSys.second(0,i),2);
     }
+}
+
+double Legendre::evaluate(){
+    return -1.0;
+}
+
+vector Legendre::getNodes(){
+    return _nodes;
+}
+
+vector Legendre::getWeights(){
+    return _weights;
 }
