@@ -3,6 +3,8 @@
 
 #include <blaze/Blaze.h>
 
+#define PI 3.14159265359
+
 typedef blaze::DynamicVector<double> vector;
 typedef blaze::DynamicMatrix<double> matrix;
 

@@ -19,8 +19,8 @@ void Hermite::computeNodes(int degree){
     auto evSys = MathTools::computeEigenValTriDiagMatrix(CM);
 
     for(int i=0; i<degree; ++i){
-        _nodes[i] = evSys.first[i]*std::sqrt(2);
-        _weights[i] = std::pow(evSys.second(0,i),2);
+        _nodes[i] = evSys.first[i];
+        _weights[i] = std::pow(evSys.second(0,i),2) * std::sqrt(PI);
     }
 }
 
