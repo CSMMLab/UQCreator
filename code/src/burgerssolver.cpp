@@ -58,3 +58,13 @@ void BurgersSolver::Print()const{
     }
 }
 
+void BurgersSolver::Plot()const{
+    std::vector<double> x,u;
+    x.assign(_x, _x + _nCells+4);
+    u.assign(_u, _u + _nCells+4);
+    Gnuplot gp;
+    gp << "plot '-' with lines notitle\n";
+    gp.send1d(std::make_pair(x, u));
+}
+
+

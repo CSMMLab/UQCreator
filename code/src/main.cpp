@@ -50,7 +50,7 @@ int main(int argc, char* argv[]){
     double uR = 3.0;
     BurgersSolver s(nCells, tEnd, cfl, a, b,uL,uR);
     s.Solve();
-    s.Print();
+    s.Plot();
 
 
     return 0;

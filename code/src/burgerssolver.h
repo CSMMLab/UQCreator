@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "gnuplot-iostream.h"
+
 
 class BurgersSolver
 {
@@ -20,7 +22,8 @@ class BurgersSolver
 public:
     BurgersSolver(int nCells, double tEnd, double cfl, double a, double b, double uL, double uR);
     void Solve();
-    void Print()const;
+    void Print() const;
+    void Plot() const;
 };
 
 #endif // BURGERSSOLVER_H

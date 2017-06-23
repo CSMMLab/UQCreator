@@ -1,6 +1,7 @@
 cmake_minimum_required( VERSION 3.7 )
 project( UQCreator )
 set ( CMAKE_BUILD_TYPE Release )
+set (CMAKE_CXX_STANDARD 14)
 add_definitions ( -std=c++14 -Wall -O3 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/")
@@ -15,7 +16,10 @@ set ( UQCreator_SRCS
           burgerssolver.cpp
 	)
 
-add_executable ( UQCreator ${UQCreator_SRCS} )
+add_executable ( UQCreator ${UQCreator_SRCS})
+
+find_package( Boost COMPONENTS system iostreams REQUIRED )
+include_directories( ${Boost_INCLUDE_DIR} )
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -39,3 +43,5 @@ ExternalProject_Add(cpptoml
 )
 include_directories(${CMAKE_BINARY_DIR}/cpptoml/include)
 add_dependencies ( UQCreator cpptoml )
+
+TARGET_LINK_LIBRARIES( UQCreator LINK_PUBLIC ${Boost_LIBRARIES} )
