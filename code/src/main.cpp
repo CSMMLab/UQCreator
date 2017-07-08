@@ -1,11 +1,10 @@
 #include <blaze/Blaze.h>
 #include <cpptoml.h>
-#include "burgerssolver.h"
 #include <omp.h>
 
 int main(int argc, char* argv[]){
     std::string configFile = "";
-/*
+
     std::string usage_help =
         "\n"
         "Usage: " + std::string(argv[0]) + " -i inputfile\n\n"
@@ -39,8 +38,9 @@ int main(int argc, char* argv[]){
             //std::cout << usage_help;
             //return 0;
         }
-    }*/
+    }
 
+/*
     int nCells = 100;
     double tEnd = 0.1;
     double cfl = 0.8;
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]){
     BurgersSolver s(nCells, tEnd, cfl, a, b,uL,uR);
     s.Solve();
     s.Plot();
-
+*/
 
     return 0;
 }

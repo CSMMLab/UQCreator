@@ -13,7 +13,9 @@ set ( UQCreator_SRCS
           legendre.cpp
           hermite.cpp
           mathtools.cpp
-          burgerssolver.cpp
+#          mesh.cpp
+          burgers.cpp
+          euler.cpp
 	)
 
 add_executable ( UQCreator ${UQCreator_SRCS})

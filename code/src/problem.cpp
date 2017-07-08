@@ -5,7 +5,7 @@ Problem::Problem(std::string inputFile) : _inputFile(inputFile){
 }
 
 Problem::~Problem(){
-    delete _discretization;
+
 }
 
 Problem* Problem::create(std::string inputFile){
@@ -21,6 +21,7 @@ Problem* Problem::create(std::string inputFile){
         return NULL;
     }
     */
+    return NULL;
 }
 
 void Problem::parse(){
@@ -31,6 +32,7 @@ void Problem::parse(){
         _outputFolder = general->get_as<std::string>("outputFolder").value_or("");
 
         auto spaceTime = file->get_table("space-time");
+        /*
         _dimension = spaceTime->get_as<int>("dimension").value_or(-1);
         _discretization = new int[_dimension];
         switch(_dimension){
@@ -39,6 +41,7 @@ void Problem::parse(){
             case 3: _discretization[2] = spaceTime->get_as<int>("zCells").value_or(-1);
             default: cpptoml::parse_exception("Invalid dimension");
         }
+        */
         _tEnd = spaceTime->get_as<double>("tEnd").value_or(-1.0);
         _CFL = spaceTime->get_as<double>("CFL").value_or(-1.0);
         _limiter = spaceTime->get_as<std::string>("limiter").value_or("none");
