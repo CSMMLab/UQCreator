@@ -11,10 +11,13 @@ Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNM
 
     // calculate basis functions evaluated at the quadrature points
     _phi.resize(_nQuadPoints);
+    _phiTilde.resize(_nQuadPoints);
     for( int k = 0; k < _nQuadPoints; ++k ){
         _phi[k].resize(_nMoments);
+        _phiTilde[k].resize(_nMoments);
         for( int i = 0; i < _nMoments-1; ++i){
             _phi[k](i) = _basis->Calculate(i,_quadrature->GetQuadPoint(k));
+            _phiTilde[k](i) = _phi[k](i)*2.0/(2.0*(i-1)+1);
         }
     }
 
@@ -58,8 +61,18 @@ vector Closure::SolveClosure(vector u, vector lambda){
 
 double Closure::EvaluateLambda(vector lambda,double xi){
     double tmp = 0;
-    for(i = 0; i<_nMoments-1; ++i ){
+    for(int i = 0; i<_nMoments-1; ++i ){
         tmp = tmp+lambda(i)*_basis->Calculate(i,xi);
+    }
+    return tmp;
+}
+
+vector Closure::EvaluateLambda(vector lambda,vector xi){
+    vector tmp = vector(_nQuadPoints);
+    for(int i = 0; i<_nMoments-1; ++i ){
+        for( int k = 0; k<_nQuadPoints; ++k ){
+            tmp[k] = tmp[k]+lambda(i)*_phi[k];
+        }
     }
     return tmp;
 }

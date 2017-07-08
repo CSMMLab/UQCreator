@@ -15,6 +15,7 @@ private:
     Quadrature* _quadrature;
     BasisFunctions* _basis;
     std::vector<vector> _phi; // stores basis functions evaluated at quadrature points
+    std::vector<vector> _phiTilde; // stores scaled basis functions evaluated at quadrature points
     std::vector<matrix> _hPartial; // stores partial matrices for Hessian computation
     double _uMinus, _uPlus; // IPM bounds for scalar problems
     int _nMoments;
@@ -37,9 +38,17 @@ public:
     /**
      * calculate entropic variable from given dual vector
      * @param dual variable
+     * @param dual variable
      * @return entropic state
      */
     double EvaluateLambda(vector lambda,double xi);
+    /**
+     * calculate entropic variable from given dual vector
+     * @param dual variable
+     * @param dual variable
+     * @return entropic state
+     */
+    vector EvaluateLambda(vector lambda,vector xi);
     /**
      * calculate solution for kinetic entropy with given entropic variable
      * @param entropic variable
@@ -52,6 +61,8 @@ public:
      * @return derivative of solution
      */
     double DUKinetic(double Lambda);
+    std::vector<vector> GetPhi(){return _phi;}
+    vector GetPhiTilde(int k){return _phiTilde[k];}
 };
 
 #endif // CLOSURE_H
