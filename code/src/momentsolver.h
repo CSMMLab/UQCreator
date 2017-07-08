@@ -1,9 +1,10 @@
 #ifndef MOMENTSOLVER_H
 #define MOMENTSOLVER_H
 
-#include "burgerssolver.h"
+#include "burgers.h"
 #include "closure.h"
 #include "problem.h"
+#include "quadrature.h"
 
 typedef blaze::DynamicVector<double> vector;
 
@@ -13,7 +14,7 @@ class MomentSolver
     Closure* _closure;
     vector _x;
     Problem* _problem;
-    BurgersSolver* _origSolver;
+    Burgers* _origSolver;
     double _dx,_dt,_a,_b,_uL,_uR;
     vector numFlux(vector lambda1,vector lambda2);
     std::vector<vector> SetupIC();

@@ -1,6 +1,7 @@
 #include <blaze/Blaze.h>
 #include <cpptoml.h>
 #include <omp.h>
+#include "momentsolver.h"
 
 int main(int argc, char* argv[]){
     std::string configFile = "";
