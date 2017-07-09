@@ -1,6 +1,11 @@
+#define LOG(x) do { std::clog << x << std::endl; } while (0)
+#define DEBUG(x) do { std::cerr << x << std::endl; } while (0)
+
 #include <blaze/Blaze.h>
 #include <cpptoml.h>
 #include <omp.h>
+
+#include "problem.h"
 
 int main(int argc, char* argv[]){
     std::string configFile = "";
@@ -10,7 +15,7 @@ int main(int argc, char* argv[]){
         "Usage: " + std::string(argv[0]) + " -i inputfile\n\n"
         "Options:\n"
         "  -h               displays this message\n"
-        "  -i <config.json> provide toml input file <input.toml>\n"
+        "  -c <config.json> provide toml input file <input.toml>\n"
         "  -t               number of threads to use (default = all available)\n";
 
     if (argc < 3)
@@ -24,9 +29,9 @@ int main(int argc, char* argv[]){
         if (arg == "-h")
         {
             std::cout << usage_help;
-            //return 0;
+            return 0;
         }
-        else if (arg == "-i")
+        else if (arg == "-c")
         {
             configFile = std::string(argv[++i]);
         }
@@ -35,23 +40,21 @@ int main(int argc, char* argv[]){
              omp_set_num_threads(std::atoi(argv[++i]));
         }
         else{
-            //std::cout << usage_help;
-            //return 0;
+            std::cout << usage_help;
+            return 0;
         }
     }
 
-/*
-    int nCells = 100;
-    double tEnd = 0.1;
-    double cfl = 0.8;
-    double a = 0.0;
-    double b = 3.0;
-    double uL = 12.0;
-    double uR = 3.0;
-    BurgersSolver s(nCells, tEnd, cfl, a, b,uL,uR);
-    s.Solve();
-    s.Plot();
-*/
+    LOG("UQCreator");
+    LOG("================================\n");
+    LOG("Using config file \t: " + configFile);
+
+    Problem* problem = Problem::create(configFile);
+
+    delete problem;
+
+    LOG("\nProcess exits normally.");
+
 
     return 0;
 }

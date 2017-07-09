@@ -5,23 +5,24 @@
 #include <string>
 #include <iostream>
 
-//#include "mesh.h"
+#include "mesh.h"
 //#include "timediscretization.h"
+
+#define QUAD_TYPE_LEGENDRE 201
+#define QUAD_TYPE_HERMITE 202
 
 class Problem
 {
-private:
-    //Mesh* _mesh;
+protected:
+    Mesh* _mesh;
     //TimeDiscretizaiton* _timeDiscretization;
-    double _tEnd;
-    double _CFL;
-    std::string _limiter;
+    int _quadType;
+    int _nQuadPoints;
     virtual void solve() = 0;
 
     // I/O
     std::string _inputFile;
     std::string _outputFolder;
-    void parse();
     virtual void print() const = 0;
     virtual void plot() const = 0;
     virtual void writeToFile(std::string filename, int filetype) const = 0;
@@ -31,7 +32,10 @@ private:
 public:
     Problem(std::string inputFile);
     static Problem* create(std::string inputFile);
-    ~Problem();
+    virtual ~Problem();
+
+    int getQuadType();
+    int getNQuadPoints();
 };
 
 #endif // PROBLEM_H

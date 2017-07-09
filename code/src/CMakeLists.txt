@@ -13,7 +13,7 @@ set ( UQCreator_SRCS
           legendre.cpp
           hermite.cpp
           mathtools.cpp
-#          mesh.cpp
+          mesh.cpp
           burgers.cpp
           euler.cpp
 	)

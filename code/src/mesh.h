@@ -1,14 +1,17 @@
 #ifndef MESH_H
 #define MESH_H
 
-#define MESH_1DPLAIN 100
-#define MESH_MSH 101
-
+#include <string.h>
+#include <blaze/Blaze.h>
+#include <cpptoml.h>
 
 typedef blaze::DynamicVector<double> vector;
-typedef std::vector<blaze::DynamicVector<double> > meshData;
+typedef std::vector<vector> meshData;
 
-template <class T>
+#define MESH_STATUS_UNLOADED 100
+#define MESH_STATUS_LOADED 101
+#define MESH_TYPE_1DPLAIN 110
+
 class Mesh
 {
 private:
@@ -16,15 +19,20 @@ private:
     int _dimension;
     int _meshtype;
     int _numCells;
-    T _mesh;
-    T _spacing;
+    meshData _mesh;
+    meshData _spacing;
+
+    Mesh(){}
 public:
-    void load(std::string filename, int meshtype);
-    void createGrid(double a, double b, int numCells);
-    T* getGrid();
-    T* getSpacing();
-    vector
-    Mesh();
+    void load(std::string filename);
+    void createGrid(double a, double b);
+
+    int getNumCells() const;
+    int getDimension() const;
+    meshData& getGrid();
+    meshData& getSpacing();
+
+    Mesh(std::string inputFile);
 };
 
 #endif // MESH_H

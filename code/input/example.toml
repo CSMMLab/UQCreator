@@ -1,16 +1,17 @@
-title = "UQCreator input file"
-
 [general]
 problem = "Burgers"
 outputFolder = "results"
 
-[space-time]
+[mesh]
 dimension = 1
 xCells = 10
-tEnd = 1
+
+[burgers]
 CFL = 0.9
 limiter = "none"
+tEnd = 1
 
 [moment system]
 moments = 1
+quadType = legendre
 quadPoints = 1
