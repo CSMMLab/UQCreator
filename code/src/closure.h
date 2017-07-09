@@ -45,13 +45,6 @@ public:
      */
     double EvaluateLambda(vector lambda,double xi);
     /**
-     * calculate entropic variable from given dual vector
-     * @param dual variable
-     * @param dual variable
-     * @return entropic state
-     */
-    vector EvaluateLambda(vector lambda,vector xi);
-    /**
      * calculate solution for kinetic entropy with given entropic variable
      * @param entropic variable
      * @return solution

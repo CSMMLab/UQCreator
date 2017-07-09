@@ -7,23 +7,24 @@ Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNM
     //
     // initialize classes
     _quadrature = new Quadrature(_problem);
-    _basis = new Legendre(_problem);
+    _basis = new Legendre(_nMoments);
 
     // calculate basis functions evaluated at the quadrature points
     _phi.resize(_nQuadPoints);
     _phiTilde.resize(_nQuadPoints);
+    vector xi = _quadrature->GetNodes();
     for( int k = 0; k < _nQuadPoints; ++k ){
         _phi[k].resize(_nMoments);
         _phiTilde[k].resize(_nMoments);
         for( int i = 0; i < _nMoments-1; ++i){
-            _phi[k][i] = _basis->Evaluate(i,_quadrature->GetQuadPoint(k));
+            _phi[k][i] = _basis->Evaluate(i,xi[k]);
             _phiTilde[k][i] = _phi[k][i]*2.0/(2.0*(i-1)+1);
         }
     }
 
     // calculate partial matrix for Hessian calculation
     _hPartial.resize(_nQuadPoints);
-    vector w = _quadrature->GetWeight();
+    vector w = _quadrature->GetWeights();
     for( int k = 0; k < _nQuadPoints; ++k ){
         _hPartial[k].resize(_nMoments,_nMoments);
         for( int i = 0; i < _nMoments-1; ++i ){
@@ -51,12 +52,15 @@ double Closure::DUKinetic(double Lambda){
 }
 
 vector Closure::SolveClosure(vector u, vector lambda){
-    double stepsize = 0.5;
+    double stepSize = 0.5;
+    vector dlambda;
     for( int l; l<_problem->GetMaxIterations(); ++l ){
-        g = Gradient(lambda, u);
-        while( blaze::sqrLength(g) < _problem->GetEpsilonNewton() ){
-            vector dlambda = blaze::posv( Hessian(lambda), -g, 'L');
-            lambda = lambda+stepsize*dlambda;
+        vector g = Gradient(lambda, u);
+        while( blaze::sqrLength(g) < _problem->GetEpsilon() ){
+            matrix H = Hessian(lambda);
+            vector dlambda = -g;
+            blaze::posv( H, dlambda, 'L');
+            lambda = lambda+stepSize*dlambda;
         }
     }
 }
@@ -64,28 +68,19 @@ vector Closure::SolveClosure(vector u, vector lambda){
 double Closure::EvaluateLambda(vector lambda,double xi){
     double tmp = 0;
     for(int i = 0; i<_nMoments-1; ++i ){
-        tmp = tmp+lambda(i)*_basis->Evaluate(i,xi);
-    }
-    return tmp;
-}
-
-vector Closure::EvaluateLambda(vector lambda,vector xi){
-    vector tmp = vector(_nQuadPoints);
-    for(int i = 0; i<_nMoments-1; ++i ){
-        for( int k = 0; k<_nQuadPoints; ++k ){
-            tmp[k] = tmp[k]+lambda[i]*_phi[k];
-        }
+        tmp = tmp+lambda[i]*_basis->Evaluate(i,xi);
     }
     return tmp;
 }
 
 vector Closure::Gradient(vector lambda, vector u){
     vector g = vector(_nMoments);
+    vector w = _quadrature->GetWeights();
     for( int i = 0; i<_nMoments; ++i ){
-        g(i) = 0;
+        g[i] = 0;
     }
     for( int k = 0; k < _nQuadPoints; ++k ){
-        g = g + UKinetic(inner( lambda, _phi[k] ))*_phi[k]*quadrature->GetWeight(k);
+        g = g + UKinetic(inner( lambda, _phi[k] ))*_phi[k]*w[k];
     }
     return g;
 }
