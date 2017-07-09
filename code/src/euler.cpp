@@ -5,18 +5,18 @@ Euler::Euler(std::string inputFile) : Problem(inputFile)
 
 }
 
-void Euler::solve(){
+void Euler::Solve(){
 
 }
 
-void Euler::print() const{
+void Euler::Print() const{
 
 }
 
-void Euler::plot() const{
+void Euler::Plot() const{
 
 }
 
-void Euler::writeToFile(std::string filename, int filetype) const{
+void Euler::WriteToFile(std::string filename, int filetype) const{
 
 }

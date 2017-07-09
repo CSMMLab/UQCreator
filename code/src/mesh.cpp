@@ -5,7 +5,7 @@ Mesh::Mesh(std::string inputFile) : _status(MESH_STATUS_UNLOADED){
     auto settings = file->get_table("mesh");
     std::string meshFile = settings->get_as<std::string>("fileName").value_or("none");
     if(meshFile.compare("none")){
-        this->load(meshFile);
+        this->Load(meshFile);
     }
     else{
         _dimension = settings->get_as<int>("Dimension").value_or(-1);
@@ -14,15 +14,15 @@ Mesh::Mesh(std::string inputFile) : _status(MESH_STATUS_UNLOADED){
         double a = settings->get_as<int>("b").value_or(0);
         double b = settings->get_as<int>("b").value_or(0);
         if(a!=0 && b!=0)
-            this->createGrid(a,b);
+            this->CreateGrid(a,b);
     }
 }
 
-void Mesh::load(std::string filename){
+void Mesh::Load(std::string filename){
 
 }
 
-void Mesh::createGrid(double a, double b){
+void Mesh::CreateGrid(double a, double b){
     _mesh.resize(_dimension);
     _spacing.resize(_dimension);
     for(int i=0; i<_dimension; ++i){
@@ -31,19 +31,19 @@ void Mesh::createGrid(double a, double b){
     }
 }
 
-int Mesh::getNumCells() const{
+int Mesh::GetNumCells() const{
     return _numCells;
 }
 
-int Mesh::getDimension() const{
+int Mesh::GetDimension() const{
     return _dimension;
 }
 
-meshData& Mesh::getGrid(){
+meshData& Mesh::GetGrid(){
     return _mesh;
 }
 
-meshData& Mesh::getSpacing(){
+meshData& Mesh::GetSpacing(){
     return _spacing;
 }
 

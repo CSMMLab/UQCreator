@@ -1,12 +1,12 @@
 #include "mathtools.h"
 
-double MathTools::pythag(const double a, const double b) {
+double MathTools::Pythag(const double a, const double b) {
     double absa=std::fabs(a), absb=std::fabs(b);
     return (absa > absb ? absa*std::sqrt(1.0+std::pow(absb/absa,2)) :
            (absb == 0.0 ? 0.0 : absb*std::sqrt(1.0+std::pow(absa/absb,2))));
 }
 
-std::pair<vector,matrix> MathTools::computeEigenValTriDiagMatrix(const matrix mat){
+std::pair<vector,matrix> MathTools::ComputeEigenValTriDiagMatrix(const matrix mat){
     assert( blaze::isSquare(mat) );
     int n = mat.rows();
 
@@ -36,14 +36,14 @@ std::pair<vector,matrix> MathTools::computeEigenValTriDiagMatrix(const matrix ma
             if (m != l) {
                 if (iter++ == 30) throw("[computeEigenValTriDiagMatrix]: Too many iterations");
                 g=(d[l+1]-d[l])/(2.0*e[l]);
-                r=pythag(g,1.0);
+                r=Pythag(g,1.0);
                 g=d[m]-d[l]+e[l]/(g+std::copysign(r,g));
                 s=c=1.0;
                 p=0.0;
                 for (i=m-1;i>=l;i--) {
                     f=s*e[i];
                     b=c*e[i];
-                    e[i+1]=(r=pythag(f,g));
+                    e[i+1]=(r=Pythag(f,g));
                     if (r == 0.0) {
                         d[i+1] -= p;
                         e[m]=0.0;

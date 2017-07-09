@@ -13,9 +13,9 @@ protected:
     vector _weights;
 public:
     Polynomial(int degree);
-    virtual double evaluate(int m, double x)=0;
-    virtual vector getNodes()=0;
-    virtual vector getWeights()=0;
+    virtual double Evaluate(int m, double x)=0;
+    virtual vector GetNodes()=0;
+    virtual vector GetWeights()=0;
 };
 
 #endif // POLYNOMIAL_H

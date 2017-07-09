@@ -6,13 +6,13 @@
 
 class Hermite : public Polynomial{
 private:
-    void computeNodes(int degree);
+    void ComputeNodes(int degree);
 public:
     Hermite(int degree);
 
-    virtual double evaluate(int m,double x);
-    virtual vector getNodes();
-    virtual vector getWeights();
+    virtual double Evaluate(int m,double x);
+    virtual vector GetNodes();
+    virtual vector GetWeights();
 };
 
 #endif

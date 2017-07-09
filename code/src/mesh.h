@@ -24,13 +24,13 @@ private:
 
     Mesh(){}
 public:
-    void load(std::string filename);
-    void createGrid(double a, double b);
+    void Load(std::string filename);
+    void CreateGrid(double a, double b);
 
-    int getNumCells() const;
-    int getDimension() const;
-    meshData& getGrid();
-    meshData& getSpacing();
+    int GetNumCells() const;
+    int GetDimension() const;
+    meshData& GetGrid();
+    meshData& GetSpacing();
 
     Mesh(std::string inputFile);
 };

@@ -28,18 +28,18 @@ Burgers::Burgers(std::string inputFile) : Problem(inputFile)
 }
 
 double Burgers::H(double u, double v, double w){
-    return v-(_dt/_dx)*(g(v,w)-g(u,v));
+    return v-(_dt/_dx)*(G(v,w)-G(u,v));
 }
 
-double Burgers::g(double u, double v){
-    return f(u);
+double Burgers::G(double u, double v){
+    return F(u);
 }
 
-double Burgers::f(double u){
+double Burgers::F(double u){
     return 0.5*u*u;
 }
 
-void Burgers::solve(){
+void Burgers::Solve(){
     double* uNew = new double[_nCells+4];
     for( int n = 0; n<_nTimeSteps; ++n){
         for( int j = 2; j<_nCells+2; ++j){
@@ -65,14 +65,14 @@ double Burgers::IC(double x, double uL, double uR){
     }
 }
 
-void Burgers::print() const{
+void Burgers::Print() const{
     std::ofstream out("outFile");
     for( int j = 2; j < _nCells+2; ++j){
         out<<_x[j]<<" "<<_u[j]<<std::endl;
     }
 }
 
-void Burgers::plot() const{
+void Burgers::Plot() const{
     /*
     std::vector<double> x,u;
     x.assign(_x, _x + _nCells+4);
@@ -85,7 +85,7 @@ void Burgers::plot() const{
     */
 }
 
-void Burgers::writeToFile(std::string filename, int filetype) const{
+void Burgers::WriteToFile(std::string filename, int filetype) const{
 
 }
 

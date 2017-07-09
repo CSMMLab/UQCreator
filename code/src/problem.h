@@ -18,24 +18,26 @@ protected:
     //TimeDiscretizaiton* _timeDiscretization;
     int _quadType;
     int _nQuadPoints;
-    virtual void solve() = 0;
+    int _nMoments;
+    virtual void Solve() = 0;
 
     // I/O
     std::string _inputFile;
     std::string _outputFolder;
-    virtual void print() const = 0;
-    virtual void plot() const = 0;
-    virtual void writeToFile(std::string filename, int filetype) const = 0;
+    virtual void Print() const = 0;
+    virtual void Plot() const = 0;
+    virtual void WriteToFile(std::string filename, int filetype) const = 0;
 
     Problem(){}
 
 public:
     Problem(std::string inputFile);
-    static Problem* create(std::string inputFile);
+    static Problem* Create(std::string inputFile);
     virtual ~Problem();
 
-    int getQuadType();
-    int getNQuadPoints();
+    int GetQuadType();
+    int GetNQuadPoints();
+    int GetNMoments();
 };
 
 #endif // PROBLEM_H

@@ -21,7 +21,7 @@ Problem::~Problem(){
 
 }
 
-Problem* Problem::create(std::string inputFile){
+Problem* Problem::Create(std::string inputFile){
     auto file = cpptoml::parse_file(inputFile);
     auto general = file->get_table("general");
     std::string problem = general->get_as<std::string>("problem").value_or("");
@@ -35,10 +35,14 @@ Problem* Problem::create(std::string inputFile){
     }
 }
 
-int Problem::getQuadType(){
+int Problem::GetQuadType(){
     return _quadType;
 }
 
-int Problem::getNQuadPoints(){
+int Problem::GetNQuadPoints(){
     return _nQuadPoints;
+}
+
+int Problem::GetNMoments(){
+    return _nMoments;
 }

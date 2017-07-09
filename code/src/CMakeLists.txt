@@ -16,6 +16,10 @@ set ( UQCreator_SRCS
           mesh.cpp
           burgers.cpp
           euler.cpp
+          polynomial.cpp
+          closure.cpp
+          momentsolver.cpp
+          timediscretization.cpp
 	)
 
 add_executable ( UQCreator ${UQCreator_SRCS})

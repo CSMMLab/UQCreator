@@ -20,9 +20,9 @@ protected:
 
 public:
     Quadrature(Problem* p);
-    double evaluate();
-    vector getNodes();
-    vector getWeights();
+    double Evaluate();
+    vector GetNodes();
+    vector GetWeights();
 private:
     Quadrature(){}
 };

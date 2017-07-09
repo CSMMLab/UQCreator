@@ -9,19 +9,19 @@ Quadrature::Quadrature(Problem* p) : _value(0.0), _problem(p){
     }else{
         std::cerr<<"[ERROR]: Quadrature unknown."<<std::endl;
     }*/
-    _nodes = _polynomial->getNodes();
-    _weights = _polynomial->getWeights();
+    _nodes = _polynomial->GetNodes();
+    _weights = _polynomial->GetWeights();
 }
 
-double Quadrature::evaluate(){
+double Quadrature::Evaluate(){
     std::cerr<<"[ERROR]: Not yet implemented."<<std::endl;
     return -1.0;
 }
 
-vector Quadrature::getNodes(){
+vector Quadrature::GetNodes(){
     return _nodes;
 }
 
-vector Quadrature::getWeights(){
+vector Quadrature::GetWeights(){
     return _weights;
 }

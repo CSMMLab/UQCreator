@@ -4,7 +4,6 @@
 #include <blaze/Blaze.h>
 #include <cpptoml.h>
 #include <omp.h>
-#include "momentsolver.h"
 
 #include "problem.h"
 
@@ -13,7 +12,7 @@ int main(int argc, char* argv[]){
 
     std::string usage_help =
         "\n"
-        "Usage: " + std::string(argv[0]) + " -i inputfile\n\n"
+        "Usage: " + std::string(argv[0]) + " -c inputfile\n\n"
         "Options:\n"
         "  -h               displays this message\n"
         "  -c <config.json> provide toml input file <input.toml>\n"
@@ -50,7 +49,7 @@ int main(int argc, char* argv[]){
     LOG("================================\n");
     LOG("Using config file \t: " + configFile);
 
-    Problem* problem = Problem::create(configFile);
+    Problem* problem = Problem::Create(configFile);
 
     delete problem;
 
