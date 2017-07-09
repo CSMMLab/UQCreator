@@ -1,6 +1,8 @@
 #include "legendre.h"
 
-Legendre::Legendre(int degree){
+#include <boost/math/special_functions/legendre.hpp>
+
+Legendre::Legendre(int degree):Polynomial(degree){
     _nodes = vector(degree);
     _weights = vector(degree);
     computeNodes(degree);
@@ -24,8 +26,8 @@ void Legendre::computeNodes(int degree){
     }
 }
 
-double Legendre::evaluate(){
-    return -1.0;
+double Legendre::evaluate(int m,double x){
+    return boost::math::legendre_p(m, x);
 }
 
 vector Legendre::getNodes(){

@@ -4,6 +4,7 @@
 #include <blaze/Blaze.h>
 
 #include "problem.h"
+#include "polynomial.h"
 
 typedef blaze::DynamicVector<double> vector;
 
@@ -14,13 +15,16 @@ protected:
     vector _weights;
 
     Problem* _problem;
+    Polynomial* _polynomial;
+
 
 public:
-    Quadrature(){} // move to private
     Quadrature(Problem* p);
-    virtual double evaluate() = 0;
-    virtual vector getNodes() = 0;
-    virtual vector getWeights() = 0;
+    double evaluate();
+    vector getNodes();
+    vector getWeights();
+private:
+    Quadrature(){}
 };
 
 #endif // QUADRATURE_H

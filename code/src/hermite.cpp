@@ -1,6 +1,6 @@
 #include "hermite.h"
 
-Hermite::Hermite(int degree){
+Hermite::Hermite(int degree):Polynomial(degree){
     _nodes = vector(degree);
     _weights = vector(degree);
     computeNodes(degree);
@@ -24,7 +24,7 @@ void Hermite::computeNodes(int degree){
     }
 }
 
-double Hermite::evaluate(){
+double Hermite::evaluate(int m, double x){
     return -1.0;
 }
 

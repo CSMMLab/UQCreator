@@ -6,7 +6,7 @@ Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNM
 {
     //
     // initialize classes
-    _quadrature = new Quadrature(_problem);
+    _quadrature = new Hermite(_problem);
     _basis = new BasisFunctions(_problem);
 
     // calculate basis functions evaluated at the quadrature points
