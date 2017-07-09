@@ -4,6 +4,7 @@
 #include <blaze/Blaze.h>
 #include <cpptoml.h>
 #include <omp.h>
+#include "momentsolver.h"
 
 #include "problem.h"
 

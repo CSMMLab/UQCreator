@@ -4,6 +4,8 @@
 #include <blaze/math/DynamicMatrix.h>
 #include <blaze/math/DynamicVector.h>
 #include <vector>
+#include "quadrature.h"
+#include "legendre.h"
 
 typedef blaze::DynamicVector<double> vector;
 typedef blaze::DynamicMatrix<double> matrix;
@@ -13,7 +15,7 @@ class Closure
 private:
     Problem* _problem;
     Quadrature* _quadrature;
-    BasisFunctions* _basis;
+    Legendre* _basis;
     std::vector<vector> _phi; // stores basis functions evaluated at quadrature points
     std::vector<vector> _phiTilde; // stores scaled basis functions evaluated at quadrature points
     std::vector<matrix> _hPartial; // stores partial matrices for Hessian computation
