@@ -6,8 +6,8 @@ Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNM
 {
     //
     // initialize classes
-    _quadrature = new Hermite(_problem);
-    _basis = new BasisFunctions(_problem);
+    _quadrature = new Quadrature(_problem);
+    _basis = new Legendre(_problem);
 
     // calculate basis functions evaluated at the quadrature points
     _phi.resize(_nQuadPoints);
@@ -16,18 +16,19 @@ Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNM
         _phi[k].resize(_nMoments);
         _phiTilde[k].resize(_nMoments);
         for( int i = 0; i < _nMoments-1; ++i){
-            _phi[k](i) = _basis->Calculate(i,_quadrature->GetQuadPoint(k));
-            _phiTilde[k](i) = _phi[k](i)*2.0/(2.0*(i-1)+1);
+            _phi[k][i] = _basis->Evaluate(i,_quadrature->GetQuadPoint(k));
+            _phiTilde[k][i] = _phi[k][i]*2.0/(2.0*(i-1)+1);
         }
     }
 
     // calculate partial matrix for Hessian calculation
     _hPartial.resize(_nQuadPoints);
+    vector w = _quadrature->GetWeight();
     for( int k = 0; k < _nQuadPoints; ++k ){
         _hPartial[k].resize(_nMoments,_nMoments);
         for( int i = 0; i < _nMoments-1; ++i ){
             for( int j = 0; j < _nMoments-1; ++j ){
-                _hPartial[k] = _phi[k]*transpose(_phi[k])*_quadrature->GetWeight(k);
+                _hPartial[k] = _phi[k]*blaze::trans(_phi[k])*w[k];
             }
         }
     }
@@ -50,11 +51,12 @@ double Closure::DUKinetic(double Lambda){
 }
 
 vector Closure::SolveClosure(vector u, vector lambda){
+    double stepsize = 0.5;
     for( int l; l<_problem->GetMaxIterations(); ++l ){
         g = Gradient(lambda, u);
         while( blaze::sqrLength(g) < _problem->GetEpsilonNewton() ){
             vector dlambda = blaze::posv( Hessian(lambda), -g, 'L');
-            lambda = lambda+dx*dlambda;
+            lambda = lambda+stepsize*dlambda;
         }
     }
 }
@@ -62,7 +64,7 @@ vector Closure::SolveClosure(vector u, vector lambda){
 double Closure::EvaluateLambda(vector lambda,double xi){
     double tmp = 0;
     for(int i = 0; i<_nMoments-1; ++i ){
-        tmp = tmp+lambda(i)*_basis->Calculate(i,xi);
+        tmp = tmp+lambda(i)*_basis->Evaluate(i,xi);
     }
     return tmp;
 }
@@ -71,7 +73,7 @@ vector Closure::EvaluateLambda(vector lambda,vector xi){
     vector tmp = vector(_nQuadPoints);
     for(int i = 0; i<_nMoments-1; ++i ){
         for( int k = 0; k<_nQuadPoints; ++k ){
-            tmp[k] = tmp[k]+lambda(i)*_phi[k];
+            tmp[k] = tmp[k]+lambda[i]*_phi[k];
         }
     }
     return tmp;

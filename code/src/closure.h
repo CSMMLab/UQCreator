@@ -15,7 +15,7 @@ class Closure
 private:
     Problem* _problem;
     Quadrature* _quadrature;
-    Legendre* _basis;
+    Polynomial* _basis;
     std::vector<vector> _phi; // stores basis functions evaluated at quadrature points
     std::vector<vector> _phiTilde; // stores scaled basis functions evaluated at quadrature points
     std::vector<matrix> _hPartial; // stores partial matrices for Hessian computation
