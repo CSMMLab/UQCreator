@@ -46,3 +46,11 @@ int Problem::GetNQuadPoints(){
 int Problem::GetNMoments(){
     return _nMoments;
 }
+
+int Problem::GetMaxIterations(){
+    return _maxIterations;
+}
+
+double Problem::GetEpsilon(){
+    return _epsilon;
+}

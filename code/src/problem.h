@@ -6,7 +6,7 @@
 #include <iostream>
 
 #include "mesh.h"
-//#include "timediscretization.h"
+#include "timediscretization.h"
 
 #define QUAD_TYPE_LEGENDRE 201
 #define QUAD_TYPE_HERMITE 202
@@ -15,10 +15,12 @@ class Problem
 {
 protected:
     Mesh* _mesh;
-    //TimeDiscretizaiton* _timeDiscretization;
+    TimeDiscretization* _timeDiscretization;
     int _quadType;
     int _nQuadPoints;
     int _nMoments;
+    int _maxIterations;
+    double _epsilon;
     virtual void Solve() = 0;
 
     // I/O
@@ -38,6 +40,8 @@ public:
     int GetQuadType();
     int GetNQuadPoints();
     int GetNMoments();
+    int GetMaxIterations();
+    double GetEpsilon();
 };
 
 #endif // PROBLEM_H

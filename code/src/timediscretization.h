@@ -14,7 +14,7 @@ class TimeDiscretization
     std::list<vector> _uSteps;
 public:
     TimeDiscretization();
-    vecot Solve(vector u, vector Lambda);
+    vector Solve(vector u, vector Lambda);
 };
 
 #endif // TIMEDISCRETIZATION_H
