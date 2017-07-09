@@ -10,6 +10,17 @@ Problem::Problem(std::string inputFile) : _inputFile(inputFile){
         _outputFolder = general->get_as<std::string>("outputFolder").value_or("");
 
         _mesh = new Mesh(_inputFile);
+
+        auto momentSystem = file->get_table("moment system");
+        std::string quadType = momentSystem->get_as<std::string>("quadType").value_or("none");
+        if(quadType.compare("legendre"))
+            _quadType = QUAD_TYPE_LEGENDRE;
+        else if(quadType.compare("hermite"))
+            _quadType = QUAD_TYPE_HERMITE;
+        _nQuadPoints = momentSystem->get_as<int>("quadPoints").value_or(-1);
+        _nMoments = momentSystem->get_as<int>("moments").value_or(-1);
+        _maxIterations = momentSystem->get_as<int>("maxIterations").value_or(-1);
+        _epsilon = momentSystem->get_as<double>("epsilon").value_or(-1.0);
     }
     catch (const cpptoml::parse_exception& e){
         std::cerr << "Failed to parse " << _inputFile << ": " << e.what() << std::endl;

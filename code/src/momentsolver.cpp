@@ -1,10 +1,9 @@
 #include "momentsolver.h"
 
-MomentSolver::MomentSolver(Ploblem* problem): _problem(problem)
+MomentSolver::MomentSolver(Problem* problem) : _problem(problem)
 {
-    _quad = new Hermite(_problem);
+    _quad = new Hermite(_problem->GetNQuadPoints());
     _closure = new Closure(_problem);
-    _origSolver = new BurgersSolver(nCells, tEnd, cfl, a, b, uL, uR);
 
     _dx = (_problem->_b-_problem->_a)/_problem->_nCells;
     for( int j = 0; j<_nCells+4; ++j){
