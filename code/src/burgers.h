@@ -12,10 +12,6 @@ typedef blaze::DynamicVector<double> vector;
 
 class Burgers : public Problem {
 private:
-    double _tEnd;
-    double _CFL;
-    std::string _limiter;
-
     vector _u;
     vector _x;
     double _dx;
