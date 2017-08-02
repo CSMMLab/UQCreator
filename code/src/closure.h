@@ -58,6 +58,7 @@ public:
     double DUKinetic(double Lambda);
     std::vector<vector> GetPhi(){return _phi;}
     vector GetPhiTilde(int k){return _phiTilde[k];}
+    std::vector<vector> GetPhiTilde(){return _phiTilde;}
 };
 
 #endif // CLOSURE_H

@@ -21,9 +21,10 @@ protected:
     int _nMoments;
     int _maxIterations;
     double _epsilon;
-    double _tEnd;
     double _CFL;
+    double _tEnd;
     std::string _limiter;
+
     virtual void Solve() = 0;
 
     // I/O

@@ -19,7 +19,6 @@ private:
     int _nCells;
     int _nTimeSteps;
     double H(double u, double v, double w);
-    double G(double u, double v);
     double F(double u);
     double IC(double x, double uL, double uR);
 
@@ -27,10 +26,12 @@ private:
 
 public:
     Burgers(std::string inputFile);
+    Burgers(){}
     virtual void Solve();
     virtual void Plot() const;
     virtual void Print() const;
     virtual void WriteToFile(std::string filename, int filetype) const;
+    double G(double u, double v);
 };
 
 #endif // BURGERS_H

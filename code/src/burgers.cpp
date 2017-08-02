@@ -2,17 +2,20 @@
 
 Burgers::Burgers(std::string inputFile) : Problem(inputFile)
 {
-    /*
-    _u = new double[_nCells+4];
-    _x = _mesh->getGrid();
-    _dx = _mesh->getSpacing();
-    _dt = _timeDiscretization->getDt(0.8);
-    _nCells = _mesh->getNumCells();
-    _nTimeSteps = tEnd/_dt;
+    double uL = 12.0;
+    double uR = 3.0;
+    _u = vector(_nCells+4);
+    std::vector<vector> tmp = _mesh->GetGrid();
+    _x = tmp[0];
+    std::vector<vector> tmp1 = _mesh->GetSpacing();
+    _dx = tmp1[0][0];
+    _dt = _dx*_CFL/12.0;
+    _nCells = _mesh->GetNumCells();
+    _nTimeSteps = _tEnd/_dt;
+
     for( int j = 0; j<_nCells+4; ++j){
         _u[j] = IC(_x[j],uL,uR);
     }
-    */
 }
 
 double Burgers::H(double u, double v, double w){
