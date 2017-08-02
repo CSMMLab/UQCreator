@@ -16,6 +16,7 @@ class MomentSolver
     Problem* _problem;    
     Burgers* _origSolver;
     double _dx,_dt,_a,_b,_uL,_uR,_nCells,_nMoments,_tEnd;
+    int _nTimeSteps;
     vector numFlux(vector lambda1,vector lambda2);
     std::vector<vector> SetupIC();
     double IC(double x,double xi);

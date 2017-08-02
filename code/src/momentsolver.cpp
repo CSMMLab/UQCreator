@@ -9,15 +9,15 @@ MomentSolver::MomentSolver(Problem* problem) : _problem(problem)
 
     _a = 0.0;
     _b = 3.0;
-    _dx = (_b-_a)/_problem->_nCells;
+    _dx = (_b-_a)/_problem->GetMesh()->GetNumCells();
     for( int j = 0; j<_nCells+4; ++j){
         _x[j] = (j-2)*_dx;
     }
-    _dt = _dx*_problem->_CFL/12.0;
-    _nTimeSteps = _origSolver->_tEnd/_dt;
-    _nCells = _origSolver->_nCells;
-    _nMoments = _problem->_nMoments;
-    _tEnd = _origSolver->_tEnd;
+    _dt = _dx*_problem->GetCFL()/12.0;
+    _nTimeSteps = _problem->GetTEnd()/_dt;
+    _nCells = _problem->GetMesh()->GetNumCells();
+    _nMoments = _problem->GetNMoments();
+    _tEnd = _origSolver->GetTEnd();
 }
 
 void MomentSolver::Solve(){
