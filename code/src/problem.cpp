@@ -70,3 +70,15 @@ int Problem::GetMaxIterations(){
 double Problem::GetEpsilon(){
     return _epsilon;
 }
+
+double Problem::GetCFL(){
+    return _CFL;
+}
+
+double Problem::GetTEnd(){
+    return _tEnd;
+}
+
+Mesh* Problem::GetMesh(){
+    return _mesh;
+}

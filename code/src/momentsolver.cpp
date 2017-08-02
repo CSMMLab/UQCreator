@@ -13,7 +13,7 @@ MomentSolver::MomentSolver(Problem* problem) : _problem(problem)
     for( int j = 0; j<_nCells+4; ++j){
         _x[j] = (j-2)*_dx;
     }
-    _dt = _dx*_problem->_cfl/12.0;
+    _dt = _dx*_problem->_CFL/12.0;
     _nTimeSteps = _origSolver->_tEnd/_dt;
     _nCells = _origSolver->_nCells;
     _nMoments = _problem->_nMoments;

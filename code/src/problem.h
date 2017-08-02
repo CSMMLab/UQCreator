@@ -46,6 +46,9 @@ public:
     int GetNMoments();
     int GetMaxIterations();
     double GetEpsilon();
+    double GetCFL();
+    double GetTEnd();
+    Mesh* GetMesh();
 };
 
 #endif // PROBLEM_H
