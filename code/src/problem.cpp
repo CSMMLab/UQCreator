@@ -16,7 +16,7 @@ Problem::Problem(std::string inputFile) : _inputFile(inputFile){
         _limiter = problem->get_as<std::string>("limiter").value_or("none");
         _tEnd = problem->get_as<double>("tEnd").value_or(-1.0);
 
-        auto momentSystem = file->get_table("moment system");
+        auto momentSystem = file->get_table("moment_system");
         std::string quadType = momentSystem->get_as<std::string>("quadType").value_or("none");
         if(quadType.compare("legendre"))
             _quadType = QUAD_TYPE_LEGENDRE;

@@ -27,7 +27,7 @@ add_executable ( UQCreator ${UQCreator_SRCS})
 find_package( Boost COMPONENTS system iostreams REQUIRED )
 include_directories( ${Boost_INCLUDE_DIR} )
 
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -45,6 +45,9 @@ ExternalProject_Add(blaze
 include_directories(${CMAKE_BINARY_DIR}/blaze/src/blaze)
 add_dependencies ( UQCreator blaze )
 
+find_package( LAPACK REQUIRED )
+include_directories( ${LAPACK_INCLUDE_DIR} )
+
 ExternalProject_Add(cpptoml
   PREFIX ${CMAKE_BINARY_DIR}/cpptoml
   GIT_REPOSITORY https://github.com/skystrife/cpptoml
@@ -56,4 +59,4 @@ ExternalProject_Add(cpptoml
 include_directories(${CMAKE_BINARY_DIR}/cpptoml/src/cpptoml/include)
 add_dependencies ( UQCreator cpptoml )
 
-TARGET_LINK_LIBRARIES( UQCreator LINK_PUBLIC ${Boost_LIBRARIES} )
+TARGET_LINK_LIBRARIES( UQCreator LINK_PUBLIC ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )

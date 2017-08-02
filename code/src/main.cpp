@@ -46,11 +46,12 @@ int main(int argc, char* argv[]){
     LOG("Using config file \t: " + configFile);
 
     Problem* problem = Problem::Create(configFile);
+    problem->Solve();
+    problem->Plot();
 
     delete problem;
 
     LOG("\nProcess exits normally.");
-
 
     return 0;
 }

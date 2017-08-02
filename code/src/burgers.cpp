@@ -64,16 +64,16 @@ void Burgers::Print() const{
 }
 
 void Burgers::Plot() const{
-    /*
     std::vector<double> x,u;
-    x.assign(_x, _x + _nCells+4);
-    u.assign(_u, _u + _nCells+4);
+    for(int i=0; i<_nCells+4; i++){
+        x.push_back(_x[i]);
+        u.push_back(_u[i]);
+    }
     Gnuplot gp;
     gp << "plot '-' with lines notitle\n";
     gp << "set xlabel 'Space'\n";
     gp << "set ylabel 'Velocity\n";
     gp.send1d(std::make_pair(x, u));
-    */
 }
 
 void Burgers::WriteToFile(std::string filename, int filetype) const{

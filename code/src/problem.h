@@ -25,13 +25,10 @@ protected:
     double _tEnd;
     std::string _limiter;
 
-    virtual void Solve() = 0;
-
     // I/O
     std::string _inputFile;
     std::string _outputFolder;
     virtual void Print() const = 0;
-    virtual void Plot() const = 0;
     virtual void WriteToFile(std::string filename, int filetype) const = 0;
 
     Problem(){}
@@ -40,6 +37,8 @@ public:
     Problem(std::string inputFile);
     static Problem* Create(std::string inputFile);
     virtual ~Problem();
+    virtual void Solve() = 0;
+    virtual void Plot() const = 0;
 
     int GetQuadType();
     int GetNQuadPoints();

@@ -11,7 +11,7 @@ CFL = 0.9
 limiter = "none"
 tEnd = 1
 
-[moment system]
+[moment_system]
 moments = 1
-quadType = legendre
+quadType = "legendre"
 quadPoints = 1
