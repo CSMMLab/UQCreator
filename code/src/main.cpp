@@ -1,10 +1,6 @@
 #define LOG(x) do { std::clog << x << std::endl; } while (0)
 #define DEBUG(x) do { std::cerr << x << std::endl; } while (0)
 
-#include <blaze/Blaze.h>
-#include <cpptoml.h>
-#include <omp.h>
-
 #include "problem.h"
 
 int main(int argc, char* argv[]){

@@ -2,18 +2,6 @@
 
 Burgers::Burgers(std::string inputFile) : Problem(inputFile)
 {
-    try{
-        auto file = cpptoml::parse_file(_inputFile);
-
-        auto problem = file->get_table("burgers");
-        _CFL = problem->get_as<double>("CFL").value_or(-1.0);
-        _limiter = problem->get_as<std::string>("limiter").value_or("none");
-        _tEnd = problem->get_as<double>("tEnd").value_or(-1.0);
-    }
-    catch (const cpptoml::parse_exception& e){
-        std::cerr << "Failed to parse " << _inputFile << ": " << e.what() << std::endl;
-        exit(EXIT_FAILURE);
-    }
     /*
     _u = new double[_nCells+4];
     _x = _mesh->getGrid();

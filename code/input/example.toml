@@ -6,7 +6,7 @@ outputFolder = "results"
 dimension = 1
 xCells = 10
 
-[burgers]
+[problem]
 CFL = 0.9
 limiter = "none"
 tEnd = 1
