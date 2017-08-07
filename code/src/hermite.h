@@ -4,6 +4,8 @@
 #include "polynomial.h"
 #include "mathtools.h"
 
+#include <boost/math/special_functions/hermite.hpp>
+
 class Hermite : public Polynomial{
 private:
     void ComputeNodes(int degree);
@@ -11,8 +13,8 @@ public:
     Hermite(int degree);
 
     virtual double Evaluate(int m,double x);
-    virtual vector GetNodes();
-    virtual vector GetWeights();
+    virtual blaze::DynamicVector<double> GetNodes();
+    virtual blaze::DynamicVector<double> GetWeights();
 };
 
 #endif

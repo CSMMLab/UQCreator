@@ -1,19 +1,16 @@
 #ifndef BURGERS_H
 #define BURGERS_H
 
-#include <blaze/Blaze.h>
 #include <iostream>
 #include <fstream>
 
 #include "problem.h"
 #include "gnuplot-iostream.h"
 
-typedef blaze::DynamicVector<double> vector;
-
 class Burgers : public Problem {
 private:
-    vector _u;
-    vector _x;
+    blaze::DynamicVector<double> _u;
+    blaze::DynamicVector<double> _x;
     double _dx;
     double _dt;
     int _nCells;
@@ -28,7 +25,7 @@ public:
     Burgers(std::string inputFile);
     Burgers(){}
     virtual void Solve();
-    virtual void Plot() const;
+    virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) const;
     virtual void Print() const;
     virtual void WriteToFile(std::string filename, int filetype) const;
     double G(double u, double v);

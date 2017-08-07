@@ -3,15 +3,19 @@ problem = "Burgers"
 outputFolder = "results"
 
 [mesh]
-dimension = 1
-xCells = 10
+Dimension = 1
+NumberOfCells = 80 
+a = 0
+b = 3
 
 [problem]
-CFL = 0.9
+CFL = 0.25
 limiter = "none"
-tEnd = 1
+tEnd = 0.14
 
 [moment_system]
-moments = 1
+moments = 5
 quadType = "legendre"
-quadPoints = 1
+quadPoints = 20
+maxIterations = 1e4
+epsilon = 5e-5

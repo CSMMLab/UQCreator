@@ -3,10 +3,9 @@
 
 #include <cpptoml.h>
 #include <string>
-#include <iostream>
 
 #include "mesh.h"
-#include "timediscretization.h"
+//#include "timediscretization.h"
 
 #define QUAD_TYPE_LEGENDRE 201
 #define QUAD_TYPE_HERMITE 202
@@ -15,7 +14,7 @@ class Problem
 {
 protected:
     Mesh* _mesh;
-    TimeDiscretization* _timeDiscretization;
+//    TimeDiscretization* _timeDiscretization;
     int _quadType;
     int _nQuadPoints;
     int _nMoments;
@@ -37,8 +36,9 @@ public:
     Problem(std::string inputFile);
     static Problem* Create(std::string inputFile);
     virtual ~Problem();
-    virtual void Solve() = 0;
-    virtual void Plot() const = 0;
+    virtual void Solve(){}
+    virtual double G(double u, double v) = 0;
+    virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) const = 0;
 
     int GetQuadType();
     int GetNQuadPoints();

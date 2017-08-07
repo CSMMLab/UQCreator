@@ -1,30 +1,22 @@
 #include "closure.h"
-typedef blaze::DynamicVector<double> vector;
-typedef blaze::DynamicMatrix<double> matrix;
 
 Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNMoments()), _nQuadPoints(_problem->GetNQuadPoints())
 {
-    //
     // initialize classes
-    _quadrature = new Quadrature(_problem);
     _basis = new Legendre(_nMoments);
-
     // calculate basis functions evaluated at the quadrature points
-    _phi.resize(_nQuadPoints);
-    _phiTilde.resize(_nQuadPoints);
-    vector xi = _quadrature->GetNodes();
+    _phi = std::vector<blaze::DynamicVector<double> >(_nQuadPoints, blaze::DynamicVector<double>(_nMoments,0.0));
+    _phiTilde = std::vector<blaze::DynamicVector<double> >(_nQuadPoints, blaze::DynamicVector<double>(_nMoments,0.0));
+    blaze::DynamicVector<double> xi = _basis->GetNodes();
     for( int k = 0; k < _nQuadPoints; ++k ){
-        _phi[k].resize(_nMoments);
-        _phiTilde[k].resize(_nMoments);
         for( int i = 0; i < _nMoments-1; ++i){
             _phi[k][i] = _basis->Evaluate(i,xi[k]);
-            _phiTilde[k][i] = _phi[k][i]*2.0/(2.0*(i-1)+1);
+            _phiTilde[k][i] = _phi[k][i]*(2.0*i+1)/2;
         }
     }
-
     // calculate partial matrix for Hessian calculation
     _hPartial.resize(_nQuadPoints);
-    vector w = _quadrature->GetWeights();
+    blaze::DynamicVector<double> w = _basis->GetWeights();
     for( int k = 0; k < _nQuadPoints; ++k ){
         _hPartial[k].resize(_nMoments,_nMoments);
         for( int i = 0; i < _nMoments-1; ++i ){
@@ -51,21 +43,22 @@ double Closure::DUKinetic(double Lambda){
     }
 }
 
-vector Closure::SolveClosure(vector u, vector lambda){
+blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> u, blaze::DynamicVector<double> lambda){
     double stepSize = 0.5;
-    vector dlambda;
-    for( int l; l<_problem->GetMaxIterations(); ++l ){
-        vector g = Gradient(lambda, u);
+    blaze::DynamicVector<double> dlambda;
+    for( int l=0; l<_problem->GetMaxIterations(); ++l ){
+        blaze::DynamicVector<double> g = Gradient(lambda, u);
         while( blaze::sqrLength(g) < _problem->GetEpsilon() ){
-            matrix H = Hessian(lambda);
-            vector dlambda = -g;
+            blaze::DynamicMatrix<double> H = Hessian(lambda);
+            dlambda = -g;
             blaze::posv( H, dlambda, 'L');
             lambda = lambda+stepSize*dlambda;
         }
     }
+    return lambda;
 }
 
-double Closure::EvaluateLambda(vector lambda,double xi){
+double Closure::EvaluateLambda(blaze::DynamicVector<double> lambda, double xi){
     double tmp = 0;
     for(int i = 0; i<_nMoments-1; ++i ){
         tmp = tmp+lambda[i]*_basis->Evaluate(i,xi);
@@ -73,9 +66,9 @@ double Closure::EvaluateLambda(vector lambda,double xi){
     return tmp;
 }
 
-vector Closure::Gradient(vector lambda, vector u){
-    vector g = vector(_nMoments);
-    vector w = _quadrature->GetWeights();
+blaze::DynamicVector<double> Closure::Gradient(blaze::DynamicVector<double> lambda, blaze::DynamicVector<double> u){
+    blaze::DynamicVector<double> g = blaze::DynamicVector<double>(_nMoments);
+    blaze::DynamicVector<double> w = _basis->GetWeights();
     for( int i = 0; i<_nMoments; ++i ){
         g[i] = 0;
     }
@@ -85,8 +78,8 @@ vector Closure::Gradient(vector lambda, vector u){
     return g;
 }
 
-matrix Closure::Hessian(vector lambda){
-    matrix H = matrix(_nMoments,_nMoments);
+blaze::DynamicMatrix<double> Closure::Hessian(blaze::DynamicVector<double> lambda){
+    blaze::DynamicMatrix<double> H = blaze::DynamicMatrix<double>(_nMoments,_nMoments);
     for( int i = 0; i<_nMoments; ++i ){
         for( int j = 0; j<_nMoments; ++j ){
             H(i,j) = 0;

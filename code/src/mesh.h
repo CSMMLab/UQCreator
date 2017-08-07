@@ -2,11 +2,10 @@
 #define MESH_H
 
 #include <string.h>
-#include <blaze/Blaze.h>
+#include <assert.h>
+#include <iostream>
+#include <blaze/math/DynamicVector.h>
 #include <cpptoml.h>
-
-typedef blaze::DynamicVector<double> vector;
-typedef std::vector<vector> meshData;
 
 #define MESH_STATUS_UNLOADED 100
 #define MESH_STATUS_LOADED 101
@@ -19,8 +18,8 @@ private:
     int _dimension;
     int _meshtype;
     int _numCells;
-    meshData _mesh;
-    meshData _spacing;
+    blaze::DynamicVector<double> _mesh;
+    blaze::DynamicVector<double> _spacing;
 
     Mesh(){}
 public:
@@ -29,10 +28,11 @@ public:
 
     int GetNumCells() const;
     int GetDimension() const;
-    meshData& GetGrid();
-    meshData& GetSpacing();
+    blaze::DynamicVector<double> GetGrid();
+    blaze::DynamicVector<double> GetSpacing();
 
     Mesh(std::string inputFile);
+    ~Mesh();
 };
 
 #endif // MESH_H

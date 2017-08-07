@@ -1,13 +1,12 @@
 #ifndef MATHTOOLS_H
 #define MATHTOOLS_H
 
-#include <blaze/Blaze.h>
+#include <blaze/math/DynamicMatrix.h>
+#include <blaze/math/DynamicVector.h>
+
+#include <iostream>
 
 #define PI 3.14159265359
-
-typedef blaze::DynamicVector<double> vector;
-typedef blaze::DynamicMatrix<double> matrix;
-
 
 class MathTools
 {
@@ -16,7 +15,7 @@ private:
 public:
     ~MathTools(){}
     static double Pythag(const double a, const double b);
-    static std::pair<vector,matrix> ComputeEigenValTriDiagMatrix(const matrix CM);
+    static std::pair<blaze::DynamicVector<double>,blaze::DynamicMatrix<double>> ComputeEigenValTriDiagMatrix(const blaze::DynamicMatrix<double> CM);
 
 };
 

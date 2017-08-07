@@ -2,20 +2,12 @@
 
 Burgers::Burgers(std::string inputFile) : Problem(inputFile)
 {
-    double uL = 12.0;
-    double uR = 3.0;
-    _u = vector(_nCells+4);
-    std::vector<vector> tmp = _mesh->GetGrid();
-    _x = tmp[0];
-    std::vector<vector> tmp1 = _mesh->GetSpacing();
-    _dx = tmp1[0][0];
+    _u = blaze::DynamicVector<double>(_nCells+4);
+    _x = _mesh->GetGrid();
+    _dx = _mesh->GetSpacing().at(0);
     _dt = _dx*_CFL/12.0;
     _nCells = _mesh->GetNumCells();
     _nTimeSteps = _tEnd/_dt;
-
-    for( int j = 0; j<_nCells+4; ++j){
-        _u[j] = IC(_x[j],uL,uR);
-    }
 }
 
 double Burgers::H(double u, double v, double w){
@@ -63,17 +55,17 @@ void Burgers::Print() const{
     }
 }
 
-void Burgers::Plot() const{
-    std::vector<double> x,u;
+void Burgers::Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) const{
+    std::vector<double> x1, u1;
     for(int i=0; i<_nCells+4; i++){
-        x.push_back(_x[i]);
-        u.push_back(_u[i]);
+        x1.push_back(x[i]);
+        u1.push_back(u[i]);
     }
     Gnuplot gp;
     gp << "plot '-' with lines notitle\n";
     gp << "set xlabel 'Space'\n";
     gp << "set ylabel 'Velocity\n";
-    gp.send1d(std::make_pair(x, u));
+    gp.send1d(std::make_pair(x1, u1));
 }
 
 void Burgers::WriteToFile(std::string filename, int filetype) const{

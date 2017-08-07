@@ -2,24 +2,22 @@ cmake_minimum_required( VERSION 3.8 )
 project( UQCreator )
 set ( CMAKE_BUILD_TYPE Release )
 set (CMAKE_CXX_STANDARD 14)
-add_definitions ( -std=c++14 -Wall -ansi -O3 -DNDEBUG -mavx )
+#add_definitions ( -std=c++14 -Wall -O3 -ansi -DNDEBUG )
+add_definitions ( -std=c++14 -Wall )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/")
 
 set ( UQCreator_SRCS
 	  main.cpp
           problem.cpp
-          quadrature.cpp
           legendre.cpp
           hermite.cpp
           mathtools.cpp
           mesh.cpp
           burgers.cpp
-          euler.cpp
           polynomial.cpp
           closure.cpp
-          momentsolver.cpp
-          timediscretization.cpp
+          momentsolver.cpp       
 	)
 
 add_executable ( UQCreator ${UQCreator_SRCS})

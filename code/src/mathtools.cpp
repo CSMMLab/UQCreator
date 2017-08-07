@@ -6,23 +6,20 @@ double MathTools::Pythag(const double a, const double b) {
            (absb == 0.0 ? 0.0 : absb*std::sqrt(1.0+std::pow(absa/absb,2))));
 }
 
-std::pair<vector,matrix> MathTools::ComputeEigenValTriDiagMatrix(const matrix mat){
-    assert( blaze::isSquare(mat) );
+std::pair<blaze::DynamicVector<double>,blaze::DynamicMatrix<double>> MathTools::ComputeEigenValTriDiagMatrix(const blaze::DynamicMatrix<double> mat){
+    assert(blaze::isSymmetric(mat));
     int n = mat.rows();
 
-    vector d(n),e(n);
-    matrix z(n,n);
-
-    d = blaze::trace(mat);
+    blaze::DynamicVector<double> d(n,0.0),e(n,0.0);
+    blaze::DynamicMatrix<double> z(n,n,0.0);
     for(int i=0; i<n; ++i){
+        d[i] = mat(i,i);
         z(i,i) = 1.0;
-    }
-    for(int i=0; i<n; ++i){
-        i == 0 ? e[i] = 0 : e[i] = mat(i,i-1);
+        i == 0 ? e[i] = 0.0 : e[i] = mat(i,i-1);
     }
 
-    int m,l,iter,i,k;
-    double s,r,p,g,f,dd,c,b;
+    int m,l,iter,i,k; m=l=iter=i=k=0;
+    double s,r,p,g,f,dd,c,b; s=r=p=g=f=dd=c=b=0.0;
     const double eps=std::numeric_limits<double>::epsilon();
     for (i=1;i<n;i++) e[i-1]=e[i];
     e[n-1]=0.0;
@@ -34,7 +31,7 @@ std::pair<vector,matrix> MathTools::ComputeEigenValTriDiagMatrix(const matrix ma
                 if (std::fabs(e[m]) <= eps*dd) break;
             }
             if (m != l) {
-                if (iter++ == 30) throw("[computeEigenValTriDiagMatrix]: Too many iterations");
+                if (iter++ == 30) throw("[solveTriDiagEWP]: Too many iterations");
                 g=(d[l+1]-d[l])/(2.0*e[l]);
                 r=Pythag(g,1.0);
                 g=d[m]-d[l]+e[l]/(g+std::copysign(r,g));
@@ -68,6 +65,5 @@ std::pair<vector,matrix> MathTools::ComputeEigenValTriDiagMatrix(const matrix ma
             }
         } while (m != l);
     }
-
     return std::make_pair(d,z);
 }

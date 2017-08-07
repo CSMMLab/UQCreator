@@ -10,24 +10,34 @@ Mesh::Mesh(std::string inputFile) : _status(MESH_STATUS_UNLOADED){
     else{
         _dimension = settings->get_as<int>("Dimension").value_or(-1);
         _numCells = settings->get_as<int>("NumberOfCells").value_or(-1);
-        _numCells = settings->get_as<int>("NumberOfCells").value_or(-1);
-        double a = settings->get_as<int>("b").value_or(0);
-        double b = settings->get_as<int>("b").value_or(0);
-        if(a!=0 && b!=0)
+        double a = settings->get_as<double>("a").value_or(0.0);
+        double b = settings->get_as<double>("b").value_or(0.0);
+        if((a==0 && b==0) || _dimension == -1 || _numCells == -1)
+            std::cerr << "[ERROR]: Mesh::Mesh invalid mesh parameters" << std::endl;
+        else{
             this->CreateGrid(a,b);
+            _status = MESH_STATUS_LOADED;
+        }
     }
 }
 
-void Mesh::Load(std::string filename){
+Mesh::~Mesh(){
 
 }
 
+void Mesh::Load(std::string filename){
+    std::cerr << "[ERROR]: Mesh::Load not yet implemented" << std::endl;
+}
+
 void Mesh::CreateGrid(double a, double b){
-    _mesh.resize(_dimension);
-    _spacing.resize(_dimension);
-    for(int i=0; i<_dimension; ++i){
-        _mesh[i] = vector(_numCells);
-        _spacing[i] = vector(_numCells-1);
+    assert(_dimension == 1);
+    _mesh.resize(_numCells+4);
+    _spacing.resize(_numCells+4-1);
+    for(int j=-2; j<_numCells+2; ++j){
+        _mesh[j+2] = a + j*(b-a)/(_numCells-1);
+        if(j!=0){
+            _spacing[j+1] = _mesh[j+2] - _mesh[j+1];
+        }
     }
 }
 
@@ -39,11 +49,11 @@ int Mesh::GetDimension() const{
     return _dimension;
 }
 
-meshData& Mesh::GetGrid(){
+blaze::DynamicVector<double> Mesh::GetGrid(){
     return _mesh;
 }
 
-meshData& Mesh::GetSpacing(){
+blaze::DynamicVector<double> Mesh::GetSpacing(){
     return _spacing;
 }
 

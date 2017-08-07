@@ -1,18 +1,16 @@
 #ifndef QUADRATURE_H
 #define QUADRATURE_H
 
-#include <blaze/Blaze.h>
+#include <blaze/math/DynamicVector.h>
 
 #include "problem.h"
 #include "polynomial.h"
 
-typedef blaze::DynamicVector<double> vector;
-
 class Quadrature{
 protected:
     double _value;
-    vector _nodes;
-    vector _weights;
+    blaze::DynamicVector<double> _nodes;
+    blaze::DynamicVector<double> _weights;
 
     Problem* _problem;
     Polynomial* _polynomial;
@@ -21,8 +19,8 @@ protected:
 public:
     Quadrature(Problem* p);
     double Evaluate();
-    vector GetNodes();
-    vector GetWeights();
+    blaze::DynamicVector<double> GetNodes();
+    blaze::DynamicVector<double> GetWeights();
 private:
     Quadrature(){}
 };
