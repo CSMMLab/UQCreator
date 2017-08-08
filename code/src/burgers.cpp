@@ -1,13 +1,12 @@
 #include "burgers.h"
 
-Burgers::Burgers(std::string inputFile) : Problem(inputFile)
-{
-    _u = blaze::DynamicVector<double>(_nCells+4);
+Burgers::Burgers(std::string inputFile) : Problem(inputFile){
     _x = _mesh->GetGrid();
     _dx = _mesh->GetSpacing().at(0);
     _dt = _dx*_CFL/12.0;
     _nCells = _mesh->GetNumCells();
     _nTimeSteps = _tEnd/_dt;
+    _u = blaze::DynamicVector<double>(_nCells+4, 0.0);
 }
 
 double Burgers::H(double u, double v, double w){
