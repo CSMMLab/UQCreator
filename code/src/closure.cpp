@@ -9,18 +9,17 @@ Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNM
     _phiTilde = std::vector<blaze::DynamicVector<double> >(_nQuadPoints, blaze::DynamicVector<double>(_nMoments,0.0));
     blaze::DynamicVector<double> xi = _basis->GetNodes();
     for( int k = 0; k < _nQuadPoints; ++k ){
-        for( int i = 0; i < _nMoments-1; ++i){
+        for( int i = 0; i < _nMoments; ++i){
             _phi[k][i] = _basis->Evaluate(i,xi[k]);
             _phiTilde[k][i] = _phi[k][i]*(2.0*i+1)/2;
         }
     }
     // calculate partial matrix for Hessian calculation
-    _hPartial.resize(_nQuadPoints);
+    _hPartial = std::vector<blaze::DynamicMatrix<double> >(_nQuadPoints, blaze::DynamicMatrix<double>(_nMoments,_nMoments,0.0));
     blaze::DynamicVector<double> w = _basis->GetWeights();
     for( int k = 0; k < _nQuadPoints; ++k ){
-        _hPartial[k].resize(_nMoments,_nMoments);
-        for( int i = 0; i < _nMoments-1; ++i ){
-            for( int j = 0; j < _nMoments-1; ++j ){
+        for( int i = 0; i < _nMoments; ++i ){
+            for( int j = 0; j < _nMoments; ++j ){
                 _hPartial[k] = _phi[k]*blaze::trans(_phi[k])*w[k];
             }
         }
@@ -61,32 +60,24 @@ blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> 
 double Closure::EvaluateLambda(blaze::DynamicVector<double> lambda, double xi){
     double tmp = 0;
     for(int i = 0; i<_nMoments-1; ++i ){
-        tmp = tmp+lambda[i]*_basis->Evaluate(i,xi);
+        tmp += lambda[i]*_basis->Evaluate(i,xi);
     }
     return tmp;
 }
 
 blaze::DynamicVector<double> Closure::Gradient(blaze::DynamicVector<double> lambda, blaze::DynamicVector<double> u){
-    blaze::DynamicVector<double> g = blaze::DynamicVector<double>(_nMoments);
+    blaze::DynamicVector<double> g = blaze::DynamicVector<double>(_nMoments, 0.0);
     blaze::DynamicVector<double> w = _basis->GetWeights();
-    for( int i = 0; i<_nMoments; ++i ){
-        g[i] = 0;
-    }
     for( int k = 0; k < _nQuadPoints; ++k ){
-        g = g + UKinetic(inner( lambda, _phi[k] ))*_phi[k]*w[k];
+        g += UKinetic(inner( lambda, _phi[k] ))*_phi[k]*w[k];
     }
     return g;
 }
 
 blaze::DynamicMatrix<double> Closure::Hessian(blaze::DynamicVector<double> lambda){
-    blaze::DynamicMatrix<double> H = blaze::DynamicMatrix<double>(_nMoments,_nMoments);
-    for( int i = 0; i<_nMoments; ++i ){
-        for( int j = 0; j<_nMoments; ++j ){
-            H(i,j) = 0;
-        }
-    }
+    blaze::DynamicMatrix<double> H = blaze::DynamicMatrix<double>(_nMoments,_nMoments, 0.0);
     for( int k = 0; k < _nQuadPoints; ++k ){
-        H = H + _hPartial[k]*DUKinetic(inner( lambda, _phi[k] ));
+        H += _hPartial[k]*DUKinetic(inner( lambda, _phi[k] ));
     }
     return H;
 }

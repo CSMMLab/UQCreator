@@ -30,6 +30,16 @@ void MomentSolver::Solve(){
 
     u = SetupIC();
 
+    // DEBUG IC
+    for(int j = 0; j<_nCells; ++j){
+        std::cout << u[j] << std::endl;
+    }
+
+    for(int j = 0; j<_nCells; ++j){
+//        std::cout << _lambda[j] << std::endl;
+    }
+
+    exit(EXIT_FAILURE);
     // Begin time loop
     while( t < _tEnd ){
         // Modify moments into realizable direction
@@ -85,23 +95,17 @@ std::vector<blaze::DynamicVector<double>> MomentSolver::SetupIC(){
             }
         }
     }
-
-    /* DEBUG IC
-    for(int j = 0; j<_nCells; ++j){
-        std::cout << out[j] << std::endl;
-    }
-    */
     return out;
 }
 
 double MomentSolver::IC(double x,double xi){
     double a = 0.5;
     double b = 1.5;
-    if( x < a+xi ){
+    if( x < a+0.2*xi ){
         return _uL;
     }
-    else if( x < b+xi ){
-        return _uL+(_uR-_uL)*(a+xi-x)/(a-b);
+    else if( x < b+0.2*xi ){
+        return _uL+(_uR-_uL)*(a+0.2*xi-x)/(a-b);
     }
     else{
         return _uR;
