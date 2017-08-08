@@ -10,8 +10,8 @@ class Closure
 {
 private:
     Problem* _problem;
-    //Quadrature* _quadrature;
     Polynomial* _basis;
+    Polynomial* _quad;
     std::vector<blaze::DynamicVector<double>> _phi; // stores basis functions evaluated at quadrature points
     std::vector<blaze::DynamicVector<double>> _phiTilde; // stores scaled basis functions evaluated at quadrature points
     std::vector<blaze::DynamicMatrix<double>> _hPartial; // stores partial matrices for Hessian computation

@@ -14,8 +14,8 @@ limiter = "none"
 tEnd = 0.14
 
 [moment_system]
-moments = 5
+moments = 3
 quadType = "legendre"
-quadPoints = 20
-maxIterations = 1e4
+quadPoints = 100
+maxIterations = 1000
 epsilon = 5e-5

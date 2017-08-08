@@ -30,30 +30,51 @@ void MomentSolver::Solve(){
 
     u = SetupIC();
 
+    blaze::DynamicVector<double> xi = _quad->GetNodes();
+    blaze::DynamicVector<double> w = _quad->GetWeights();
+    std::vector<blaze::DynamicVector<double>> phiTilde = _closure->GetPhi();
+
+    //std::cout << xi << std::endl;
+    //std::cout << w << std::endl;
+
+    double out = 0;
+    for( int k = 0; k<_problem->GetNQuadPoints(); ++k ){
+        //out += w[k]*phiTilde[k][0]*phiTilde[k][2]*IC(_x[0],xi[k]);
+        //std::cout<<phiTilde[k][4]<<std::endl;
+        out += w[k]*phiTilde[k][4];//*IC(_x[8],xi[k]);
+    }
+    std::cout<<"out = "<<out<<std::endl;
+
     // DEBUG IC
-    for(int j = 0; j<_nCells; ++j){
+    for(int j = 0; j<_nCells+4; ++j){
         std::cout << u[j] << std::endl;
     }
 
-    for(int j = 0; j<_nCells; ++j){
-//        std::cout << _lambda[j] << std::endl;
+    for(int j = 0; j<_nCells+4; ++j){
+        std::cout<<"Cell "<<j<<std::endl;
+        _lambda[j] = _closure->SolveClosure(u[j],_lambda[j]);
+        //std::cout << _lambda[j] << std::endl;
     }
 
-    exit(EXIT_FAILURE);
+    //exit(EXIT_FAILURE);
     // Begin time loop
     while( t < _tEnd ){
         // Modify moments into realizable direction
         for( int j = 2; j<_nCells+2; ++j ){
+            std::cout<<"Cell "<<j<<std::endl;
             u[j] = CalculateMoments(_lambda[j]);
         }
+        std::cout<<"Moments calculated for inexact dual states."<<std::endl;
         // Time Update Moments
         for( int j = 2; j<_nCells+2; ++j ){
             uNew[j] = u[j] - (_dt/_dx)*(numFlux(_lambda[j],_lambda[j+1])-numFlux(_lambda[j-1],_lambda[j]));
         }
+        std::cout<<"Time Update calculated."<<std::endl;
         // Time Update dual variables
         for( int j = 2; j<_nCells+2; ++j ){
             _lambda[j] = _closure->SolveClosure(uNew[j],_lambda[j]);
         }
+        std::cout<<"Dual states updated."<<std::endl;
         if(t == 0)
             std::cout << std::fixed << std::setprecision(8) << "t = " << t << std::flush;
         else
@@ -78,17 +99,18 @@ blaze::DynamicVector<double> MomentSolver::CalculateMoments(blaze::DynamicVector
     blaze::DynamicVector<double> xi(_quad->GetNodes());
     blaze::DynamicVector<double> w(_quad->GetWeights());
     for( int k = 0; k<_problem->GetNQuadPoints(); ++k){
+        std::cout<<k<<std::endl;
         out += w[k]*_closure->UKinetic(_closure->EvaluateLambda(lambda,xi[k]))*_closure->GetPhiTilde(k);
     }
     return out;
 }
 
 std::vector<blaze::DynamicVector<double>> MomentSolver::SetupIC(){
-    std::vector<blaze::DynamicVector<double>> out(_nCells, blaze::DynamicVector<double>(_nMoments,0.0));
+    std::vector<blaze::DynamicVector<double>> out(_nCells+4, blaze::DynamicVector<double>(_nMoments,0.0));
     blaze::DynamicVector<double> xi = _quad->GetNodes();
     blaze::DynamicVector<double> w = _quad->GetWeights();
     std::vector<blaze::DynamicVector<double>> phiTilde = _closure->GetPhiTilde();
-    for(int j = 0; j<_nCells; ++j){
+    for(int j = 0; j<_nCells+4; ++j){
         for( int i = 0; i<_nMoments; ++i ){
             for( int k = 0; k<_problem->GetNQuadPoints(); ++k ){
                 out[j][i] += w[k]*IC(_x[j],xi[k])*phiTilde[k][i];
