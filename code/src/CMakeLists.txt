@@ -1,11 +1,12 @@
 cmake_minimum_required( VERSION 3.8 )
 project( UQCreator )
 set ( CMAKE_BUILD_TYPE Release )
-set (CMAKE_CXX_STANDARD 14)
-add_definitions ( -std=c++14 -Wall -O3 -ansi -DNDEBUG )
-#add_definitions ( -std=c++14 -Wall )
+set ( CMAKE_CXX_STANDARD 14 )
+add_definitions ( -Wall -O3 -mtune=native -DNDEBUG )
+#add_definitions ( -Wall -O3 -march=native -mtune=native -DNDEBUG )
+#add_definitions ( -Wall )
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/")
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/" )
 
 set ( UQCreator_SRCS
 	  main.cpp
