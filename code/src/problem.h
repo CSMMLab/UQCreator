@@ -48,6 +48,7 @@ public:
     double GetCFL();
     double GetTEnd();
     Mesh* GetMesh();
+    std::string GetInputFile();
 };
 
 #endif // PROBLEM_H

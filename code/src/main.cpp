@@ -71,6 +71,7 @@ int main(int argc, char* argv[]){
     MomentSolver* solver = new MomentSolver(problem);
     solver->Solve();
     //solver->Print();
+    solver->Plot();
 
     delete solver;
     //delete problem;

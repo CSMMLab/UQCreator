@@ -83,3 +83,7 @@ double Problem::GetTEnd(){
 Mesh* Problem::GetMesh(){
     return _mesh;
 }
+
+std::string Problem::GetInputFile(){
+    return _inputFile;
+}

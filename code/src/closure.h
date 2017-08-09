@@ -40,12 +40,14 @@ public:
      * @return entropic state
      */
     double EvaluateLambda(blaze::DynamicVector<double> lambda,double xi);
+    blaze::DynamicVector<double> EvaluateLambda(blaze::DynamicVector<double> lambda,blaze::DynamicVector<double> xi);
     /**
      * calculate solution for kinetic entropy with given entropic variable
      * @param entropic variable
      * @return solution
      */
     double UKinetic(double Lambda);
+    blaze::DynamicVector<double> UKinetic(blaze::DynamicVector<double> Lambda);
     /**
      * calculate derivative of solution for kinetic entropy with given entropic variable
      * @param entropic variable
