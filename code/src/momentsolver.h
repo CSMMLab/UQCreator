@@ -2,6 +2,7 @@
 #define MOMENTSOLVER_H
 
 #include <blaze/math/DynamicVector.h>
+#include <chrono>
 
 #include "closure.h"
 #include "problem.h"

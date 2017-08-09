@@ -19,6 +19,8 @@ MomentSolver::MomentSolver(Problem* problem) : _problem(problem)
 }
 
 void MomentSolver::Solve(){
+    std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
+
     double t = 0;
     std::vector<blaze::DynamicVector<double>> uNew, u;
     _uL = 12;
@@ -61,7 +63,9 @@ void MomentSolver::Solve(){
             std::cout << std::fixed << std::setprecision(8) << "\r" << "t = " << t << std::flush;
         t += _dt;
     }
+    std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     std::cout << std::endl;
+    std::cout << "Runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic).count() << "ms" <<std::endl;
 }
 
 blaze::DynamicVector<double> MomentSolver::numFlux(blaze::DynamicVector<double> lambda1,blaze::DynamicVector<double> lambda2){
