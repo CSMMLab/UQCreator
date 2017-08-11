@@ -72,7 +72,7 @@ int main(int argc, char* argv[]){
     solver->Plot();
 
     delete solver;
-    //delete problem;
+    delete problem;
 
     std::cout << "\nProcess exited normally." << std::endl;
 

@@ -12,7 +12,7 @@ Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNM
     for( int k = 0; k < _nQuadPoints; ++k ){
         for( int i = 0; i < _nMoments; ++i){
             _phi[k][i] = _basis->Evaluate(i,xi[k]);
-            _phiTilde[k][i] = _phi[k][i]*(2.0*double(i)+1.0);
+            _phiTilde[k][i] = _phi[k][i]*(2.0*i+1.0);
         }
     }
     // calculate partial matrix for Hessian calculation
@@ -86,7 +86,7 @@ blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> 
 double Closure::EvaluateLambda(blaze::DynamicVector<double> lambda, double xi){
     double tmp = 0;
     for(int i = 0; i<_nMoments-1; ++i ){
-        tmp += lambda[i]*_basis->Evaluate(i,xi)*(2.0*double(i)+1.0);
+        tmp += lambda[i]*_basis->Evaluate(i,xi)*(2.0*i+1.0);
     }
     return tmp;
 }
@@ -95,7 +95,7 @@ blaze::DynamicVector<double> Closure::EvaluateLambda(blaze::DynamicVector<double
     blaze::DynamicVector<double> tmp(xi.size(),0.0);
     for(unsigned int k = 0; k<xi.size();++k){
         for(int i = 0; i<_nMoments-1; ++i ){
-            tmp[k] += lambda[i]*_basis->Evaluate(i,xi[k])*(2.0*double(i)+1.0);
+            tmp[k] += lambda[i]*_basis->Evaluate(i,xi[k])*(2.0*i+1.0);
         }
     }
     return tmp;

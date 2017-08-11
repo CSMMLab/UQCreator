@@ -64,8 +64,7 @@ void MomentSolver::Solve(){
         t += _dt;
     }
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
-    std::cout << std::endl;
-    std::cout << "Runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic).count() << "ms" <<std::endl;
+    std::cout << "\nFinished!\nRuntime: " << std::setprecision(3) << std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic).count()/1000.0 << "s" <<std::endl;
 }
 
 blaze::DynamicVector<double> MomentSolver::numFlux(blaze::DynamicVector<double> lambda1,blaze::DynamicVector<double> lambda2){
