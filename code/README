@@ -1,6 +1,0 @@
-Build instructions:
--------------------
-
-cd build                    
-cmake ../src        #exec cmake on src folder
-make -j4            #compile using 4 threads
