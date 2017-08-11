@@ -19,11 +19,9 @@ private:
     double F(double u);
     double IC(double x, double uL, double uR);
 
-    //Burgers(){}
-
+    Burgers(){}
 public:
     Burgers(std::string inputFile);
-    Burgers(){}
     virtual void Solve();
     virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) const;
     virtual void Print() const;

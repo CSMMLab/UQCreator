@@ -62,15 +62,13 @@ void PrintInit(std::string configFile){
 int main(int argc, char* argv[]){
     std::string configFile = "";
 
-    if(!CheckInput(configFile, argc, argv)){
-        return -1;
-    }
+    if(!CheckInput(configFile, argc, argv)){return -1;}
     PrintInit(configFile);
 
-    Problem* problem = new Burgers(configFile);
+    Problem* problem = Problem::Create(configFile);
     MomentSolver* solver = new MomentSolver(problem);
+
     solver->Solve();
-    //solver->Print();
     solver->Plot();
 
     delete solver;

@@ -16,6 +16,7 @@ Mesh::Mesh(std::string inputFile) : _status(MESH_STATUS_UNLOADED){
             std::cerr << "[ERROR]: Mesh::Mesh invalid mesh parameters" << std::endl;
         else{
             this->CreateGrid(a,b);
+            _meshType = MESH_TYPE_1DPLAIN;
             _status = MESH_STATUS_LOADED;
         }
     }
@@ -33,12 +34,14 @@ void Mesh::CreateGrid(double a, double b){
     assert(_dimension == 1);
     _mesh.resize(_numCells+4);
     _spacing.resize(_numCells+4-1);
+
     for(int j=-2; j<_numCells+2; ++j){
         _mesh[j+2] = a + j*(b-a)/(_numCells-1);
-        if(j!=0){
-            _spacing[j+1] = _mesh[j+2] - _mesh[j+1];
-        }
     }
+    for(int j=-1; j<_numCells+2; ++j){
+        _spacing[j+1] = _mesh[j+2] - _mesh[j+1];
+    }
+
 }
 
 int Mesh::GetNumCells() const{

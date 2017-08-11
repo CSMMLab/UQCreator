@@ -3,7 +3,7 @@
 
 #include <blaze/math/LAPACK.h>
 #include <vector>
-#include "quadrature.h"
+#include "problem.h"
 #include "legendre.h"
 
 class Closure

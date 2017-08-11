@@ -8,7 +8,7 @@
 
 class Legendre : public Polynomial{
 private:
-    void ComputeNodes(int degree);
+    virtual void Compute();
 public:
     Legendre(int degree);
 

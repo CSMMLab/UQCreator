@@ -1,6 +1,5 @@
 #include "problem.h"
 #include "burgers.h"
-#include "euler.h"
 
 Problem::Problem(std::string inputFile) : _inputFile(inputFile){
     try{

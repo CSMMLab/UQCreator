@@ -12,6 +12,7 @@ protected:
     blaze::DynamicVector<double> _weights;
 
     void Sort();
+    virtual void Compute()=0;
 public:
     Polynomial(int degree);
     virtual double Evaluate(int m, double x)=0;

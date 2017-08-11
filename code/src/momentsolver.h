@@ -2,16 +2,16 @@
 #define MOMENTSOLVER_H
 
 #include <blaze/math/DynamicVector.h>
+#include <gnuplot-iostream.h>
 #include <chrono>
 
 #include "closure.h"
 #include "problem.h"
-#include "hermite.h"
-#include "gnuplot-iostream.h"
+#include "legendre.h"
 
 class MomentSolver
 {
-    Polynomial* _quad;
+    Legendre* _quad;
     Closure* _closure;
     Mesh* _mesh;
     blaze::DynamicVector<double> _x;

@@ -16,7 +16,7 @@ class Mesh
 private:
     int _status;
     int _dimension;
-    int _meshtype;
+    int _meshType;
     int _numCells;
     blaze::DynamicVector<double> _mesh;
     blaze::DynamicVector<double> _spacing;

@@ -8,7 +8,7 @@
 
 class Hermite : public Polynomial{
 private:
-    void ComputeNodes(int degree);
+    virtual void Compute();
 public:
     Hermite(int degree);
 

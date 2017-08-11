@@ -1,30 +1,27 @@
-cmake_minimum_required( VERSION 3.8 )
+cmake_minimum_required( VERSION 3.5 )
 project( UQCreator )
+include(ExternalProject)
 set ( CMAKE_BUILD_TYPE Release )
 set ( CMAKE_CXX_STANDARD 14 )
-add_definitions ( -Wall -O3 -mtune=native -DNDEBUG )
-#add_definitions ( -Wall -O3 -march=native -mtune=native -DNDEBUG )
-#add_definitions ( -Wall )
+add_definitions ( -std=c++14 -O3 -march=native -DNDEBUG )
+#add_definitions ( -std=c++14 -Wall )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/" )
 
 set ( UQCreator_SRCS
 	  main.cpp
           problem.cpp
+          burgers.cpp
+          polynomial.cpp
           legendre.cpp
           hermite.cpp
           mathtools.cpp
           mesh.cpp
-          burgers.cpp
-          polynomial.cpp
           closure.cpp
           momentsolver.cpp       
 	)
 
 add_executable ( UQCreator ${UQCreator_SRCS})
-
-find_package( Boost COMPONENTS system iostreams filesystem REQUIRED )
-include_directories( ${Boost_INCLUDE_DIR} )
 
 find_package(OpenMP REQUIRED)
 if (OPENMP_FOUND)
@@ -32,30 +29,46 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-include(ExternalProject)
-ExternalProject_Add(blaze
-  PREFIX ${CMAKE_BINARY_DIR}/blaze
-  GIT_REPOSITORY https://bitbucket.org/blaze-lib/blaze
-  UPDATE_COMMAND git pull
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
-)
-include_directories(${CMAKE_BINARY_DIR}/blaze/src/blaze)
-add_dependencies ( UQCreator blaze )
+find_package( Boost COMPONENTS system iostreams filesystem REQUIRED )
+include_directories( ${Boost_INCLUDE_DIR} )
+
+find_package( BLAS REQUIRED )
+include_directories( ${BLAS_INCLUDE_DIR} )
 
 find_package( LAPACK REQUIRED )
 include_directories( ${LAPACK_INCLUDE_DIR} )
 
+ExternalProject_Add(blaze
+  PREFIX ${CMAKE_BINARY_DIR}/blaze
+  GIT_REPOSITORY https://bitbucket.org/blaze-lib/blaze
+  UPDATE_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND cmake ../blaze -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/blaze
+  INSTALL_COMMAND make install
+)
+include_directories(${CMAKE_BINARY_DIR}/blaze/include)
+add_dependencies ( UQCreator blaze )
+
 ExternalProject_Add(cpptoml
   PREFIX ${CMAKE_BINARY_DIR}/cpptoml
   GIT_REPOSITORY https://github.com/skystrife/cpptoml
-  UPDATE_COMMAND git pull
+  UPDATE_COMMAND ""
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
 )
 include_directories(${CMAKE_BINARY_DIR}/cpptoml/src/cpptoml/include)
+add_dependencies ( UQCreator cpptoml )
+
+ExternalProject_Add(gnuplot-iostream
+  PREFIX ${CMAKE_BINARY_DIR}/gnuplot-iostream
+  GIT_REPOSITORY https://github.com/dstahlke/gnuplot-iostream
+  UPDATE_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND ""
+)
+include_directories(${CMAKE_BINARY_DIR}/gnuplot-iostream/src/gnuplot-iostream)
 add_dependencies ( UQCreator cpptoml )
 
 TARGET_LINK_LIBRARIES( UQCreator LINK_PUBLIC ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )

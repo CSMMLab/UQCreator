@@ -3,23 +3,23 @@
 Hermite::Hermite(int degree):Polynomial(degree){
     _nodes.resize(degree);
     _weights.resize(degree);
-    ComputeNodes(degree);
+    Compute();
 }
 
-void Hermite::ComputeNodes(int degree){
-    assert(degree > 0);
+void Hermite::Compute(){
+    assert(_degree > 0);
 
     //construct companion matrix
-    blaze::DynamicMatrix<double> CM(degree, degree, 0.0);
+    blaze::DynamicMatrix<double> CM(_degree, _degree, 0.0);
 
-    for(int i=0; i<degree-1; ++i){
+    for(int i=0; i<_degree-1; ++i){
         CM(i+1,i) = std::sqrt((i+1)/2);
         CM(i,i+1) = std::sqrt((i+1)/2);
     }
 
     auto evSys = MathTools::ComputeEigenValTriDiagMatrix(CM);
 
-    for(int i=0; i<degree; ++i){
+    for(int i=0; i<_degree; ++i){
         _nodes[i] = evSys.first[i];
         _weights[i] = std::pow(evSys.second(0,i),2) * std::sqrt(PI);
     }
