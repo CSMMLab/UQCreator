@@ -27,6 +27,7 @@ public:
     virtual void Print() const;
     virtual void WriteToFile(std::string filename, int filetype) const;
     double G(double u, double v);
+    virtual double ExactSolution(double t, double x, double xi);
 };
 
 #endif // BURGERS_H

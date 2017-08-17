@@ -39,6 +39,7 @@ public:
     virtual void Solve(){}
     virtual double G(double u, double v) = 0;
     virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) const = 0;
+    virtual double ExactSolution(double t, double x, double xi) = 0;
 
     int GetQuadType();
     int GetNQuadPoints();

@@ -29,6 +29,7 @@ public:
     void Solve();
     void Plot();
     void Print();
+    void PlotFixedXi();
 };
 
 #endif // MOMENTSOLVER_H

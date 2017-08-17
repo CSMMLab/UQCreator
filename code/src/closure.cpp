@@ -25,8 +25,9 @@ Closure::Closure(Problem *problem): _problem(problem), _nMoments(_problem->GetNM
             }
         }
     }
-    _uMinus = 3.0;
-    _uPlus = 12.0;
+    double du = 0.0;
+    _uMinus = 3.0-du;
+    _uPlus = 12.0+du;
 }
 
 double Closure::UKinetic(double Lambda){
@@ -80,7 +81,8 @@ blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> 
         lambda = lambdaNew;
         g = gNew;
     }
-    return lambda;
+    std::cerr<<"[ERROR]: Newton did not converge!"<<std::endl;
+    return -lambda;
 }
 
 double Closure::EvaluateLambda(blaze::DynamicVector<double> lambda, double xi){

@@ -71,4 +71,33 @@ void Burgers::WriteToFile(std::string filename, int filetype) const{
 
 }
 
+double Burgers::ExactSolution(double t, double x, double xi){
+    double uL = 12.0;
+    double uR = 3.0;
+    double sigma = 0.2;
+    double x0 = 0.5;
+    double x1 = 1.5;
+    double x0Bar = x0+sigma*xi+uL*t;
+    double x1Bar = x1+sigma*xi+uR*t;
+    //double x0Bar = x0+sigma*xi+uL*(1.0/9.0)+0.5*(uL+uR)*(t-(1.0/9.0));
+    //double x1Bar = x1+sigma*xi+uR*(1.0/9.0)+0.5*(uL+uR)*(t-(1.0/9.0));
+
+    double y;
+/*    if(x < x0Bar){
+        y = uL;
+    }else if(x > x1Bar){
+        y = uR;
+    }*/
+
+
+    if(x < x0Bar){
+        y = uL;
+    }else if(x > x1Bar){
+        y = uR;
+    }else{
+        y = uL+(uR-uL)*(x0Bar-x)/(x0Bar-x1Bar);
+    }
+    return y;
+}
+
 

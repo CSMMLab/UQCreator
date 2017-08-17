@@ -69,6 +69,7 @@ int main(int argc, char* argv[]){
     MomentSolver* solver = new MomentSolver(problem);
 
     solver->Solve();
+    solver->PlotFixedXi();
     solver->Plot();
 
     delete solver;

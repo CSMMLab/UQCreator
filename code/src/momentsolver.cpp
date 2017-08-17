@@ -136,15 +136,47 @@ void MomentSolver::Plot(){
     }
     blaze::DynamicVector<double> res = _closure->UKinetic(_closure->EvaluateLambda(_lambda[cellIndex],xi));
 
-    std::vector<double> xiStdVec(res.size(),0.0), resStdVec(res.size(),0.0);
+    blaze::DynamicVector<double> exRes(nXi);
+    for( int k = 0; k<nXi; ++k ){
+        exRes[k] = _problem->ExactSolution(_tEnd,_x[cellIndex],xi[k]);
+    }
+
+
+    std::vector<double> xiStdVec(res.size(),0.0), resStdVec(res.size(),0.0), exResStdVec(res.size(),0.0);
     for(int i=0; i<nXi; i++){
         xiStdVec[i] = xi[i];
         resStdVec[i] = res[i];
+        exResStdVec[i] = exRes[i];
     }
 
     Gnuplot gp;
     gp << "set key off\n";
-    gp << "plot" << gp.file1d(std::make_pair(xiStdVec, resStdVec)) << "with lines\n";
+    gp << "plot" << gp.file1d(std::make_pair(xiStdVec, resStdVec)) << "with lines, " << gp.file1d(std::make_pair(xiStdVec, exResStdVec)) << "with lines\n";
+}
+
+void MomentSolver::PlotFixedXi(){
+    int cellIndex;
+    double xi = 1.0;
+
+    blaze::DynamicVector<double> res(_nCells);
+
+    blaze::DynamicVector<double> exRes(_nCells);
+    for( int k = 0; k<_nCells; ++k ){
+        exRes[k] = _problem->ExactSolution(_tEnd,_x[k],xi);
+        res[k] = _closure->UKinetic(_closure->EvaluateLambda(_lambda[k],xi));
+    }
+
+
+    std::vector<double> xStdVec(res.size(),0.0), resStdVec(res.size(),0.0), exResStdVec(res.size(),0.0);
+    for(int i=0; i<_nCells; i++){
+        xStdVec[i] = _x[i];
+        resStdVec[i] = res[i];
+        exResStdVec[i] = exRes[i];
+    }
+
+    Gnuplot gp;
+    gp << "set key off\n";
+    gp << "plot" << gp.file1d(std::make_pair(xStdVec, resStdVec)) << "with lines, " << gp.file1d(std::make_pair(xStdVec, exResStdVec)) << "with lines\n";
 }
 
 void MomentSolver::Print(){
