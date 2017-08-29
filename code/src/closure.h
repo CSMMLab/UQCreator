@@ -19,6 +19,7 @@ private:
     int _nMoments;
     int _nQuadPoints;
     blaze::DynamicMatrix<double> Hessian(blaze::DynamicVector<double> lambda);
+public:
     blaze::DynamicVector<double> Gradient(blaze::DynamicVector<double> lambda, blaze::DynamicVector<double> u);
 public:
     /**

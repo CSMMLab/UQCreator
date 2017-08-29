@@ -35,8 +35,8 @@ void Mesh::CreateGrid(double a, double b){
     _mesh.resize(_numCells+4);
     _spacing.resize(_numCells+4-1);
 
-    for(int j=-2; j<_numCells+2; ++j){
-        _mesh[j+2] = a + j*(b-a)/(_numCells-1);
+    for(int j=0; j<_numCells+4; ++j){
+        _mesh[j] = a + j*(b-a)/(_numCells+3);
     }
     for(int j=-1; j<_numCells+2; ++j){
         _spacing[j+1] = _mesh[j+2] - _mesh[j+1];

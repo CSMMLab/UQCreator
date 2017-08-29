@@ -52,15 +52,15 @@ blaze::DynamicVector<double> Closure::UKinetic(blaze::DynamicVector<double> Lamb
 }
 
 double Closure::DUKinetic(double Lambda){
-    if(Lambda > 0){
-        return exp(-Lambda)*(_uPlus - _uMinus )/(exp(-2.0*Lambda)+2.0*exp(-Lambda)+1.0);
-    }else{
+    if(Lambda < 0){
         return exp(Lambda)*( _uPlus - _uMinus )/(1.0+2.0*exp(Lambda)+exp(2.0*Lambda));
+    }else{
+        return exp(-Lambda)*(_uPlus - _uMinus )/(exp(-2.0*Lambda)+2.0*exp(-Lambda)+1.0);
     }
 }
 
 blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> u, blaze::DynamicVector<double> lambda){
-    double stepSize = 0.5;
+    double stepSize = 1.0;
     blaze::DynamicVector<double> dlambda;
 
     blaze::DynamicVector<double> g = Gradient(lambda, u);
@@ -70,6 +70,7 @@ blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> 
         blaze::posv( H, dlambda, 'L');
         blaze::DynamicVector<double> lambdaNew = lambda+stepSize*dlambda;
         blaze::DynamicVector<double> gNew = Gradient(lambdaNew, u);
+        std::cout<<"[INFO]: residual is "<<blaze::sqrLength(gNew)<<std::endl;
         if( blaze::sqrLength(gNew) < _problem->GetEpsilon() ){
             return lambdaNew;
         }
@@ -77,6 +78,7 @@ blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> 
             stepSize = stepSize*0.5;
             lambdaNew = lambda+stepSize*dlambda;
             gNew = Gradient(lambdaNew, u);
+            std::cout<<"[INFO]: refining - residual is "<<blaze::sqrLength(gNew)<<std::endl;
         }
         lambda = lambdaNew;
         g = gNew;
@@ -87,7 +89,7 @@ blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> 
 
 double Closure::EvaluateLambda(blaze::DynamicVector<double> lambda, double xi){
     double tmp = 0;
-    for(int i = 0; i<_nMoments-1; ++i ){
+    for(int i = 0; i<_nMoments; ++i ){
         tmp += lambda[i]*_basis->Evaluate(i,xi)*(2.0*i+1.0);
     }
     return tmp;
@@ -96,7 +98,7 @@ double Closure::EvaluateLambda(blaze::DynamicVector<double> lambda, double xi){
 blaze::DynamicVector<double> Closure::EvaluateLambda(blaze::DynamicVector<double> lambda,blaze::DynamicVector<double> xi){
     blaze::DynamicVector<double> tmp(xi.size(),0.0);
     for(unsigned int k = 0; k<xi.size();++k){
-        for(int i = 0; i<_nMoments-1; ++i ){
+        for(int i = 0; i<_nMoments; ++i ){
             tmp[k] += lambda[i]*_basis->Evaluate(i,xi[k])*(2.0*i+1.0);
         }
     }

@@ -4,7 +4,7 @@ outputFolder = "results"
 
 [mesh]
 Dimension = 1
-NumberOfCells = 80
+NumberOfCells = 320
 a = 0
 b = 3
 
@@ -16,10 +16,10 @@ tEnd = 0.14
 [moment_system]
 moments = 5
 quadType = "legendre"
-quadPoints = 20
-maxIterations = 1000
-epsilon = 5e-5
+quadPoints = 40
+maxIterations = 200
+epsilon = 1e-6
 
 [plot]
-cellIndex = 55
+cellIndex = 220
 evalPoints = 1000
