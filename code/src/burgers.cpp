@@ -80,7 +80,7 @@ double Burgers::ExactSolution(double t, double x, double xi){
     double x0Bar;
     double x1Bar;
     bool shock = true;
-    double y;
+    double y = 0;
 
     if( shock ){
         x0Bar = x0+sigma*xi+uL*(1.0/9.0)+0.5*(uL+uR)*(t-(1.0/9.0));

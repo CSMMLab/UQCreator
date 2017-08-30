@@ -60,31 +60,31 @@ double Closure::DUKinetic(double Lambda){
 }
 
 blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> u, blaze::DynamicVector<double> lambda){
-    double stepSize = 1.0;
-    blaze::DynamicVector<double> dlambda;
-
-    blaze::DynamicVector<double> g = Gradient(lambda, u);
     for( int l=0; l<_problem->GetMaxIterations(); ++l ){
+        double stepSize = 1.0;
+        blaze::DynamicVector<double> d = Gradient(lambda, u);
+        blaze::DynamicVector<double> dlambda = -d;
         blaze::DynamicMatrix<double> H = Hessian(lambda);
-        dlambda = -g;
-        blaze::posv( H, dlambda, 'L');
-        blaze::DynamicVector<double> lambdaNew = lambda+stepSize*dlambda;
-        blaze::DynamicVector<double> gNew = Gradient(lambdaNew, u);
-        std::cout<<"[INFO]: residual is "<<blaze::sqrLength(gNew)<<std::endl;
-        if( blaze::sqrLength(gNew) < _problem->GetEpsilon() ){
-            return lambdaNew;
-        }
-        while( blaze::sqrLength(g) < blaze::sqrLength(gNew) ){
-            stepSize = stepSize*0.5;
-            lambdaNew = lambda+stepSize*dlambda;
-            gNew = Gradient(lambdaNew, u);
-            std::cout<<"[INFO]: refining - residual is "<<blaze::sqrLength(gNew)<<std::endl;
+        blaze::posv( H, d, 'L');
+        blaze::DynamicVector<double> lambdaNew = lambda-stepSize*d;
+        blaze::DynamicVector<double> dlambdaNew = Gradient(lambdaNew, u);
+        while( blaze::sqrLength(dlambda) < blaze::sqrLength(dlambdaNew) ){
+            stepSize *= 0.5;
+            lambdaNew = lambda-stepSize*d;
+            dlambdaNew = Gradient(lambdaNew, u);
+            if( blaze::sqrLength(dlambdaNew) < _problem->GetEpsilon() ){
+                return lambdaNew;
+            }
         }
         lambda = lambdaNew;
-        g = gNew;
+        //dlambda = dlambdaNew;
+        if( blaze::sqrLength(dlambdaNew) < _problem->GetEpsilon() ){
+            return lambdaNew;
+        }
     }
     std::cerr<<"[ERROR]: Newton did not converge!"<<std::endl;
-    return -lambda;
+    exit(EXIT_FAILURE);
+    return blaze::DynamicVector<double>(u.size(),-1.0);
 }
 
 double Closure::EvaluateLambda(blaze::DynamicVector<double> lambda, double xi){

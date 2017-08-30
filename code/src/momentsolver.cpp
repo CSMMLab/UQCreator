@@ -11,12 +11,6 @@ MomentSolver::MomentSolver(Problem* problem) : _problem(problem)
     _nCells = _mesh->GetNumCells();
     _a = _x[0];
     _b = _x[_x.size()-1];
-    std::cout<<_x.size()<<std::endl;
-    std::cout<<"a = "<<_a<<",  b="<<_b<<std::endl;
-
-    //std::cout<<_dx<<std::endl;
-    //std::cout<<_x[1]-_x[0]<<std::endl;
-    //exit(EXIT_FAILURE);
 
     _dt = _dx*_problem->GetCFL()/12.0;
     _nTimeSteps = _problem->GetTEnd()/_dt;
@@ -37,12 +31,6 @@ void MomentSolver::Solve(){
     _lambda = std::vector<blaze::DynamicVector<double> >(_nCells+4, blaze::DynamicVector<double>(_nMoments, 0.0));
 
     u = SetupIC();
-    //std::cout<<"moment is "<<u[39]<<std::endl;
-    _lambda[39] = _closure->SolveClosure(u[39],_lambda[39]);
-    std::cout<<"lambda is "<<_lambda[39]<<std::endl;
-    blaze::DynamicVector<double> gNew = _closure->Gradient( _lambda[39], u[39]);
-    std::cout<<blaze::sqrLength(gNew)<<std::endl;
-    //exit(EXIT_FAILURE);
 
     blaze::DynamicVector<double> xi = _quad->GetNodes();
     blaze::DynamicVector<double> w = _quad->GetWeights();
@@ -53,7 +41,6 @@ void MomentSolver::Solve(){
         _lambda[j] = _closure->SolveClosure(u[j],_lambda[j]);
     }
 
-    //exit(EXIT_FAILURE);
     // Begin time loop
     while( t < _tEnd ){
         // Modify moments into realizable direction
@@ -66,7 +53,7 @@ void MomentSolver::Solve(){
         }
         // Time Update dual variables
         for( int j = 2; j<_nCells+2; ++j ){
-            std::cout<<"-----"<<std::endl;
+            //std::cout<<"-----"<<std::endl;
             _lambda[j] = _closure->SolveClosure(uNew[j],_lambda[j]);
         }
 
@@ -147,8 +134,8 @@ void MomentSolver::Plot(){
     for( int k = 0; k<nXi; ++k ){
         xi[k] = -1 + k/(nXi-1.0)*2.0;
     }
-    std::cout<<_x[cellIndex-1]<<std::endl;
-    std::cout<<_lambda[cellIndex-1]<<std::endl;
+    //std::cout<<_x[cellIndex-1]<<std::endl;
+    //std::cout<<_lambda[cellIndex-1]<<std::endl;
     blaze::DynamicVector<double> res = _closure->UKinetic(_closure->EvaluateLambda(_lambda[cellIndex-1],xi));
 
     blaze::DynamicVector<double> test(2);
