@@ -52,14 +52,11 @@ blaze::DynamicVector<double> Closure::UKinetic(blaze::DynamicVector<double> Lamb
 }
 
 double Closure::DUKinetic(double Lambda){
-    if(Lambda < 0){
-        return exp(Lambda)*( _uPlus - _uMinus )/(1.0+2.0*exp(Lambda)+exp(2.0*Lambda));
-    }else{
-        return exp(-Lambda)*(_uPlus - _uMinus )/(exp(-2.0*Lambda)+2.0*exp(-Lambda)+1.0);
-    }
+    return exp(Lambda)*( _uPlus - _uMinus )/std::pow(exp(Lambda)+1.0,2);
 }
 
 blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> u, blaze::DynamicVector<double> lambda){
+    int maxRefinements = 1000;
     for( int l=0; l<_problem->GetMaxIterations(); ++l ){
         double stepSize = 1.0;
         blaze::DynamicVector<double> d = Gradient(lambda, u);
@@ -68,17 +65,21 @@ blaze::DynamicVector<double> Closure::SolveClosure(blaze::DynamicVector<double> 
         blaze::posv( H, d, 'L');
         blaze::DynamicVector<double> lambdaNew = lambda-stepSize*d;
         blaze::DynamicVector<double> dlambdaNew = Gradient(lambdaNew, u);
-        while( blaze::sqrLength(dlambda) < blaze::sqrLength(dlambdaNew) ){
+        int refinementCounter = 0;
+        while( blaze::length(dlambda) < blaze::length(dlambdaNew)){
             stepSize *= 0.5;
             lambdaNew = lambda-stepSize*d;
             dlambdaNew = Gradient(lambdaNew, u);
-            if( blaze::sqrLength(dlambdaNew) < _problem->GetEpsilon() ){
+            if( blaze::length(dlambdaNew) < _problem->GetEpsilon() ){
                 return lambdaNew;
+            }
+            else if(++refinementCounter > maxRefinements){
+                std::cerr<<"[ERROR]: Newton needed too many refinement steps!"<<std::endl;
+                exit(EXIT_FAILURE);
             }
         }
         lambda = lambdaNew;
-        //dlambda = dlambdaNew;
-        if( blaze::sqrLength(dlambdaNew) < _problem->GetEpsilon() ){
+        if( blaze::length(dlambdaNew) < _problem->GetEpsilon() ){
             return lambdaNew;
         }
     }
@@ -106,16 +107,16 @@ blaze::DynamicVector<double> Closure::EvaluateLambda(blaze::DynamicVector<double
 }
 
 blaze::DynamicVector<double> Closure::Gradient(blaze::DynamicVector<double> lambda, blaze::DynamicVector<double> u){
-    blaze::DynamicVector<double> g = blaze::DynamicVector<double>(_nMoments, 0.0);
+    blaze::DynamicVector<double> g(_nMoments, 0.0);
     blaze::DynamicVector<double> w = _quad->GetWeights();
     for( int k = 0; k < _nQuadPoints; ++k ){
-        g += UKinetic(inner( lambda, _phiTilde[k] ))*_phiTilde[k]*w[k];
+        g += UKinetic(blaze::inner( lambda, _phiTilde[k] ))*_phiTilde[k]*w[k];
     }
     return 0.5*g-u;
 }
 
 blaze::DynamicMatrix<double> Closure::Hessian(blaze::DynamicVector<double> lambda){
-    blaze::DynamicMatrix<double> H = blaze::DynamicMatrix<double>(_nMoments,_nMoments, 0.0);
+    blaze::DynamicMatrix<double> H(_nMoments,_nMoments, 0.0);
     for( int k = 0; k < _nQuadPoints; ++k ){
         H += _hPartial[k]*DUKinetic(inner( lambda, _phiTilde[k] ));
     }

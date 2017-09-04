@@ -12,7 +12,10 @@ MomentSolver::MomentSolver(Problem* problem) : _problem(problem)
     _a = _x[0];
     _b = _x[_x.size()-1];
 
-    _dt = _dx*_problem->GetCFL()/12.0;
+    _uL = 12.0;
+    _uR = 3.0;
+
+    _dt = _dx*_problem->GetCFL()/_uL;
     _nTimeSteps = _problem->GetTEnd()/_dt;
     _nMoments = _problem->GetNMoments();
     _tEnd = _problem->GetTEnd();
@@ -22,20 +25,12 @@ void MomentSolver::Solve(){
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
     double t = 0;
-    std::vector<blaze::DynamicVector<double>> uNew, u;
-    _uL = 12;
-    _uR = 3.0;
     // create solution fields
-    uNew = std::vector<blaze::DynamicVector<double> >(_nCells+4, blaze::DynamicVector<double>(_nMoments, 0.0));
-    u = std::vector<blaze::DynamicVector<double> >(_nCells+4, blaze::DynamicVector<double>(_nMoments, 0.0));
+    std::vector<blaze::DynamicVector<double>> uNew(_nCells+4, blaze::DynamicVector<double>(_nMoments, 0.0));
+    std::vector<blaze::DynamicVector<double>> u(_nCells+4, blaze::DynamicVector<double>(_nMoments, 0.0));
     _lambda = std::vector<blaze::DynamicVector<double> >(_nCells+4, blaze::DynamicVector<double>(_nMoments, 0.0));
 
     u = SetupIC();
-
-    blaze::DynamicVector<double> xi = _quad->GetNodes();
-    blaze::DynamicVector<double> w = _quad->GetWeights();
-    std::vector<blaze::DynamicVector<double>> phiTilde = _closure->GetPhiTilde();
-    std::vector<blaze::DynamicVector<double>> phi = _closure->GetPhi();
 
     for(int j = 0; j<_nCells+4; ++j){
         _lambda[j] = _closure->SolveClosure(u[j],_lambda[j]);
@@ -53,7 +48,6 @@ void MomentSolver::Solve(){
         }
         // Time Update dual variables
         for( int j = 2; j<_nCells+2; ++j ){
-            //std::cout<<"-----"<<std::endl;
             _lambda[j] = _closure->SolveClosure(uNew[j],_lambda[j]);
         }
 
@@ -63,6 +57,7 @@ void MomentSolver::Solve(){
             std::cout << std::fixed << std::setprecision(8) << "\r" << "t = " << t << std::flush;
         t += _dt;
     }
+    _tEnd = t;
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     std::cout << "\nFinished!\nRuntime: " << std::setprecision(3) << std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic).count()/1000.0 << "s" <<std::endl;
 }
@@ -134,18 +129,7 @@ void MomentSolver::Plot(){
     for( int k = 0; k<nXi; ++k ){
         xi[k] = -1 + k/(nXi-1.0)*2.0;
     }
-    //std::cout<<_x[cellIndex-1]<<std::endl;
-    //std::cout<<_lambda[cellIndex-1]<<std::endl;
     blaze::DynamicVector<double> res = _closure->UKinetic(_closure->EvaluateLambda(_lambda[cellIndex-1],xi));
-
-    blaze::DynamicVector<double> test(2);
-    blaze::DynamicVector<double> uTest(2);
-    test[0] = -2.697521548829723;
-    test[1] = 0.725439642287793;
-    uTest[0] = 3.948033977800924;
-    uTest[1] = 1.469034953656129;
-
-    //std::cout<<"Gradient is "<<_closure->Gradient(test,uTest)<<std::endl;
 
     blaze::DynamicVector<double> exRes(nXi);
     for( int k = 0; k<nXi; ++k ){
@@ -165,7 +149,7 @@ void MomentSolver::Plot(){
 }
 
 void MomentSolver::PlotFixedXi(){
-    double xi = 1.0;
+    double xi = 0.0;
 
     blaze::DynamicVector<double> res(_nCells);
 
@@ -174,7 +158,6 @@ void MomentSolver::PlotFixedXi(){
         exRes[k] = _problem->ExactSolution(_tEnd,_x[k],xi);
         res[k] = _closure->UKinetic(_closure->EvaluateLambda(_lambda[k],xi));
     }
-
 
     std::vector<double> xStdVec(res.size(),0.0), resStdVec(res.size(),0.0), exResStdVec(res.size(),0.0);
     for(int i=0; i<_nCells; i++){

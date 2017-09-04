@@ -24,7 +24,7 @@ Problem::Problem(std::string inputFile) : _inputFile(inputFile){
         _nQuadPoints = momentSystem->get_as<int>("quadPoints").value_or(-1);
         _nMoments = momentSystem->get_as<int>("moments").value_or(-1);
         _maxIterations = momentSystem->get_as<int>("maxIterations").value_or(-1);
-        _epsilon = momentSystem->get_as<double>("epsilon").value_or(-1.0);\
+        _epsilon = momentSystem->get_as<double>("epsilon").value_or(-1.0);
     }
     catch (const cpptoml::parse_exception& e){
         std::cerr << "Failed to parse " << _inputFile << ": " << e.what() << std::endl;
