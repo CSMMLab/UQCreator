@@ -4,6 +4,7 @@ include(ExternalProject)
 set ( CMAKE_BUILD_TYPE Release )
 set ( CMAKE_CXX_STANDARD 14 )
 add_definitions ( -std=c++14 -O3 -march=native -DNDEBUG )
+#add_definitions ( -std=c++14 -Ofast )
 #add_definitions ( -std=c++14 -Wall )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/" )
@@ -38,6 +39,7 @@ include_directories( ${BLAS_INCLUDE_DIR} )
 find_package( LAPACK REQUIRED )
 include_directories( ${LAPACK_INCLUDE_DIR} )
 
+find_package( Git REQUIRED )
 ExternalProject_Add(blaze
   PREFIX ${CMAKE_BINARY_DIR}/blaze
   GIT_REPOSITORY https://bitbucket.org/blaze-lib/blaze

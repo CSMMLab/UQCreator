@@ -23,8 +23,8 @@ private:
 public:
     Burgers(std::string inputFile);
     virtual void Solve();
-    virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) const;
-    virtual void Print() const;
+    virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u);
+    virtual void Print();
     virtual void WriteToFile(std::string filename, int filetype) const;
     double G(double u, double v);
     virtual double ExactSolution(double t, double x, double xi);

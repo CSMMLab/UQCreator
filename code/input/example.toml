@@ -4,22 +4,22 @@ outputFolder = "results"
 
 [mesh]
 Dimension = 1
-NumberOfCells = 320
+NumberOfCells = 156
 a = 0
 b = 3
 
 [problem]
-CFL = 0.9
+CFL = 0.99
 limiter = "none"
 tEnd = 0.14
 
 [moment_system]
 moments = 5
 quadType = "legendre"
-quadPoints = 40
+quadPoints = 30
 maxIterations = 200
-epsilon = 1e-6
+epsilon = 5e-5
 
 [plot]
-cellIndex = 220
+cellIndex = 110
 evalPoints = 1000

@@ -6,6 +6,7 @@ Burgers::Burgers(std::string inputFile) : Problem(inputFile){
     _dt = _dx*_CFL/12.0;
     _nCells = _mesh->GetNumCells();
     _nTimeSteps = _tEnd/_dt;
+    _tEnd = _nTimeSteps*_dt;
     _u = blaze::DynamicVector<double>(_nCells+4, 0.0);
 }
 
@@ -23,6 +24,12 @@ double Burgers::F(double u){
 
 void Burgers::Solve(){
     double* uNew = new double[_nCells+4];
+
+    // setup IC
+    for( int j = 0; j<_nCells+4; ++j ){
+        _u[j] = IC(_x[j],12.0,3.0);
+    }
+
     for( int n = 0; n<_nTimeSteps; ++n){
         for( int j = 2; j<_nCells+2; ++j){
             //_dt = _timeDiscretization->getDt();
@@ -36,8 +43,8 @@ void Burgers::Solve(){
 }
 
 double Burgers::IC(double x, double uL, double uR){
-    double a = 1.0;
-    double b = 2.0;
+    double a = 0.5;
+    double b = 1.5;
     if( x < a ){
         return uL;
     }else if(x>a && x<b){
@@ -47,24 +54,30 @@ double Burgers::IC(double x, double uL, double uR){
     }
 }
 
-void Burgers::Print() const{
+void Burgers::Print(){
     std::ofstream out("outFile");
     for( int j = 2; j < _nCells+2; ++j){
         out<<_x[j]<<" "<<_u[j]<<std::endl;
     }
+    Plot(_x,_u);
 }
 
-void Burgers::Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) const{
-    std::vector<double> x1, u1;
+void Burgers::Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u){
+    std::vector<double> x1, u1, uEx, xFine;
     for(int i=0; i<_nCells+4; i++){
         x1.push_back(x[i]);
         u1.push_back(u[i]);
     }
+    int NFine = 1000;
+    for( int j = 0; j<NFine; ++j ){
+        xFine.push_back(0.0 + j*(3.0-0.0)/(NFine-1));
+        uEx.push_back(ExactSolution(_tEnd,xFine[j],0.0));
+    }
+
     Gnuplot gp;
-    gp << "plot '-' with lines notitle\n";
-    gp << "set xlabel 'Space'\n";
-    gp << "set ylabel 'Velocity\n";
-    gp.send1d(std::make_pair(x1, u1));
+    gp << "set key off\n";
+    gp << "plot" << gp.file1d(std::make_pair(x1, u1)) << "with lines, ";
+    gp << gp.file1d(std::make_pair(xFine, uEx)) << "with lines\n";
 }
 
 void Burgers::WriteToFile(std::string filename, int filetype) const{
@@ -81,17 +94,16 @@ double Burgers::ExactSolution(double t, double x, double xi){
     double x1Bar;
     bool shock = true;
     double y = 0;
-
     if( shock ){
         x0Bar = x0+sigma*xi+uL*(1.0/9.0)+0.5*(uL+uR)*(t-(1.0/9.0));
         x1Bar = x1+sigma*xi+uR*(1.0/9.0)+0.5*(uL+uR)*(t-(1.0/9.0));
-        if(x < x0Bar){
-            y = uL;
+        if(x <= x0Bar){
+            return uL;
         }else if(x > x1Bar){
-            y = uR;
+            return uR;
         }
-
-    }else{
+    }
+    else{
         x0Bar = x0+sigma*xi+uL*t;
         x1Bar = x1+sigma*xi+uR*t;
         if(x < x0Bar){

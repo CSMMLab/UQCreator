@@ -12,6 +12,8 @@ MomentSolver::MomentSolver(Problem* problem) : _problem(problem)
     _a = _x[0];
     _b = _x[_x.size()-1];
 
+    std::cout<<_a<<" "<<_b<<std::endl;
+
     _uL = 12.0;
     _uR = 3.0;
 
@@ -151,24 +153,39 @@ void MomentSolver::Plot(){
 void MomentSolver::PlotFixedXi(){
     double xi = 0.0;
 
-    blaze::DynamicVector<double> res(_nCells);
+    int nFine;
+    try{
+        auto file = cpptoml::parse_file(_problem->GetInputFile());
+        auto plot = file->get_table("plot");
 
-    blaze::DynamicVector<double> exRes(_nCells);
-    for( int k = 0; k<_nCells; ++k ){
-        exRes[k] = _problem->ExactSolution(_tEnd,_x[k],xi);
+        nFine = plot->get_as<int>("evalPoints").value_or(-1);
+    }
+    catch (const cpptoml::parse_exception& e){
+        std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    blaze::DynamicVector<double> res(_nCells+4);
+
+    blaze::DynamicVector<double> exRes(_nCells+4);
+    for( int k = 0; k<_nCells+4; ++k ){
         res[k] = _closure->UKinetic(_closure->EvaluateLambda(_lambda[k],xi));
     }
 
-    std::vector<double> xStdVec(res.size(),0.0), resStdVec(res.size(),0.0), exResStdVec(res.size(),0.0);
-    for(int i=0; i<_nCells; i++){
+    std::vector<double> xStdVec(res.size(),0.0), xFineStdVec(nFine,0.0), resStdVec(res.size(),0.0), exResStdVec(nFine,0.0);
+    std::cout<<_x.size()<<" "<<_nCells+4<<std::endl;
+    for(int i=0; i<_nCells+4; i++){
         xStdVec[i] = _x[i];
         resStdVec[i] = res[i];
-        exResStdVec[i] = exRes[i];
+    }
+    for( int j = 0; j<nFine; ++j ){
+        xFineStdVec[j] = _a + j*(_b-_a)/(nFine-1);
+        exResStdVec[j] = _problem->ExactSolution(_tEnd,xFineStdVec[j],xi);
     }
 
     Gnuplot gp;
     gp << "set key off\n";
-    gp << "plot" << gp.file1d(std::make_pair(xStdVec, resStdVec)) << "with lines, " << gp.file1d(std::make_pair(xStdVec, exResStdVec)) << "with lines\n";
+    gp << "plot" << gp.file1d(std::make_pair(xStdVec, resStdVec)) << "with lines, " << gp.file1d(std::make_pair(xFineStdVec, exResStdVec)) << "with lines\n";
 }
 
 void MomentSolver::Print(){

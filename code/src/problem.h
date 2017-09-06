@@ -27,7 +27,7 @@ protected:
     // I/O
     std::string _inputFile;
     std::string _outputFolder;
-    virtual void Print() const = 0;
+    virtual void Print() = 0;
     virtual void WriteToFile(std::string filename, int filetype) const = 0;
 
     Problem(){}
@@ -38,7 +38,7 @@ public:
     virtual ~Problem();
     virtual void Solve(){}
     virtual double G(double u, double v) = 0;
-    virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) const = 0;
+    virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) = 0;
     virtual double ExactSolution(double t, double x, double xi) = 0;
 
     int GetQuadType();
