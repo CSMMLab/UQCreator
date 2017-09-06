@@ -13,8 +13,8 @@ public:
     Legendre(int degree);
 
     virtual double Evaluate(int m, double x);
-    virtual blaze::DynamicVector<double> GetNodes();
-    virtual blaze::DynamicVector<double> GetWeights();
+    virtual const blaze::DynamicVector<double>& GetNodes();
+    virtual const blaze::DynamicVector<double>& GetWeights();
 };
 
 #endif

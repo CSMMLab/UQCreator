@@ -31,10 +31,10 @@ double Legendre::Evaluate(int m,double x){
     return boost::math::legendre_p(m, x);
 }
 
-blaze::DynamicVector<double> Legendre::GetNodes(){
+const blaze::DynamicVector<double>& Legendre::GetNodes(){
     return _nodes;
 }
 
-blaze::DynamicVector<double> Legendre::GetWeights(){
+const blaze::DynamicVector<double>& Legendre::GetWeights(){
     return _weights;
 }

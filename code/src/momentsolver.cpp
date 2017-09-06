@@ -64,7 +64,7 @@ void MomentSolver::Solve(){
     std::cout << "\nFinished!\nRuntime: " << std::setprecision(3) << std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic).count()/1000.0 << "s" <<std::endl;
 }
 
-blaze::DynamicVector<double> MomentSolver::numFlux(blaze::DynamicVector<double> lambda1,blaze::DynamicVector<double> lambda2){
+blaze::DynamicVector<double> MomentSolver::numFlux(const blaze::DynamicVector<double>& lambda1, const blaze::DynamicVector<double>& lambda2){
     blaze::DynamicVector<double> out(_nMoments,0.0);
     blaze::DynamicVector<double> xi = _quad->GetNodes();
     blaze::DynamicVector<double> w = _quad->GetWeights();
@@ -74,10 +74,10 @@ blaze::DynamicVector<double> MomentSolver::numFlux(blaze::DynamicVector<double> 
     return 0.5*out;
 }
 
-blaze::DynamicVector<double> MomentSolver::CalculateMoments(blaze::DynamicVector<double> lambda){
+blaze::DynamicVector<double> MomentSolver::CalculateMoments(const blaze::DynamicVector<double>& lambda){
     blaze::DynamicVector<double> out(_nMoments,0.0);
-    blaze::DynamicVector<double> xi(_quad->GetNodes());
-    blaze::DynamicVector<double> w(_quad->GetWeights());
+    blaze::DynamicVector<double> xi = _quad->GetNodes();
+    blaze::DynamicVector<double> w = _quad->GetWeights();
     for( int k = 0; k<_problem->GetNQuadPoints(); ++k){
         out += w[k]*_closure->UKinetic(_closure->EvaluateLambda(lambda,xi[k]))*_closure->GetPhiTilde(k);
     }

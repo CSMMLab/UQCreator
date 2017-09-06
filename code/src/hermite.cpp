@@ -30,10 +30,10 @@ double Hermite::Evaluate(int m, double x){
     return boost::math::hermite(m,x);
 }
 
-blaze::DynamicVector<double> Hermite::GetNodes(){
+const blaze::DynamicVector<double>& Hermite::GetNodes(){
     return _nodes;
 }
 
-blaze::DynamicVector<double> Hermite::GetWeights(){
+const blaze::DynamicVector<double>& Hermite::GetWeights(){
     return _weights;
 }

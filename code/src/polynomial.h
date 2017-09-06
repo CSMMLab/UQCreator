@@ -16,8 +16,8 @@ protected:
 public:
     Polynomial(int degree);
     virtual double Evaluate(int m, double x)=0;
-    virtual blaze::DynamicVector<double> GetNodes()=0;
-    virtual blaze::DynamicVector<double> GetWeights()=0;
+    virtual const blaze::DynamicVector<double>& GetNodes()=0;
+    virtual const blaze::DynamicVector<double>& GetWeights()=0;
 };
 
 #endif // POLYNOMIAL_H

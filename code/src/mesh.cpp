@@ -52,7 +52,7 @@ int Mesh::GetDimension() const{
     return _dimension;
 }
 
-blaze::DynamicVector<double> Mesh::GetGrid(){
+blaze::DynamicVector<double>& Mesh::GetGrid(){
     return _mesh;
 }
 

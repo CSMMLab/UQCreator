@@ -28,7 +28,7 @@ public:
 
     int GetNumCells() const;
     int GetDimension() const;
-    blaze::DynamicVector<double> GetGrid();
+    blaze::DynamicVector<double>& GetGrid();
     blaze::DynamicVector<double> GetSpacing();
 
     Mesh(std::string inputFile);

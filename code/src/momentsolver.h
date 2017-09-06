@@ -19,11 +19,11 @@ class MomentSolver
     Problem* _problem;
     double _dx,_dt,_a,_b,_uL,_uR,_tEnd;
     int _nTimeSteps,_nCells,_nMoments;
-    blaze::DynamicVector<double> numFlux(blaze::DynamicVector<double> lambda1,blaze::DynamicVector<double> lambda2);
+    blaze::DynamicVector<double> numFlux(const blaze::DynamicVector<double>& lambda1, const blaze::DynamicVector<double>& lambda2);
     std::vector<blaze::DynamicVector<double>> SetupIC();
     double IC(double x,double xi);
-    blaze::DynamicVector<double> CalculateMoments(blaze::DynamicVector<double> lambda);
-    blaze::DynamicVector<double> EvalLambda(blaze::DynamicVector<double> lambda, blaze::DynamicVector<double> xi);
+    blaze::DynamicVector<double> CalculateMoments(const blaze::DynamicVector<double>& lambda);
+    blaze::DynamicVector<double> EvalLambda(const blaze::DynamicVector<double>& lambda, const blaze::DynamicVector<double>& xi);
 public:
     MomentSolver(Problem* problem);
     void Solve();
