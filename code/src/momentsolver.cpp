@@ -12,8 +12,6 @@ MomentSolver::MomentSolver(Problem* problem) : _problem(problem)
     _a = _x[0];
     _b = _x[_x.size()-1];
 
-    std::cout<<_a<<" "<<_b<<std::endl;
-
     _uL = 12.0;
     _uR = 3.0;
 
@@ -69,7 +67,7 @@ blaze::DynamicVector<double> MomentSolver::numFlux(const blaze::DynamicVector<do
     blaze::DynamicVector<double> xi = _quad->GetNodes();
     blaze::DynamicVector<double> w = _quad->GetWeights();
     for( int k = 0; k<_problem->GetNQuadPoints(); ++k){
-        out += w[k]*_problem->G(_closure->UKinetic(_closure->EvaluateLambda(lambda1,xi[k])), _closure->UKinetic(_closure->EvaluateLambda(lambda2,xi[k])))*_closure->GetPhiTilde(k);
+        out += w[k]*_problem->G(_closure->UKinetic(_closure->EvaluateLambda(lambda1,k)), _closure->UKinetic(_closure->EvaluateLambda(lambda2,k)))*_closure->GetPhiTilde(k);
     }
     return 0.5*out;
 }
@@ -79,7 +77,7 @@ blaze::DynamicVector<double> MomentSolver::CalculateMoments(const blaze::Dynamic
     blaze::DynamicVector<double> xi = _quad->GetNodes();
     blaze::DynamicVector<double> w = _quad->GetWeights();
     for( int k = 0; k<_problem->GetNQuadPoints(); ++k){
-        out += w[k]*_closure->UKinetic(_closure->EvaluateLambda(lambda,xi[k]))*_closure->GetPhiTilde(k);
+        out += w[k]*_closure->UKinetic(_closure->EvaluateLambda(lambda,k))*_closure->GetPhiTilde(k);
     }
     return 0.5*out;
 }
@@ -152,6 +150,7 @@ void MomentSolver::Plot(){
 
 void MomentSolver::PlotFixedXi(){
     double xi = 0.0;
+    blaze::DynamicVector<double> xiVec(_nCells+4, xi);
 
     int nFine;
     try{
@@ -166,14 +165,12 @@ void MomentSolver::PlotFixedXi(){
     }
 
     blaze::DynamicVector<double> res(_nCells+4);
-
-    blaze::DynamicVector<double> exRes(_nCells+4);
     for( int k = 0; k<_nCells+4; ++k ){
-        res[k] = _closure->UKinetic(_closure->EvaluateLambda(_lambda[k],xi));
+        res[k] = _closure->UKinetic(_closure->EvaluateLambda(_lambda[k], xiVec, k));
     }
 
     std::vector<double> xStdVec(res.size(),0.0), xFineStdVec(nFine,0.0), resStdVec(res.size(),0.0), exResStdVec(nFine,0.0);
-    std::cout<<_x.size()<<" "<<_nCells+4<<std::endl;
+
     for(int i=0; i<_nCells+4; i++){
         xStdVec[i] = _x[i];
         resStdVec[i] = res[i];
@@ -196,5 +193,5 @@ void MomentSolver::Print(){
         xi[k] = -1 + k/(nXi-1.0)*2.0;
     }
     std::cout<<_x[cellIndex]<<std::endl;
-    std::cout<<_closure->UKinetic(_closure->EvaluateLambda(_lambda[cellIndex],xi))<<std::endl;
+    std::cout<<_closure->UKinetic(_closure->EvaluateLambda(_lambda[cellIndex-1],xi))<<std::endl;
 }

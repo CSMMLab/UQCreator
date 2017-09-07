@@ -40,7 +40,8 @@ public:
      * @param dual variable
      * @return entropic state
      */
-    double EvaluateLambda(const blaze::DynamicVector<double>& lambda, double xi);
+    double EvaluateLambda(const blaze::DynamicVector<double>& lambda, int k);
+    double EvaluateLambda(const blaze::DynamicVector<double>& lambda, const blaze::DynamicVector<double>& xi, int k);
     blaze::DynamicVector<double> EvaluateLambda(const blaze::DynamicVector<double>& lambda, const blaze::DynamicVector<double>& xi);
     /**
      * calculate solution for kinetic entropy with given entropic variable
