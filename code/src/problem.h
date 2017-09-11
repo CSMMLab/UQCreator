@@ -38,6 +38,7 @@ public:
     virtual ~Problem();
     virtual void Solve(){}
     virtual double G(double u, double v) = 0;
+    virtual blaze::DynamicVector<double> G(const blaze::DynamicVector<double>& u, const blaze::DynamicVector<double>& v) = 0;
     virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) = 0;
     virtual double ExactSolution(double t, double x, double xi) = 0;
 

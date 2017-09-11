@@ -17,6 +17,7 @@ private:
     int _nTimeSteps;
     double H(double u, double v, double w);
     double F(double u);
+    blaze::DynamicVector<double> F(const blaze::DynamicVector<double>& u);
     double IC(double x, double uL, double uR);
 
     Burgers(){}
@@ -27,6 +28,7 @@ public:
     virtual void Print();
     virtual void WriteToFile(std::string filename, int filetype) const;
     double G(double u, double v);
+    blaze::DynamicVector<double> G(const blaze::DynamicVector<double>& u, const blaze::DynamicVector<double>& v);
     virtual double ExactSolution(double t, double x, double xi);
 };
 

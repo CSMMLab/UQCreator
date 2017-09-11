@@ -41,6 +41,7 @@ public:
      * @return entropic state
      */
     double EvaluateLambda(const blaze::DynamicVector<double>& lambda, int k);
+    blaze::DynamicVector<double> EvaluateLambda(const blaze::DynamicVector<double>& lambda);
     double EvaluateLambda(const blaze::DynamicVector<double>& lambda, const blaze::DynamicVector<double>& xi, int k);
     blaze::DynamicVector<double> EvaluateLambda(const blaze::DynamicVector<double>& lambda, const blaze::DynamicVector<double>& xi);
     /**

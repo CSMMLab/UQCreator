@@ -64,11 +64,12 @@ void MomentSolver::Solve(){
 
 blaze::DynamicVector<double> MomentSolver::numFlux(const blaze::DynamicVector<double>& lambda1, const blaze::DynamicVector<double>& lambda2){
     blaze::DynamicVector<double> out(_nMoments,0.0);
-    blaze::DynamicVector<double> xi = _quad->GetNodes();
     blaze::DynamicVector<double> w = _quad->GetWeights();
+    blaze::DynamicVector<double> g = _problem->G(_closure->UKinetic(_closure->EvaluateLambda(lambda1)), _closure->UKinetic(_closure->EvaluateLambda(lambda2)));
     for( int k = 0; k<_problem->GetNQuadPoints(); ++k){
-        out += w[k]*_problem->G(_closure->UKinetic(_closure->EvaluateLambda(lambda1,k)), _closure->UKinetic(_closure->EvaluateLambda(lambda2,k)))*_closure->GetPhiTilde(k);
+        out += w[k]*g[k]*_closure->GetPhiTilde(k);
     }
+
     return 0.5*out;
 }
 
