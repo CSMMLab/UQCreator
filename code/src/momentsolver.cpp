@@ -65,11 +65,10 @@ void MomentSolver::Solve(){
 blaze::DynamicVector<double> MomentSolver::numFlux(const blaze::DynamicVector<double>& lambda1, const blaze::DynamicVector<double>& lambda2){
     blaze::DynamicVector<double> out(_nMoments,0.0);
     blaze::DynamicVector<double> w = _quad->GetWeights();
-    blaze::DynamicVector<double> g = _problem->G(_closure->UKinetic(_closure->EvaluateLambda(lambda1)), _closure->UKinetic(_closure->EvaluateLambda(lambda2)));
+    blaze::DynamicVector<double> g = _problem->G(_closure->UKinetic(_closure->EvaluateLambda(lambda1))+0.5*_dx*_limiter->Slope(lambda0,lambda1,lambda2), _closure->UKinetic(_closure->EvaluateLambda(lambda2))-0.5*_dx*_limiter->Slope(lambda1,lambda2,lambda3));
     for( int k = 0; k<_problem->GetNQuadPoints(); ++k){
         out += w[k]*g[k]*_closure->GetPhiTilde(k);
     }
-
     return 0.5*out;
 }
 

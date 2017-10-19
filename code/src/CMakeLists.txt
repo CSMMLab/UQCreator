@@ -19,7 +19,8 @@ set ( UQCreator_SRCS
           mathtools.cpp
           mesh.cpp
           closure.cpp
-          momentsolver.cpp       
+          momentsolver.cpp
+          limiter.cpp
 	)
 
 add_executable ( UQCreator ${UQCreator_SRCS})
