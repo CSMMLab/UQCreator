@@ -12,6 +12,6 @@ blaze::DynamicVector<double> SlopeInternal(blaze::DynamicVector<double> u0, blaz
     int nQ = u0.size();
     blaze::DynamicVector<double> y(nQ);
     for( int k = 0; k<nQ; ++k ){
-        y[k] = CalculateSlope(u0[k],u1[k],u2[k]);
+        y[k] = CalculateSlope(u0[k],u1[k],u2[k])*slopeBoundPreserving(u0[k],u1[k],u2[k]);
     }
 }
