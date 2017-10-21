@@ -21,6 +21,8 @@ set ( UQCreator_SRCS
           closure.cpp
           momentsolver.cpp
           limiter.cpp
+          nolimiter.cpp
+          minmod.cpp
 	)
 
 add_executable ( UQCreator ${UQCreator_SRCS})

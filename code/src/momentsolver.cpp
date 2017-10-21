@@ -19,6 +19,11 @@ MomentSolver::MomentSolver(Problem* problem) : _problem(problem)
     _nTimeSteps = _problem->GetTEnd()/_dt;
     _nMoments = _problem->GetNMoments();
     _tEnd = _problem->GetTEnd();
+    if(_problem->GetLimiter() == "minmod"){
+        _limiter = new Minmod(_closure,_problem);
+    }else{
+        _limiter = new NoLimiter(_closure,_problem);
+    }
 }
 
 void MomentSolver::Solve(){
@@ -37,17 +42,20 @@ void MomentSolver::Solve(){
     }
 
     // Begin time loop
+    std::cout<<"run solver"<<std::endl;
     while( t < _tEnd ){
         // Modify moments into realizable direction
-        for( int j = 2; j<_nCells+2; ++j ){
+        for( int j = 3; j<_nCells+1; ++j ){
             u[j] = CalculateMoments(_lambda[j]);
         }
+        std::cout<<"moments Calculated"<<std::endl;
         // Time Update Moments
-        for( int j = 2; j<_nCells+2; ++j ){
-            uNew[j] = u[j] - (_dt/_dx)*(numFlux(_lambda[j],_lambda[j+1])-numFlux(_lambda[j-1],_lambda[j]));
+        for( int j = 3; j<_nCells+1; ++j ){
+            uNew[j] = u[j] - (_dt/_dx)*(numFlux(_lambda[j-1],_lambda[j],_lambda[j+1],_lambda[j+2])-numFlux(_lambda[j-2],_lambda[j-1],_lambda[j],_lambda[j+1]));
         }
+        std::cout<<"Moments Updated"<<std::endl;
         // Time Update dual variables
-        for( int j = 2; j<_nCells+2; ++j ){
+        for( int j = 3; j<_nCells+1; ++j ){
             _lambda[j] = _closure->SolveClosure(uNew[j],_lambda[j]);
         }
 
@@ -62,7 +70,7 @@ void MomentSolver::Solve(){
     std::cout << "\nFinished!\nRuntime: " << std::setprecision(3) << std::chrono::duration_cast<std::chrono::milliseconds>(toc - tic).count()/1000.0 << "s" <<std::endl;
 }
 
-blaze::DynamicVector<double> MomentSolver::numFlux(const blaze::DynamicVector<double>& lambda1, const blaze::DynamicVector<double>& lambda2){
+blaze::DynamicVector<double> MomentSolver::numFlux(const blaze::DynamicVector<double>& lambda0, const blaze::DynamicVector<double>& lambda1, const blaze::DynamicVector<double>& lambda2, const blaze::DynamicVector<double>& lambda3){
     blaze::DynamicVector<double> out(_nMoments,0.0);
     blaze::DynamicVector<double> w = _quad->GetWeights();
     blaze::DynamicVector<double> g = _problem->G(_closure->UKinetic(_closure->EvaluateLambda(lambda1))+0.5*_dx*_limiter->Slope(lambda0,lambda1,lambda2), _closure->UKinetic(_closure->EvaluateLambda(lambda2))-0.5*_dx*_limiter->Slope(lambda1,lambda2,lambda3));
@@ -74,7 +82,6 @@ blaze::DynamicVector<double> MomentSolver::numFlux(const blaze::DynamicVector<do
 
 blaze::DynamicVector<double> MomentSolver::CalculateMoments(const blaze::DynamicVector<double>& lambda){
     blaze::DynamicVector<double> out(_nMoments,0.0);
-    blaze::DynamicVector<double> xi = _quad->GetNodes();
     blaze::DynamicVector<double> w = _quad->GetWeights();
     for( int k = 0; k<_problem->GetNQuadPoints(); ++k){
         out += w[k]*_closure->UKinetic(_closure->EvaluateLambda(lambda,k))*_closure->GetPhiTilde(k);

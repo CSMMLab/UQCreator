@@ -8,18 +8,22 @@
 #include "closure.h"
 #include "problem.h"
 #include "legendre.h"
+#include "limiter.h"
+#include "nolimiter.h"
+#include "minmod.h"
 
 class MomentSolver
 {
     Legendre* _quad;
     Closure* _closure;
     Mesh* _mesh;
+    Limiter* _limiter;
     blaze::DynamicVector<double> _x;
     std::vector<blaze::DynamicVector<double> > _lambda;
     Problem* _problem;
     double _dx,_dt,_a,_b,_uL,_uR,_tEnd;
     int _nTimeSteps,_nCells,_nMoments;
-    blaze::DynamicVector<double> numFlux(const blaze::DynamicVector<double>& lambda1, const blaze::DynamicVector<double>& lambda2);
+    blaze::DynamicVector<double> numFlux(const blaze::DynamicVector<double> &lambda0, const blaze::DynamicVector<double>& lambda1, const blaze::DynamicVector<double>& lambda2, const blaze::DynamicVector<double> &lambda3);
     std::vector<blaze::DynamicVector<double>> SetupIC();
     double IC(double x,double xi);
     blaze::DynamicVector<double> CalculateMoments(const blaze::DynamicVector<double>& lambda);

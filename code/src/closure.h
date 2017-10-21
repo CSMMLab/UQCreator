@@ -60,6 +60,9 @@ public:
     const std::vector<blaze::DynamicVector<double>>& GetPhi(){return _phi;}
     const blaze::DynamicVector<double>& GetPhiTilde(int k){return _phiTilde[k];}
     const std::vector<blaze::DynamicVector<double>>& GetPhiTilde(){return _phiTilde;}
+
+    double GetUPlus()const {return _uPlus;}
+    double GetUMinus()const {return _uMinus;}
 };
 
 #endif // CLOSURE_H

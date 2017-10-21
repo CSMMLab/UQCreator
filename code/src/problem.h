@@ -51,6 +51,7 @@ public:
     double GetTEnd();
     Mesh* GetMesh();
     std::string GetInputFile();
+    std::string GetLimiter()const {return _limiter;}
 };
 
 #endif // PROBLEM_H

@@ -9,12 +9,12 @@ a = 0
 b = 3
 
 [problem]
-CFL = 0.99
-limiter = "none"
+CFL = 0.5
+limiter = "minmod"
 tEnd = 0.14
 
 [moment_system]
-moments = 5
+moments = 15
 quadType = "legendre"
 quadPoints = 30
 maxIterations = 200
