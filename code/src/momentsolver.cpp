@@ -42,23 +42,19 @@ void MomentSolver::Solve(){
     }
 
     // Begin time loop
-    std::cout<<"run solver"<<std::endl;
     while( t < _tEnd ){
         // Modify moments into realizable direction
         for( int j = 3; j<_nCells+1; ++j ){
             u[j] = CalculateMoments(_lambda[j]);
         }
-        std::cout<<"moments Calculated"<<std::endl;
         // Time Update Moments
         for( int j = 3; j<_nCells+1; ++j ){
             uNew[j] = u[j] - (_dt/_dx)*(numFlux(_lambda[j-1],_lambda[j],_lambda[j+1],_lambda[j+2])-numFlux(_lambda[j-2],_lambda[j-1],_lambda[j],_lambda[j+1]));
         }
-        std::cout<<"Moments Updated"<<std::endl;
         // Time Update dual variables
         for( int j = 3; j<_nCells+1; ++j ){
             _lambda[j] = _closure->SolveClosure(uNew[j],_lambda[j]);
         }
-
         if(t == 0)
             std::cout << std::fixed << std::setprecision(8) << "t = " << t << std::flush;
         else

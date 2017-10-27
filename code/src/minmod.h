@@ -8,10 +8,11 @@
 class Minmod : public Limiter
 {
 private:
-    virtual double CalculateSlope(double u0, double u1, double u2);
-    double minmod(double a, double b);
+    virtual double CalculateSlope(const double& u0, const double& u1, const double& u2);
+    double minmod(const double& a, const double& b);
 public:
     Minmod(Closure* pClosure, Problem* problem);
+    virtual ~Minmod();
 };
 
 #endif // MINMOD_H

@@ -8,9 +8,10 @@
 - gnuplot
  
 # Build instructions:
-Note that an active internet connection is required for the first build in order to download the latest versions of the header-only libs blaze, cpptoml and gnuplot-iostream!
-If an active connection is present, enter the code/build folder and run:
+Note that an active internet connection is required for the first build in order to download the latest versions of the libraries/tools blaze, cpptoml and gnuplot-iostream!
+If an if an active internet connection is present, run:
 
+     cd code/build
      cmake ../src
      make
  

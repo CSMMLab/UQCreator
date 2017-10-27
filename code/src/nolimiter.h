@@ -10,7 +10,8 @@ class NoLimiter : public Limiter
 
 public:
     NoLimiter(Closure* pClosure, Problem *problem);
-    double CalculateSlope(double u0, double u1, double u2);
+    virtual ~NoLimiter();
+    virtual double CalculateSlope(const double& u0, const double& u1, const double& u2);
 };
 
 #endif // NOLIMITER_H

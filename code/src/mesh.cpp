@@ -52,11 +52,11 @@ int Mesh::GetDimension() const{
     return _dimension;
 }
 
-blaze::DynamicVector<double>& Mesh::GetGrid(){
+const blaze::DynamicVector<double>& Mesh::GetGrid() const{
     return _mesh;
 }
 
-blaze::DynamicVector<double> Mesh::GetSpacing(){
+const blaze::DynamicVector<double>& Mesh::GetSpacing() const{
     return _spacing;
 }
 

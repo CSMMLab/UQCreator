@@ -9,17 +9,18 @@ class Limiter
 {
 private:
     Closure* _closure;
-    blaze::DynamicVector<double> SlopeInternal(blaze::DynamicVector<double> u0, blaze::DynamicVector<double> u1, blaze::DynamicVector<double> u2);
-    double SlopeBoundPres(double u, double slope);
+    blaze::DynamicVector<double> SlopeInternal(const blaze::DynamicVector<double>& u0, const blaze::DynamicVector<double>& u1, const blaze::DynamicVector<double>& u2);
+    double SlopeBoundPres(const double& u, const double& slope);
 protected:
     Problem* _problem;
+    double _dx;
 public:
     Limiter(Closure* pClosure, Problem* problem);
+    virtual ~Limiter();
     blaze::DynamicVector<double> Slope(const blaze::DynamicVector<double>& lambda1, const blaze::DynamicVector<double>& lambda2, const blaze::DynamicVector<double>& lambda3);
-    virtual double CalculateSlope(double u0, double u1, double u2)=0;
+    virtual double CalculateSlope(const double& u0, const double& u1, const double& u2)=0;
 private:
     Limiter(){}
-  //virtual ~Limiter();
 };
 
 #endif // LIMITER_H
