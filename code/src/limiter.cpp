@@ -1,5 +1,7 @@
 #include "limiter.h"
 #include <algorithm>
+#include "minmod.h"
+#include "nolimiter.h"
 
 Limiter::Limiter(Closure* pClosure, Problem* problem):_closure(pClosure), _problem(problem) {
     _dx = _problem->GetMesh()->GetSpacing()[0];
@@ -28,4 +30,21 @@ blaze::DynamicVector<double> Limiter::SlopeInternal(const blaze::DynamicVector<d
         y[k] = classicalSlope*SlopeBoundPres(u1[k],classicalSlope);
     }
     return y;
+}
+
+Limiter* Limiter::Create(Closure* closure, Problem* problem){
+    auto file = cpptoml::parse_file(problem->GetInputFile());
+    auto general = file->get_table("problem");
+    std::string timestepping = general->get_as<std::string>("limiter").value_or("");
+    if(timestepping.compare("minmod") == 0){
+        return new Minmod(closure, problem);
+    }
+    else if(timestepping.compare("none") == 0){
+        return new NoLimiter(closure, problem);
+    }
+    else{
+        std::cerr<<"Invalid limiter type"<<std::endl;
+        exit(EXIT_FAILURE);
+        return NULL;
+    }
 }

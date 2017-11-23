@@ -19,11 +19,10 @@ MomentSolver::MomentSolver(Problem* problem) : _problem(problem)
     _nTimeSteps = _problem->GetTEnd()/_dt;
     _nMoments = _problem->GetNMoments();
     _tEnd = _problem->GetTEnd();
-    if(_problem->GetLimiter() == "minmod"){
-        _limiter = new Minmod(_closure,_problem);
-    }else{
-        _limiter = new NoLimiter(_closure,_problem);
-    }
+
+    _limiter = Limiter::Create(_closure, _problem);
+    _time = TimeSolver::Create(problem->GetInputFile());
+    _plot = PlotEngine::Create(problem->GetInputFile());
 }
 
 void MomentSolver::Solve(){
@@ -139,16 +138,7 @@ void MomentSolver::Plot(){
         exRes[k] = _problem->ExactSolution(_tEnd,_x[cellIndex-1],xi[k]);
     }
 
-    std::vector<double> xiStdVec(res.size(),0.0), resStdVec(res.size(),0.0), exResStdVec(res.size(),0.0);
-    for(int i=0; i<nXi; i++){
-        xiStdVec[i] = xi[i];
-        resStdVec[i] = res[i];
-        exResStdVec[i] = exRes[i];
-    }
-
-    Gnuplot gp;
-    gp << "set key off\n";
-    gp << "plot" << gp.file1d(std::make_pair(xiStdVec, resStdVec)) << "with lines, " << gp.file1d(std::make_pair(xiStdVec, exResStdVec)) << "with lines\n";
+    _plot->Plot1D(xi, res, xi, exRes);
 }
 
 void MomentSolver::PlotFixedXi(){
@@ -172,20 +162,14 @@ void MomentSolver::PlotFixedXi(){
         res[k] = _closure->UKinetic(_closure->EvaluateLambda(_lambda[k], xiVec, k));
     }
 
-    std::vector<double> xStdVec(res.size(),0.0), xFineStdVec(nFine,0.0), resStdVec(res.size(),0.0), exResStdVec(nFine,0.0);
+    blaze::DynamicVector<double> xFine(nFine,0.0), exRes(nFine,0.0);
 
-    for(int i=0; i<_nCells+4; i++){
-        xStdVec[i] = _x[i];
-        resStdVec[i] = res[i];
-    }
     for( int j = 0; j<nFine; ++j ){
-        xFineStdVec[j] = _a + j*(_b-_a)/(nFine-1);
-        exResStdVec[j] = _problem->ExactSolution(_tEnd,xFineStdVec[j],xi);
+        xFine[j] = _a + j*(_b-_a)/(nFine-1);
+        exRes[j] = _problem->ExactSolution(_tEnd,xFine[j],xi);
     }
 
-    Gnuplot gp;
-    gp << "set key off\n";
-    gp << "plot" << gp.file1d(std::make_pair(xStdVec, resStdVec)) << "with lines, " << gp.file1d(std::make_pair(xFineStdVec, exResStdVec)) << "with lines\n";
+    _plot->Plot1D(_x,res,xFine,exRes);
 }
 
 void MomentSolver::Print(){

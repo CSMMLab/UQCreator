@@ -5,7 +5,6 @@
 #include <string>
 
 #include "mesh.h"
-//#include "timediscretization.h"
 
 #define QUAD_TYPE_LEGENDRE 201
 #define QUAD_TYPE_HERMITE 202
@@ -14,7 +13,6 @@ class Problem
 {
 protected:
     Mesh* _mesh;
-//    TimeDiscretization* _timeDiscretization;
     int _quadType;
     int _nQuadPoints;
     int _nMoments;

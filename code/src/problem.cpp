@@ -34,7 +34,6 @@ Problem::Problem(std::string inputFile) : _inputFile(inputFile){
 
 Problem::~Problem(){
     delete _mesh;
-    //delete _timeDiscretization;
 }
 
 Problem* Problem::Create(std::string inputFile){

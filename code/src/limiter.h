@@ -2,6 +2,7 @@
 #define LIMITER_H
 
 #include "blaze/math/DynamicVector.h"
+#include <cpptoml.h>
 #include "closure.h"
 #include "problem.h"
 
@@ -17,6 +18,7 @@ protected:
 public:
     Limiter(Closure* pClosure, Problem* problem);
     virtual ~Limiter();
+    static Limiter* Create(Closure* closure, Problem* problem);
     blaze::DynamicVector<double> Slope(const blaze::DynamicVector<double>& lambda1, const blaze::DynamicVector<double>& lambda2, const blaze::DynamicVector<double>& lambda3);
     virtual double CalculateSlope(const double& u0, const double& u1, const double& u2)=0;
 private:

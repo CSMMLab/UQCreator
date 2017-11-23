@@ -69,8 +69,8 @@ int main(int argc, char* argv[]){
     MomentSolver* solver = new MomentSolver(problem);
 
     solver->Solve();
-    //solver->PlotFixedXi();
-    //solver->Plot();
+    solver->PlotFixedXi();
+    solver->Plot();
 
     //Burgers* b = new Burgers(configFile);
     //b->Solve();

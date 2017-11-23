@@ -10,6 +10,7 @@ b = 3
 
 [problem]
 CFL = 0.5
+timestepping = "explicitEuler"
 limiter = "minmod"
 tEnd = 0.14
 
@@ -21,5 +22,6 @@ maxIterations = 200
 epsilon = 5e-5
 
 [plot]
+engine = "gnuplot"
 cellIndex = 110
 evalPoints = 1000
