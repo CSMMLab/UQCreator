@@ -18,7 +18,7 @@ double Burgers::G(double u, double v){
     return F(u);
 }
 
-blaze::DynamicVector<double> Burgers::G(const blaze::DynamicVector<double>& u, const blaze::DynamicVector<double>& v){
+blaze::DynamicMatrix<double> Burgers::G(const blaze::DynamicMatrix<double>& u, const blaze::DynamicMatrix<double>& v){
     return F(u);
 }
 
@@ -26,7 +26,7 @@ double Burgers::F(double u){
     return 0.5*u*u;
 }
 
-blaze::DynamicVector<double> Burgers::F(const blaze::DynamicVector<double>& u){
+blaze::DynamicMatrix<double> Burgers::F(const blaze::DynamicMatrix<double>& u){
     return 0.5*blaze::pow(u,2);
 }
 

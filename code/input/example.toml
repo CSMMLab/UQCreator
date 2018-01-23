@@ -13,6 +13,7 @@ CFL = 0.5
 timestepping = "explicitEuler"
 limiter = "minmod"
 tEnd = 0.14
+nStates = 1
 
 [moment_system]
 moments = 15

@@ -17,6 +17,7 @@ protected:
     int _nQuadPoints;
     int _nMoments;
     int _maxIterations;
+    int _nStates;
     double _epsilon;
     double _CFL;
     double _tEnd;
@@ -36,7 +37,7 @@ public:
     virtual ~Problem();
     virtual void Solve(){}
     virtual double G(double u, double v) = 0;
-    virtual blaze::DynamicVector<double> G(const blaze::DynamicVector<double>& u, const blaze::DynamicVector<double>& v) = 0;
+    virtual blaze::DynamicMatrix<double> G(const blaze::DynamicMatrix<double>& u, const blaze::DynamicMatrix<double>& v) = 0;
     virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) = 0;
     virtual double ExactSolution(double t, double x, double xi) = 0;
 
@@ -44,6 +45,7 @@ public:
     int GetNQuadPoints();
     int GetNMoments();
     int GetMaxIterations();
+    int GetNStates();
     double GetEpsilon();
     double GetCFL();
     double GetTEnd();

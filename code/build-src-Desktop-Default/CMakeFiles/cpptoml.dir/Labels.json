@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/jonas/Projects/UQCreator/code/build-src-Desktop-Default/CMakeFiles/cpptoml"
+		},
+		{
+			"file" : "/home/jonas/Projects/UQCreator/code/build-src-Desktop-Default/CMakeFiles/cpptoml.rule"
+		},
+		{
+			"file" : "/home/jonas/Projects/UQCreator/code/build-src-Desktop-Default/CMakeFiles/cpptoml-complete.rule"
+		},
+		{
+			"file" : "/home/jonas/Projects/UQCreator/code/build-src-Desktop-Default/cpptoml/src/cpptoml-stamp/cpptoml-install.rule"
+		},
+		{
+			"file" : "/home/jonas/Projects/UQCreator/code/build-src-Desktop-Default/cpptoml/src/cpptoml-stamp/cpptoml-mkdir.rule"
+		},
+		{
+			"file" : "/home/jonas/Projects/UQCreator/code/build-src-Desktop-Default/cpptoml/src/cpptoml-stamp/cpptoml-download.rule"
+		},
+		{
+			"file" : "/home/jonas/Projects/UQCreator/code/build-src-Desktop-Default/cpptoml/src/cpptoml-stamp/cpptoml-update.rule"
+		},
+		{
+			"file" : "/home/jonas/Projects/UQCreator/code/build-src-Desktop-Default/cpptoml/src/cpptoml-stamp/cpptoml-patch.rule"
+		},
+		{
+			"file" : "/home/jonas/Projects/UQCreator/code/build-src-Desktop-Default/cpptoml/src/cpptoml-stamp/cpptoml-configure.rule"
+		},
+		{
+			"file" : "/home/jonas/Projects/UQCreator/code/build-src-Desktop-Default/cpptoml/src/cpptoml-stamp/cpptoml-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"cpptoml"
+		],
+		"name" : "cpptoml"
+	}
+}

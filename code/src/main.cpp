@@ -5,6 +5,7 @@
 #include "problem.h"
 #include "burgers.h"
 #include "momentsolver.h"
+#include "closure.h"
 
 bool CheckInput(std::string& configFile, int argc, char* argv[]){
     std::string usage_help =
