@@ -12,17 +12,20 @@ class Closure
     Problem* _problem;
     Polynomial* _basis;
     Polynomial* _quad;
-    std::vector<blaze::DynamicVector<double>> _phi;         // stores basis functions evaluated at quadrature points
-    std::vector<blaze::DynamicVector<double>> _phiTilde;    // stores scaled basis functions evaluated at quadrature points
+    std::vector<blaze::DynamicVector<double>> _phi;    // stores basis functions evaluated at quadrature points
+    blaze::DynamicMatrix<double> _phiTilde;            // stores scaled basis functions evaluated at quadrature points
+    blaze::DynamicMatrix<double> _phiTildeTrans;       // stores scaled basis functions evaluated at quadrature points
+    blaze::DynamicMatrix<double> _phiTildeW;           // stores scaled basis functions evaluated at quadrature points times weight
+    std::vector<blaze::DynamicVector<double>> _phiTildeVec;
     std::vector<blaze::DynamicMatrix<double>> _hPartial;    // stores partial matrices for Hessian computation
     double _uMinus, _uPlus;                                 // IPM bounds for scalar problems
     int _nMoments;
     int _nQuadPoints;
     int _nStates;
-    blaze::DynamicMatrix<double> Hessian( const blaze::DynamicMatrix<double>& lambda );
+    void Hessian( blaze::DynamicMatrix<double>& H, const blaze::DynamicMatrix<double>& lambda );
 
   public:
-    blaze::DynamicVector<double> Gradient( const blaze::DynamicMatrix<double>& lambda, const blaze::DynamicMatrix<double>& u );
+    void Gradient( blaze::DynamicVector<double>& g, const blaze::DynamicMatrix<double>& lambda, const blaze::DynamicMatrix<double>& u );
 
   public:
     /**
@@ -52,17 +55,18 @@ class Closure
      * @param entropic variable
      * @return solution
      */
-    blaze::DynamicVector<double> UKinetic( const blaze::DynamicVector<double>& Lambda );
+    void UKinetic( blaze::DynamicVector<double>& out, const blaze::DynamicVector<double>& Lambda );
     blaze::DynamicMatrix<double> UKinetic( const blaze::DynamicMatrix<double>& Lambda );
     /**
      * calculate derivative of solution for kinetic entropy with given entropic variable
      * @param entropic variable
      * @return derivative of solution
      */
-    blaze::DynamicMatrix<double> DUKinetic( const blaze::DynamicVector<double>& Lambda );
+    void DUKinetic( blaze::DynamicMatrix<double>& y, const blaze::DynamicVector<double>& Lambda );
     const std::vector<blaze::DynamicVector<double>>& GetPhi() { return _phi; }
-    const blaze::DynamicVector<double>& GetPhiTilde( int k ) { return _phiTilde[k]; }
-    const std::vector<blaze::DynamicVector<double>>& GetPhiTilde() { return _phiTilde; }
+    const blaze::DynamicVector<double>& GetPhiTilde( int k ) { return _phiTildeVec[k]; }
+    const blaze::DynamicMatrix<double>& GetPhiTilde() { return _phiTilde; }
+    const blaze::DynamicMatrix<double>& GetPhiTildeW() { return _phiTildeW; }
     /**
      * Transform matrix to vector
      * @return
@@ -73,11 +77,6 @@ class Closure
      * @return
      */
     blaze::DynamicMatrix<double> MakeMatrix( const blaze::DynamicVector<double>& vec ) const;
-    /**
-     * Transform vector to matrix in-place
-     * @return
-     */
-    void MakeMatrix( const blaze::DynamicVector<double>& vec, blaze::DynamicMatrix<double>& mat );
 
     double GetUPlus() const { return _uPlus; }
     double GetUMinus() const { return _uMinus; }

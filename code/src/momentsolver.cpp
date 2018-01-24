@@ -78,43 +78,27 @@ blaze::DynamicMatrix<double> MomentSolver::numFlux( const blaze::DynamicMatrix<d
                                                     const blaze::DynamicMatrix<double>& lambda1,
                                                     const blaze::DynamicMatrix<double>& lambda2,
                                                     const blaze::DynamicMatrix<double>& lambda3 ) {
-    blaze::DynamicMatrix<double> out( _nStates, _nMoments, 0.0 );
-    blaze::DynamicVector<double> w = _quad->GetWeights();
     blaze::DynamicMatrix<double> g =
         _problem->G( _closure->UKinetic( _closure->EvaluateLambda( lambda1 ) ) + 0.5 * _dx * _limiter->Slope( lambda0, lambda1, lambda2 ),
                      _closure->UKinetic( _closure->EvaluateLambda( lambda2 ) ) - 0.5 * _dx * _limiter->Slope( lambda1, lambda2, lambda3 ) );
-    // g in R^(nStates x nQuadPoints)
-    // std::cout<<_closure->UKinetic(_closure->EvaluateLambda(lambda1))<<std::endl;
-    // std::cout<<_closure->EvaluateLambda(lambda1)<<std::endl;
-    for( int k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-        for( int l = 0; l < _nStates; ++l ) {
-            for( int i = 0; i < _nMoments; ++i ) {
-                out( l, i ) += w[k] * g( l, k ) * _closure->GetPhiTilde( k )[i];
-            }
-        }
-    }
-    return 0.5 * out;
+
+    return 0.5 * g * _closure->GetPhiTildeW();
 }
 
 blaze::DynamicMatrix<double> MomentSolver::CalculateMoments( const blaze::DynamicMatrix<double>& lambda ) {
-    blaze::DynamicMatrix<double> out( _nStates, _nMoments, 0.0 );
-    blaze::DynamicVector<double> w = _quad->GetWeights();
-    for( int k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-        out = out + w[k] * _closure->UKinetic( _closure->EvaluateLambda( lambda, k ) ) * blaze::trans( _closure->GetPhiTilde( k ) );
-    }
-    return 0.5 * out;
+    return 0.5 * _closure->UKinetic( _closure->EvaluateLambda( lambda ) ) * _closure->GetPhiTildeW();
 }
 
 std::vector<blaze::DynamicMatrix<double>> MomentSolver::SetupIC() {
     std::vector<blaze::DynamicMatrix<double>> out( _nCells + 4, blaze::DynamicMatrix<double>( _nStates, _nMoments, 0.0 ) );
-    blaze::DynamicVector<double> xi                    = _quad->GetNodes();
-    blaze::DynamicVector<double> w                     = _quad->GetWeights();
-    std::vector<blaze::DynamicVector<double>> phiTilde = _closure->GetPhiTilde();
+    blaze::DynamicVector<double> xi       = _quad->GetNodes();
+    blaze::DynamicVector<double> w        = _quad->GetWeights();
+    blaze::DynamicMatrix<double> phiTilde = _closure->GetPhiTilde();
     for( int j = 0; j < _nCells + 4; ++j ) {
         for( int l = 0; l < _nStates; ++l ) {
             for( int i = 0; i < _nMoments; ++i ) {
                 for( int k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-                    out[j]( l, i ) += 0.5 * w[k] * IC( _x[j], xi[k] ) * phiTilde[k][i];
+                    out[j]( l, i ) += 0.5 * w[k] * IC( _x[j], xi[k] ) * phiTilde( k, i );
                 }
             }
         }
@@ -192,10 +176,10 @@ void MomentSolver::PlotFixedXi() {
     }
 
     blaze::DynamicMatrix<double> resM( _nCells + 4, _nStates );
+    blaze::DynamicVector<double> resVec( _nStates, 0.0 );
     for( int j = 0; j < _nCells + 4; ++j ) {
-        for( int l = 0; l < _nStates; ++l ) {
-            resM( j, l ) = _closure->UKinetic( _closure->EvaluateLambda( _lambda[j], xiVec, j ) )[l];
-        }
+        _closure->UKinetic( resVec, _closure->EvaluateLambda( _lambda[j], xiVec, j ) );
+        row( resM, j ) = blaze::trans( resVec );
     }
 
     blaze::DynamicVector<double> res( _nCells + 4 );
