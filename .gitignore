@@ -44,6 +44,9 @@ code/bin/*
 # build files
 code/build/*
 
+# results folder
+code/results/*
+
 # tmp data
 .fuse_hidden*
 /.DS_Store
