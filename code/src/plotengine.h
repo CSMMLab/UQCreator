@@ -10,10 +10,13 @@ class PlotEngine
 {
   private:
   protected:
+    Problem* _problem;
+    std::string _outputDir;
     std::vector<double> BlazeToStdVector( const blaze::DynamicVector<double>& v );
 
   public:
-    PlotEngine();
+    PlotEngine() = delete;
+    PlotEngine( Problem* problem );
     virtual ~PlotEngine();
     static PlotEngine* Create( Problem* problem );
     virtual void Plot1D( const std::vector<double>& x1, const std::vector<double>& y1 ) = 0;

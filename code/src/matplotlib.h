@@ -1,8 +1,10 @@
 #ifndef MATPLOTLIB_H
 #define MATPLOTLIB_H
 
-#include "plotengine.h"
+#include <chrono>
 #include <matplotlibcpp.h>
+
+#include "plotengine.h"
 
 class Matplotlib : public PlotEngine
 {
@@ -10,7 +12,8 @@ class Matplotlib : public PlotEngine
     const std::string _fileExt = ".pdf";
 
   public:
-    Matplotlib();
+    Matplotlib() = delete;
+    Matplotlib( Problem* problem );
     void Plot1D( const std::vector<double>& x1, const std::vector<double>& y1 );
     void Plot1D( const std::vector<double>& x1, const std::vector<double>& y1, const std::vector<double>& x2, const std::vector<double>& y2 );
     void Plot1D( const blaze::DynamicVector<double>& x1, const blaze::DynamicVector<double>& y1 );

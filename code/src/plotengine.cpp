@@ -2,7 +2,7 @@
 #include "gnuplotlib.h"
 #include "matplotlib.h"
 
-PlotEngine::PlotEngine() {}
+PlotEngine::PlotEngine( Problem* problem ) : _problem( problem ) { _outputDir = _problem->GetOutputDir(); }
 
 PlotEngine::~PlotEngine() {}
 
@@ -11,10 +11,10 @@ PlotEngine* PlotEngine::Create( Problem* problem ) {
     auto general       = file->get_table( "plot" );
     std::string engine = general->get_as<std::string>( "engine" ).value_or( "" );
     if( engine.compare( "gnuplot" ) == 0 ) {
-        return new GnuplotLib();
+        return new GnuplotLib( problem );
     }
     else if( engine.compare( "matplotlib" ) == 0 ) {
-        return new Matplotlib();
+        return new Matplotlib( problem );
     }
     else {
         std::cerr << "Invalid plot engine type" << std::endl;

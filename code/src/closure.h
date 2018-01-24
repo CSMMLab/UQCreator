@@ -73,6 +73,11 @@ class Closure
      * @return
      */
     blaze::DynamicMatrix<double> MakeMatrix( const blaze::DynamicVector<double>& vec ) const;
+    /**
+     * Transform vector to matrix in-place
+     * @return
+     */
+    void MakeMatrix( const blaze::DynamicVector<double>& vec, blaze::DynamicMatrix<double>& mat );
 
     double GetUPlus() const { return _uPlus; }
     double GetUMinus() const { return _uMinus; }

@@ -31,35 +31,33 @@ Closure::Closure( Problem* problem )
 }
 
 blaze::DynamicVector<double> Closure::UKinetic( const blaze::DynamicVector<double>& Lambda ) {
-    blaze::DynamicVector<double> ePos( _nStates );
-    blaze::DynamicVector<double> eNeg( _nStates );
-    blaze::DynamicVector<double> out = blaze::DynamicVector<double>( _nStates, 0.0 );
+    double ePos, eNeg;
+    blaze::DynamicVector<double> out( _nStates, 0.0 );
     for( int l = 0; l < _nStates; ++l ) {
-        ePos[l] = exp( Lambda[l] );
-        eNeg[l] = 1 / ePos[l];
+        ePos = exp( Lambda[l] );
+        eNeg = 1 / ePos;
         if( Lambda[l] > 0 ) {
-            out[l] = _uPlus / ( eNeg[l] + 1.0 ) + _uMinus * eNeg[l] / ( 1.0 + eNeg[l] );
+            out[l] = _uPlus / ( eNeg + 1.0 ) + _uMinus * eNeg / ( 1.0 + eNeg );
         }
         else {
-            out[l] = _uMinus / ( ePos[l] + 1.0 ) + _uPlus * ePos[l] / ( 1.0 + ePos[l] );
+            out[l] = _uMinus / ( ePos + 1.0 ) + _uPlus * ePos / ( 1.0 + ePos );
         }
     }
     return out;
 }
 
 blaze::DynamicMatrix<double> Closure::UKinetic( const blaze::DynamicMatrix<double>& Lambda ) {
+    double ePos, eNeg;
     blaze::DynamicMatrix<double> y( _nStates, Lambda.columns(), 0.0 );
-    blaze::DynamicMatrix<double> ePos( _nStates, Lambda.columns() );
-    blaze::DynamicMatrix<double> eNeg( _nStates, Lambda.columns() );
     for( int l = 0; l < _nStates; ++l ) {
         for( int k = 0; k < Lambda.columns(); ++k ) {
-            ePos( l, k ) = exp( Lambda( l, k ) );
-            eNeg( l, k ) = 1.0 / ePos( l, k );
+            ePos = exp( Lambda( l, k ) );
+            eNeg = 1.0 / ePos;
             if( Lambda( l, k ) > 0 ) {
-                y( l, k ) = _uPlus / ( eNeg( l, k ) + 1.0 ) + _uMinus * eNeg( l, k ) / ( 1.0 + eNeg( l, k ) );
+                y( l, k ) = _uPlus / ( eNeg + 1.0 ) + _uMinus * eNeg / ( 1.0 + eNeg );
             }
             else {
-                y( l, k ) = _uMinus / ( ePos( l, k ) + 1.0 ) + _uPlus * ePos( l, k ) / ( 1.0 + ePos( l, k ) );
+                y( l, k ) = _uMinus / ( ePos + 1.0 ) + _uPlus * ePos / ( 1.0 + ePos );
             }
         }
     }

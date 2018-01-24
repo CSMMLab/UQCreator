@@ -75,10 +75,6 @@ int main( int argc, char* argv[] ) {
     solver->PlotFixedXi();
     solver->Plot();
 
-    // Burgers* b = new Burgers(configFile);
-    // b->Solve();
-    // b->Print();
-
     delete solver;
     delete problem;
 

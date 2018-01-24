@@ -5,8 +5,8 @@ Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
     try {
         auto file = cpptoml::parse_file( _inputFile );
 
-        auto general  = file->get_table( "general" );
-        _outputFolder = general->get_as<std::string>( "outputFolder" ).value_or( "" );
+        auto general = file->get_table( "general" );
+        _outputDir   = general->get_as<std::string>( "outputDir" ).value_or( "" );
 
         _mesh = new Mesh( _inputFile );
 
@@ -48,22 +48,26 @@ Problem* Problem::Create( std::string inputFile ) {
     }
 }
 
-int Problem::GetQuadType() { return _quadType; }
+int Problem::GetQuadType() const { return _quadType; }
 
-int Problem::GetNQuadPoints() { return _nQuadPoints; }
+int Problem::GetNQuadPoints() const { return _nQuadPoints; }
 
-int Problem::GetNMoments() { return _nMoments; }
+int Problem::GetNMoments() const { return _nMoments; }
 
-int Problem::GetNStates() { return _nStates; }
+int Problem::GetNStates() const { return _nStates; }
 
-int Problem::GetMaxIterations() { return _maxIterations; }
+int Problem::GetMaxIterations() const { return _maxIterations; }
 
-double Problem::GetEpsilon() { return _epsilon; }
+double Problem::GetEpsilon() const { return _epsilon; }
 
-double Problem::GetCFL() { return _CFL; }
+double Problem::GetCFL() const { return _CFL; }
 
-double Problem::GetTEnd() { return _tEnd; }
+double Problem::GetTEnd() const { return _tEnd; }
 
-Mesh* Problem::GetMesh() { return _mesh; }
+Mesh* Problem::GetMesh() const { return _mesh; }
 
-std::string Problem::GetInputFile() { return _inputFile; }
+std::string Problem::GetInputFile() const { return _inputFile; }
+
+std::string Problem::GetLimiter() const { return _limiter; }
+
+std::string Problem::GetOutputDir() const { return _outputDir; }

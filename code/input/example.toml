@@ -1,6 +1,6 @@
 [general]
 problem = "Burgers"
-outputFolder = "results"
+outputDir = "results"
 
 [mesh]
 Dimension = 1
@@ -23,6 +23,6 @@ maxIterations = 200
 epsilon = 5e-5
 
 [plot]
-engine = "gnuplot"
+engine = "matplotlib"
 cellIndex = 110
 evalPoints = 1000

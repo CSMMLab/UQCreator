@@ -25,7 +25,7 @@ class Problem
 
     // I/O
     std::string _inputFile;
-    std::string _outputFolder;
+    std::string _outputDir;
     virtual void Print()                                                 = 0;
     virtual void WriteToFile( std::string filename, int filetype ) const = 0;
 
@@ -41,17 +41,18 @@ class Problem
     virtual void Plot( blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u )                                  = 0;
     virtual double ExactSolution( double t, double x, double xi )                                                          = 0;
 
-    int GetQuadType();
-    int GetNQuadPoints();
-    int GetNMoments();
-    int GetMaxIterations();
-    int GetNStates();
-    double GetEpsilon();
-    double GetCFL();
-    double GetTEnd();
-    Mesh* GetMesh();
-    std::string GetInputFile();
-    std::string GetLimiter() const { return _limiter; }
+    int GetQuadType() const;
+    int GetNQuadPoints() const;
+    int GetNMoments() const;
+    int GetMaxIterations() const;
+    int GetNStates() const;
+    double GetEpsilon() const;
+    double GetCFL() const;
+    double GetTEnd() const;
+    Mesh* GetMesh() const;
+    std::string GetInputFile() const;
+    std::string GetLimiter() const;
+    std::string GetOutputDir() const;
 };
 
 #endif    // PROBLEM_H

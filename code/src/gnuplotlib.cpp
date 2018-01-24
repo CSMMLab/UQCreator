@@ -1,6 +1,6 @@
 #include "gnuplotlib.h"
 
-GnuplotLib::GnuplotLib() {}
+GnuplotLib::GnuplotLib( Problem* problem ) : PlotEngine( problem ) {}
 
 void GnuplotLib::Plot1D( const std::vector<double>& x1, const std::vector<double>& y1 ) {
     Gnuplot gp;
