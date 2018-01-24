@@ -3,11 +3,12 @@
 
 #include <blaze/math/DynamicVector.h>
 
-#include "problem.h"
 #include "polynomial.h"
+#include "problem.h"
 
-class Quadrature{
-protected:
+class Quadrature
+{
+  protected:
     double _value;
     blaze::DynamicVector<double> _nodes;
     blaze::DynamicVector<double> _weights;
@@ -15,14 +16,14 @@ protected:
     Problem* _problem;
     Polynomial* _polynomial;
 
-
-public:
-    Quadrature(Problem* p);
+  public:
+    Quadrature( Problem* p );
     double Evaluate();
     blaze::DynamicVector<double> GetNodes();
     blaze::DynamicVector<double> GetWeights();
-private:
-    Quadrature(){}
+
+  private:
+    Quadrature() {}
 };
 
-#endif // QUADRATURE_H
+#endif    // QUADRATURE_H

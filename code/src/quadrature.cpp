@@ -1,6 +1,6 @@
 #include "quadrature.h"
 
-Quadrature::Quadrature(Problem* p) : _value(0.0), _problem(p){
+Quadrature::Quadrature( Problem* p ) : _value( 0.0 ), _problem( p ) {
     /*
     if( _problem->GetQuadType() == QUAD_TYPE_LEGENDRE ){
         _polynomial = new Legendre(_problem->GetNQuadPoints());
@@ -9,19 +9,15 @@ Quadrature::Quadrature(Problem* p) : _value(0.0), _problem(p){
     }else{
         std::cerr<<"[ERROR]: Quadrature unknown."<<std::endl;
     }*/
-    _nodes = _polynomial->GetNodes();
+    _nodes   = _polynomial->GetNodes();
     _weights = _polynomial->GetWeights();
 }
 
-double Quadrature::Evaluate(){
-    std::cerr<<"[ERROR]: Not yet implemented."<<std::endl;
+double Quadrature::Evaluate() {
+    std::cerr << "[ERROR]: Not yet implemented." << std::endl;
     return -1.0;
 }
 
-vector Quadrature::GetNodes(){
-    return _nodes;
-}
+vector Quadrature::GetNodes() { return _nodes; }
 
-vector Quadrature::GetWeights(){
-    return _weights;
-}
+vector Quadrature::GetWeights() { return _weights; }

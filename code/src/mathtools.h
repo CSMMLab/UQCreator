@@ -10,13 +10,14 @@
 
 class MathTools
 {
-private:
-    MathTools(){}
-public:
-    ~MathTools(){}
-    static double Pythag(const double a, const double b);
-    static std::pair<blaze::DynamicVector<double>,blaze::DynamicMatrix<double>> ComputeEigenValTriDiagMatrix(const blaze::DynamicMatrix<double> CM);
+  private:
+    MathTools() {}
 
+  public:
+    ~MathTools() {}
+    static double Pythag( const double a, const double b );
+    static std::pair<blaze::DynamicVector<double>, blaze::DynamicMatrix<double>>
+    ComputeEigenValTriDiagMatrix( const blaze::DynamicMatrix<double> CM );
 };
 
-#endif // MATHTOOLS_H
+#endif    // MATHTOOLS_H

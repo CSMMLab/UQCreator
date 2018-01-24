@@ -1,11 +1,10 @@
 #ifndef EXPLICITEULER_H
 #define EXPLICITEULER_H
 
-
 class ExplicitEuler
 {
-public:
+  public:
     ExplicitEuler();
 };
 
-#endif // EXPLICITEULER_H
+#endif    // EXPLICITEULER_H

@@ -3,14 +3,15 @@
 
 #include "problem.h"
 
-class Euler : public Problem {
-private:
-public:
-    Euler(std::string inputFile);
+class Euler : public Problem
+{
+  private:
+  public:
+    Euler( std::string inputFile );
     virtual void Solve();
     virtual void Plot() const;
     virtual void Print() const;
-    virtual void WriteToFile(std::string filename, int filetype) const;
+    virtual void WriteToFile( std::string filename, int filetype ) const;
 };
 
-#endif // EULER_H
+#endif    // EULER_H

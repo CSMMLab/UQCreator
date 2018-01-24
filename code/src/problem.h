@@ -11,7 +11,7 @@
 
 class Problem
 {
-protected:
+  protected:
     Mesh* _mesh;
     int _quadType;
     int _nQuadPoints;
@@ -26,20 +26,20 @@ protected:
     // I/O
     std::string _inputFile;
     std::string _outputFolder;
-    virtual void Print() = 0;
-    virtual void WriteToFile(std::string filename, int filetype) const = 0;
+    virtual void Print()                                                 = 0;
+    virtual void WriteToFile( std::string filename, int filetype ) const = 0;
 
-    Problem(){}
+    Problem() {}
 
-public:
-    Problem(std::string inputFile);
-    static Problem* Create(std::string inputFile);
+  public:
+    Problem( std::string inputFile );
+    static Problem* Create( std::string inputFile );
     virtual ~Problem();
-    virtual void Solve(){}
-    virtual double G(double u, double v) = 0;
-    virtual blaze::DynamicMatrix<double> G(const blaze::DynamicMatrix<double>& u, const blaze::DynamicMatrix<double>& v) = 0;
-    virtual void Plot(blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u) = 0;
-    virtual double ExactSolution(double t, double x, double xi) = 0;
+    virtual void Solve() {}
+    virtual double G( double u, double v )                                                                                 = 0;
+    virtual blaze::DynamicMatrix<double> G( const blaze::DynamicMatrix<double>& u, const blaze::DynamicMatrix<double>& v ) = 0;
+    virtual void Plot( blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u )                                  = 0;
+    virtual double ExactSolution( double t, double x, double xi )                                                          = 0;
 
     int GetQuadType();
     int GetNQuadPoints();
@@ -51,7 +51,7 @@ public:
     double GetTEnd();
     Mesh* GetMesh();
     std::string GetInputFile();
-    std::string GetLimiter()const {return _limiter;}
+    std::string GetLimiter() const { return _limiter; }
 };
 
-#endif // PROBLEM_H
+#endif    // PROBLEM_H

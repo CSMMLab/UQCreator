@@ -1,6 +1,3 @@
 #include "expliciteuler.h"
 
-ExplicitEuler::ExplicitEuler()
-{
-
-}
+ExplicitEuler::ExplicitEuler() {}
