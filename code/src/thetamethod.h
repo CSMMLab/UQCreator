@@ -5,12 +5,19 @@
 
 class ThetaMethod : public TimeSolver
 {
-private:
+  private:
     double _theta;
-public:
+
+  public:
     ThetaMethod() = delete;
-    ThetaMethod(double theta);
-    double Solve(const blaze::DynamicVector<double>& u, const blaze::DynamicVector<double>& flux1, const blaze::DynamicVector<double>& flux2);
+    ThetaMethod( Problem* problem, double theta );
+    virtual void Advance( std::function<blaze::DynamicMatrix<double>( const blaze::DynamicMatrix<double>&,
+                                                                      const blaze::DynamicMatrix<double>&,
+                                                                      const blaze::DynamicMatrix<double>&,
+                                                                      const blaze::DynamicMatrix<double>& )> const& fluxFunc,
+                          std::vector<blaze::DynamicMatrix<double>>& uNew,
+                          const std::vector<blaze::DynamicMatrix<double>>& u,
+                          const std::vector<blaze::DynamicMatrix<double>>& lambda );
 };
 
-#endif // THETAMETHOD_H
+#endif    // THETAMETHOD_H

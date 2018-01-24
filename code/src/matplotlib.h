@@ -1,19 +1,23 @@
 #ifndef MATPLOTLIB_H
 #define MATPLOTLIB_H
 
-#include <matplotlibcpp.h>
 #include "plotengine.h"
+#include <matplotlibcpp.h>
 
 class Matplotlib : public PlotEngine
 {
-private:
+  private:
     const std::string _fileExt = ".pdf";
-public:
+
+  public:
     Matplotlib();
-    void Plot1D(const std::vector<double>& x1, const std::vector<double>& y1);
-    void Plot1D(const std::vector<double>& x1, const std::vector<double>& y1, const std::vector<double>& x2, const std::vector<double>& y2);
-    void Plot1D(const blaze::DynamicVector<double>& x1, const blaze::DynamicVector<double>& y1);
-    void Plot1D(const blaze::DynamicVector<double>& x1, const blaze::DynamicVector<double>& y1, const blaze::DynamicVector<double>& x2, const blaze::DynamicVector<double>& y2);
+    void Plot1D( const std::vector<double>& x1, const std::vector<double>& y1 );
+    void Plot1D( const std::vector<double>& x1, const std::vector<double>& y1, const std::vector<double>& x2, const std::vector<double>& y2 );
+    void Plot1D( const blaze::DynamicVector<double>& x1, const blaze::DynamicVector<double>& y1 );
+    void Plot1D( const blaze::DynamicVector<double>& x1,
+                 const blaze::DynamicVector<double>& y1,
+                 const blaze::DynamicVector<double>& x2,
+                 const blaze::DynamicVector<double>& y2 );
 };
 
-#endif // MATPLOTLIB_H
+#endif    // MATPLOTLIB_H
