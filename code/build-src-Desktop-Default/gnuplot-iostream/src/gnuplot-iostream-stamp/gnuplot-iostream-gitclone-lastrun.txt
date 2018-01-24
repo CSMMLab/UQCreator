@@ -1,3 +1,0 @@
-repository='https://github.com/dstahlke/gnuplot-iostream'
-module=''
-tag=''

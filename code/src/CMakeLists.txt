@@ -1,36 +1,33 @@
 cmake_minimum_required( VERSION 3.5 )
 project( UQCreator )
-include(ExternalProject)
-set( CMAKE_BUILD_TYPE Release )
+include( ExternalProject )
 set( CMAKE_CXX_STANDARD 14 )
-add_definitions( -std=c++14 -O3 -march=native -DNDEBUG )
-#add_definitions( -std=c++14 -Ofast )
-#add_definitions( -std=c++14 -Wall )
-
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/" )
+set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -frename-registers -DNDEBUG" )
+set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall" )
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../bin/" )
 
 set( UQCreator_SRCS
-	  main.cpp
-          problem.cpp
-          burgers.cpp
-          polynomial.cpp
-          legendre.cpp
-          hermite.cpp
-          mathtools.cpp
-          mesh.cpp
-          closure.cpp
-          momentsolver.cpp
-          limiter.cpp
-          nolimiter.cpp
-          minmod.cpp
-          timesolver.cpp
-          thetamethod.cpp
-          plotengine.cpp
-          gnuplotlib.cpp
-#          matplotlib.cpp
-	)
+    main.cpp
+    problem.cpp
+    burgers.cpp
+    polynomial.cpp
+    legendre.cpp
+    hermite.cpp
+    mathtools.cpp
+    mesh.cpp
+    closure.cpp
+    momentsolver.cpp
+    limiter.cpp
+    nolimiter.cpp
+    minmod.cpp
+    timesolver.cpp
+    thetamethod.cpp
+    plotengine.cpp
+    gnuplotlib.cpp
+    matplotlib.cpp
+)
 
-add_executable( UQCreator ${UQCreator_SRCS})
+add_executable( UQCreator ${UQCreator_SRCS} )
 
 find_package( OpenMP REQUIRED )
 if( OPENMP_FOUND )
@@ -54,7 +51,8 @@ find_package( Git REQUIRED )
 ExternalProject_Add( blaze
   PREFIX ${CMAKE_BINARY_DIR}/blaze
   GIT_REPOSITORY https://bitbucket.org/blaze-lib/blaze
-  UPDATE_COMMAND ""
+  UPDATE_COMMAND git pull
+  UPDATE_DISCONNECTED 1
   CONFIGURE_COMMAND ""
   BUILD_COMMAND cmake ../blaze -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/blaze
   INSTALL_COMMAND make install
@@ -65,18 +63,20 @@ add_dependencies ( UQCreator blaze )
 ExternalProject_Add( cpptoml
   PREFIX ${CMAKE_BINARY_DIR}/cpptoml
   GIT_REPOSITORY https://github.com/skystrife/cpptoml
-  UPDATE_COMMAND ""
+  UPDATE_COMMAND git pull
+  UPDATE_DISCONNECTED 1
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
 )
-include_directories(${CMAKE_BINARY_DIR}/cpptoml/src/cpptoml/include)
+include_directories( ${CMAKE_BINARY_DIR}/cpptoml/src/cpptoml/include )
 add_dependencies ( UQCreator cpptoml )
 
 ExternalProject_Add( gnuplot-iostream
   PREFIX ${CMAKE_BINARY_DIR}/gnuplot-iostream
   GIT_REPOSITORY https://github.com/dstahlke/gnuplot-iostream
-  UPDATE_COMMAND ""
+  UPDATE_COMMAND git pull
+  UPDATE_DISCONNECTED 1
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
@@ -87,7 +87,8 @@ add_dependencies ( UQCreator gnuplot-iostream )
 ExternalProject_Add( matplotlib-cpp
   PREFIX ${CMAKE_BINARY_DIR}/matplotlib-cpp
   GIT_REPOSITORY https://github.com/lava/matplotlib-cpp.git
-  UPDATE_COMMAND ""
+  UPDATE_COMMAND git pull
+  UPDATE_DISCONNECTED 1
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
