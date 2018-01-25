@@ -38,6 +38,7 @@ class MomentSolver
 
   public:
     MomentSolver( Problem* problem );
+    ~MomentSolver();
     void Solve();
     void Plot();
     void Print();

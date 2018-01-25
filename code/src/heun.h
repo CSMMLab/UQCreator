@@ -1,16 +1,17 @@
-#ifndef THETAMETHOD_H
-#define THETAMETHOD_H
+#ifndef HEUN_H
+#define HEUN_H
 
 #include "timesolver.h"
+#include "closure.h"
 
-class ThetaMethod : public TimeSolver
+
+class Heun : public TimeSolver
 {
-  private:
-    double _theta;
-
-  public:
-    ThetaMethod() = delete;
-    ThetaMethod( Problem* problem, double theta );
+    Closure* _closure;
+public:
+    Heun() = delete;
+    Heun( Problem* problem, Closure* closure );
+    virtual ~Heun();
     virtual void Advance( std::function<blaze::DynamicMatrix<double>( const blaze::DynamicMatrix<double>&,
                                                                       const blaze::DynamicMatrix<double>&,
                                                                       const blaze::DynamicMatrix<double>&,
@@ -20,4 +21,4 @@ class ThetaMethod : public TimeSolver
                           std::vector<blaze::DynamicMatrix<double>>& lambda );
 };
 
-#endif    // THETAMETHOD_H
+#endif // HEUN_H

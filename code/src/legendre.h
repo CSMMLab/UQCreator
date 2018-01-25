@@ -13,6 +13,7 @@ class Legendre : public Polynomial
 
   public:
     Legendre( int degree );
+    virtual ~Legendre() {}
 
     virtual double Evaluate( int m, double x );
     virtual const blaze::DynamicVector<double>& GetNodes();

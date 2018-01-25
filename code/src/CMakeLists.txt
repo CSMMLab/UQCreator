@@ -3,6 +3,7 @@ project( UQCreator )
 include( ExternalProject )
 set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -frename-registers -DNDEBUG" )
+set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native" )
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall" )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../bin/" )
 
@@ -25,6 +26,8 @@ set( UQCreator_SRCS
     plotengine.cpp
     gnuplotlib.cpp
     matplotlib.cpp
+    sspmultistep.cpp
+    heun.cpp
 )
 
 add_executable( UQCreator ${UQCreator_SRCS} )

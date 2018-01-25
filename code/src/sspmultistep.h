@@ -1,16 +1,18 @@
-#ifndef THETAMETHOD_H
-#define THETAMETHOD_H
+#ifndef SSPMULTISTEP_H
+#define SSPMULTISTEP_H
 
 #include "timesolver.h"
+#include "heun.h"
 
-class ThetaMethod : public TimeSolver
+class SSPMultiStep : public TimeSolver
 {
-  private:
-    double _theta;
-
-  public:
-    ThetaMethod() = delete;
-    ThetaMethod( Problem* problem, double theta );
+    std::vector<blaze::DynamicMatrix<double>> _u1Step, _u2Step, _u3Step;
+    Heun* _heun;
+    unsigned int _counter;
+public:
+    SSPMultiStep() = delete;
+    SSPMultiStep( Problem * problem, Closure* closure);
+    virtual ~SSPMultiStep();
     virtual void Advance( std::function<blaze::DynamicMatrix<double>( const blaze::DynamicMatrix<double>&,
                                                                       const blaze::DynamicMatrix<double>&,
                                                                       const blaze::DynamicMatrix<double>&,
@@ -20,4 +22,4 @@ class ThetaMethod : public TimeSolver
                           std::vector<blaze::DynamicMatrix<double>>& lambda );
 };
 
-#endif    // THETAMETHOD_H
+#endif // SSPMULTISTEP_H

@@ -7,8 +7,8 @@ void ThetaMethod::Advance( std::function<blaze::DynamicMatrix<double>( const bla
                                                                        const blaze::DynamicMatrix<double>&,
                                                                        const blaze::DynamicMatrix<double>& )> const& fluxFunc,
                            std::vector<blaze::DynamicMatrix<double>>& uNew,
-                           const std::vector<blaze::DynamicMatrix<double>>& u,
-                           const std::vector<blaze::DynamicMatrix<double>>& lambda ) {
+                           std::vector<blaze::DynamicMatrix<double>>& u,
+                           std::vector<blaze::DynamicMatrix<double>>& lambda ) {
     if( _theta == 0 ) {    // explicit Euler
         for( int j = 3; j < _problem->GetMesh()->GetNumCells() + 1; ++j ) {
             uNew[j] = u[j] - ( _dt / _dx ) * ( fluxFunc( lambda[j - 1], lambda[j], lambda[j + 1], lambda[j + 2] ) -

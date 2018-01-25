@@ -6,6 +6,7 @@
 #include <functional>
 #include <iostream>
 
+#include "closure.h"
 #include "problem.h"
 
 class TimeSolver
@@ -20,16 +21,17 @@ class TimeSolver
     int _nTimeSteps;
 
   public:
+    TimeSolver() = delete;
     TimeSolver( Problem* problem );
     virtual ~TimeSolver();
-    static TimeSolver* Create( Problem* problem );
+    static TimeSolver* Create( Problem* problem, Closure* closure );
     virtual void Advance( std::function<blaze::DynamicMatrix<double>( const blaze::DynamicMatrix<double>&,
                                                                       const blaze::DynamicMatrix<double>&,
                                                                       const blaze::DynamicMatrix<double>&,
                                                                       const blaze::DynamicMatrix<double>& )> const& fluxFunc,
                           std::vector<blaze::DynamicMatrix<double>>& uNew,
-                          const std::vector<blaze::DynamicMatrix<double>>& u,
-                          const std::vector<blaze::DynamicMatrix<double>>& lambda ) = 0;
+                          std::vector<blaze::DynamicMatrix<double>>& u,
+                          std::vector<blaze::DynamicMatrix<double>>& lambda ) = 0;
     double GetTimeStepSize();
     double GetNTimeSteps();
 };

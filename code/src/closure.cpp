@@ -173,7 +173,6 @@ blaze::DynamicMatrix<double> Closure::EvaluateLambda( const blaze::DynamicMatrix
 }
 
 void Closure::Gradient( blaze::DynamicVector<double>& g, const blaze::DynamicMatrix<double>& lambda, const blaze::DynamicMatrix<double>& u ) {
-    blaze::DynamicVector<double> w = _quad->GetWeights();
     blaze::DynamicVector<double> uKinetic( _nStates, 0.0 );
     g.reset();
 
@@ -191,7 +190,6 @@ void Closure::Gradient( blaze::DynamicVector<double>& g, const blaze::DynamicMat
 
 void Closure::Hessian( blaze::DynamicMatrix<double>& H, const blaze::DynamicMatrix<double>& lambda ) {
     blaze::DynamicMatrix<double> dLambdadU( _nStates, _nStates, 0.0 );
-
     H.reset();
 
     for( int k = 0; k < _nQuadPoints; ++k ) {    // TODO: reorder to avoid cach misses

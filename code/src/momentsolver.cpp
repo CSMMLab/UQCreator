@@ -19,10 +19,18 @@ MomentSolver::MomentSolver( Problem* problem ) : _problem( problem ) {
     _nStates  = _problem->GetNStates();
 
     _limiter = Limiter::Create( _closure, _problem );
-    _time    = TimeSolver::Create( _problem );
+    _time    = TimeSolver::Create( _problem, _closure );
     _plot    = PlotEngine::Create( _problem );
 
     _dt = _time->GetTimeStepSize();
+}
+
+MomentSolver::~MomentSolver() {
+    delete _quad;
+    delete _closure;
+    delete _limiter;
+    delete _time;
+    delete _plot;
 }
 
 void MomentSolver::Solve() {
