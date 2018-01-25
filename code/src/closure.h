@@ -8,7 +8,7 @@
 
 class Closure
 {
-  private:
+  protected:
     Problem* _problem;
     Polynomial* _basis;
     Polynomial* _quad;
@@ -23,8 +23,6 @@ class Closure
     int _nQuadPoints;
     int _nStates;
     void Hessian( blaze::DynamicMatrix<double>& H, const blaze::DynamicMatrix<double>& lambda );
-
-  public:
     void Gradient( blaze::DynamicVector<double>& g, const blaze::DynamicMatrix<double>& lambda, const blaze::DynamicMatrix<double>& u );
 
   public:
@@ -33,6 +31,7 @@ class Closure
      * @param pointer to problem class
      */
     Closure( Problem* problem );
+    static Closure* Create( Problem* problem );
     /**
      * calculate dual vector fulfilling the moment constraint
      * @param moment vector
@@ -52,17 +51,14 @@ class Closure
     blaze::DynamicMatrix<double> EvaluateLambda( const blaze::DynamicMatrix<double>& lambda, const blaze::DynamicVector<double>& xi );
     /**
      * calculate solution for kinetic entropy with given entropic variable
-     * @param entropic variable
-     * @return solution
      */
-    void UKinetic( blaze::DynamicVector<double>& out, const blaze::DynamicVector<double>& Lambda );
-    blaze::DynamicMatrix<double> UKinetic( const blaze::DynamicMatrix<double>& Lambda );
+    virtual void U( blaze::DynamicVector<double>& out, const blaze::DynamicVector<double>& Lambda ) = 0;
+    virtual blaze::DynamicMatrix<double> U( const blaze::DynamicMatrix<double>& Lambda )            = 0;
     /**
      * calculate derivative of solution for kinetic entropy with given entropic variable
-     * @param entropic variable
-     * @return derivative of solution
      */
-    void DUKinetic( blaze::DynamicMatrix<double>& y, const blaze::DynamicVector<double>& Lambda );
+    virtual void DU( blaze::DynamicMatrix<double>& y, const blaze::DynamicVector<double>& Lambda ) = 0;
+
     const std::vector<blaze::DynamicVector<double>>& GetPhi() { return _phi; }
     const blaze::DynamicVector<double>& GetPhiTilde( int k ) { return _phiTildeVec[k]; }
     const blaze::DynamicMatrix<double>& GetPhiTilde() { return _phiTilde; }

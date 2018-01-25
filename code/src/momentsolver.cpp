@@ -1,9 +1,9 @@
 #include "momentsolver.h"
 
 MomentSolver::MomentSolver( Problem* problem ) : _problem( problem ) {
-    _quad    = new Legendre( _problem->GetNQuadPoints() );
-    _closure = new Closure( _problem );
-    _mesh    = _problem->GetMesh();
+    _quad = new Legendre( _problem->GetNQuadPoints() );
+
+    _mesh = _problem->GetMesh();
 
     _x      = _mesh->GetGrid();
     _dx     = _mesh->GetSpacing()[0];    // only equidistant!
@@ -18,6 +18,7 @@ MomentSolver::MomentSolver( Problem* problem ) : _problem( problem ) {
     _tEnd     = _problem->GetTEnd();
     _nStates  = _problem->GetNStates();
 
+    _closure = Closure::Create( _problem );
     _limiter = Limiter::Create( _closure, _problem );
     _time    = TimeSolver::Create( _problem, _closure );
     _plot    = PlotEngine::Create( _problem );
@@ -27,7 +28,7 @@ MomentSolver::MomentSolver( Problem* problem ) : _problem( problem ) {
 
 MomentSolver::~MomentSolver() {
     delete _quad;
-    delete _closure;
+    // delete _closure;
     delete _limiter;
     delete _time;
     delete _plot;
@@ -87,14 +88,14 @@ blaze::DynamicMatrix<double> MomentSolver::numFlux( const blaze::DynamicMatrix<d
                                                     const blaze::DynamicMatrix<double>& lambda2,
                                                     const blaze::DynamicMatrix<double>& lambda3 ) {
     blaze::DynamicMatrix<double> g =
-        _problem->G( _closure->UKinetic( _closure->EvaluateLambda( lambda1 ) ) + 0.5 * _dx * _limiter->Slope( lambda0, lambda1, lambda2 ),
-                     _closure->UKinetic( _closure->EvaluateLambda( lambda2 ) ) - 0.5 * _dx * _limiter->Slope( lambda1, lambda2, lambda3 ) );
+        _problem->G( _closure->U( _closure->EvaluateLambda( lambda1 ) ) + 0.5 * _dx * _limiter->Slope( lambda0, lambda1, lambda2 ),
+                     _closure->U( _closure->EvaluateLambda( lambda2 ) ) - 0.5 * _dx * _limiter->Slope( lambda1, lambda2, lambda3 ) );
 
     return 0.5 * g * _closure->GetPhiTildeW();
 }
 
 blaze::DynamicMatrix<double> MomentSolver::CalculateMoments( const blaze::DynamicMatrix<double>& lambda ) {
-    return 0.5 * _closure->UKinetic( _closure->EvaluateLambda( lambda ) ) * _closure->GetPhiTildeW();
+    return 0.5 * _closure->U( _closure->EvaluateLambda( lambda ) ) * _closure->GetPhiTildeW();
 }
 
 std::vector<blaze::DynamicMatrix<double>> MomentSolver::SetupIC() {
@@ -147,8 +148,8 @@ void MomentSolver::Plot() {
     for( int k = 0; k < nXi; ++k ) {
         xi[k] = -1 + k / ( nXi - 1.0 ) * 2.0;
     }
-    blaze::DynamicMatrix<double> resM    = _closure->UKinetic( _closure->EvaluateLambda( _lambda[cellIndex - 1], xi ) );
-    blaze::DynamicMatrix<double> resQuad = _closure->UKinetic( _closure->EvaluateLambda( _lambda[cellIndex - 1] ) );
+    blaze::DynamicMatrix<double> resM    = _closure->U( _closure->EvaluateLambda( _lambda[cellIndex - 1], xi ) );
+    blaze::DynamicMatrix<double> resQuad = _closure->U( _closure->EvaluateLambda( _lambda[cellIndex - 1] ) );
 
     // save first state and calculate exact solution
     blaze::DynamicVector<double> res       = blaze::DynamicVector<double>( nXi, 0.0 );
@@ -186,7 +187,7 @@ void MomentSolver::PlotFixedXi() {
     blaze::DynamicMatrix<double> resM( _nCells + 4, _nStates );
     blaze::DynamicVector<double> resVec( _nStates, 0.0 );
     for( int j = 0; j < _nCells + 4; ++j ) {
-        _closure->UKinetic( resVec, _closure->EvaluateLambda( _lambda[j], xiVec, j ) );
+        _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiVec, j ) );
         row( resM, j ) = blaze::trans( resVec );
     }
 
@@ -214,5 +215,5 @@ void MomentSolver::Print() {
         xi[k] = -1 + k/(nXi-1.0)*2.0;
     }
     std::cout<<_x[cellIndex]<<std::endl;
-    std::cout<<_closure->UKinetic(_closure->EvaluateLambda(_lambda[cellIndex-1],xi))<<std::endl;*/
+    std::cout<<_closure->U(_closure->EvaluateLambda(_lambda[cellIndex-1],xi))<<std::endl;*/
 }

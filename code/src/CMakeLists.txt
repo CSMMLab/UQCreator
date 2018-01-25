@@ -29,6 +29,8 @@ set( UQCreator_SRCS
     sspmultistep.cpp
     heun.cpp
     noplot.cpp
+    boundedbarrier.cpp
+    stochasticgalerkin.cpp
 )
 
 add_executable( UQCreator ${UQCreator_SRCS} )

@@ -22,6 +22,7 @@ class Problem
     double _CFL;
     double _tEnd;
     std::string _limiter;
+    std::string _closureType;
 
     // I/O
     std::string _inputFile;
@@ -53,6 +54,7 @@ class Problem
     std::string GetInputFile() const;
     std::string GetLimiter() const;
     std::string GetOutputDir() const;
+    std::string GetClosureType() const;
 };
 
 #endif    // PROBLEM_H

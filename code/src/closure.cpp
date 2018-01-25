@@ -1,4 +1,6 @@
 #include "closure.h"
+#include "boundedbarrier.h"
+#include "stochasticgalerkin.h"
 
 Closure::Closure( Problem* problem )
     : _problem( problem ), _nMoments( _problem->GetNMoments() ), _nQuadPoints( _problem->GetNQuadPoints() ), _nStates( _problem->GetNStates() ) {
@@ -32,50 +34,18 @@ Closure::Closure( Problem* problem )
     _uPlus    = 12.0 + du;
 }
 
-void Closure::UKinetic( blaze::DynamicVector<double>& out, const blaze::DynamicVector<double>& Lambda ) {
-    double ePos, eNeg;
-    for( int l = 0; l < _nStates; ++l ) {
-        ePos = exp( Lambda[l] );
-        eNeg = 1.0 / ePos;
-        if( Lambda[l] > 0.0 ) {
-            out[l] = _uPlus / ( eNeg + 1.0 ) + _uMinus * eNeg / ( 1.0 + eNeg );
-        }
-        else {
-            out[l] = _uMinus / ( ePos + 1.0 ) + _uPlus * ePos / ( 1.0 + ePos );
-        }
+Closure* Closure::Create( Problem* problem ) {
+    std::string method = problem->GetClosureType();
+    if( method.compare( "BoundedBarrier" ) == 0 ) {
+        return new BoundedBarrier( problem );
     }
-}
-
-blaze::DynamicMatrix<double> Closure::UKinetic( const blaze::DynamicMatrix<double>& Lambda ) {
-    double ePos, eNeg;
-    blaze::DynamicMatrix<double> y( _nStates, Lambda.columns(), 0.0 );
-    for( int l = 0; l < _nStates; ++l ) {
-        for( int k = 0; k < Lambda.columns(); ++k ) {
-            ePos = exp( Lambda( l, k ) );
-            eNeg = 1.0 / ePos;
-            if( Lambda( l, k ) > 0 ) {
-                y( l, k ) = _uPlus / ( eNeg + 1.0 ) + _uMinus * eNeg / ( 1.0 + eNeg );
-            }
-            else {
-                y( l, k ) = _uMinus / ( ePos + 1.0 ) + _uPlus * ePos / ( 1.0 + ePos );
-            }
-        }
+    else if( method.compare( "StochasticGalerkin" ) == 0 ) {
+        return new StochasticGalerkin( problem );
     }
-    return y;
-}
-
-void Closure::DUKinetic( blaze::DynamicMatrix<double>& y, const blaze::DynamicVector<double>& Lambda ) {
-    for( int l = 0; l < _nStates; ++l ) {
-        for( int m = 0; m < _nStates; ++m ) {
-            double ePos = exp( Lambda[l] );
-            double eNeg = 1 / ePos;
-            if( Lambda[l] > 0 ) {
-                y( l, m ) = eNeg * ( _uPlus - _uMinus ) / ( exp( -2.0 * Lambda[l] ) + 2.0 * eNeg + 1.0 );
-            }
-            else {
-                y( l, m ) = ePos * ( _uPlus - _uMinus ) / ( 1.0 + 2.0 * ePos + exp( 2.0 * Lambda[l] ) );
-            }
-        }
+    else {
+        std::cerr << "Invalid closure type" << std::endl;
+        exit( EXIT_FAILURE );
+        return NULL;
     }
 }
 
@@ -177,7 +147,7 @@ void Closure::Gradient( blaze::DynamicVector<double>& g, const blaze::DynamicMat
     g.reset();
 
     for( int k = 0; k < _nQuadPoints; ++k ) {
-        UKinetic( uKinetic, lambda * _phiTildeVec[k] );
+        U( uKinetic, lambda * _phiTildeVec[k] );
         for( int j = 0; j < _nMoments; ++j ) {
             for( int l = 0; l < _nStates; ++l ) {
                 g[l * _nMoments + j] += uKinetic[l] * _phiTildeW( k, j );
@@ -193,7 +163,7 @@ void Closure::Hessian( blaze::DynamicMatrix<double>& H, const blaze::DynamicMatr
     H.reset();
 
     for( int k = 0; k < _nQuadPoints; ++k ) {    // TODO: reorder to avoid cach misses
-        DUKinetic( dLambdadU, lambda * _phiTildeVec[k] );
+        DU( dLambdadU, lambda * _phiTildeVec[k] );
         for( int l = 0; l < _nStates; ++l ) {
             for( int m = 0; m < _nStates; ++m ) {
                 for( int j = 0; j < _nMoments; ++j ) {

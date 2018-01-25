@@ -17,6 +17,7 @@ Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
         _nStates     = problem->get_as<double>( "nStates" ).value_or( -1.0 );
 
         auto momentSystem    = file->get_table( "moment_system" );
+        _closureType         = momentSystem->get_as<std::string>( "closure" ).value_or( "none" );
         std::string quadType = momentSystem->get_as<std::string>( "quadType" ).value_or( "none" );
         if( quadType.compare( "legendre" ) )
             _quadType = QUAD_TYPE_LEGENDRE;
@@ -71,3 +72,5 @@ std::string Problem::GetInputFile() const { return _inputFile; }
 std::string Problem::GetLimiter() const { return _limiter; }
 
 std::string Problem::GetOutputDir() const { return _outputDir; }
+
+std::string Problem::GetClosureType() const { return _closureType; }

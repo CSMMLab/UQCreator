@@ -10,9 +10,9 @@ Limiter::~Limiter() {}
 blaze::DynamicMatrix<double> Limiter::Slope( const blaze::DynamicMatrix<double>& lambda1,
                                              const blaze::DynamicMatrix<double>& lambda2,
                                              const blaze::DynamicMatrix<double>& lambda3 ) {
-    return SlopeInternal( _closure->UKinetic( _closure->EvaluateLambda( lambda1 ) ),
-                          _closure->UKinetic( _closure->EvaluateLambda( lambda2 ) ),
-                          _closure->UKinetic( _closure->EvaluateLambda( lambda3 ) ) );
+    return SlopeInternal( _closure->U( _closure->EvaluateLambda( lambda1 ) ),
+                          _closure->U( _closure->EvaluateLambda( lambda2 ) ),
+                          _closure->U( _closure->EvaluateLambda( lambda3 ) ) );
 }
 
 double Limiter::SlopeBoundPres( const double& u, const double& slope ) {

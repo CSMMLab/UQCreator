@@ -10,12 +10,13 @@ b = 3
 
 [problem]
 CFL = 0.5
-timestepping = "explicitEuler"
+timestepping = "SSPMultiStep"
 limiter = "minmod"
 tEnd = 0.14
 nStates = 1
 
 [moment_system]
+closure = "StochasticGalerkin"
 moments = 15
 quadType = "legendre"
 quadPoints = 30
