@@ -1,6 +1,7 @@
 #include "plotengine.h"
 #include "gnuplotlib.h"
 #include "matplotlib.h"
+#include "noplot.h"
 
 PlotEngine::PlotEngine( Problem* problem ) : _problem( problem ) { _outputDir = _problem->GetOutputDir(); }
 
@@ -15,6 +16,9 @@ PlotEngine* PlotEngine::Create( Problem* problem ) {
     }
     else if( engine.compare( "matplotlib" ) == 0 ) {
         return new Matplotlib( problem );
+    }
+    else if( engine.compare( "off" ) == 0 ) {
+        return new noPlot( problem );
     }
     else {
         std::cerr << "Invalid plot engine type" << std::endl;

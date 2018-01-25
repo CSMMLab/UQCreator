@@ -2,6 +2,8 @@
 
 GnuplotLib::GnuplotLib( Problem* problem ) : PlotEngine( problem ) {}
 
+GnuplotLib::~GnuplotLib() {}
+
 void GnuplotLib::Plot1D( const std::vector<double>& x1, const std::vector<double>& y1 ) {
     Gnuplot gp;
     gp << "set key off\n";

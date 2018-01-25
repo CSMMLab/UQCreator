@@ -28,6 +28,7 @@ set( UQCreator_SRCS
     matplotlib.cpp
     sspmultistep.cpp
     heun.cpp
+    noplot.cpp
 )
 
 add_executable( UQCreator ${UQCreator_SRCS} )

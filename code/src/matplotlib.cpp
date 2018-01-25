@@ -2,6 +2,8 @@
 
 Matplotlib::Matplotlib( Problem* problem ) : PlotEngine( problem ) {}
 
+Matplotlib::~Matplotlib() {}
+
 void Matplotlib::Plot1D( const std::vector<double>& x1, const std::vector<double>& y1 ) {
     auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::system_clock::now().time_since_epoch() ).count();
     matplotlibcpp::plot( x1, y1 );
