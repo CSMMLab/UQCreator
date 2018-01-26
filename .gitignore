@@ -44,7 +44,10 @@ code/bin/*
 # build files
 code/build/*
 
-# results folder
+# input files
+code/input/*
+
+# results 
 code/results/*
 
 # tmp data

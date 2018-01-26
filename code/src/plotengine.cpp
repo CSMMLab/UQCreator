@@ -17,7 +17,7 @@ PlotEngine* PlotEngine::Create( Problem* problem ) {
     else if( engine.compare( "matplotlib" ) == 0 ) {
         return new Matplotlib( problem );
     }
-    else if( engine.compare( "off" ) == 0 ) {
+    else if( engine.compare( "none" ) == 0 || engine.compare( "off" ) == 0 ) {
         return new noPlot( problem );
     }
     else {

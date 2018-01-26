@@ -28,7 +28,7 @@ MomentSolver::MomentSolver( Problem* problem ) : _problem( problem ) {
 
 MomentSolver::~MomentSolver() {
     delete _quad;
-    // delete _closure;
+    delete _closure;
     delete _limiter;
     delete _time;
     delete _plot;

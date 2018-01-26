@@ -9,14 +9,17 @@ a = 0
 b = 3
 
 [problem]
+# available timesteppings: explicitEuler, Heun, SSPMultiStep
+timestepping = "explicitEuler"
 CFL = 0.5
-timestepping = "SSPMultiStep"
+# available limiter: minmod, none|off
 limiter = "minmod"
 tEnd = 0.14
 nStates = 1
 
 [moment_system]
-closure = "StochasticGalerkin"
+# available closures: BoundedBarrier, StochasticGalerkin
+closure = "BoundedBarrier"
 moments = 15
 quadType = "legendre"
 quadPoints = 30
@@ -24,6 +27,7 @@ maxIterations = 200
 epsilon = 5e-5
 
 [plot]
+# available plotengines: gnuplot (window), matplotlib (pdf), none|off
 engine = "gnuplot"
 cellIndex = 110
 evalPoints = 1000

@@ -36,13 +36,13 @@ Limiter::SlopeInternal( const blaze::DynamicMatrix<double>& u0, const blaze::Dyn
 }
 
 Limiter* Limiter::Create( Closure* closure, Problem* problem ) {
-    auto file                = cpptoml::parse_file( problem->GetInputFile() );
-    auto general             = file->get_table( "problem" );
-    std::string timestepping = general->get_as<std::string>( "limiter" ).value_or( "" );
-    if( timestepping.compare( "minmod" ) == 0 ) {
+    auto file           = cpptoml::parse_file( problem->GetInputFile() );
+    auto general        = file->get_table( "problem" );
+    std::string limiter = general->get_as<std::string>( "limiter" ).value_or( "" );
+    if( limiter.compare( "minmod" ) == 0 ) {
         return new Minmod( closure, problem );
     }
-    else if( timestepping.compare( "none" ) == 0 ) {
+    else if( limiter.compare( "none" ) == 0 || limiter.compare( "off" ) == 0 ) {
         return new NoLimiter( closure, problem );
     }
     else {

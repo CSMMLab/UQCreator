@@ -1,4 +1,4 @@
-# Dependecies
+# Dependencies
 - Compiler with C++14 support e.g. g++ >= v4.9
 - BLAS
 - LAPACK
@@ -6,19 +6,21 @@
 - cmake >= v3.5
 - git
 - gnuplot
+- matplotlib
+- libpython2.7
  
 # Build instructions:
-Note that an active internet connection is required for the first build in order to download the latest versions of the libraries/tools blaze, cpptoml and gnuplot-iostream!
+Note that an active internet connection is required for the first build in order to download the latest versions of the libraries/tools blaze, cpptoml, gnuplot-iostream and matplotlib-cpp!
 If an if an active internet connection is present, run:
 
-     cd code/build
-     cmake ../src
+     cd code/build/release
+     cmake -DCMAKE_BUILD_TYPE=Release ../../src 
      make
  
 The binary will afterwards be placed in the code/bin folder.
  
 # Run instructions
-Execute the compiled binary and hand over a valid TOML styled config file by using the '-c' keyword.
+Execute the compiled binary and hand over a valid TOML styled config file by using the parameter '-c'.
 Example:
 
      ./bin/UQCreator -c input/example.toml
