@@ -118,7 +118,7 @@ std::vector<blaze::DynamicMatrix<double>> MomentSolver::SetupIC() {
 double MomentSolver::IC( double x, double xi ) {
     double a     = 0.5;
     double b     = 1.5;
-    double sigma = 0.2;
+    double sigma = 0.7;
     if( x < a + sigma * xi ) {
         return _uL;
     }
@@ -201,6 +201,45 @@ void MomentSolver::PlotFixedXi() {
     for( int j = 0; j < nFine; ++j ) {
         xFine[j] = _a + j * ( _b - _a ) / ( nFine - 1 );
         exRes[j] = _problem->ExactSolution( _tEnd, xFine[j], xi );
+    }
+
+    _plot->Plot1D( _x, res, xFine, exRes );
+}
+
+void MomentSolver::PlotExpectedValue() {
+    const unsigned int nQuadFine            = 200;
+    Legendre* quadFine                      = new Legendre( nQuadFine );
+    blaze::DynamicVector<double> wFine      = quadFine->GetWeights();
+    blaze::DynamicVector<double> xiQuadFine = quadFine->GetNodes();
+    blaze::DynamicVector<double> w          = _quad->GetWeights();
+    blaze::DynamicVector<double> xiQuad     = _quad->GetNodes();
+    unsigned int nFine;
+
+    try {
+        auto file = cpptoml::parse_file( _problem->GetInputFile() );
+        auto plot = file->get_table( "plot" );
+
+        nFine = plot->get_as<int>( "evalPoints" ).value_or( -1 );
+    } catch( const cpptoml::parse_exception& e ) {
+        std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
+        exit( EXIT_FAILURE );
+    }
+
+    blaze::DynamicVector<double> xFine( nFine, 0.0 ), exRes( nFine, 0.0 ), res( _nCells + 4, 0.0 );
+
+    for( unsigned int j = 0; j < nFine; ++j ) {
+        xFine[j] = _a + j * ( _b - _a ) / ( nFine - 1 );
+        for( unsigned int k = 0; k < nQuadFine; ++k ) {
+            exRes[j] += 0.5 * wFine[k] * _problem->ExactSolution( _tEnd, xFine[j], xiQuadFine[k] );
+        }
+    }
+
+    blaze::DynamicVector<double> resVec( _nStates, 0.0 );
+    for( int j = 0; j < _nCells + 4; ++j ) {
+        for( int k = 0; k < _problem->GetNQuadPoints(); ++k ) {
+            _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
+            res[j] += 0.5 * w[k] * resVec[0];
+        }
     }
 
     _plot->Plot1D( _x, res, xFine, exRes );

@@ -43,6 +43,7 @@ class MomentSolver
     void Plot();
     void Print();
     void PlotFixedXi();
+    void PlotExpectedValue();
 };
 
 #endif    // MOMENTSOLVER_H
