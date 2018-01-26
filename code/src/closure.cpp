@@ -35,11 +35,11 @@ Closure::Closure( Problem* problem )
 }
 
 Closure* Closure::Create( Problem* problem ) {
-    std::string method = problem->GetClosureType();
-    if( method.compare( "BoundedBarrier" ) == 0 ) {
+    std::string closure = problem->GetClosureType();
+    if( closure.compare( "BoundedBarrier" ) == 0 || closure.compare( "BB" ) == 0 ) {
         return new BoundedBarrier( problem );
     }
-    else if( method.compare( "StochasticGalerkin" ) == 0 ) {
+    else if( closure.compare( "StochasticGalerkin" ) == 0 || closure.compare( "SG" ) == 0 ) {
         return new StochasticGalerkin( problem );
     }
     else {

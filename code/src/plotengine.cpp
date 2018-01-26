@@ -11,10 +11,10 @@ PlotEngine* PlotEngine::Create( Problem* problem ) {
     auto file          = cpptoml::parse_file( problem->GetInputFile() );
     auto general       = file->get_table( "plot" );
     std::string engine = general->get_as<std::string>( "engine" ).value_or( "" );
-    if( engine.compare( "gnuplot" ) == 0 ) {
+    if( engine.compare( "gnuplot" ) == 0 || engine.compare( "GP" ) == 0 ) {
         return new GnuplotLib( problem );
     }
-    else if( engine.compare( "matplotlib" ) == 0 ) {
+    else if( engine.compare( "matplotlib" ) == 0 || engine.compare( "MPL" ) == 0 ) {
         return new Matplotlib( problem );
     }
     else if( engine.compare( "none" ) == 0 || engine.compare( "off" ) == 0 ) {
