@@ -118,7 +118,7 @@ std::vector<blaze::DynamicMatrix<double>> MomentSolver::SetupIC() {
 double MomentSolver::IC( double x, double xi ) {
     double a     = 0.5;
     double b     = 1.5;
-    double sigma = 0.7;
+    double sigma = 0.2;
     if( x < a + sigma * xi ) {
         return _uL;
     }

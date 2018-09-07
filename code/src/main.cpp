@@ -74,6 +74,7 @@ int main( int argc, char* argv[] ) {
     solver->Solve();
     solver->PlotFixedXi();
     solver->Plot();
+    solver->PlotExpectedValue();
 
     delete solver;
     delete problem;
