@@ -162,7 +162,7 @@ void Closure::Hessian( blaze::DynamicMatrix<double>& H, const blaze::DynamicMatr
     blaze::DynamicMatrix<double> dLambdadU( _nStates, _nStates, 0.0 );
     H.reset();
 
-    for( int k = 0; k < _nQuadPoints; ++k ) {    // TODO: reorder to avoid cach misses
+    for( int k = 0; k < _nQuadPoints; ++k ) {    // TODO: reorder to avoid cache misses
         DU( dLambdadU, lambda * _phiTildeVec[k] );
         for( int l = 0; l < _nStates; ++l ) {
             for( int m = 0; m < _nStates; ++m ) {

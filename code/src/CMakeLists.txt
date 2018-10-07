@@ -7,32 +7,7 @@ set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -marc
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall" )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../bin/" )
 
-set( UQCreator_SRCS
-    main.cpp
-    problem.cpp
-    burgers.cpp
-    polynomial.cpp
-    legendre.cpp
-    hermite.cpp
-    mathtools.cpp
-    mesh.cpp
-    closure.cpp
-    momentsolver.cpp
-    limiter.cpp
-    nolimiter.cpp
-    minmod.cpp
-    timesolver.cpp
-    thetamethod.cpp
-    plotengine.cpp
-    gnuplotlib.cpp
-    matplotlib.cpp
-    sspmultistep.cpp
-    heun.cpp
-    noplot.cpp
-    boundedbarrier.cpp
-    stochasticgalerkin.cpp
-)
-
+file(GLOB_RECURSE UQCreator_SRCS RELATIVE ${CMAKE_SOURCE_DIR} "*.cpp")
 add_executable( UQCreator ${UQCreator_SRCS} )
 
 find_package( OpenMP REQUIRED )
