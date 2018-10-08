@@ -12,8 +12,15 @@ class Euler : public Problem
     Euler( std::string inputFile );
     virtual void Solve();
     virtual void Plot() const;
-    virtual void Print() const;
+    virtual void Print();
     virtual void WriteToFile( std::string filename, int filetype ) const;
+    virtual Vector G( const Vector& u, const Vector& v );
+    virtual Matrix G( const Matrix& u, const Matrix& v );
+    virtual void Plot( Vector& x, Vector& u );
+    virtual double ExactSolution( double t, double x, double xi );
+    Vector F( const Vector& u );
+
+    Matrix F( const Matrix& u );
     double GetGamma() const;
 };
 

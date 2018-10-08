@@ -38,7 +38,6 @@ class Problem
     static Problem* Create( std::string inputFile );
     virtual ~Problem();
     virtual void Solve() {}
-    virtual double G( double u, double v )                        = 0;
     virtual Matrix G( const Matrix& u, const Matrix& v )          = 0;
     virtual void Plot( Vector& x, Vector& u )                     = 0;
     virtual double ExactSolution( double t, double x, double xi ) = 0;

@@ -1,5 +1,6 @@
 #include "problem.h"
 #include "burgers.h"
+#include "euler.h"
 
 Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
     try {
@@ -41,6 +42,9 @@ Problem* Problem::Create( std::string inputFile ) {
     std::string problem = general->get_as<std::string>( "problem" ).value_or( "" );
     if( problem.compare( "Burgers" ) == 0 ) {
         return new Burgers( inputFile );
+    }
+    else if( problem.compare( "Euler" ) == 0 ) {
+        return new Euler( inputFile );
     }
     else {
         std::cerr << "Invalid problem type" << std::endl;
