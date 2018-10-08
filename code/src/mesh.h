@@ -7,6 +7,8 @@
 #include <iostream>
 #include <string.h>
 
+#include "typedefs.h"
+
 #define MESH_STATUS_UNLOADED 100
 #define MESH_STATUS_LOADED 101
 #define MESH_TYPE_1DPLAIN 110
@@ -15,11 +17,11 @@ class Mesh
 {
   private:
     int _status;
-    int _dimension;
     int _meshType;
-    int _numCells;
-    blaze::DynamicVector<double> _mesh;
-    blaze::DynamicVector<double> _spacing;
+    unsigned _dimension;
+    unsigned _numCells;
+    Vector _mesh;
+    Vector _spacing;
 
     Mesh() {}
 
@@ -27,10 +29,10 @@ class Mesh
     void Load( std::string filename );
     void CreateGrid( double a, double b );
 
-    int GetNumCells() const;
-    int GetDimension() const;
-    const blaze::DynamicVector<double>& GetGrid() const;
-    const blaze::DynamicVector<double>& GetSpacing() const;
+    unsigned GetNumCells() const;
+    unsigned GetDimension() const;
+    const Vector& GetGrid() const;
+    const Vector& GetSpacing() const;
 
     Mesh( std::string inputFile );
     ~Mesh();

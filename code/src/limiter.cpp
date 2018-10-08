@@ -7,9 +7,9 @@ Limiter::Limiter( Closure* pClosure, Problem* problem ) : _closure( pClosure ), 
 
 Limiter::~Limiter() {}
 
-blaze::DynamicMatrix<double> Limiter::Slope( const blaze::DynamicMatrix<double>& lambda1,
-                                             const blaze::DynamicMatrix<double>& lambda2,
-                                             const blaze::DynamicMatrix<double>& lambda3 ) {
+Matrix Limiter::Slope( const Matrix& lambda1,
+                                             const Matrix& lambda2,
+                                             const Matrix& lambda3 ) {
     return SlopeInternal( _closure->U( _closure->EvaluateLambda( lambda1 ) ),
                           _closure->U( _closure->EvaluateLambda( lambda2 ) ),
                           _closure->U( _closure->EvaluateLambda( lambda3 ) ) );
@@ -21,13 +21,13 @@ double Limiter::SlopeBoundPres( const double& u, const double& slope ) {
     return std::min( 1.0, std::min( fabs( ( _closure->GetUPlus() - u ) / ( M - u ) ), fabs( ( _closure->GetUMinus() - u ) / ( m - u ) ) ) );
 }
 
-blaze::DynamicMatrix<double>
-Limiter::SlopeInternal( const blaze::DynamicMatrix<double>& u0, const blaze::DynamicMatrix<double>& u1, const blaze::DynamicMatrix<double>& u2 ) {
-    int nQ = _problem->GetNQuadPoints();
+Matrix
+Limiter::SlopeInternal( const Matrix& u0, const Matrix& u1, const Matrix& u2 ) {
+    unsigned nQ = _problem->GetNQuadPoints();
     double classicalSlope;
-    blaze::DynamicMatrix<double> y( _problem->GetNStates(), nQ );
-    for( int l = 0; l < _problem->GetNStates(); ++l ) {
-        for( int k = 0; k < nQ; ++k ) {
+    Matrix y( _problem->GetNStates(), nQ );
+    for( unsigned l = 0; l < _problem->GetNStates(); ++l ) {
+        for( unsigned k = 0; k < nQ; ++k ) {
             classicalSlope = CalculateSlope( u0( l, k ), u1( l, k ), u2( l, k ) );
             y( l, k )      = classicalSlope * SlopeBoundPres( u1( l, k ), classicalSlope );
         }

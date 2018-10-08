@@ -5,6 +5,7 @@
 #include <string>
 
 #include "mesh.h"
+#include "typedefs.h"
 
 #define QUAD_TYPE_LEGENDRE 201
 #define QUAD_TYPE_HERMITE 202
@@ -14,10 +15,10 @@ class Problem
   protected:
     Mesh* _mesh;
     int _quadType;
-    int _nQuadPoints;
-    int _nMoments;
-    int _maxIterations;
-    int _nStates;
+    unsigned _nQuadPoints;
+    unsigned _nMoments;
+    unsigned _maxIterations;
+    unsigned _nStates;
     double _epsilon;
     double _CFL;
     double _tEnd;
@@ -37,17 +38,17 @@ class Problem
     static Problem* Create( std::string inputFile );
     virtual ~Problem();
     virtual void Solve() {}
-    virtual double G( double u, double v )                                                                                 = 0;
-    virtual blaze::DynamicMatrix<double> G( const blaze::DynamicMatrix<double>& u, const blaze::DynamicMatrix<double>& v ) = 0;
-    virtual void Plot( blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u )                                  = 0;
-    virtual double ExactSolution( double t, double x, double xi )                                                          = 0;
+    virtual double G( double u, double v )                        = 0;
+    virtual Matrix G( const Matrix& u, const Matrix& v )          = 0;
+    virtual void Plot( Vector& x, Vector& u )                     = 0;
+    virtual double ExactSolution( double t, double x, double xi ) = 0;
     virtual double GetGamma() const { return -1.0; }
 
     int GetQuadType() const;
-    int GetNQuadPoints() const;
-    int GetNMoments() const;
-    int GetMaxIterations() const;
-    int GetNStates() const;
+    unsigned GetNQuadPoints() const;
+    unsigned GetNMoments() const;
+    unsigned GetMaxIterations() const;
+    unsigned GetNStates() const;
     double GetEpsilon() const;
     double GetCFL() const;
     double GetTEnd() const;

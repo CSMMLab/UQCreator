@@ -8,11 +8,12 @@ Mesh::Mesh( std::string inputFile ) : _status( MESH_STATUS_UNLOADED ) {
         this->Load( meshFile );
     }
     else {
-        _dimension = settings->get_as<int>( "Dimension" ).value_or( -1 );
-        _numCells  = settings->get_as<int>( "NumberOfCells" ).value_or( -1 );
+        _dimension = settings->get_as<unsigned>( "Dimension" ).value_or( 0 );
+        _numCells  = settings->get_as<unsigned>( "NumberOfCells" ).value_or( 0 );
         double a   = settings->get_as<double>( "a" ).value_or( 0.0 );
         double b   = settings->get_as<double>( "b" ).value_or( 0.0 );
-        if( ( a == 0 && b == 0 ) || _dimension == -1 || _numCells == -1 )
+        if( ( std::fabs( a ) <= std::numeric_limits<double>::epsilon() && std::fabs( b ) <= std::numeric_limits<double>::epsilon() ) ||
+            _dimension == 0 || _numCells == 0 )
             std::cerr << "[ERROR]: Mesh::Mesh invalid mesh parameters" << std::endl;
         else {
             this->CreateGrid( a, b );
@@ -31,18 +32,18 @@ void Mesh::CreateGrid( double a, double b ) {
     _mesh.resize( _numCells + 4 );
     _spacing.resize( _numCells + 4 - 1 );
 
-    for( int j = 0; j < _numCells + 4; ++j ) {
+    for( unsigned j = 0; j < _numCells + 4; ++j ) {
         _mesh[j] = a + j * ( b - a ) / ( _numCells + 3 );
     }
-    for( int j = -1; j < _numCells + 2; ++j ) {
-        _spacing[j + 1] = _mesh[j + 2] - _mesh[j + 1];
+    for( unsigned j = 0; j <= _numCells + 2; ++j ) {
+        _spacing[j] = _mesh[j + 1] - _mesh[j];
     }
 }
 
-int Mesh::GetNumCells() const { return _numCells; }
+unsigned Mesh::GetNumCells() const { return _numCells; }
 
-int Mesh::GetDimension() const { return _dimension; }
+unsigned Mesh::GetDimension() const { return _dimension; }
 
-const blaze::DynamicVector<double>& Mesh::GetGrid() const { return _mesh; }
+const Vector& Mesh::GetGrid() const { return _mesh; }
 
-const blaze::DynamicVector<double>& Mesh::GetSpacing() const { return _spacing; }
+const Vector& Mesh::GetSpacing() const { return _spacing; }

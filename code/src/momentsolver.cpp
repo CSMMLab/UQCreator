@@ -39,13 +39,13 @@ void MomentSolver::Solve() {
 
     double t = 0;
     // create solution fields
-    std::vector<blaze::DynamicMatrix<double>> uNew( _nCells + 4, blaze::DynamicMatrix<double>( _nStates, _nMoments, 0.0 ) );
-    std::vector<blaze::DynamicMatrix<double>> u( _nCells + 4, blaze::DynamicMatrix<double>( _nStates, _nMoments, 0.0 ) );
-    _lambda = std::vector<blaze::DynamicMatrix<double>>( _nCells + 4, blaze::DynamicMatrix<double>( _nStates, _nMoments, 0.0 ) );
+    std::vector<Matrix> uNew( _nCells + 4, Matrix( _nStates, _nMoments, 0.0 ) );
+    std::vector<Matrix> u( _nCells + 4, Matrix( _nStates, _nMoments, 0.0 ) );
+    _lambda = std::vector<Matrix>( _nCells + 4, Matrix( _nStates, _nMoments, 0.0 ) );
 
     u = SetupIC();
 
-    for( int j = 0; j < _nCells + 4; ++j ) {
+    for( unsigned j = 0; j < _nCells + 4; ++j ) {
         _lambda[j] = _closure->SolveClosure( u[j], _lambda[j] );
         u[j]       = CalculateMoments( _lambda[j] );
     }
@@ -53,7 +53,7 @@ void MomentSolver::Solve() {
     // Begin time loop
     while( t < _tEnd ) {
         // Modify moments into realizable direction
-        for( int j = 3; j < _nCells + 1; ++j ) {
+        for( unsigned j = 3; j < _nCells + 1; ++j ) {
             u[j] = CalculateMoments( _lambda[j] );
         }
 
@@ -65,10 +65,10 @@ void MomentSolver::Solve() {
             _lambda );
 
         // Time Update dual variables
-        for( int j = 3; j < _nCells + 1; ++j ) {
+        for( unsigned j = 3; j < _nCells + 1; ++j ) {
             _lambda[j] = _closure->SolveClosure( uNew[j], _lambda[j] );
         }
-        if( t == 0 )
+        if( std::fabs( t ) <= std::numeric_limits<double>::epsilon() )
             std::cout << std::fixed << std::setprecision( 8 ) << "t = " << t << std::flush;
         else
             std::cout << std::fixed << std::setprecision( 8 ) << "\r"
@@ -83,30 +83,26 @@ void MomentSolver::Solve() {
               << std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 << "s" << std::endl;
 }
 
-blaze::DynamicMatrix<double> MomentSolver::numFlux( const blaze::DynamicMatrix<double>& lambda0,
-                                                    const blaze::DynamicMatrix<double>& lambda1,
-                                                    const blaze::DynamicMatrix<double>& lambda2,
-                                                    const blaze::DynamicMatrix<double>& lambda3 ) {
-    blaze::DynamicMatrix<double> g =
-        _problem->G( _closure->U( _closure->EvaluateLambda( lambda1 ) ) + 0.5 * _dx * _limiter->Slope( lambda0, lambda1, lambda2 ),
-                     _closure->U( _closure->EvaluateLambda( lambda2 ) ) - 0.5 * _dx * _limiter->Slope( lambda1, lambda2, lambda3 ) );
+Matrix MomentSolver::numFlux( const Matrix& lambda0, const Matrix& lambda1, const Matrix& lambda2, const Matrix& lambda3 ) {
+    Matrix g = _problem->G( _closure->U( _closure->EvaluateLambda( lambda1 ) ) + 0.5 * _dx * _limiter->Slope( lambda0, lambda1, lambda2 ),
+                            _closure->U( _closure->EvaluateLambda( lambda2 ) ) - 0.5 * _dx * _limiter->Slope( lambda1, lambda2, lambda3 ) );
 
     return 0.5 * g * _closure->GetPhiTildeW();
 }
 
-blaze::DynamicMatrix<double> MomentSolver::CalculateMoments( const blaze::DynamicMatrix<double>& lambda ) {
+Matrix MomentSolver::CalculateMoments( const Matrix& lambda ) {
     return 0.5 * _closure->U( _closure->EvaluateLambda( lambda ) ) * _closure->GetPhiTildeW();
 }
 
-std::vector<blaze::DynamicMatrix<double>> MomentSolver::SetupIC() {
-    std::vector<blaze::DynamicMatrix<double>> out( _nCells + 4, blaze::DynamicMatrix<double>( _nStates, _nMoments, 0.0 ) );
-    blaze::DynamicVector<double> xi       = _quad->GetNodes();
-    blaze::DynamicVector<double> w        = _quad->GetWeights();
-    blaze::DynamicMatrix<double> phiTilde = _closure->GetPhiTilde();
-    for( int j = 0; j < _nCells + 4; ++j ) {
-        for( int l = 0; l < _nStates; ++l ) {
-            for( int i = 0; i < _nMoments; ++i ) {
-                for( int k = 0; k < _problem->GetNQuadPoints(); ++k ) {
+std::vector<Matrix> MomentSolver::SetupIC() {
+    std::vector<Matrix> out( _nCells + 4, Matrix( _nStates, _nMoments, 0.0 ) );
+    Vector xi       = _quad->GetNodes();
+    Vector w        = _quad->GetWeights();
+    Matrix phiTilde = _closure->GetPhiTilde();
+    for( unsigned j = 0; j < _nCells + 4; ++j ) {
+        for( unsigned l = 0; l < _nStates; ++l ) {
+            for( unsigned i = 0; i < _nMoments; ++i ) {
+                for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
                     out[j]( l, i ) += 0.5 * w[k] * IC( _x[j], xi[k] ) * phiTilde( k, i );
                 }
             }
@@ -131,36 +127,36 @@ double MomentSolver::IC( double x, double xi ) {
 }
 
 void MomentSolver::Plot() {
-    int cellIndex, nXi;
-    int plotState = 0;
+    unsigned cellIndex, nXi;
+    unsigned plotState = 0;
     try {
         auto file = cpptoml::parse_file( _problem->GetInputFile() );
         auto plot = file->get_table( "plot" );
 
-        cellIndex = plot->get_as<int>( "cellIndex" ).value_or( -1 );
-        nXi       = plot->get_as<int>( "evalPoints" ).value_or( -1 );
+        cellIndex = plot->get_as<unsigned>( "cellIndex" ).value_or( 0 );
+        nXi       = plot->get_as<unsigned>( "evalPoints" ).value_or( 0 );
     } catch( const cpptoml::parse_exception& e ) {
         std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
         exit( EXIT_FAILURE );
     }
 
-    blaze::DynamicVector<double> xi( nXi, 0.0 );
-    for( int k = 0; k < nXi; ++k ) {
+    Vector xi( nXi, 0.0 );
+    for( unsigned k = 0; k < nXi; ++k ) {
         xi[k] = -1 + k / ( nXi - 1.0 ) * 2.0;
     }
-    blaze::DynamicMatrix<double> resM    = _closure->U( _closure->EvaluateLambda( _lambda[cellIndex - 1], xi ) );
-    blaze::DynamicMatrix<double> resQuad = _closure->U( _closure->EvaluateLambda( _lambda[cellIndex - 1] ) );
+    Matrix resM    = _closure->U( _closure->EvaluateLambda( _lambda[cellIndex - 1], xi ) );
+    Matrix resQuad = _closure->U( _closure->EvaluateLambda( _lambda[cellIndex - 1] ) );
 
     // save first state and calculate exact solution
-    blaze::DynamicVector<double> res       = blaze::DynamicVector<double>( nXi, 0.0 );
-    blaze::DynamicVector<double> resCourse = blaze::DynamicVector<double>( _problem->GetNQuadPoints(), 0.0 );
-    blaze::DynamicVector<double> exRes( nXi );
-    for( int k = 0; k < nXi; ++k ) {
+    Vector res       = Vector( nXi, 0.0 );
+    Vector resCourse = Vector( _problem->GetNQuadPoints(), 0.0 );
+    Vector exRes( nXi );
+    for( unsigned k = 0; k < nXi; ++k ) {
         res[k]   = resM( plotState, k );
         exRes[k] = _problem->ExactSolution( _tEnd, _x[cellIndex - 1], xi[k] );
     }
 
-    for( int k = 0; k < _problem->GetNQuadPoints(); ++k ) {
+    for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
         resCourse[k] = resQuad( plotState, k );
     }
 
@@ -169,36 +165,36 @@ void MomentSolver::Plot() {
 }
 
 void MomentSolver::PlotFixedXi() {
-    double xi     = 0.0;
-    int plotState = 0;
-    blaze::DynamicVector<double> xiVec( _nCells + 4, xi );
+    double xi          = 0.0;
+    unsigned plotState = 0;
+    Vector xiVec( _nCells + 4, xi );
 
-    int nFine;
+    unsigned nFine;
     try {
         auto file = cpptoml::parse_file( _problem->GetInputFile() );
         auto plot = file->get_table( "plot" );
 
-        nFine = plot->get_as<int>( "evalPoints" ).value_or( -1 );
+        nFine = plot->get_as<unsigned>( "evalPoints" ).value_or( 0 );
     } catch( const cpptoml::parse_exception& e ) {
         std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
         exit( EXIT_FAILURE );
     }
 
-    blaze::DynamicMatrix<double> resM( _nCells + 4, _nStates );
-    blaze::DynamicVector<double> resVec( _nStates, 0.0 );
-    for( int j = 0; j < _nCells + 4; ++j ) {
+    Matrix resM( _nCells + 4, _nStates );
+    Vector resVec( _nStates, 0.0 );
+    for( unsigned j = 0; j < _nCells + 4; ++j ) {
         _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiVec, j ) );
         row( resM, j ) = blaze::trans( resVec );
     }
 
-    blaze::DynamicVector<double> res( _nCells + 4 );
-    for( int j = 0; j < _nCells + 4; ++j ) {
+    Vector res( _nCells + 4 );
+    for( unsigned j = 0; j < _nCells + 4; ++j ) {
         res[j] = resM( j, plotState );
     }
 
-    blaze::DynamicVector<double> xFine( nFine, 0.0 ), exRes( nFine, 0.0 );
+    Vector xFine( nFine, 0.0 ), exRes( nFine, 0.0 );
 
-    for( int j = 0; j < nFine; ++j ) {
+    for( unsigned j = 0; j < nFine; ++j ) {
         xFine[j] = _a + j * ( _b - _a ) / ( nFine - 1 );
         exRes[j] = _problem->ExactSolution( _tEnd, xFine[j], xi );
     }
@@ -207,25 +203,25 @@ void MomentSolver::PlotFixedXi() {
 }
 
 void MomentSolver::PlotExpectedValue() {
-    const unsigned int nQuadFine            = 200;
-    Legendre* quadFine                      = new Legendre( nQuadFine );
-    blaze::DynamicVector<double> wFine      = quadFine->GetWeights();
-    blaze::DynamicVector<double> xiQuadFine = quadFine->GetNodes();
-    blaze::DynamicVector<double> w          = _quad->GetWeights();
-    blaze::DynamicVector<double> xiQuad     = _quad->GetNodes();
-    unsigned int nFine;
+    const unsigned int nQuadFine = 200;
+    Legendre* quadFine           = new Legendre( nQuadFine );
+    Vector wFine                 = quadFine->GetWeights();
+    Vector xiQuadFine            = quadFine->GetNodes();
+    Vector w                     = _quad->GetWeights();
+    Vector xiQuad                = _quad->GetNodes();
+    unsigned nFine;
 
     try {
         auto file = cpptoml::parse_file( _problem->GetInputFile() );
         auto plot = file->get_table( "plot" );
 
-        nFine = plot->get_as<int>( "evalPoints" ).value_or( -1 );
+        nFine = plot->get_as<unsigned>( "evalPoints" ).value_or( 0 );
     } catch( const cpptoml::parse_exception& e ) {
         std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
         exit( EXIT_FAILURE );
     }
 
-    blaze::DynamicVector<double> xFine( nFine, 0.0 ), exRes( nFine, 0.0 ), res( _nCells + 4, 0.0 );
+    Vector xFine( nFine, 0.0 ), exRes( nFine, 0.0 ), res( _nCells + 4, 0.0 );
 
     for( unsigned int j = 0; j < nFine; ++j ) {
         xFine[j] = _a + j * ( _b - _a ) / ( nFine - 1 );
@@ -234,9 +230,9 @@ void MomentSolver::PlotExpectedValue() {
         }
     }
 
-    blaze::DynamicVector<double> resVec( _nStates, 0.0 );
-    for( int j = 0; j < _nCells + 4; ++j ) {
-        for( int k = 0; k < _problem->GetNQuadPoints(); ++k ) {
+    Vector resVec( _nStates, 0.0 );
+    for( unsigned j = 0; j < _nCells + 4; ++j ) {
+        for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
             _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
             res[j] += 0.5 * w[k] * resVec[0];
         }
@@ -249,7 +245,7 @@ void MomentSolver::Print() {
     /*
     int cellIndex = 55;
     int nXi = 20;
-    blaze::DynamicVector<double> xi(nXi,0.0);
+    Vector xi(nXi,0.0);
     for( int k = 0; k<nXi; ++k ){
         xi[k] = -1 + k/(nXi-1.0)*2.0;
     }

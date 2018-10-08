@@ -10,8 +10,8 @@ class Quadrature
 {
   protected:
     double _value;
-    blaze::DynamicVector<double> _nodes;
-    blaze::DynamicVector<double> _weights;
+    Vector _nodes;
+    Vector _weights;
 
     Problem* _problem;
     Polynomial* _polynomial;
@@ -19,8 +19,8 @@ class Quadrature
   public:
     Quadrature( Problem* p );
     double Evaluate();
-    blaze::DynamicVector<double> GetNodes();
-    blaze::DynamicVector<double> GetWeights();
+    Vector GetNodes();
+    Vector GetWeights();
 
   private:
     Quadrature() {}

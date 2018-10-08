@@ -10,9 +10,9 @@ public:
     StochasticGalerkin(Problem* problem);
     virtual ~StochasticGalerkin();
 
-    virtual void U( blaze::DynamicVector<double>& out, const blaze::DynamicVector<double>& Lambda );
-    virtual blaze::DynamicMatrix<double> U( const blaze::DynamicMatrix<double>& Lambda );
-    virtual void DU( blaze::DynamicMatrix<double>& y, const blaze::DynamicVector<double>& Lambda );
+    virtual void U( Vector& out, const Vector& Lambda );
+    virtual Matrix U( const Matrix& Lambda );
+    virtual void DU( Matrix& y, const Vector& Lambda );
 };
 
 #endif // STOCHASTICGALERKIN_H

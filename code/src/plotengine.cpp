@@ -23,11 +23,11 @@ PlotEngine* PlotEngine::Create( Problem* problem ) {
     else {
         std::cerr << "Invalid plot engine type" << std::endl;
         exit( EXIT_FAILURE );
-        return NULL;
+        return nullptr;
     }
 }
 
-std::vector<double> PlotEngine::BlazeToStdVector( const blaze::DynamicVector<double>& v ) {
+std::vector<double> PlotEngine::BlazeToStdVector( const Vector& v ) {
     std::vector<double> ret( v.size(), 0.0 );
     for( unsigned i = 0; i < v.size(); ++i ) {
         ret[i] = v[i];

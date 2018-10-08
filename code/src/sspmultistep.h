@@ -6,20 +6,20 @@
 
 class SSPMultiStep : public TimeSolver
 {
-    std::vector<blaze::DynamicMatrix<double>> _u1Step, _u2Step, _u3Step;
+    std::vector<Matrix> _u1Step, _u2Step, _u3Step;
     Heun* _heun;
     unsigned int _counter;
 public:
     SSPMultiStep() = delete;
     SSPMultiStep( Problem * problem, Closure* closure);
     virtual ~SSPMultiStep();
-    virtual void Advance( std::function<blaze::DynamicMatrix<double>( const blaze::DynamicMatrix<double>&,
-                                                                      const blaze::DynamicMatrix<double>&,
-                                                                      const blaze::DynamicMatrix<double>&,
-                                                                      const blaze::DynamicMatrix<double>& )> const& fluxFunc,
-                          std::vector<blaze::DynamicMatrix<double>>& uNew,
-                          std::vector<blaze::DynamicMatrix<double>>& u,
-                          std::vector<blaze::DynamicMatrix<double>>& lambda );
+    virtual void Advance( std::function<Matrix( const Matrix&,
+                                                                      const Matrix&,
+                                                                      const Matrix&,
+                                                                      const Matrix& )> const& fluxFunc,
+                          std::vector<Matrix>& uNew,
+                          std::vector<Matrix>& u,
+                          std::vector<Matrix>& lambda );
 };
 
 #endif // SSPMULTISTEP_H

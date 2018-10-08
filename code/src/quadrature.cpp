@@ -18,6 +18,6 @@ double Quadrature::Evaluate() {
     return -1.0;
 }
 
-blaze::DynamicVector<double> Quadrature::GetNodes() { return _nodes; }
+Vector Quadrature::GetNodes() { return _nodes; }
 
-blaze::DynamicVector<double> Quadrature::GetWeights() { return _weights; }
+Vector Quadrature::GetWeights() { return _weights; }

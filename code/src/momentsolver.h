@@ -12,6 +12,7 @@
 #include "plotengine.h"
 #include "problem.h"
 #include "thetamethod.h"
+#include "typedefs.h"
 
 class MomentSolver
 {
@@ -21,20 +22,17 @@ class MomentSolver
     Mesh* _mesh;
     TimeSolver* _time;
     Limiter* _limiter;
-    blaze::DynamicVector<double> _x;
-    std::vector<blaze::DynamicMatrix<double>> _lambda;
+    Vector _x;
+    std::vector<Matrix> _lambda;
     Problem* _problem;
     PlotEngine* _plot;
     double _dx, _dt, _a, _b, _uL, _uR, _tEnd;
-    int _nTimeSteps, _nCells, _nMoments, _nStates;
-    blaze::DynamicMatrix<double> numFlux( const blaze::DynamicMatrix<double>& lambda0,
-                                          const blaze::DynamicMatrix<double>& lambda1,
-                                          const blaze::DynamicMatrix<double>& lambda2,
-                                          const blaze::DynamicMatrix<double>& lambda3 );
-    std::vector<blaze::DynamicMatrix<double>> SetupIC();
+    unsigned _nTimeSteps, _nCells, _nMoments, _nStates;
+    Matrix numFlux( const Matrix& lambda0, const Matrix& lambda1, const Matrix& lambda2, const Matrix& lambda3 );
+    std::vector<Matrix> SetupIC();
     double IC( double x, double xi );
-    blaze::DynamicMatrix<double> CalculateMoments( const blaze::DynamicMatrix<double>& lambda );
-    blaze::DynamicVector<double> EvalLambda( const blaze::DynamicVector<double>& lambda, const blaze::DynamicVector<double>& xi );
+    Matrix CalculateMoments( const Matrix& lambda );
+    Vector EvalLambda( const Vector& lambda, const Vector& xi );
 
   public:
     MomentSolver( Problem* problem );

@@ -51,13 +51,13 @@ Problem* Problem::Create( std::string inputFile ) {
 
 int Problem::GetQuadType() const { return _quadType; }
 
-int Problem::GetNQuadPoints() const { return _nQuadPoints; }
+unsigned Problem::GetNQuadPoints() const { return _nQuadPoints; }
 
-int Problem::GetNMoments() const { return _nMoments; }
+unsigned Problem::GetNMoments() const { return _nMoments; }
 
-int Problem::GetNStates() const { return _nStates; }
+unsigned Problem::GetNStates() const { return _nStates; }
 
-int Problem::GetMaxIterations() const { return _maxIterations; }
+unsigned Problem::GetMaxIterations() const { return _maxIterations; }
 
 double Problem::GetEpsilon() const { return _epsilon; }
 

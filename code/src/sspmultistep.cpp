@@ -7,19 +7,19 @@ SSPMultiStep::SSPMultiStep( Problem* problem, Closure* closure ) : TimeSolver( p
 
 SSPMultiStep::~SSPMultiStep() { delete _heun; }
 
-void SSPMultiStep::Advance( std::function<blaze::DynamicMatrix<double>( const blaze::DynamicMatrix<double>&,
-                                                                        const blaze::DynamicMatrix<double>&,
-                                                                        const blaze::DynamicMatrix<double>&,
-                                                                        const blaze::DynamicMatrix<double>& )> const& fluxFunc,
-                            std::vector<blaze::DynamicMatrix<double>>& uNew,
-                            std::vector<blaze::DynamicMatrix<double>>& u,
-                            std::vector<blaze::DynamicMatrix<double>>& lambda ) {
+void SSPMultiStep::Advance( std::function<Matrix( const Matrix&,
+                                                                        const Matrix&,
+                                                                        const Matrix&,
+                                                                        const Matrix& )> const& fluxFunc,
+                            std::vector<Matrix>& uNew,
+                            std::vector<Matrix>& u,
+                            std::vector<Matrix>& lambda ) {
     _counter++;
     if( _counter < 4 ) {
         _heun->Advance( fluxFunc, uNew, u, lambda );
     }
     else {
-        for( int j = 3; j < _problem->GetMesh()->GetNumCells() + 1; ++j ) {
+        for( unsigned j = 3; j < _problem->GetMesh()->GetNumCells() + 1; ++j ) {
             uNew[j] = ( 8.0 / 9.0 ) * u[j] + ( 1.0 / 9.0 ) * _u3Step[j] -
                       ( 4.0 / 3.0 ) * ( _dt / _dx ) *
                           ( fluxFunc( lambda[j - 1], lambda[j], lambda[j + 1], lambda[j + 2] ) -

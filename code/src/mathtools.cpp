@@ -6,14 +6,13 @@ double MathTools::Pythag( const double a, const double b ) {
                          : ( absb == 0.0 ? 0.0 : absb * std::sqrt( 1.0 + std::pow( absa / absb, 2 ) ) ) );
 }
 
-std::pair<blaze::DynamicVector<double>, blaze::DynamicMatrix<double>>
-MathTools::ComputeEigenValTriDiagMatrix( const blaze::DynamicMatrix<double> mat ) {
+std::pair<Vector, Matrix> MathTools::ComputeEigenValTriDiagMatrix( const Matrix mat ) {
     assert( blaze::isSymmetric( mat ) );
-    int n = mat.rows();
+    unsigned n = static_cast<unsigned>( mat.rows() );
 
-    blaze::DynamicVector<double> d( n, 0.0 ), e( n, 0.0 );
-    blaze::DynamicMatrix<double> z( n, n, 0.0 );
-    for( int i = 0; i < n; ++i ) {
+    Vector d( n, 0.0 ), e( n, 0.0 );
+    Matrix z( n, n, 0.0 );
+    for( unsigned i = 0; i < n; ++i ) {
         d[i]          = mat( i, i );
         z( i, i )     = 1.0;
         i == 0 ? e[i] = 0.0 : e[i] = mat( i, i - 1 );

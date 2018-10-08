@@ -10,15 +10,15 @@
 class Burgers : public Problem
 {
   private:
-    blaze::DynamicVector<double> _u;
-    blaze::DynamicVector<double> _x;
+    Vector _u;
+    Vector _x;
     double _dx;
     double _dt;
-    int _nCells;
-    int _nTimeSteps;
+    unsigned _nCells;
+    unsigned _nTimeSteps;
     double H( double u, double v, double w );
     double F( double u );
-    blaze::DynamicMatrix<double> F( const blaze::DynamicMatrix<double>& u );
+    Matrix F( const Matrix& u );
     double IC( double x, double uL, double uR );
 
     Burgers() {}
@@ -26,11 +26,11 @@ class Burgers : public Problem
   public:
     Burgers( std::string inputFile );
     virtual void Solve();
-    virtual void Plot( blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u );
+    virtual void Plot( Vector& x, Vector& u );
     virtual void Print();
     virtual void WriteToFile( std::string filename, int filetype ) const;
     double G( double u, double v );
-    blaze::DynamicMatrix<double> G( const blaze::DynamicMatrix<double>& u, const blaze::DynamicMatrix<double>& v );
+    Matrix G( const Matrix& u, const Matrix& v );
     virtual double ExactSolution( double t, double x, double xi );
 };
 

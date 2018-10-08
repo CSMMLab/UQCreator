@@ -12,11 +12,11 @@ class Hermite : public Polynomial
     virtual void Compute();
 
   public:
-    Hermite( int degree );
+    Hermite( unsigned degree );
 
-    virtual double Evaluate( int m, double x );
-    virtual const blaze::DynamicVector<double>& GetNodes();
-    virtual const blaze::DynamicVector<double>& GetWeights();
+    virtual double Evaluate( unsigned m, double x );
+    virtual const Vector& GetNodes();
+    virtual const Vector& GetWeights();
 };
 
 #endif

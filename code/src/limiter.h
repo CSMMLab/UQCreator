@@ -10,8 +10,8 @@ class Limiter
 {
   private:
     Closure* _closure;
-    blaze::DynamicMatrix<double>
-    SlopeInternal( const blaze::DynamicMatrix<double>& u0, const blaze::DynamicMatrix<double>& u1, const blaze::DynamicMatrix<double>& u2 );
+    Matrix
+    SlopeInternal( const Matrix& u0, const Matrix& u1, const Matrix& u2 );
     double SlopeBoundPres( const double& u, const double& slope );
 
   protected:
@@ -22,8 +22,8 @@ class Limiter
     Limiter( Closure* pClosure, Problem* problem );
     virtual ~Limiter();
     static Limiter* Create( Closure* closure, Problem* problem );
-    blaze::DynamicMatrix<double>
-    Slope( const blaze::DynamicMatrix<double>& lambda1, const blaze::DynamicMatrix<double>& lambda2, const blaze::DynamicMatrix<double>& lambda3 );
+    Matrix
+    Slope( const Matrix& lambda1, const Matrix& lambda2, const Matrix& lambda3 );
     virtual double CalculateSlope( const double& u0, const double& u1, const double& u2 ) = 0;
 
   private:

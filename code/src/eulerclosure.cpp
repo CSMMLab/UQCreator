@@ -4,16 +4,16 @@ EulerClosure::EulerClosure( Problem* problem ) : Closure( problem ), _gamma( pro
 
 EulerClosure::~EulerClosure() {}
 
-void EulerClosure::U( blaze::DynamicVector<double>& out, const blaze::DynamicVector<double>& Lambda ) {
+void EulerClosure::U( Vector& out, const Vector& Lambda ) {
     out[1] = exp( ( 2.0 * Lambda[1] * Lambda[3] - 2.0 * Lambda[3] * log( -Lambda[3] ) - 2.0 * Lambda[3] * _gamma - pow( Lambda[2], 2.0 ) ) /
                   ( 2.0 * Lambda[3] * ( _gamma - 1.0 ) ) );
     out[2] = -( Lambda[2] / Lambda[3] ) * out[1];
     out[3] = ( ( pow( Lambda[2], 2.0 ) - 2.0 * Lambda[3] ) / ( 2.0 * pow( Lambda[3], 2.0 ) ) ) * out[1];
 }
 
-blaze::DynamicMatrix<double> EulerClosure::U( const blaze::DynamicMatrix<double>& Lambda ) {
-    blaze::DynamicMatrix<double> y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
+Matrix EulerClosure::U( const Matrix& Lambda ) {
+    Matrix y( _nStates, Lambda.columns(), 0.0 );
+    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
         y( 1, k ) = exp( ( 2.0 * Lambda( 1, k ) * Lambda( 2, k ) - 2.0 * Lambda( 3, k ) * log( -Lambda( 3, k ) ) - 2.0 * Lambda( 3, k ) * _gamma -
                            pow( Lambda( 2, k ), 2.0 ) ) /
                          ( 2.0 * Lambda( 3, k ) * ( _gamma - 1.0 ) ) );
@@ -24,7 +24,7 @@ blaze::DynamicMatrix<double> EulerClosure::U( const blaze::DynamicMatrix<double>
     return y;
 }
 
-void EulerClosure::DU( blaze::DynamicMatrix<double>& y, const blaze::DynamicVector<double>& Lambda ) {
+void EulerClosure::DU( Matrix& y, const Vector& Lambda ) {
     double E     = exp( ( 2.0 * Lambda[1] * Lambda[3] - 2.0 * Lambda[3] * log( -Lambda[3] ) - 2.0 * Lambda[3] * _gamma - pow( Lambda[2], 2 ) ) /
                     ( 2.0 * Lambda[3] * ( _gamma - 1.0 ) ) );
     double dEdv1 = ( 1.0 / ( _gamma - 1.0 ) ) * E;

@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+#include "typedefs.h"
+
 #define PI 3.14159265359
 
 class MathTools
@@ -16,8 +18,7 @@ class MathTools
   public:
     ~MathTools() {}
     static double Pythag( const double a, const double b );
-    static std::pair<blaze::DynamicVector<double>, blaze::DynamicMatrix<double>>
-    ComputeEigenValTriDiagMatrix( const blaze::DynamicMatrix<double> CM );
+    static std::pair<Vector, Matrix> ComputeEigenValTriDiagMatrix( const Matrix CM );
 };
 
 #endif    // MATHTOOLS_H

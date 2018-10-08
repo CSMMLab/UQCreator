@@ -4,22 +4,24 @@
 #include <blaze/math/DynamicMatrix.h>
 #include <blaze/math/DynamicVector.h>
 
+#include "typedefs.h"
+
 class Polynomial
 {
   protected:
-    int _degree;
-    blaze::DynamicVector<double> _nodes;
-    blaze::DynamicVector<double> _weights;
+    unsigned _degree;
+    Vector _nodes;
+    Vector _weights;
 
     void Sort();
     virtual void Compute() = 0;
 
   public:
-    Polynomial( int degree );
+    Polynomial( unsigned degree );
     virtual ~Polynomial() {}
-    virtual double Evaluate( int m, double x )               = 0;
-    virtual const blaze::DynamicVector<double>& GetNodes()   = 0;
-    virtual const blaze::DynamicVector<double>& GetWeights() = 0;
+    virtual double Evaluate( unsigned m, double x ) = 0;
+    virtual const Vector& GetNodes()                = 0;
+    virtual const Vector& GetWeights()              = 0;
 };
 
 #endif    // POLYNOMIAL_H

@@ -4,10 +4,10 @@ StochasticGalerkin::StochasticGalerkin( Problem* problem ) : Closure( problem ) 
 
 StochasticGalerkin::~StochasticGalerkin() {}
 
-void StochasticGalerkin::U( blaze::DynamicVector<double>& out, const blaze::DynamicVector<double>& Lambda ) { out = Lambda; }
+void StochasticGalerkin::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
 
-blaze::DynamicMatrix<double> StochasticGalerkin::U( const blaze::DynamicMatrix<double>& Lambda ) { return Lambda; }
+Matrix StochasticGalerkin::U( const Matrix& Lambda ) { return Lambda; }
 
-void StochasticGalerkin::DU( blaze::DynamicMatrix<double>& y, const blaze::DynamicVector<double>& Lambda ) {
+void StochasticGalerkin::DU( Matrix& y, const Vector& Lambda ) {
     y = blaze::IdentityMatrix<double>( _nStates );
 }
