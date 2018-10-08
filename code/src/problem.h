@@ -41,6 +41,7 @@ class Problem
     virtual blaze::DynamicMatrix<double> G( const blaze::DynamicMatrix<double>& u, const blaze::DynamicMatrix<double>& v ) = 0;
     virtual void Plot( blaze::DynamicVector<double>& x, blaze::DynamicVector<double>& u )                                  = 0;
     virtual double ExactSolution( double t, double x, double xi )                                                          = 0;
+    virtual double GetGamma() const { return -1.0; }
 
     int GetQuadType() const;
     int GetNQuadPoints() const;

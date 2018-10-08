@@ -6,12 +6,15 @@
 class Euler : public Problem
 {
   private:
+    double _gamma;
+
   public:
     Euler( std::string inputFile );
     virtual void Solve();
     virtual void Plot() const;
     virtual void Print() const;
     virtual void WriteToFile( std::string filename, int filetype ) const;
+    double GetGamma() const;
 };
 
 #endif    // EULER_H
