@@ -8,7 +8,7 @@ set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall" )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../bin/" )
 
 file(GLOB_RECURSE UQCreator_SRCS RELATIVE ${CMAKE_SOURCE_DIR} "*.cpp")
-add_executable( UQCreator ${UQCreator_SRCS} )
+add_executable( ${CMAKE_PROJECT_NAME} ${UQCreator_SRCS} )
 
 find_package( OpenMP REQUIRED )
 if( OPENMP_FOUND )
@@ -25,8 +25,8 @@ include_directories( ${BLAS_INCLUDE_DIR} )
 find_package( LAPACK REQUIRED )
 include_directories( ${LAPACK_INCLUDE_DIR} )
 
-find_package( PythonLibs 2.7 )
-target_include_directories( UQCreator PRIVATE ${PYTHON_INCLUDE_DIRS} )
+find_package (Python3 COMPONENTS Interpreter Development)
+include_directories( ${Python3_INCLUDE_DIRS} /usr/lib/python3.7/site-packages/numpy/core/include )
 
 find_package( Git REQUIRED )
 ExternalProject_Add( blaze
@@ -39,7 +39,7 @@ ExternalProject_Add( blaze
   INSTALL_COMMAND make install
 )
 include_directories( ${CMAKE_BINARY_DIR}/blaze/include )
-add_dependencies ( UQCreator blaze )
+add_dependencies ( ${CMAKE_PROJECT_NAME} blaze )
 
 ExternalProject_Add( cpptoml
   PREFIX ${CMAKE_BINARY_DIR}/cpptoml
@@ -51,7 +51,7 @@ ExternalProject_Add( cpptoml
   INSTALL_COMMAND ""
 )
 include_directories( ${CMAKE_BINARY_DIR}/cpptoml/src/cpptoml/include )
-add_dependencies ( UQCreator cpptoml )
+add_dependencies ( ${CMAKE_PROJECT_NAME} cpptoml )
 
 ExternalProject_Add( gnuplot-iostream
   PREFIX ${CMAKE_BINARY_DIR}/gnuplot-iostream
@@ -63,7 +63,7 @@ ExternalProject_Add( gnuplot-iostream
   INSTALL_COMMAND ""
 )
 include_directories( ${CMAKE_BINARY_DIR}/gnuplot-iostream/src/gnuplot-iostream )
-add_dependencies ( UQCreator gnuplot-iostream )
+add_dependencies ( ${CMAKE_PROJECT_NAME} gnuplot-iostream )
 
 ExternalProject_Add( matplotlib-cpp
   PREFIX ${CMAKE_BINARY_DIR}/matplotlib-cpp
@@ -75,6 +75,6 @@ ExternalProject_Add( matplotlib-cpp
   INSTALL_COMMAND ""
 )
 include_directories( ${CMAKE_BINARY_DIR}/matplotlib-cpp/src/matplotlib-cpp )
-add_dependencies ( UQCreator matplotlib-cpp )
+add_dependencies ( ${CMAKE_PROJECT_NAME} matplotlib-cpp )
 
-target_link_libraries( UQCreator LINK_PUBLIC ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${PYTHON_LIBRARIES} )
+target_link_libraries( ${CMAKE_PROJECT_NAME} LINK_PUBLIC ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${Python3_LIBRARIES} )
