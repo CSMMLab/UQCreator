@@ -59,25 +59,6 @@ void Burgers::Print() {
     for( unsigned j = 2; j < _nCells + 2; ++j ) {
         out << _x[j] << " " << _u[j] << std::endl;
     }
-    Plot( _x, _u );
-}
-
-void Burgers::Plot( Vector& x, Vector& u ) {
-    std::vector<double> x1, u1, uEx, xFine;
-    for( unsigned i = 0; i < _nCells + 4; i++ ) {
-        x1.push_back( x[i] );
-        u1.push_back( u[i] );
-    }
-    unsigned NFine = 1000;
-    for( unsigned j = 0; j < NFine; ++j ) {
-        xFine.push_back( 0.0 + j * ( 3.0 - 0.0 ) / ( NFine - 1 ) );
-        uEx.push_back( ExactSolution( _tEnd, xFine[j], 0.0 ) );
-    }
-
-    Gnuplot gp;
-    gp << "set key off\n";
-    gp << "plot" << gp.file1d( std::make_pair( x1, u1 ) ) << "with lines, ";
-    gp << gp.file1d( std::make_pair( xFine, uEx ) ) << "with lines\n";
 }
 
 void Burgers::WriteToFile( std::string filename, int filetype ) const {}

@@ -15,7 +15,7 @@ Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
         _CFL         = problem->get_as<double>( "CFL" ).value_or( -1.0 );
         _limiter     = problem->get_as<std::string>( "limiter" ).value_or( "none" );
         _tEnd        = problem->get_as<double>( "tEnd" ).value_or( -1.0 );
-        _nStates     = problem->get_as<double>( "nStates" ).value_or( -1.0 );
+        _nStates     = problem->get_as<unsigned>( "nStates" ).value_or( 0 );
 
         auto momentSystem    = file->get_table( "moment_system" );
         _closureType         = momentSystem->get_as<std::string>( "closure" ).value_or( "none" );
@@ -24,9 +24,9 @@ Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
             _quadType = QUAD_TYPE_LEGENDRE;
         else if( quadType.compare( "hermite" ) )
             _quadType = QUAD_TYPE_HERMITE;
-        _nQuadPoints   = momentSystem->get_as<int>( "quadPoints" ).value_or( -1 );
-        _nMoments      = momentSystem->get_as<int>( "moments" ).value_or( -1 );
-        _maxIterations = momentSystem->get_as<int>( "maxIterations" ).value_or( -1 );
+        _nQuadPoints   = momentSystem->get_as<unsigned>( "quadPoints" ).value_or( 0 );
+        _nMoments      = momentSystem->get_as<unsigned>( "moments" ).value_or( 0 );
+        _maxIterations = momentSystem->get_as<unsigned>( "maxIterations" ).value_or( 0 );
         _epsilon       = momentSystem->get_as<double>( "epsilon" ).value_or( -1.0 );
     } catch( const cpptoml::parse_exception& e ) {
         std::cerr << "Failed to parse " << _inputFile << ": " << e.what() << std::endl;
@@ -49,7 +49,7 @@ Problem* Problem::Create( std::string inputFile ) {
     else {
         std::cerr << "Invalid problem type" << std::endl;
         exit( EXIT_FAILURE );
-        return NULL;
+        return nullptr;
     }
 }
 

@@ -27,7 +27,5 @@ maxIterations = 200
 epsilon = 5e-5
 
 [plot]
-# available plotengines: gnuplot (window), matplotlib (pdf), none|off
-engine = "none"
 cellIndex = 110
 evalPoints = 1000

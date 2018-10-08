@@ -1,32 +1,41 @@
 #ifndef PLOTENGINE_H
 #define PLOTENGINE_H
 
-#include "blaze/math/DynamicVector.h"
-#include <cpptoml.h>
+#include <QWidget>
+#include <blaze/math/DynamicMatrix.h>
+#include <iostream>
 
 #include "problem.h"
+#include "qcustomplot.h"
+#include "typedefs.h"
 
-class PlotEngine
+struct Result1D {
+    Vector x_numeric;
+    Vector y_numeric;
+    Vector x_exact;
+    Vector y_exact;
+};
+
+namespace Ui {
+class PlotEngine;
+}
+
+class PlotEngine : public QWidget
 {
-  private:
-  protected:
-    Problem* _problem;
-    std::string _outputDir;
-    std::vector<double> BlazeToStdVector( const Vector& v );
+    Q_OBJECT
 
   public:
-    PlotEngine() = delete;
-    PlotEngine( Problem* problem );
-    virtual ~PlotEngine();
-    static PlotEngine* Create( Problem* problem );
-    virtual void Plot1D( const std::vector<double>& x1, const std::vector<double>& y1 ) = 0;
-    virtual void
-    Plot1D( const std::vector<double>& x1, const std::vector<double>& y1, const std::vector<double>& x2, const std::vector<double>& y2 ) = 0;
-    virtual void Plot1D( const Vector& x1, const Vector& y1 )                                = 0;
-    virtual void Plot1D( const Vector& x1,
-                         const Vector& y1,
-                         const Vector& x2,
-                         const Vector& y2 )                                                                        = 0;
+    explicit PlotEngine();
+    ~PlotEngine();
+
+    void setPlot( unsigned id, Result1D data, QString title, QString xLabel, QString yLabel );
+
+  private:
+    Ui::PlotEngine* ui;
+    QVector<double> BlazeToQVector( const Vector& v );
+
+  private slots:
+    void keyPressEvent( QKeyEvent* event );
 };
 
 #endif    // PLOTENGINE_H

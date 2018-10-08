@@ -5,7 +5,13 @@ set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -DNDEBUG" )
 set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -march=native -pg -no-pie" )
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall" )
+add_definitions( -D_GLIBCXX_PARALLEL -DQCUSTOMPLOT_USE_OPENGL )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../bin/" )
+
+set( CMAKE_AUTOMOC ON )
+set( CMAKE_AUTOUIC ON )
+set( CMAKE_AUTORCC ON )
+set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 file(GLOB_RECURSE UQCreator_SRCS RELATIVE ${CMAKE_SOURCE_DIR} "*.cpp")
 add_executable( ${CMAKE_PROJECT_NAME} ${UQCreator_SRCS} )
@@ -24,9 +30,6 @@ include_directories( ${BLAS_INCLUDE_DIR} )
 
 find_package( LAPACK REQUIRED )
 include_directories( ${LAPACK_INCLUDE_DIR} )
-
-find_package (Python3 COMPONENTS Interpreter Development)
-include_directories( ${Python3_INCLUDE_DIRS} /usr/lib/python3.7/site-packages/numpy/core/include )
 
 find_package( Git REQUIRED )
 ExternalProject_Add( blaze
@@ -53,28 +56,9 @@ ExternalProject_Add( cpptoml
 include_directories( ${CMAKE_BINARY_DIR}/cpptoml/src/cpptoml/include )
 add_dependencies ( ${CMAKE_PROJECT_NAME} cpptoml )
 
-ExternalProject_Add( gnuplot-iostream
-  PREFIX ${CMAKE_BINARY_DIR}/gnuplot-iostream
-  GIT_REPOSITORY https://github.com/dstahlke/gnuplot-iostream
-  UPDATE_COMMAND git pull
-  UPDATE_DISCONNECTED 1
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
-)
-include_directories( ${CMAKE_BINARY_DIR}/gnuplot-iostream/src/gnuplot-iostream )
-add_dependencies ( ${CMAKE_PROJECT_NAME} gnuplot-iostream )
+find_package( Qt5 COMPONENTS Core Widgets Gui PrintSupport REQUIRED )
 
-ExternalProject_Add( matplotlib-cpp
-  PREFIX ${CMAKE_BINARY_DIR}/matplotlib-cpp
-  GIT_REPOSITORY https://github.com/lava/matplotlib-cpp.git
-  UPDATE_COMMAND git pull
-  UPDATE_DISCONNECTED 1
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
-)
-include_directories( ${CMAKE_BINARY_DIR}/matplotlib-cpp/src/matplotlib-cpp )
-add_dependencies ( ${CMAKE_PROJECT_NAME} matplotlib-cpp )
+set( OpenGL_GL_PREFERENCE LEGACY )
+find_package( OpenGL )
 
-target_link_libraries( ${CMAKE_PROJECT_NAME} LINK_PUBLIC ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${Python3_LIBRARIES} )
+target_link_libraries( ${CMAKE_PROJECT_NAME}  LINK_PUBLIC Qt5::Core Qt5::Widgets Qt5::Gui Qt5::PrintSupport ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${Python3_LIBRARIES} )

@@ -1,36 +1,66 @@
 #include "plotengine.h"
-#include "gnuplotlib.h"
-#include "matplotlib.h"
-#include "noplot.h"
+#include "ui_plotengine.h"
 
-PlotEngine::PlotEngine( Problem* problem ) : _problem( problem ) { _outputDir = _problem->GetOutputDir(); }
+PlotEngine::PlotEngine() : QWidget( nullptr ), ui( new Ui::PlotEngine ) {
+    ui->setupUi( this );
+    this->setStyleSheet( "background-color:white;" );
+    ui->plot0->setInteractions( QCP::iRangeDrag | QCP::iRangeZoom );
+    ui->plot1->setInteractions( QCP::iRangeDrag | QCP::iRangeZoom );
+    ui->plot2->setInteractions( QCP::iRangeDrag | QCP::iRangeZoom );
+}
 
-PlotEngine::~PlotEngine() {}
+PlotEngine::~PlotEngine() { delete ui; }
 
-PlotEngine* PlotEngine::Create( Problem* problem ) {
-    auto file          = cpptoml::parse_file( problem->GetInputFile() );
-    auto general       = file->get_table( "plot" );
-    std::string engine = general->get_as<std::string>( "engine" ).value_or( "" );
-    if( engine.compare( "gnuplot" ) == 0 || engine.compare( "GP" ) == 0 ) {
-        return new GnuplotLib( problem );
+QVector<double> PlotEngine::BlazeToQVector( const Vector& v ) {
+    QVector<double> ret( static_cast<int>( v.size() ), 0.0 );
+    for( unsigned i = 0; i < v.size(); ++i ) {
+        ret[static_cast<int>( i )] = v[i];
     }
-    else if( engine.compare( "matplotlib" ) == 0 || engine.compare( "MPL" ) == 0 ) {
-        return new Matplotlib( problem );
-    }
-    else if( engine.compare( "none" ) == 0 || engine.compare( "off" ) == 0 ) {
-        return new noPlot( problem );
-    }
-    else {
-        std::cerr << "Invalid plot engine type" << std::endl;
-        exit( EXIT_FAILURE );
-        return nullptr;
+    return ret;
+}
+
+void PlotEngine::keyPressEvent( QKeyEvent* event ) {
+    auto keyCode = event->key();
+    if( keyCode == 83 ) {
+        /*
+        QString filename = QFileDialog::getSaveFileName( nullptr, tr( "Save plot as" ), QDir::homePath(), tr( "Vector graphic (*.pdf)" ) );
+        if( filename.compare( "" ) != 0 ) {
+            if( QFileInfo( filename ).suffix().compare( "pdf" ) != 0 ) {
+                filename += ".pdf";
+            }
+            ui->plot0->savePdf( filename );
+        }
+        */
     }
 }
 
-std::vector<double> PlotEngine::BlazeToStdVector( const Vector& v ) {
-    std::vector<double> ret( v.size(), 0.0 );
-    for( unsigned i = 0; i < v.size(); ++i ) {
-        ret[i] = v[i];
+void PlotEngine::setPlot( unsigned id, Result1D data, QString title, QString xLabel, QString yLabel ) {
+    QCustomPlot* plot = nullptr;
+    if( id == 0 ) {
+        plot = ui->plot0;
     }
-    return ret;
+    else if( id == 1 ) {
+        plot = ui->plot1;
+    }
+    else if( id == 2 ) {
+        plot = ui->plot2;
+    }
+
+    plot->addGraph();
+    plot->graph()->addData( BlazeToQVector( data.x_numeric ), BlazeToQVector( data.y_numeric ) );
+    QPen pen;
+    pen.setColor( Qt::blue );
+    pen.setWidth( 2 );
+    plot->graph()->setPen( pen );
+    plot->addGraph();
+    plot->graph()->addData( BlazeToQVector( data.x_exact ), BlazeToQVector( data.y_exact ) );
+    pen.setColor( Qt::red );
+    pen.setStyle( Qt::DashLine );
+    plot->graph()->setPen( pen );
+    plot->axisRect()->setupFullAxesBox( true );
+    plot->xAxis->setLabel( xLabel );
+    plot->yAxis->setLabel( yLabel );
+    plot->plotLayout()->insertRow( 0 );
+    plot->plotLayout()->addElement( 0, 0, new QCPTextElement( plot, title ) );
+    plot->rescaleAxes();
 }

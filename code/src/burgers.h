@@ -4,7 +4,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "gnuplot-iostream.h"
 #include "problem.h"
 
 class Burgers : public Problem
@@ -26,7 +25,6 @@ class Burgers : public Problem
   public:
     Burgers( std::string inputFile );
     virtual void Solve();
-    virtual void Plot( Vector& x, Vector& u );
     virtual void Print();
     virtual void WriteToFile( std::string filename, int filetype ) const;
     double G( double u, double v );

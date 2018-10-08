@@ -39,7 +39,6 @@ class Problem
     virtual ~Problem();
     virtual void Solve() {}
     virtual Matrix G( const Matrix& u, const Matrix& v )          = 0;
-    virtual void Plot( Vector& x, Vector& u )                     = 0;
     virtual double ExactSolution( double t, double x, double xi ) = 0;
     virtual double GetGamma() const { return -1.0; }
 

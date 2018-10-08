@@ -18,8 +18,6 @@ void Euler::Solve() {}
 
 void Euler::Print() {}
 
-void Euler::Plot() const {}
-
 void Euler::WriteToFile( std::string filename, int filetype ) const {}
 
 Vector Euler::G( const Vector& u, const Vector& v ) {
@@ -60,8 +58,6 @@ Matrix Euler::G( const Matrix& u, const Matrix& v ) {
     }
     return y;
 }
-
-void Euler::Plot( Vector& x, Vector& u ) {}
 
 double Euler::ExactSolution( double t, double x, double xi ) {}
 

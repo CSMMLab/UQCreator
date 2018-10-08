@@ -1,3 +1,4 @@
+#include <QApplication>
 #include <blaze/math/DynamicMatrix.h>
 #include <blaze/math/DynamicVector.h>
 #include <iostream>
@@ -72,14 +73,15 @@ int main( int argc, char* argv[] ) {
     MomentSolver* solver = new MomentSolver( problem );
 
     solver->Solve();
-    solver->PlotFixedXi();
-    solver->Plot();
-    solver->PlotExpectedValue();
-
-    delete solver;
-    delete problem;
 
     std::cout << "\nProcess exited normally." << std::endl;
 
-    return 0;
+    QApplication app( argc, argv );
+    auto res = solver->GetPlotData1D();
+    PlotEngine plot;
+    plot.setPlot( 0, solver->GetPlotData1D(), "Fixed x", "ξ", "y" );
+    plot.setPlot( 1, solver->GetPlotData1DFixedXi(), "Fixed xi", "x", "y" );
+    plot.setPlot( 2, solver->GetPlotData1DExpectedValue(), "Expected value", "x", "y" );
+    plot.show();
+    return app.exec();
 }

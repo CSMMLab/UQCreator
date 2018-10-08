@@ -21,7 +21,6 @@ MomentSolver::MomentSolver( Problem* problem ) : _problem( problem ) {
     _closure = Closure::Create( _problem );
     _limiter = Limiter::Create( _closure, _problem );
     _time    = TimeSolver::Create( _problem, _closure );
-    _plot    = PlotEngine::Create( _problem );
 
     _dt = _time->GetTimeStepSize();
 }
@@ -31,7 +30,6 @@ MomentSolver::~MomentSolver() {
     delete _closure;
     delete _limiter;
     delete _time;
-    delete _plot;
 }
 
 void MomentSolver::Solve() {
@@ -126,7 +124,7 @@ double MomentSolver::IC( double x, double xi ) {
     }
 }
 
-void MomentSolver::Plot() {
+Result1D MomentSolver::GetPlotData1D() {
     unsigned cellIndex, nXi;
     unsigned plotState = 0;
     try {
@@ -160,11 +158,11 @@ void MomentSolver::Plot() {
         resCourse[k] = resQuad( plotState, k );
     }
 
-    _plot->Plot1D( xi, res, xi, exRes );
-    //_plot->Plot1D(_quad->GetNodes(), resCourse, xi, exRes);
+    Result1D data = {xi, res, xi, exRes};
+    return data;
 }
 
-void MomentSolver::PlotFixedXi() {
+Result1D MomentSolver::GetPlotData1DFixedXi() {
     double xi          = 0.0;
     unsigned plotState = 0;
     Vector xiVec( _nCells + 4, xi );
@@ -199,10 +197,11 @@ void MomentSolver::PlotFixedXi() {
         exRes[j] = _problem->ExactSolution( _tEnd, xFine[j], xi );
     }
 
-    _plot->Plot1D( _x, res, xFine, exRes );
+    Result1D data = {_x, res, xFine, exRes};
+    return data;
 }
 
-void MomentSolver::PlotExpectedValue() {
+Result1D MomentSolver::GetPlotData1DExpectedValue() {
     const unsigned int nQuadFine = 200;
     Legendre* quadFine           = new Legendre( nQuadFine );
     Vector wFine                 = quadFine->GetWeights();
@@ -238,7 +237,8 @@ void MomentSolver::PlotExpectedValue() {
         }
     }
 
-    _plot->Plot1D( _x, res, xFine, exRes );
+    Result1D data = {_x, res, xFine, exRes};
+    return data;
 }
 
 void MomentSolver::Print() {
