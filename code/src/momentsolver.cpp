@@ -110,17 +110,19 @@ std::vector<Matrix> MomentSolver::SetupIC() {
 }
 
 double MomentSolver::IC( double x, double xi ) {
-    double a     = 0.5;
-    double b     = 1.5;
-    double sigma = 0.2;
-    if( x < a + sigma * xi ) {
-        return _uL;
-    }
-    else if( x < b + sigma * xi ) {
-        return _uL + ( _uR - _uL ) * ( a + sigma * xi - x ) / ( a - b );
-    }
-    else {
-        return _uR;
+    if( _problem->GetProblemType() == "Burgers" ) {
+        double a     = 0.5;
+        double b     = 1.5;
+        double sigma = 0.2;
+        if( x < a + sigma * xi ) {
+            return _uL;
+        }
+        else if( x < b + sigma * xi ) {
+            return _uL + ( _uR - _uL ) * ( a + sigma * xi - x ) / ( a - b );
+        }
+        else {
+            return _uR;
+        }
     }
 }
 
