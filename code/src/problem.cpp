@@ -8,6 +8,7 @@ Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
 
         auto general = file->get_table( "general" );
         _outputDir   = general->get_as<std::string>( "outputDir" ).value_or( "" );
+        _problemType = general->get_as<std::string>( "problem" ).value_or( "none" );
 
         _mesh = new Mesh( _inputFile );
 
@@ -19,7 +20,6 @@ Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
 
         auto momentSystem    = file->get_table( "moment_system" );
         _closureType         = momentSystem->get_as<std::string>( "closure" ).value_or( "none" );
-        _problemType         = momentSystem->get_as<std::string>( "problem" ).value_or( "none" );
         std::string quadType = momentSystem->get_as<std::string>( "quadType" ).value_or( "none" );
         if( quadType.compare( "legendre" ) )
             _quadType = QUAD_TYPE_LEGENDRE;

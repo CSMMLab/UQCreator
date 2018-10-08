@@ -110,6 +110,7 @@ std::vector<Matrix> MomentSolver::SetupIC() {
 }
 
 double MomentSolver::IC( double x, double xi ) {
+
     if( _problem->GetProblemType() == "Burgers" ) {
         double a     = 0.5;
         double b     = 1.5;
@@ -123,6 +124,9 @@ double MomentSolver::IC( double x, double xi ) {
         else {
             return _uR;
         }
+    }
+    else if( _problem->GetProblemType() == "Euler" ) {
+        std::cout << "Error" << std::endl;
     }
 }
 

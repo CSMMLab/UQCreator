@@ -52,6 +52,7 @@ Matrix Euler::G( const Matrix& u, const Matrix& v ) {
             vVec[l] = v( l, k );
         }
         Vector out = G( uVec, vVec );
+        // y( :, k )  = G( row( u, k ), row( v, k ) );
         for( unsigned l = 0; l < u.columns(); ++l ) {
             y( l, k ) = out[l];
         }

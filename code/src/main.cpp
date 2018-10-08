@@ -77,7 +77,6 @@ int main( int argc, char* argv[] ) {
     std::cout << "\nProcess exited normally." << std::endl;
 
     QApplication app( argc, argv );
-    auto res = solver->GetPlotData1D();
     PlotEngine plot;
     plot.setPlot( 0, solver->GetPlotData1D(), "Fixed x", "ξ", "y" );
     plot.setPlot( 1, solver->GetPlotData1DFixedXi(), "Fixed xi", "x", "y" );

@@ -4,7 +4,7 @@ outputDir = "results"
 
 [mesh]
 Dimension = 1
-NumberOfCells = 156
+NumberOfCells = 164
 a = 0
 b = 3
 
@@ -13,7 +13,7 @@ b = 3
 timestepping = "explicitEuler"
 CFL = 0.5
 # available limiter: minmod, none|off
-limiter = "minmod"
+limiter = "none"
 tEnd = 0.14
 nStates = 1
 
@@ -22,7 +22,7 @@ nStates = 1
 closure = "BoundedBarrier"
 moments = 15
 quadType = "legendre"
-quadPoints = 30
+quadPoints = 50
 maxIterations = 200
 epsilon = 5e-5
 
