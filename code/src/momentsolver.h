@@ -9,6 +9,7 @@
 #include "limiter.h"
 #include "minmod.h"
 #include "nolimiter.h"
+#include "omp.h"
 #include "plotengine.h"
 #include "problem.h"
 #include "thetamethod.h"

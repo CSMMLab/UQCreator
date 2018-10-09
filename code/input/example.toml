@@ -4,7 +4,7 @@ outputDir = "results"
 
 [mesh]
 Dimension = 1
-NumberOfCells = 200
+NumberOfCells = 1000
 a = 0
 b = 1
 

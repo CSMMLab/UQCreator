@@ -64,6 +64,7 @@ void MomentSolver::Solve() {
             _lambda );
 
         // Time Update dual variables
+        //#pragma omp parallel for
         for( unsigned j = 3; j < _nCells + 1; ++j ) {
             // std::cout << "-> dual problem cell " << j << " , uNew = " << uNew[j] << std::endl << "lambdaStart = " << _lambda[j] << std::endl;
             _lambda[j] = _closure->SolveClosure( uNew[j], _lambda[j] );
