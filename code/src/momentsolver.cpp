@@ -95,10 +95,8 @@ Matrix MomentSolver::CalculateMoments( const Matrix& lambda ) {
 }
 
 std::vector<Matrix> MomentSolver::SetupIC() {
-    std::cout << "SetupIC started..." << std::endl;
     std::vector<Matrix> out( _nCells + 4, Matrix( _nStates, _nMoments, 0.0 ) );
     Vector xi = _quad->GetNodes();
-    Vector w  = _quad->GetWeights();
     Matrix uIC( _nStates, _problem->GetNQuadPoints(), 0.0 );
     Matrix phiTildeW = _closure->GetPhiTildeW();
     for( unsigned j = 0; j < _nCells + 4; ++j ) {
@@ -154,7 +152,10 @@ Vector MomentSolver::IC( double x, double xi ) {
             double innerEnergyR   = ( pR / ( rhoR * ( gamma - 1 ) ) ) * rhoR;
             y[2]                  = kineticEnergyR + innerEnergyR;
         }
+        return y;
     }
+    std::cerr << "Reached end of IC. No initial condition set" << std::endl;
+    exit( EXIT_FAILURE );
 }
 
 Result1D MomentSolver::GetPlotData1D() {
