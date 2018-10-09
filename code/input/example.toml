@@ -1,26 +1,26 @@
 [general]
-problem = "Burgers"
+problem = "Euler"
 outputDir = "results"
 
 [mesh]
 Dimension = 1
-NumberOfCells = 164
+NumberOfCells = 200
 a = 0
-b = 3
+b = 1
 
 [problem]
 # available timesteppings: explicitEuler, Heun, SSPMultiStep
 timestepping = "explicitEuler"
-CFL = 0.5
+CFL = 5.0
 # available limiter: minmod, none|off
 limiter = "none"
 tEnd = 0.14
-nStates = 1
+nStates = 3
 
 [moment_system]
-# available closures: BoundedBarrier, StochasticGalerkin
-closure = "BoundedBarrier"
-moments = 15
+# available closures: BoundedBarrier, StochasticGalerkin, Euler
+closure = "Euler"
+moments = 5
 quadType = "legendre"
 quadPoints = 50
 maxIterations = 200

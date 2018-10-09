@@ -1,5 +1,6 @@
 #include "closure.h"
 #include "boundedbarrier.h"
+#include "eulerclosure.h"
 #include "stochasticgalerkin.h"
 
 Closure::Closure( Problem* problem )
@@ -42,6 +43,9 @@ Closure* Closure::Create( Problem* problem ) {
     else if( closure.compare( "StochasticGalerkin" ) == 0 || closure.compare( "SG" ) == 0 ) {
         return new StochasticGalerkin( problem );
     }
+    else if( closure.compare( "Euler" ) == 0 ) {
+        return new EulerClosure( problem );
+    }
     else {
         std::cerr << "Invalid closure type" << std::endl;
         exit( EXIT_FAILURE );
@@ -51,6 +55,7 @@ Closure* Closure::Create( Problem* problem ) {
 
 Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     int maxRefinements = 1000;
+    double alpha       = 0.1;
     Matrix H( _nStates * _nMoments, _nStates * _nMoments, 0.0 );
     Vector g( _nStates * _nMoments, 0.0 );
     Vector dlambdaNew( _nStates * _nMoments, 0.0 );
@@ -64,24 +69,34 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
     Hessian( H, lambda );
+    // std::cout << u << std::endl;
+    // std::cout << "g " << g << std::endl;
     blaze::posv( H, g, 'L' );
-    Matrix lambdaNew = lambda - MakeMatrix( g );
+    // std::cout << "H update " << g << std::endl;
+    Matrix lambdaNew = lambda - alpha * MakeMatrix( g );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
     for( unsigned l = 0; l < _problem->GetMaxIterations(); ++l ) {
+        // std::cout << l << std::endl;
         double stepSize = 1.0;
         if( l != 0 ) {
             Gradient( g, lambda, u );
             dlambda = -g;
+            // std::cout << "u = " << u << std::endl;
             Hessian( H, lambda );
             blaze::posv( H, g, 'L' );
-            lambdaNew = lambda - stepSize * MakeMatrix( g );
+            lambdaNew = lambda - alpha * stepSize * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
         }
+        // std::cout << "g " << g << std::endl;
+        // std::cout << "lambdaNew " << lambdaNew << std::endl;
         int refinementCounter = 0;
+        // std::cout << H << std::endl;
+        // std::cout << "Residual: " << CalcNorm( dlambda ) << std::endl;
+        // std::cout << "Residual: " << CalcNorm( dlambdaNew ) << std::endl;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) ) {
             stepSize *= 0.5;
-            lambdaNew = lambda - stepSize * MakeMatrix( g );
+            lambdaNew = lambda - stepSize * alpha * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
             if( CalcNorm( dlambdaNew ) < _problem->GetEpsilon() ) {
                 return lambdaNew;

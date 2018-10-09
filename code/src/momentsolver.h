@@ -29,7 +29,7 @@ class MomentSolver
     unsigned _nTimeSteps, _nCells, _nMoments, _nStates;
     Matrix numFlux( const Matrix& lambda0, const Matrix& lambda1, const Matrix& lambda2, const Matrix& lambda3 );
     std::vector<Matrix> SetupIC();
-    double IC( double x, double xi );
+    Vector IC( double x, double xi );
     Matrix CalculateMoments( const Matrix& lambda );
     Vector EvalLambda( const Vector& lambda, const Vector& xi );
 
@@ -41,6 +41,7 @@ class MomentSolver
     Result1D GetPlotData1D();
     Result1D GetPlotData1DFixedXi();
     Result1D GetPlotData1DExpectedValue();
+    Result1D GetPlotData1DVariance();
 };
 
 #endif    // MOMENTSOLVER_H

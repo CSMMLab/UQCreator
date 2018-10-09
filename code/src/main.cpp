@@ -78,8 +78,10 @@ int main( int argc, char* argv[] ) {
 
     QApplication app( argc, argv );
     PlotEngine plot;
-    plot.setPlot( 0, solver->GetPlotData1D(), "Fixed x", "ξ", "y" );
-    plot.setPlot( 1, solver->GetPlotData1DFixedXi(), "Fixed xi", "x", "y" );
+    // plot.setPlot( 0, solver->GetPlotData1D(), "Fixed x", "ξ", "y" );
+    // plot.setPlot( 1, solver->GetPlotData1DFixedXi(), "Fixed xi", "x", "y" );
+    plot.setPlot( 0, solver->GetPlotData1DVariance(), "Variance", "x", "y" );
+    plot.setPlot( 1, solver->GetPlotData1DExpectedValue(), "Expected value", "x", "y" );
     plot.setPlot( 2, solver->GetPlotData1DExpectedValue(), "Expected value", "x", "y" );
     plot.show();
     return app.exec();
