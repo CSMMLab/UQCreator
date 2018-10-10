@@ -31,6 +31,8 @@ include_directories( ${BLAS_INCLUDE_DIR} )
 find_package( LAPACK REQUIRED )
 include_directories( ${LAPACK_INCLUDE_DIR} )
 
+find_package( VTK REQUIRED COMPONENTS vtkIOXML )
+
 find_package( Git REQUIRED )
 ExternalProject_Add( blaze
   PREFIX ${CMAKE_BINARY_DIR}/blaze
@@ -61,4 +63,4 @@ find_package( Qt5 COMPONENTS Core Widgets Gui PrintSupport REQUIRED )
 set( OpenGL_GL_PREFERENCE LEGACY )
 find_package( OpenGL )
 
-target_link_libraries( ${CMAKE_PROJECT_NAME}  LINK_PUBLIC Qt5::Core Qt5::Widgets Qt5::Gui Qt5::PrintSupport ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${Python3_LIBRARIES} )
+target_link_libraries( ${CMAKE_PROJECT_NAME}  LINK_PUBLIC Qt5::Core Qt5::Widgets Qt5::Gui Qt5::PrintSupport ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${VTK_LIBRARIES})
