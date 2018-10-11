@@ -207,3 +207,5 @@ void Mesh2D::DetermineNeighbours() {
     cnt:;
     }
 }
+
+double Mesh2D::GetArea( unsigned i ) { return _elements[i]->GetArea(); }

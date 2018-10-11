@@ -36,6 +36,7 @@ class Cell
     std::vector<Edge*> _edges;
     std::vector<Cell*> _neighbours;
     bool _isBoundaryCell;
+    double _area;
 
     virtual void SetupEdges() = 0;
 
@@ -51,6 +52,7 @@ class Cell
     bool IsBoundaryCell();
     std::vector<Edge*> GetEdges();
     unsigned GetID();
+    double GetArea();
 };
 
 #endif    // ELEMENT_H

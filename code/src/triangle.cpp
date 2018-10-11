@@ -13,6 +13,10 @@ Triangle::Triangle( unsigned id, std::vector<Node*> nodes ) : Cell( CELL_TYPE::T
     else {
         _isBoundaryCell = false;
     }
+    _area = std::abs( ( _nodes[0]->coords[0] * ( _nodes[1]->coords[1] - _nodes[2]->coords[1] ) +
+                        _nodes[1]->coords[0] * ( _nodes[2]->coords[1] - _nodes[0]->coords[1] ) +
+                        _nodes[2]->coords[0] * ( _nodes[0]->coords[1] - _nodes[1]->coords[1] ) ) /
+                      2 );
 }
 
 Triangle::~Triangle() {}

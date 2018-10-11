@@ -50,6 +50,7 @@ class Mesh2D
     ~Mesh2D();
     void LoadSU2MeshFromFile( std::string meshfile );
     void ExportToVTK( std::string vtkfile );
+    double GetArea( unsigned i );
 };
 
 #endif    // MESH2D_H
