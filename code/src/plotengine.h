@@ -10,10 +10,14 @@
 #include "typedefs.h"
 
 struct Result1D {
-    Vector x_numeric;
-    Vector y_numeric;
-    Vector x_exact;
-    Vector y_exact;
+    Vector x;
+    Vector y;
+};
+
+struct Result2D {
+    std::pair<double, double> xRange;
+    std::pair<double, double> yRange;
+    Matrix data;
 };
 
 namespace Ui {
@@ -25,13 +29,19 @@ class PlotEngine : public QWidget
     Q_OBJECT
 
   public:
-    explicit PlotEngine();
+    explicit PlotEngine( Problem* p );
     ~PlotEngine();
+    std::vector<QCustomPlot*> _plots;
 
-    void setPlot( unsigned id, Result1D data, QString title, QString xLabel, QString yLabel );
+    void setupPlot( unsigned id, QString title, QString xLabel, QString yLabel );
+    void addPlotData( unsigned id, Result1D data, QString name );
+    void addPlotData( unsigned id, Result2D data, QString name );
+    void updatePlotData( unsigned id, Result1D data, QString name );
+    void replot();
 
   private:
     Ui::PlotEngine* ui;
+    Problem* _problem;
     QVector<double> BlazeToQVector( const Vector& v );
 
   private slots:

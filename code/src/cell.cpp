@@ -25,3 +25,5 @@ bool Cell::IsBoundaryCell() { return _isBoundaryCell; }
 std::vector<Edge*> Cell::GetEdges() { return _edges; }
 
 unsigned Cell::GetID() { return _id; }
+
+double Cell::GetArea() { return _area; }
