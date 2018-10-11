@@ -15,8 +15,7 @@ class Burgers : public Problem
     double _dt;
     unsigned _nCells;
     unsigned _nTimeSteps;
-    double H( double u, double v, double w );
-    double F( double u );
+    Vector F( double u );
     Matrix F( const Matrix& u );
     double IC( double x, double uL, double uR );
 
@@ -24,11 +23,10 @@ class Burgers : public Problem
 
   public:
     Burgers( std::string inputFile );
-    virtual void Solve();
     virtual void Print();
     virtual void WriteToFile( std::string filename, int filetype ) const;
-    double G( double u, double v );
-    Matrix G( const Matrix& u, const Matrix& v );
+    Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
+    Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );
     virtual double ExactSolution( double t, double x, double xi );
 };
 

@@ -11,35 +11,32 @@ Burgers::Burgers( std::string inputFile ) : Problem( inputFile ) {
     _u          = Vector( _nCells + 4, 0.0 );
 }
 
-double Burgers::H( double u, double v, double w ) { return v - ( _dt / _dx ) * ( G( v, w ) - G( u, v ) ); }
-
-double Burgers::G( double u, double v ) { return F( u ); }
-
-Matrix Burgers::G( const Matrix& u, const Matrix& v ) { return F( u ); }
-
-double Burgers::F( double u ) { return 0.5 * u * u; }
-
-Matrix Burgers::F( const Matrix& u ) { return 0.5 * blaze::pow( u, 2 ); }
-
-void Burgers::Solve() {
-    double* uNew = new double[_nCells + 4];
-
-    // setup IC
-    for( unsigned j = 0; j < _nCells + 4; ++j ) {
-        _u[j] = IC( _x[j], 12.0, 3.0 );
+Vector Burgers::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+    if( u[0] * nUnit[0] > 0 ) {
+        return F( u[0] ) * n[0];
     }
-
-    for( unsigned n = 0; n < _nTimeSteps; ++n ) {
-        for( unsigned j = 2; j < _nCells + 2; ++j ) {
-            //_dt = _timeDiscretization->getDt();
-            uNew[j] = H( _u[j - 1], _u[j], _u[j + 1] );
-        }
-
-        for( unsigned j = 2; j < _nCells + 2; ++j ) {
-            _u[j] = uNew[j];
-        }
+    else {
+        return F( v[0] ) * n[0];
     }
 }
+
+Matrix Burgers::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
+    unsigned nStates = u.rows();
+    unsigned Nq      = u.columns();
+    Matrix y( nStates, Nq );
+    for( unsigned k = 0; k < Nq; ++k ) {
+        column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
+    }
+    return y;
+}
+
+Vector Burgers::F( double u ) {
+    Vector y( 1 );
+    y[0] = 0.5 * u * u;
+    return y;
+}
+
+Matrix Burgers::F( const Matrix& u ) { return 0.5 * blaze::pow( u, 2 ); }
 
 double Burgers::IC( double x, double uL, double uR ) {
     double a = 0.5;

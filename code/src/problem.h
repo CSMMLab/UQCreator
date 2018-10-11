@@ -39,8 +39,8 @@ class Problem
     static Problem* Create( std::string inputFile );
     virtual ~Problem();
     virtual void Solve() {}
-    virtual Matrix G( const Matrix& u, const Matrix& v )          = 0;
-    virtual double ExactSolution( double t, double x, double xi ) = 0;
+    virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) = 0;
+    virtual double ExactSolution( double t, double x, double xi )                              = 0;
     virtual double GetGamma() const { return -1.0; }
 
     int GetQuadType() const;

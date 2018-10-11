@@ -13,10 +13,10 @@ class Euler : public Problem
     virtual void Solve();
     virtual void Print();
     virtual void WriteToFile( std::string filename, int filetype ) const;
-    virtual Vector G( const Vector& u, const Vector& v );
-    virtual Matrix G( const Matrix& u, const Matrix& v );
+    virtual Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
+    virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );
     virtual double ExactSolution( double t, double x, double xi );
-    Vector F( const Vector& u );
+    Matrix F( const Vector& u );
 
     Matrix F( const Matrix& u );
     double GetGamma() const;

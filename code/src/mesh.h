@@ -22,6 +22,9 @@ class Mesh
     unsigned _numCells;
     Vector _mesh;
     Vector _spacing;
+    std::vector<blaze::DynamicVector<unsigned>> _neighbors;
+    std::vector<std::vector<Vector>> _n;
+    std::vector<std::vector<Vector>> _nUnit;
 
     Mesh() {}
 
@@ -33,6 +36,10 @@ class Mesh
     unsigned GetDimension() const;
     const Vector& GetGrid() const;
     const Vector& GetSpacing() const;
+    double GetArea( unsigned j ) const;
+    blaze::DynamicVector<unsigned> GetNeighbors( unsigned j ) const;
+    Vector GetNormals( unsigned j, unsigned l ) const;
+    Vector GetUnitNormals( unsigned j, unsigned l ) const;
 
     Mesh( std::string inputFile );
     ~Mesh();

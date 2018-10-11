@@ -21,7 +21,7 @@ void Euler::Print() {}
 
 void Euler::WriteToFile( std::string filename, int filetype ) const {}
 
-Vector Euler::G( const Vector& u, const Vector& v ) {
+Vector Euler::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     double rhoInv = 1.0 / u[0];
     double vU     = u[1] * rhoInv;
     double p      = ( _gamma - 1.0 ) * ( u[2] - 0.5 * u[0] * pow( vU, 2 ) );
@@ -31,38 +31,42 @@ Vector Euler::G( const Vector& u, const Vector& v ) {
     p             = ( _gamma - 1.0 ) * ( v[2] - 0.5 * v[0] * pow( vV, 2 ) );
     double aV     = sqrt( _gamma * p * rhoInv );
 
-    double lambdaMin = vU - aU;
-    double lambdaMax = vV + aV;
+    double uUProjected = nUnit[0] * vU;
+    double uVProjected = nUnit[0] * vV;
+
+    double lambdaMin = uUProjected - aU;
+    double lambdaMax = uVProjected + aV;
 
     if( lambdaMin >= 0 )
-        return F( u );
+        return F( u ) * n;
     else if( lambdaMax <= 0 )
-        return F( v );
+        return F( v ) * n;
     else {
-        return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( u ) - lambdaMin * F( v ) + lambdaMax * lambdaMin * ( v - u ) );
+        return ( 1.0 / ( lambdaMax - lambdaMin ) ) *
+               ( lambdaMax * F( u ) * n - lambdaMin * F( v ) * n + lambdaMax * lambdaMin * ( v - u ) * norm( n ) );
     }
 }
 
-Matrix Euler::G( const Matrix& u, const Matrix& v ) {
+Matrix Euler::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
     unsigned nStates = u.rows();
     unsigned Nq      = u.columns();
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
-        column( y, k ) = G( column( u, k ), column( v, k ) );
+        column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
     }
     return y;
 }
 
 double Euler::ExactSolution( double t, double x, double xi ) { return 0.0; }
 
-Vector Euler::F( const Vector& u ) {
+Matrix Euler::F( const Vector& u ) {
     double rhoInv = 1.0 / u[0];
     double v      = u[1] * rhoInv;
     double p      = ( _gamma - 1.0 ) * ( u[2] - 0.5 * u[0] * pow( v, 2 ) );
-    Vector flux( u.size() );
-    flux[0] = u[1];
-    flux[1] = u[1] * v + p;
-    flux[2] = ( u[2] + p ) * v;
+    Matrix flux( u.size(), 1 );
+    flux( 0, 0 ) = u[1];
+    flux( 1, 0 ) = u[1] * v + p;
+    flux( 2, 0 ) = ( u[2] + p ) * v;
     return flux;
 }
 

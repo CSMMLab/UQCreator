@@ -20,6 +20,14 @@ Mesh::Mesh( std::string inputFile ) : _status( MESH_STATUS_UNLOADED ) {
             _meshType = MESH_TYPE_1DPLAIN;
             _status   = MESH_STATUS_LOADED;
         }
+        _neighbors.resize( _numCells + 4 );
+
+        for( unsigned j = 2; j < _numCells + 1; ++j ) {
+
+            _neighbors[j].resize( 2 );
+            _neighbors[j][0] = j - 1;
+            _neighbors[j][1] = j + 1;
+        }
     }
 }
 
@@ -35,8 +43,20 @@ void Mesh::CreateGrid( double a, double b ) {
     for( unsigned j = 0; j < _numCells + 4; ++j ) {
         _mesh[j] = a + j * ( b - a ) / ( _numCells + 3 );
     }
+    _n.resize( _numCells + 4 );
+    _nUnit.resize( _numCells + 4 );
+    Vector n1( 1 );
+    Vector n2( 1 );
     for( unsigned j = 0; j <= _numCells + 2; ++j ) {
-        _spacing[j] = _mesh[j + 1] - _mesh[j];
+        _n[j].resize( 2 );
+        _nUnit[j].resize( 2 );
+        n1[0]        = -1.0;
+        n2[0]        = 1.0;
+        _nUnit[j][0] = n1;
+        _nUnit[j][1] = n2;
+        _spacing[j]  = _mesh[j + 1] - _mesh[j];
+        _n[j][0]     = _nUnit[j][0] / _spacing[j];
+        _n[j][1]     = _nUnit[j][1] / _spacing[j];
     }
 }
 
@@ -47,3 +67,11 @@ unsigned Mesh::GetDimension() const { return _dimension; }
 const Vector& Mesh::GetGrid() const { return _mesh; }
 
 const Vector& Mesh::GetSpacing() const { return _spacing; }
+
+double Mesh::GetArea( unsigned j ) const { return _spacing[j]; }
+
+blaze::DynamicVector<unsigned> Mesh::GetNeighbors( unsigned j ) const { return _neighbors[j]; };
+
+Vector Mesh::GetNormals( unsigned j, unsigned l ) const { return _n[j][l]; };
+
+Vector Mesh::GetUnitNormals( unsigned j, unsigned l ) const { return _nUnit[j][l]; };

@@ -1,24 +1,22 @@
 #ifndef HEUN_H
 #define HEUN_H
 
-#include "timesolver.h"
 #include "closure.h"
-
+#include "timesolver.h"
 
 class Heun : public TimeSolver
 {
     Closure* _closure;
-public:
+
+  public:
     Heun() = delete;
     Heun( Problem* problem, Closure* closure );
     virtual ~Heun();
-    virtual void Advance( std::function<Matrix( const Matrix&,
-                                                                      const Matrix&,
-                                                                      const Matrix&,
-                                                                      const Matrix& )> const& fluxFunc,
-                          std::vector<Matrix>& uNew,
-                          std::vector<Matrix>& u,
-                          std::vector<Matrix>& lambda );
+    virtual void
+    Advance( std::function<Matrix( const Matrix&, const Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
+             std::vector<Matrix>& uNew,
+             std::vector<Matrix>& u,
+             std::vector<Matrix>& lambda ) {}
 };
 
-#endif // HEUN_H
+#endif    // HEUN_H
