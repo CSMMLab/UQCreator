@@ -14,22 +14,13 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 
+#include "triangle.h"
+
 using vtkPointsSP                    = vtkSmartPointer<vtkPoints>;
 using vtkUnstructuredGridSP          = vtkSmartPointer<vtkUnstructuredGrid>;
 using vtkTriangleSP                  = vtkSmartPointer<vtkTriangle>;
 using vtkCellArraySP                 = vtkSmartPointer<vtkCellArray>;
 using vtkXMLUnstructuredGridWriterSP = vtkSmartPointer<vtkXMLUnstructuredGridWriter>;
-
-struct Element {
-    unsigned type;
-    unsigned id;
-    std::vector<unsigned> nodes;
-};
-
-struct Node {
-    unsigned id;
-    std::vector<double> coords;
-};
 
 struct BoundaryElement {
     unsigned type;
@@ -45,14 +36,18 @@ class Mesh2D
 {
   private:
     unsigned _dim;
-    std::vector<Element> _elements;
-    std::vector<Node> _nodes;
+    std::vector<Cell*> _elements;
+    std::vector<Node*> _nodes;
     std::vector<Boundary> _boundaries;
 
     unsigned GetTrailingPosNumber( std::string s );
+    unsigned BinarySearch( unsigned id, unsigned lBound, unsigned rBound );
+    Node* FindNodeByID( unsigned id );
+    void DetermineNeighbours();
 
   public:
     Mesh2D();
+    ~Mesh2D();
     void LoadSU2MeshFromFile( std::string meshfile );
     void ExportToVTK( std::string vtkfile );
 };
