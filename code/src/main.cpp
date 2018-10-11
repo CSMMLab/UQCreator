@@ -69,6 +69,8 @@ int main( int argc, char* argv[] ) {
     }
     PrintInit( configFile );
 
+    QApplication app( argc, argv );
+
     Problem* problem     = Problem::Create( configFile );
     MomentSolver* solver = new MomentSolver( problem );
 
@@ -76,12 +78,5 @@ int main( int argc, char* argv[] ) {
 
     std::cout << "\nProcess exited normally." << std::endl;
 
-    QApplication app( argc, argv );
-    PlotEngine plot;
-    plot.setPlot( 0, solver->GetPlotData1D(), "Fixed x", "ξ", "y" );
-    // plot.setPlot( 1, solver->GetPlotData1DFixedXi(), "Fixed xi", "x", "y" );
-    plot.setPlot( 1, solver->GetPlotData1DExpectedValue(), "Expected value", "x", "y" );
-    plot.setPlot( 2, solver->GetPlotData1DVariance(), "Variance", "x", "y" );
-    plot.show();
     return app.exec();
 }

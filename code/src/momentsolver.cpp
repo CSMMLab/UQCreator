@@ -23,6 +23,8 @@ MomentSolver::MomentSolver( Problem* problem ) : _problem( problem ) {
     _time    = TimeSolver::Create( _problem, _closure );
 
     _dt = _time->GetTimeStepSize();
+
+    _plotEngine = new PlotEngine( _problem );
 }
 
 MomentSolver::~MomentSolver() {
@@ -74,10 +76,11 @@ void MomentSolver::Solve() {
         // Time Update dual variables
         //#pragma omp parallel for
         for( unsigned j = 3; j < _nCells + 1; ++j ) {
-            // std::cout << "-> dual problem cell " << j << " , uNew = " << uNew[j] << std::endl << "lambdaStart = " << _lambda[j] << std::endl;
             _lambda[j] = _closure->SolveClosure( uNew[j], _lambda[j] );
         }
-        // exit( EXIT_FAILURE );
+
+        Plot( t );
+
         if( std::fabs( t ) <= std::numeric_limits<double>::epsilon() )
             std::cout << std::fixed << std::setprecision( 8 ) << "t = " << t << std::flush;
         else
@@ -170,169 +173,6 @@ Vector MomentSolver::IC( double x, double xi ) {
     exit( EXIT_FAILURE );
 }
 
-Result1D MomentSolver::GetPlotData1D() {
-    unsigned cellIndex, nXi;
-    unsigned plotState = 0;
-    try {
-        auto file = cpptoml::parse_file( _problem->GetInputFile() );
-        auto plot = file->get_table( "plot" );
-
-        cellIndex = plot->get_as<unsigned>( "cellIndex" ).value_or( 0 );
-        nXi       = plot->get_as<unsigned>( "evalPoints" ).value_or( 0 );
-    } catch( const cpptoml::parse_exception& e ) {
-        std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
-        exit( EXIT_FAILURE );
-    }
-
-    Vector xi( nXi, 0.0 );
-    for( unsigned k = 0; k < nXi; ++k ) {
-        xi[k] = -1 + k / ( nXi - 1.0 ) * 2.0;
-    }
-    Matrix resM    = _closure->U( _closure->EvaluateLambda( _lambda[cellIndex - 1], xi ) );
-    Matrix resQuad = _closure->U( _closure->EvaluateLambda( _lambda[cellIndex - 1] ) );
-
-    // save first state and calculate exact solution
-    Vector res       = Vector( nXi, 0.0 );
-    Vector resCourse = Vector( _problem->GetNQuadPoints(), 0.0 );
-    Vector exRes( nXi );
-    for( unsigned k = 0; k < nXi; ++k ) {
-        res[k]   = resM( plotState, k );
-        exRes[k] = _problem->ExactSolution( _tEnd, _x[cellIndex - 1], xi[k] );
-    }
-
-    for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-        resCourse[k] = resQuad( plotState, k );
-    }
-
-    Result1D data = {xi, res, xi, exRes};
-    return data;
-}
-
-Result1D MomentSolver::GetPlotData1DFixedXi() {
-    double xi          = 0.0;
-    unsigned plotState = 0;
-    Vector xiVec( _nCells + 4, xi );
-
-    unsigned nFine;
-    try {
-        auto file = cpptoml::parse_file( _problem->GetInputFile() );
-        auto plot = file->get_table( "plot" );
-
-        nFine = plot->get_as<unsigned>( "evalPoints" ).value_or( 0 );
-    } catch( const cpptoml::parse_exception& e ) {
-        std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
-        exit( EXIT_FAILURE );
-    }
-
-    Matrix resM( _nCells + 4, _nStates );
-    Vector resVec( _nStates, 0.0 );
-    for( unsigned j = 0; j < _nCells + 4; ++j ) {
-        _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiVec, j ) );
-        row( resM, j ) = blaze::trans( resVec );
-    }
-
-    Vector res( _nCells + 4 );
-    for( unsigned j = 0; j < _nCells + 4; ++j ) {
-        res[j] = resM( j, plotState );
-    }
-
-    Vector xFine( nFine, 0.0 ), exRes( nFine, 0.0 );
-
-    for( unsigned j = 0; j < nFine; ++j ) {
-        xFine[j] = _a + j * ( _b - _a ) / ( nFine - 1 );
-        exRes[j] = _problem->ExactSolution( _tEnd, xFine[j], xi );
-    }
-
-    Result1D data = {_x, res, xFine, exRes};
-    return data;
-}
-
-Result1D MomentSolver::GetPlotData1DExpectedValue() {
-    const unsigned int nQuadFine = 200;
-    Legendre* quadFine           = new Legendre( nQuadFine );
-    Vector wFine                 = quadFine->GetWeights();
-    Vector xiQuadFine            = quadFine->GetNodes();
-    Vector w                     = _quad->GetWeights();
-    Vector xiQuad                = _quad->GetNodes();
-    unsigned nFine;
-
-    try {
-        auto file = cpptoml::parse_file( _problem->GetInputFile() );
-        auto plot = file->get_table( "plot" );
-
-        nFine = plot->get_as<unsigned>( "evalPoints" ).value_or( 0 );
-    } catch( const cpptoml::parse_exception& e ) {
-        std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
-        exit( EXIT_FAILURE );
-    }
-
-    Vector xFine( nFine, 0.0 ), exRes( nFine, 0.0 ), res( _nCells + 4, 0.0 );
-
-    for( unsigned int j = 0; j < nFine; ++j ) {
-        xFine[j] = _a + j * ( _b - _a ) / ( nFine - 1 );
-        for( unsigned int k = 0; k < nQuadFine; ++k ) {
-            exRes[j] += 0.5 * wFine[k] * _problem->ExactSolution( _tEnd, xFine[j], xiQuadFine[k] );
-        }
-    }
-
-    Vector resVec( _nStates, 0.0 );
-    for( unsigned j = 0; j < _nCells + 4; ++j ) {
-        for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-            _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
-            res[j] += 0.5 * w[k] * resVec[0];
-        }
-    }
-
-    Result1D data = {_x, res, xFine, exRes};
-    return data;
-}
-
-Result1D MomentSolver::GetPlotData1DVariance() {
-    const unsigned int nQuadFine = 200;
-    Legendre* quadFine           = new Legendre( nQuadFine );
-    Vector wFine                 = quadFine->GetWeights();
-    Vector xiQuadFine            = quadFine->GetNodes();
-    Vector w                     = _quad->GetWeights();
-    Vector xiQuad                = _quad->GetNodes();
-    unsigned nFine;
-
-    try {
-        auto file = cpptoml::parse_file( _problem->GetInputFile() );
-        auto plot = file->get_table( "plot" );
-
-        nFine = plot->get_as<unsigned>( "evalPoints" ).value_or( 0 );
-    } catch( const cpptoml::parse_exception& e ) {
-        std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
-        exit( EXIT_FAILURE );
-    }
-
-    Vector xFine( nFine, 0.0 ), exRes( nFine, 0.0 ), res( _nCells + 4, 0.0 );
-
-    for( unsigned int j = 0; j < nFine; ++j ) {
-        xFine[j] = _a + j * ( _b - _a ) / ( nFine - 1 );
-        for( unsigned int k = 0; k < nQuadFine; ++k ) {
-            exRes[j] += 0.5 * wFine[k] * _problem->ExactSolution( _tEnd, xFine[j], xiQuadFine[k] );
-        }
-    }
-
-    Vector resVec( _nStates, 0.0 );
-    double expectValue;
-    for( unsigned j = 0; j < _nCells + 4; ++j ) {
-        expectValue = 0.0;
-        for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-            _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
-            expectValue += 0.5 * w[k] * resVec[0];
-        }
-        for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-            _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
-            res[j] += 0.5 * w[k] * pow( resVec[0] - expectValue, 2 );
-        }
-    }
-
-    Result1D data = {_x, res, xFine, exRes};
-    return data;
-}
-
 void MomentSolver::Print() {
     /*
     int cellIndex = 55;
@@ -343,4 +183,88 @@ void MomentSolver::Print() {
     }
     std::cout<<_x[cellIndex]<<std::endl;
     std::cout<<_closure->U(_closure->EvaluateLambda(_lambda[cellIndex-1],xi))<<std::endl;*/
+}
+
+void MomentSolver::Plot( double time ) {
+    unsigned plotInterval   = 1;
+    static unsigned plotCtr = 0;
+    if( _problem->GetMesh()->GetDimension() == 1 ) {
+        const unsigned int nQuadFine = 200;
+        Legendre* quadFine           = new Legendre( nQuadFine );
+        Vector wFine                 = quadFine->GetWeights();
+        Vector xiQuadFine            = quadFine->GetNodes();
+        Vector w                     = _quad->GetWeights();
+        Vector xiQuad                = _quad->GetNodes();
+        unsigned nFine;
+
+        try {
+            auto file = cpptoml::parse_file( _problem->GetInputFile() );
+            auto plot = file->get_table( "plot" );
+
+            nFine = plot->get_as<unsigned>( "evalPoints" ).value_or( 0 );
+        } catch( const cpptoml::parse_exception& e ) {
+            std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
+            exit( EXIT_FAILURE );
+        }
+
+        Vector xFine( nFine, 0.0 ), exResMean( nFine, 0.0 ), resMean( _nCells + 4, 0.0 );
+
+        for( unsigned int j = 0; j < nFine; ++j ) {
+            xFine[j] = _a + j * ( _b - _a ) / ( nFine - 1 );
+            for( unsigned int k = 0; k < nQuadFine; ++k ) {
+                exResMean[j] += 0.5 * wFine[k] * _problem->ExactSolution( _tEnd, xFine[j], xiQuadFine[k] );
+            }
+        }
+        Vector resVec( _nStates, 0.0 );
+        for( unsigned j = 0; j < _nCells + 4; ++j ) {
+            for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
+                _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
+                resMean[j] += 0.5 * w[k] * resVec[0];
+            }
+        }
+
+        Vector exResVar( nFine, 0.0 ), resVar( _nCells + 4, 0.0 );
+        for( unsigned int j = 0; j < nFine; ++j ) {
+            for( unsigned int k = 0; k < nQuadFine; ++k ) {
+                exResVar[j] += 0.5 * wFine[k] * _problem->ExactSolution( _tEnd, xFine[j], xiQuadFine[k] );
+            }
+        }
+
+        resVec.reset();
+        double expectValue;
+        for( unsigned j = 0; j < _nCells + 4; ++j ) {
+            expectValue = 0.0;
+            for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
+                _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
+                expectValue += 0.5 * w[k] * resVec[0];
+            }
+            for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
+                _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
+                resVar[j] += 0.5 * w[k] * pow( resVec[0] - expectValue, 2 );
+            }
+        }
+
+        if( plotCtr == 0 ) {
+            _plotEngine->setupPlot( 0, "Mean", "x", "y" );
+            _plotEngine->setupPlot( 1, "Var", "x", "y" );
+            _plotEngine->addPlotData( 0, Result1D{_x, resMean}, "simulation" );
+            //_plotEngine->addPlotData( 0, Result1D{xFine, exResMean}, "exact" );
+            _plotEngine->addPlotData( 1, Result1D{_x, resVar}, "simulation" );
+            //_plotEngine->addPlotData( 1, Result1D{xFine, exResVar}, "exact" );
+        }
+        else {
+            _plotEngine->updatePlotData( 0, Result1D{_x, resMean}, "simulation" );
+            //            _plotEngine->updatePlotData( 0, Result1D{xFine, exResMean}, "exact" );
+            _plotEngine->updatePlotData( 1, Result1D{_x, resVar}, "simulation" );
+            //_plotEngine->updatePlotData( 1, Result1D{_x, exResVar}, "exact" );
+        }
+        _plotEngine->replot();
+        plotCtr++;
+    }
+    else if( _problem->GetMesh()->GetDimension() == 2 ) {
+        // TODO
+    }
+    if( plotCtr == 1 ) {
+        _plotEngine->show();
+    }
 }

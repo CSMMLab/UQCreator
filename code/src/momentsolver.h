@@ -26,6 +26,7 @@ class MomentSolver
     Vector _x;
     std::vector<Matrix> _lambda;
     Problem* _problem;
+    PlotEngine* _plotEngine;
     double _dx, _dt, _a, _b, _uL, _uR, _tEnd;
     unsigned _nTimeSteps, _nCells, _nMoments, _nStates;
     Matrix
@@ -34,16 +35,13 @@ class MomentSolver
     Vector IC( double x, double xi );
     Matrix CalculateMoments( const Matrix& lambda );
     Vector EvalLambda( const Vector& lambda, const Vector& xi );
+    void Plot( double time );
 
   public:
     MomentSolver( Problem* problem );
     ~MomentSolver();
     void Solve();
     void Print();
-    Result1D GetPlotData1D();
-    Result1D GetPlotData1DFixedXi();
-    Result1D GetPlotData1DExpectedValue();
-    Result1D GetPlotData1DVariance();
 };
 
 #endif    // MOMENTSOLVER_H
