@@ -1,6 +1,7 @@
 #include "euler.h"
 
 Euler::Euler( std::string inputFile ) : Problem( inputFile ) {
+    _nStates = 3;
     try {
         auto file = cpptoml::parse_file( _inputFile );
 

@@ -16,7 +16,6 @@ Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
         _CFL         = problem->get_as<double>( "CFL" ).value_or( -1.0 );
         _limiter     = problem->get_as<std::string>( "limiter" ).value_or( "none" );
         _tEnd        = problem->get_as<double>( "tEnd" ).value_or( -1.0 );
-        _nStates     = problem->get_as<unsigned>( "nStates" ).value_or( 0 );
 
         auto momentSystem    = file->get_table( "moment_system" );
         _closureType         = momentSystem->get_as<std::string>( "closure" ).value_or( "none" );

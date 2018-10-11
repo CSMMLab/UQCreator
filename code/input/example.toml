@@ -1,4 +1,5 @@
 [general]
+# avaiable problems: Burgers, Euler
 problem = "Euler"
 outputDir = "results"
 
@@ -15,7 +16,6 @@ CFL = 5.0
 # available limiter: minmod, none|off
 limiter = "none"
 tEnd = 0.14
-nStates = 3
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler

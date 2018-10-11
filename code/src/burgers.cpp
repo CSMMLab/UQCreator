@@ -5,6 +5,7 @@ Burgers::Burgers( std::string inputFile ) : Problem( inputFile ) {
     _dx         = _mesh->GetSpacing().at( 0 );
     _dt         = _dx * _CFL / 12.0;
     _nCells     = _mesh->GetNumCells();
+    _nStates    = 1;
     _nTimeSteps = static_cast<unsigned>( _tEnd / _dt );
     _tEnd       = _nTimeSteps * _dt;
     _u          = Vector( _nCells + 4, 0.0 );
