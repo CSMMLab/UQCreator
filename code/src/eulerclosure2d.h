@@ -6,11 +6,12 @@
 
 class EulerClosure2D : public Closure
 {
-private:
+  private:
     double _gamma;
-public:
+
+  public:
     EulerClosure2D() = delete;
-    EulerClosure2D::EulerClosure2D( Problem* problem );
+    EulerClosure2D( Problem* problem );
     virtual ~EulerClosure2D();
 
     virtual void U( Vector& out, const Vector& Lambda );
@@ -18,4 +19,4 @@ public:
     virtual void DU( Matrix& y, const Vector& Lambda );
 };
 
-#endif // EULERCLOSURE2D_H
+#endif    // EULERCLOSURE2D_H

@@ -55,7 +55,6 @@ Closure* Closure::Create( Problem* problem ) {
 
 Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     int maxRefinements = 1000;
-    double alpha       = 0.1;
     Matrix H( _nStates * _nMoments, _nStates * _nMoments, 0.0 );
     Vector g( _nStates * _nMoments, 0.0 );
     Vector dlambdaNew( _nStates * _nMoments, 0.0 );
@@ -73,7 +72,7 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     // std::cout << "g " << g << std::endl;
     blaze::posv( H, g, 'L' );
     // std::cout << "H update " << g << std::endl;
-    Matrix lambdaNew = lambda - alpha * MakeMatrix( g );
+    Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
     for( unsigned l = 0; l < _problem->GetMaxIterations(); ++l ) {
@@ -85,7 +84,7 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
             // std::cout << "u = " << u << std::endl;
             Hessian( H, lambda );
             blaze::posv( H, g, 'L' );
-            lambdaNew = lambda - alpha * stepSize * MakeMatrix( g );
+            lambdaNew = lambda - _alpha * stepSize * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
         }
         // std::cout << "g " << g << std::endl;
@@ -96,7 +95,7 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
         // std::cout << "Residual: " << CalcNorm( dlambdaNew ) << std::endl;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) ) {
             stepSize *= 0.5;
-            lambdaNew = lambda - stepSize * alpha * MakeMatrix( g );
+            lambdaNew = lambda - stepSize * _alpha * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
             if( CalcNorm( dlambdaNew ) < _problem->GetEpsilon() ) {
                 return lambdaNew;

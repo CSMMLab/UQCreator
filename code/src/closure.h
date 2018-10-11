@@ -18,7 +18,8 @@ class Closure
     Matrix _phiTildeW;           // stores scaled basis functions evaluated at quadrature points times weight
     std::vector<Vector> _phiTildeVec;
     std::vector<Matrix> _hPartial;    // stores partial matrices for Hessian computation
-    double _uMinus, _uPlus;                                 // IPM bounds for scalar problems
+    double _alpha;
+    double _uMinus, _uPlus;    // IPM bounds for scalar problems
     unsigned _nMoments;
     unsigned _nQuadPoints;
     unsigned _nStates;

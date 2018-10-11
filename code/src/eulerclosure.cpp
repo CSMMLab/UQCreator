@@ -1,6 +1,6 @@
 #include "eulerclosure.h"
 
-EulerClosure::EulerClosure( Problem* problem ) : Closure( problem ), _gamma( problem->GetGamma() ) {}
+EulerClosure::EulerClosure( Problem* problem ) : Closure( problem ), _gamma( problem->GetGamma() ) { _alpha = 0.1; }
 
 EulerClosure::~EulerClosure() {}
 

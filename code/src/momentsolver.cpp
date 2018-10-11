@@ -43,10 +43,12 @@ void MomentSolver::Solve() {
     std::vector<Matrix> u = SetupIC();
 
     for( unsigned j = 0; j < _nCells + 4; ++j ) {
-        _lambda[j]( 2, 0 ) = -1.0;
-        _lambda[j]( 0, 0 ) = 1.0;
-        _lambda[j]         = _closure->SolveClosure( u[j], _lambda[j] );
-        u[j]               = CalculateMoments( _lambda[j] );    // kann raus!
+        if( _problem->GetProblemType() == "Euler" ) {
+            _lambda[j]( 2, 0 ) = -1.0;
+            _lambda[j]( 0, 0 ) = 1.0;
+        }
+        _lambda[j] = _closure->SolveClosure( u[j], _lambda[j] );
+        u[j]       = CalculateMoments( _lambda[j] );    // kann raus!
     }
 
     // Begin time loop
