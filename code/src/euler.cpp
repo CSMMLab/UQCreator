@@ -26,7 +26,7 @@ Vector Euler::G( const Vector& u, const Vector& v ) {
     double p      = ( _gamma - 1.0 ) * ( u[2] - 0.5 * u[0] * pow( vU, 2 ) );
     double aU     = sqrt( _gamma * p * rhoInv );
     rhoInv        = 1.0 / v[0];
-    double vV     = u[1] * rhoInv;
+    double vV     = v[1] * rhoInv;
     p             = ( _gamma - 1.0 ) * ( v[2] - 0.5 * v[0] * pow( vV, 2 ) );
     double aV     = sqrt( _gamma * p * rhoInv );
 
