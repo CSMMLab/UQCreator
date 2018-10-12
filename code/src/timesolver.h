@@ -18,7 +18,7 @@ class TimeSolver
     double _dt;
     double _dx;
     double _tEnd;
-    int _nTimeSteps;
+    unsigned _nTimeSteps;
 
   public:
     TimeSolver() = delete;

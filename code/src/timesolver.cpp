@@ -1,7 +1,7 @@
 #include "timesolver.h"
+#include "expliciteuler.h"
 #include "heun.h"
 #include "sspmultistep.h"
-#include "thetamethod.h"
 
 TimeSolver::TimeSolver( Problem* problem ) : _problem( problem ) {
     _CFL        = _problem->GetCFL();
@@ -17,7 +17,7 @@ TimeSolver* TimeSolver::Create( Problem* problem, Closure* closure ) {
     auto section       = file->get_table( "problem" );
     std::string method = section->get_as<std::string>( "timestepping" ).value_or( "" );
     if( method.compare( "explicitEuler" ) == 0 || method.compare( "EE" ) == 0 ) {
-        return new ThetaMethod( problem, 0.0 );
+        return new ExplicitEuler( problem );
     }
     else if( method.compare( "Heun" ) == 0 ) {
         return new Heun( problem, closure );

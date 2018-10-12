@@ -5,6 +5,7 @@
 #include <chrono>
 
 #include "closure.h"
+#include "expliciteuler.h"
 #include "legendre.h"
 #include "limiter.h"
 #include "minmod.h"
@@ -12,7 +13,6 @@
 #include "omp.h"
 #include "plotengine.h"
 #include "problem.h"
-#include "thetamethod.h"
 #include "typedefs.h"
 
 class MomentSolver

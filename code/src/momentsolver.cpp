@@ -194,7 +194,6 @@ void MomentSolver::Plot( double time ) {
         Vector w                     = _quad->GetWeights();
         Vector xiQuad                = _quad->GetNodes();
         Vector x                     = _mesh->GetNodePositionsX();
-        std::cout << "size x = " << x.size() << std::endl;
         unsigned nFine;
 
         try {
@@ -265,7 +264,6 @@ void MomentSolver::Plot( double time ) {
         // TODO
     }
     if( plotCtr == 1 ) {
-        std::cout << "show plot" << std::endl;
         _plotEngine->show();
     }
 }
