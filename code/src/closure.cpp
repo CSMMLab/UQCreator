@@ -19,9 +19,9 @@ Closure::Closure( Problem* problem )
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         for( unsigned i = 0; i < _nMoments; ++i ) {
             _phi[k][i]         = _basis->Evaluate( i, xi[k] );
-            _phiTilde( k, i )  = _phi[k][i] * ( 2.0 * i + 1.0 );
+            _phiTilde( k, i )  = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
             _phiTildeW( k, i ) = _phiTilde( k, i ) * w[k];
-            _phiTildeVec[k][i] = _phi[k][i] * ( 2.0 * i + 1.0 );
+            _phiTildeVec[k][i] = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
         }
     }
     _phiTildeTrans = blaze::trans( _phiTilde );
@@ -88,12 +88,14 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
             Gradient( dlambdaNew, lambdaNew, u );
         }
         // std::cout << "g " << g << std::endl;
+        // std::cout << H << std::endl;
         // std::cout << "lambdaNew " << lambdaNew << std::endl;
         int refinementCounter = 0;
-        // std::cout << H << std::endl;
+
         // std::cout << "Residual: " << CalcNorm( dlambda ) << std::endl;
         // std::cout << "Residual: " << CalcNorm( dlambdaNew ) << std::endl;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) ) {
+            // std::cout << "Refining..." << std::endl;
             stepSize *= 0.5;
             lambdaNew = lambda - stepSize * _alpha * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
