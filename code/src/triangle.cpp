@@ -13,10 +13,13 @@ Triangle::Triangle( unsigned id, std::vector<Node*> nodes ) : Cell( CELL_TYPE::T
     else {
         _isBoundaryCell = false;
     }
-    _area = std::abs( ( _nodes[0]->coords[0] * ( _nodes[1]->coords[1] - _nodes[2]->coords[1] ) +
+    _area   = std::abs( ( _nodes[0]->coords[0] * ( _nodes[1]->coords[1] - _nodes[2]->coords[1] ) +
                         _nodes[1]->coords[0] * ( _nodes[2]->coords[1] - _nodes[0]->coords[1] ) +
                         _nodes[2]->coords[0] * ( _nodes[0]->coords[1] - _nodes[1]->coords[1] ) ) /
                       2 );
+    _center = Vector{( _nodes[0]->coords[0] + _nodes[1]->coords[0] + _nodes[2]->coords[0] ) / 3,
+                     ( _nodes[0]->coords[1] + _nodes[1]->coords[1] + _nodes[2]->coords[1] ) / 3};
+    SetupEdges();
 }
 
 Triangle::~Triangle() {}
@@ -31,20 +34,21 @@ void Triangle::SetupEdges() {
         double dx     = A->coords[0] - B->coords[0];
         double dy     = A->coords[1] - B->coords[1];
         Vector unitNormal{dy, -dx};
-        if( unitNormal == midNormal( mid, A, B ) ) {
+        if( unitNormal == midNormal( A, B ) ) {
             unitNormal[0] = -dy;
             unitNormal[1] = dx;
         }
-        assert( unitNormal == midNormal( mid, A, B ) );
+        assert( unitNormal == midNormal( A, B ) );
         unitNormal /= blaze::norm( unitNormal );
         Vector scaledNormal = length * unitNormal;
-        _edges.push_back( new Edge{A, B, length, unitNormal, scaledNormal} );
+
+        _edges[i] = new Edge{A, B, length, unitNormal, scaledNormal};
     }
 }
 
-Vector Triangle::midNormal( Vector mid, Node* A, Node* B ) {
+Vector Triangle::midNormal( Node* A, Node* B ) {
     Vector midLine{( A->coords[0] + B->coords[0] ) / 2, ( A->coords[1] + B->coords[1] ) / 2};
-    Vector res{midLine[0] - mid[0], midLine[1] - mid[1]};
+    Vector res{midLine[0] - _center[0], midLine[1] - _center[1]};
     res /= norm( res );
     return res;
 }

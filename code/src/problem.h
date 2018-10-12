@@ -29,8 +29,6 @@ class Problem
     // I/O
     std::string _inputFile;
     std::string _outputDir;
-    virtual void Print()                                                 = 0;
-    virtual void WriteToFile( std::string filename, int filetype ) const = 0;
 
     Problem() {}
 

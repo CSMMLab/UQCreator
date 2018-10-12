@@ -7,42 +7,46 @@
 #include <iostream>
 #include <string.h>
 
+#include "cell.h"
 #include "typedefs.h"
-
-#define MESH_STATUS_UNLOADED 100
-#define MESH_STATUS_LOADED 101
-#define MESH_TYPE_1DPLAIN 110
 
 class Mesh
 {
   private:
-    int _status;
-    int _meshType;
-    unsigned _dimension;
-    unsigned _numCells;
-    Vector _mesh;
-    Vector _spacing;
-    std::vector<blaze::DynamicVector<unsigned>> _neighbors;
-    std::vector<std::vector<Vector>> _n;
-    std::vector<std::vector<Vector>> _nUnit;
-
     Mesh() {}
 
+  protected:
+    unsigned _dimension;
+    unsigned _numCells;
+    unsigned _nBoundaries;
+    std::vector<Cell*> _cells;
+    std::vector<Node*> _nodes;
+    std::string _outputFile;
+
+    std::vector<blaze::DynamicVector<unsigned>> _neighbors;
+
   public:
-    void Load( std::string filename );
-    void CreateGrid( double a, double b );
+    static Mesh* Create( std::string inputFile );
 
     unsigned GetNumCells() const;
     unsigned GetDimension() const;
-    const Vector& GetGrid() const;
-    const Vector& GetSpacing() const;
-    double GetArea( unsigned j ) const;
-    blaze::DynamicVector<unsigned> GetNeighbors( unsigned j ) const;
-    Vector GetNormals( unsigned j, unsigned l ) const;
-    Vector GetUnitNormals( unsigned j, unsigned l ) const;
+    std::vector<Cell*>& GetGrid();
+    double GetArea( unsigned i ) const;
+    Vector GetCenterPos( unsigned i ) const;
 
-    Mesh( std::string inputFile );
-    ~Mesh();
+    unsigned GetNBoundaries() const;
+
+    virtual std::vector<Cell*> GetNeighbors( unsigned i ) const;
+    virtual blaze::DynamicVector<unsigned> GetNeighborsIndex( unsigned i ) const;
+    virtual Vector GetNormals( unsigned i, unsigned l ) const;
+    virtual Vector GetUnitNormals( unsigned i, unsigned l ) const;
+
+    virtual Vector GetNodePositionsX() const {};
+
+    virtual void Export() const = 0;
+
+    Mesh( unsigned dimension );
+    virtual ~Mesh();
 };
 
 #endif    // MESH_H

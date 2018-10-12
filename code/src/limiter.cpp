@@ -3,13 +3,11 @@
 #include "nolimiter.h"
 #include <algorithm>
 
-Limiter::Limiter( Closure* pClosure, Problem* problem ) : _closure( pClosure ), _problem( problem ) { _dx = _problem->GetMesh()->GetSpacing()[0]; }
+Limiter::Limiter( Closure* pClosure, Problem* problem ) : _closure( pClosure ), _problem( problem ) { _dx = _problem->GetMesh()->GetArea( 0 ); }
 
 Limiter::~Limiter() {}
 
-Matrix Limiter::Slope( const Matrix& lambda1,
-                                             const Matrix& lambda2,
-                                             const Matrix& lambda3 ) {
+Matrix Limiter::Slope( const Matrix& lambda1, const Matrix& lambda2, const Matrix& lambda3 ) {
     return SlopeInternal( _closure->U( _closure->EvaluateLambda( lambda1 ) ),
                           _closure->U( _closure->EvaluateLambda( lambda2 ) ),
                           _closure->U( _closure->EvaluateLambda( lambda3 ) ) );
@@ -21,8 +19,7 @@ double Limiter::SlopeBoundPres( const double& u, const double& slope ) {
     return std::min( 1.0, std::min( fabs( ( _closure->GetUPlus() - u ) / ( M - u ) ), fabs( ( _closure->GetUMinus() - u ) / ( m - u ) ) ) );
 }
 
-Matrix
-Limiter::SlopeInternal( const Matrix& u0, const Matrix& u1, const Matrix& u2 ) {
+Matrix Limiter::SlopeInternal( const Matrix& u0, const Matrix& u1, const Matrix& u2 ) {
     unsigned nQ = _problem->GetNQuadPoints();
     double classicalSlope;
     Matrix y( _problem->GetNStates(), nQ );
@@ -48,6 +45,6 @@ Limiter* Limiter::Create( Closure* closure, Problem* problem ) {
     else {
         std::cerr << "Invalid limiter type" << std::endl;
         exit( EXIT_FAILURE );
-        return NULL;
+        return nullptr;
     }
 }

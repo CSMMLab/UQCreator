@@ -23,8 +23,6 @@ class Burgers : public Problem
 
   public:
     Burgers( std::string inputFile );
-    virtual void Print();
-    virtual void WriteToFile( std::string filename, int filetype ) const;
     Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );
     virtual double ExactSolution( double t, double x, double xi );

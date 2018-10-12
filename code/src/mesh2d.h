@@ -2,6 +2,7 @@
 #define MESH2D_H
 
 #include <algorithm>
+#include <assert.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -14,6 +15,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 
+#include "mesh.h"
 #include "triangle.h"
 
 using vtkPointsSP                    = vtkSmartPointer<vtkPoints>;
@@ -32,25 +34,26 @@ struct Boundary {
     std::vector<BoundaryElement> elements;
 };
 
-class Mesh2D
+class Mesh2D : public Mesh
 {
   private:
-    unsigned _dim;
-    std::vector<Cell*> _elements;
-    std::vector<Node*> _nodes;
     std::vector<Boundary> _boundaries;
+    std::string _SU2MeshFile;
 
-    unsigned GetTrailingPosNumber( std::string s );
+    unsigned GetTrailingNumber( std::string s );
     unsigned BinarySearch( unsigned id, unsigned lBound, unsigned rBound );
     Node* FindNodeByID( unsigned id );
-    void DetermineNeighbours();
+    void DetermineNeighbors();
+    void LoadSU2MeshFromFile( std::string meshfile );
+    void ExportToVTK( std::string vtkfile ) const;
+
+    Mesh2D();
 
   public:
-    Mesh2D();
-    ~Mesh2D();
-    void LoadSU2MeshFromFile( std::string meshfile );
-    void ExportToVTK( std::string vtkfile );
-    double GetArea( unsigned i );
+    Mesh2D( std::string inputFile );
+    virtual ~Mesh2D();
+
+    virtual void Export() const;
 };
 
 #endif    // MESH2D_H

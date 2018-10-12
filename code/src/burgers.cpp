@@ -1,8 +1,8 @@
 #include "burgers.h"
 
 Burgers::Burgers( std::string inputFile ) : Problem( inputFile ) {
-    _x          = _mesh->GetGrid();
-    _dx         = _mesh->GetSpacing().at( 0 );
+    //_x          = _mesh->GetGrid();
+    _dx         = _mesh->GetArea( 0 );
     _dt         = _dx * _CFL / 12.0;
     _nCells     = _mesh->GetNumCells();
     _nStates    = 1;
@@ -21,8 +21,8 @@ Vector Burgers::G( const Vector& u, const Vector& v, const Vector& nUnit, const 
 }
 
 Matrix Burgers::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
-    unsigned nStates = u.rows();
-    unsigned Nq      = u.columns();
+    unsigned long nStates = u.rows();
+    unsigned long Nq      = u.columns();
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
         column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
@@ -51,15 +51,6 @@ double Burgers::IC( double x, double uL, double uR ) {
         return uR;
     }
 }
-
-void Burgers::Print() {
-    std::ofstream out( "outFile" );
-    for( unsigned j = 2; j < _nCells + 2; ++j ) {
-        out << _x[j] << " " << _u[j] << std::endl;
-    }
-}
-
-void Burgers::WriteToFile( std::string filename, int filetype ) const {}
 
 double Burgers::ExactSolution( double t, double x, double xi ) {
     double uL    = 12.0;

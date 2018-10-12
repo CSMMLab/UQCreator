@@ -16,10 +16,6 @@ double Euler2D::GetGamma() const { return _gamma; }
 
 void Euler2D::Solve() {}
 
-void Euler2D::Print() {}
-
-void Euler2D::WriteToFile( std::string filename, int filetype ) const {}
-
 Vector Euler2D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
 
     double rhoInv = 1.0 / u[0];

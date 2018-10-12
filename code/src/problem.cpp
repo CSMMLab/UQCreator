@@ -10,8 +10,6 @@ Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
         _outputDir   = general->get_as<std::string>( "outputDir" ).value_or( "" );
         _problemType = general->get_as<std::string>( "problem" ).value_or( "none" );
 
-        _mesh = new Mesh( _inputFile );
-
         auto problem = file->get_table( "problem" );
         _CFL         = problem->get_as<double>( "CFL" ).value_or( -1.0 );
         _limiter     = problem->get_as<std::string>( "limiter" ).value_or( "none" );
@@ -28,6 +26,8 @@ Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
         _nMoments      = momentSystem->get_as<unsigned>( "moments" ).value_or( 0 );
         _maxIterations = momentSystem->get_as<unsigned>( "maxIterations" ).value_or( 0 );
         _epsilon       = momentSystem->get_as<double>( "epsilon" ).value_or( -1.0 );
+
+        _mesh = Mesh::Create( _inputFile );
     } catch( const cpptoml::parse_exception& e ) {
         std::cerr << "Failed to parse " << _inputFile << ": " << e.what() << std::endl;
         exit( EXIT_FAILURE );

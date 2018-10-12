@@ -5,9 +5,9 @@
 
 TimeSolver::TimeSolver( Problem* problem ) : _problem( problem ) {
     _CFL        = _problem->GetCFL();
-    _dx         = _problem->GetMesh()->GetSpacing()[0];
+    _dx         = _problem->GetMesh()->GetArea( 0 );
     _dt         = _dx * _problem->GetCFL() / 12.0;
-    _nTimeSteps = _problem->GetTEnd() / _dt;
+    _nTimeSteps = static_cast<unsigned>( _problem->GetTEnd() / _dt );
 }
 
 TimeSolver::~TimeSolver() {}
@@ -28,7 +28,7 @@ TimeSolver* TimeSolver::Create( Problem* problem, Closure* closure ) {
     else {
         std::cerr << "Invalid timesolver type" << std::endl;
         exit( EXIT_FAILURE );
-        return NULL;
+        return nullptr;
     }
 }
 

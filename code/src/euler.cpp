@@ -17,10 +17,6 @@ double Euler::GetGamma() const { return _gamma; }
 
 void Euler::Solve() {}
 
-void Euler::Print() {}
-
-void Euler::WriteToFile( std::string filename, int filetype ) const {}
-
 Vector Euler::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     double rhoInv = 1.0 / u[0];
     double vU     = u[1] * rhoInv;

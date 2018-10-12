@@ -21,7 +21,7 @@ struct Edge {
     Vector scaledNormal;
 };
 
-enum CELL_TYPE { TRIANGLE, QUADRILATERAL };
+enum CELL_TYPE { LINE, TRIANGLE, QUADRILATERAL };
 
 class Cell
 {
@@ -34,9 +34,11 @@ class Cell
     unsigned _N;
     std::vector<Node*> _nodes;
     std::vector<Edge*> _edges;
-    std::vector<Cell*> _neighbours;
+    std::vector<Cell*> _neighbors;
+    blaze::DynamicVector<unsigned> _neighborIDs;
     bool _isBoundaryCell;
     double _area;
+    Vector _center;
 
     virtual void SetupEdges() = 0;
 
@@ -47,12 +49,14 @@ class Cell
     Node* GetNode( unsigned i );
     std::vector<Node*> GetNodes();
     virtual unsigned GetNodeNum() = 0;
-    void AddNeighbour( const Cell* n );
-    std::vector<Cell*> GetNeighbours();
+    void AddNeighbor( const Cell* n );
+    std::vector<Cell*> GetNeighbors();
+    blaze::DynamicVector<unsigned> GetNeighborIDs();
     bool IsBoundaryCell();
     std::vector<Edge*> GetEdges();
     unsigned GetID();
     double GetArea();
+    const Vector& GetCenter();
 };
 
 #endif    // ELEMENT_H

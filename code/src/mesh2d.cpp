@@ -1,9 +1,15 @@
 #include "mesh2d.h"
 
-Mesh2D::Mesh2D() {}
+Mesh2D::Mesh2D( std::string inputFile ) : Mesh( 2 ) {
+    auto file     = cpptoml::parse_file( inputFile );
+    auto settings = file->get_table( "mesh" );
+    _SU2MeshFile  = settings->get_as<std::string>( "SU2File" ).value_or( "" );
+    _outputFile   = settings->get_as<std::string>( "outputFile" ).value_or( "" );
+    LoadSU2MeshFromFile( _SU2MeshFile );
+}
 
 Mesh2D::~Mesh2D() {
-    for( auto& i : _elements ) {
+    for( auto& i : _cells ) {
         delete i;
     }
     for( auto& i : _nodes ) {
@@ -17,7 +23,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
     if( ifs.is_open() ) {
         while( getline( ifs, line ) ) {
             if( line.find( "NDIME", 0 ) != std::string::npos ) {
-                _dim = GetTrailingPosNumber( line );
+                assert( _dimension == GetTrailingNumber( line ) );
                 break;
             }
         }
@@ -25,7 +31,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         ifs.seekg( 0, std::ios::beg );
         while( getline( ifs, line ) ) {
             if( line.find( "NPOIN", 0 ) != std::string::npos ) {
-                unsigned numPoints = GetTrailingPosNumber( line );
+                unsigned numPoints = GetTrailingNumber( line );
                 for( unsigned i = 0; i < numPoints; ++i ) {
                     getline( ifs, line );
                     std::stringstream ss;
@@ -34,7 +40,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                     double tmp;
                     std::vector<double> coords( 3, 0.0 );
                     while( !ss.eof() ) {
-                        for( unsigned d = 0; d < _dim; ++d ) {
+                        for( unsigned d = 0; d < _dimension; ++d ) {
                             ss >> tmp;
                             coords[d] = tmp;
                         }
@@ -51,7 +57,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         ifs.seekg( 0, std::ios::beg );
         while( getline( ifs, line ) ) {
             if( line.find( "NMARK", 0 ) != std::string::npos ) {
-                unsigned numBCs = GetTrailingPosNumber( line );
+                unsigned numBCs = GetTrailingNumber( line );
                 for( unsigned i = 0; i < numBCs; ++i ) {
                     std::string markerTag;
                     std::vector<BoundaryElement> boundaryElements;
@@ -63,7 +69,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                             markerTag.erase( end_pos, markerTag.end() );
                         }
                         else if( line.find( "MARKER_ELEMS", 0 ) != std::string::npos ) {
-                            unsigned numMarkerElements = GetTrailingPosNumber( line );
+                            unsigned numMarkerElements = GetTrailingNumber( line );
                             for( unsigned j = 0; j < numMarkerElements; ++j ) {
                                 getline( ifs, line );
                                 std::stringstream ss;
@@ -72,7 +78,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                                 std::vector<unsigned> nodes;
                                 while( !ss.eof() ) {
                                     ss >> type;
-                                    for( unsigned d = 0; d < _dim; ++d ) {
+                                    for( unsigned d = 0; d < _dimension; ++d ) {
                                         ss >> tmp;
                                         nodes.push_back( tmp );
                                     }
@@ -100,7 +106,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         ifs.seekg( 0, std::ios::beg );
         while( getline( ifs, line ) ) {
             if( line.find( "NELEM", 0 ) != std::string::npos ) {
-                unsigned numElements = GetTrailingPosNumber( line );
+                unsigned numElements = GetTrailingNumber( line );
                 for( unsigned i = 0; i < numElements; ++i ) {
                     getline( ifs, line );
                     std::stringstream ss;
@@ -123,7 +129,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                         }
                         ss >> id;
                     }
-                    _elements.push_back( new Triangle( id, elementNodes ) );
+                    _cells.push_back( new Triangle( id, elementNodes ) );
                 }
                 break;
             }
@@ -133,10 +139,10 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         std::cerr << "File not found" << std::endl;
     }
     ifs.close();
-    DetermineNeighbours();
+    DetermineNeighbors();
 }
 
-void Mesh2D::ExportToVTK( std::string vtkfile ) {
+void Mesh2D::ExportToVTK( std::string vtkfile ) const {
     auto writer = vtkXMLUnstructuredGridWriterSP::New();
     vtkfile.append( "." );
     vtkfile.append( writer->GetDefaultFileExtension() );
@@ -148,10 +154,10 @@ void Mesh2D::ExportToVTK( std::string vtkfile ) {
         pts->SetPoint( node->id, node->coords[0], node->coords[1], node->coords[2] );
     }
     vtkCellArraySP cellArray = vtkCellArraySP::New();
-    for( unsigned i = 0; i < _elements.size(); ++i ) {
+    for( unsigned i = 0; i < _cells.size(); ++i ) {
         auto tri = vtkTriangleSP::New();
-        for( unsigned j = 0; j < _elements[i]->GetNodeNum(); ++j ) {
-            tri->GetPointIds()->SetId( j, _elements[i]->GetNode( j )->id );
+        for( unsigned j = 0; j < _cells[i]->GetNodeNum(); ++j ) {
+            tri->GetPointIds()->SetId( j, _cells[i]->GetNode( j )->id );
         }
         cellArray->InsertNextCell( tri );
     }
@@ -163,7 +169,7 @@ void Mesh2D::ExportToVTK( std::string vtkfile ) {
     writer->Write();
 }
 
-unsigned Mesh2D::GetTrailingPosNumber( std::string s ) {
+unsigned Mesh2D::GetTrailingNumber( std::string s ) {
     return static_cast<unsigned>( std::stoi( s.substr( s.find_first_of( "0123456789" ), s.length() - 1 ) ) );
 }
 
@@ -183,10 +189,10 @@ Node* Mesh2D::FindNodeByID( unsigned id ) {
     return _nodes[pos];
 }
 
-void Mesh2D::DetermineNeighbours() {
-    for( auto& i : _elements ) {
-        for( auto& j : _elements ) {
-            if( i->GetNeighbours().size() == i->GetNodeNum() - i->IsBoundaryCell() ) {
+void Mesh2D::DetermineNeighbors() {
+    for( auto& i : _cells ) {
+        for( auto& j : _cells ) {
+            if( i->GetNeighbors().size() == i->GetNodeNum() - i->IsBoundaryCell() ) {
                 goto cnt;
             }
             if( i->GetID() != j->GetID() ) {
@@ -198,7 +204,7 @@ void Mesh2D::DetermineNeighbours() {
                         }
                     }
                     if( matchCtr == 2 ) {
-                        i->AddNeighbour( j );
+                        i->AddNeighbor( j );
                         break;
                     }
                 }
@@ -208,4 +214,4 @@ void Mesh2D::DetermineNeighbours() {
     }
 }
 
-double Mesh2D::GetArea( unsigned i ) { return _elements[i]->GetArea(); }
+void Mesh2D::Export() const { ExportToVTK( _outputFile ); }
