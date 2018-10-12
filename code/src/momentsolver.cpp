@@ -114,25 +114,25 @@ std::vector<Matrix> MomentSolver::SetupIC() {
     Matrix phiTildeW = _closure->GetPhiTildeW();
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-            column( uIC, k ) = IC( _problem->GetMesh()->GetCenterPos( j )[0], xi[k] );
+            column( uIC, k ) = IC( _problem->GetMesh()->GetCenterPos( j ), xi[k] );
         }
         out[j] = 0.5 * uIC * phiTildeW;
     }
     return out;
 }
 
-Vector MomentSolver::IC( double x, double xi ) {
+Vector MomentSolver::IC( Vector x, double xi ) {
     Vector y( _nStates );
     if( _problem->GetProblemType() == "Burgers" ) {
         double a     = 0.5;
         double b     = 1.5;
         double sigma = 0.2;
-        if( x < a + sigma * xi ) {
+        if( x[0] < a + sigma * xi ) {
             y[0] = _uL;
             return y;
         }
-        else if( x < b + sigma * xi ) {
-            y[0] = _uL + ( _uR - _uL ) * ( a + sigma * xi - x ) / ( a - b );
+        else if( x[0] < b + sigma * xi ) {
+            y[0] = _uL + ( _uR - _uL ) * ( a + sigma * xi - x[0] ) / ( a - b );
             return y;
         }
         else {
@@ -151,7 +151,7 @@ Vector MomentSolver::IC( double x, double xi ) {
         double pR   = 0.3;
         double uL   = 0.0;
         double uR   = 0.0;
-        if( x < x0 + sigma * xi ) {
+        if( x[0] < x0 + sigma * xi ) {
             y[0]                  = rhoL;
             y[1]                  = rhoL * uL;
             double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 );
@@ -166,6 +166,23 @@ Vector MomentSolver::IC( double x, double xi ) {
             y[2]                  = kineticEnergyR + innerEnergyR;
         }
         return y;
+    }
+    else if( _problem->GetProblemType() == "Euler2D" ) {
+        double sigma = 0.0;
+        double gamma = 1.4;
+
+        double rhoFarfield = 1.0;
+        double pFarfield   = 1.0;
+        double uMax        = 0.001;
+        double angle       = 0.0 + sigma;
+        double uF          = uMax * cos( angle );
+        double vF          = uMax * sin( angle );
+
+        y[0]                  = rhoFarfield;
+        y[1]                  = rhoFarfield * uF;
+        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
+        double innerEnergyL   = ( pFarfield / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
+        y[2]                  = kineticEnergyL + innerEnergyL;
     }
     std::cerr << "Reached end of IC. No initial condition set" << std::endl;
     exit( EXIT_FAILURE );

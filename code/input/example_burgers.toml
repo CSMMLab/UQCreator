@@ -4,6 +4,7 @@ problem = "Burgers"
 outputDir = "results"
 
 [mesh]
+SU2File = "../input/naca0012.su2"
 Dimension = 1
 NumberOfCells = 100
 a = 0

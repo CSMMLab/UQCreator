@@ -32,7 +32,7 @@ class MomentSolver
     Matrix
     numFlux( const Matrix& lambda0, const Matrix& lambda1, const Matrix& lambda2, const Matrix& lambda3, const Vector& nUnit, const Vector& n );
     std::vector<Matrix> SetupIC();
-    Vector IC( double x, double xi );
+    Vector IC( Vector x, double xi );
     Matrix CalculateMoments( const Matrix& lambda );
     Vector EvalLambda( const Vector& lambda, const Vector& xi );
     void Plot( double time );
