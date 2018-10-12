@@ -4,10 +4,9 @@ problem = "Euler"
 outputDir = "results"
 
 [mesh]
-Dimension = 1
-NumberOfCells = 500
-a = 0
-b = 1
+Dimension = 2
+SU2File = "../input/naca0012.su2"
+outputFile = "../results/mesh"
 
 [problem]
 # available timesteppings: explicitEuler, Heun, SSPMultiStep
@@ -20,7 +19,7 @@ tEnd = 0.14
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler
 closure = "Euler"
-moments = 5
+moments = 15
 quadType = "legendre"
 quadPoints = 50
 maxIterations = 200

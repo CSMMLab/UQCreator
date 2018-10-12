@@ -9,7 +9,7 @@ class Triangle : public Cell
   private:
     Triangle();
 
-    Vector midNormal( Node* A, Node* B );
+    Vector getOutwardNormal( Node* A, Node* B );
 
   public:
     Triangle( unsigned id, std::vector<Node*> nodes );

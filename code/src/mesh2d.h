@@ -34,6 +34,8 @@ struct Boundary {
     std::vector<BoundaryElement> elements;
 };
 
+enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC };
+
 class Mesh2D : public Mesh
 {
   private:
