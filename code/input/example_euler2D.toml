@@ -6,6 +6,7 @@ outputDir = "results"
 [mesh]
 Dimension = 2
 SU2File = "../input/naca0012.su2"
+SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
 outputFile = "../results/mesh"
 
 [problem]
