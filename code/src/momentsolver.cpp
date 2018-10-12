@@ -265,6 +265,7 @@ void MomentSolver::Plot( double time ) {
         // TODO
     }
     if( plotCtr == 1 ) {
+        std::cout << "show plot" << std::endl;
         _plotEngine->show();
     }
 }

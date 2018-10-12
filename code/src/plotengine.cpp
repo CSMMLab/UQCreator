@@ -61,7 +61,7 @@ void PlotEngine::addPlotData( unsigned id, Result1D data, QString name ) {
 void PlotEngine::updatePlotData( unsigned id, Result1D data, QString name ) {
     QCustomPlot* plot = _plots[id];
     int idx           = 0;
-    for( int i; i < plot->graphCount(); ++i ) {
+    for( int i = 0; i < plot->graphCount(); ++i ) {
         if( plot->graph( i )->name() == name ) {
             idx = i;
         }
