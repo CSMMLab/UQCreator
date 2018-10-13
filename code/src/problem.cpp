@@ -1,6 +1,7 @@
 #include "problem.h"
 #include "burgers.h"
 #include "euler.h"
+#include "euler2d.h"
 
 Problem::Problem( std::string inputFile ) : _inputFile( inputFile ) {
     try {
@@ -45,6 +46,9 @@ Problem* Problem::Create( std::string inputFile ) {
     }
     else if( problem.compare( "Euler" ) == 0 ) {
         return new Euler( inputFile );
+    }
+    else if( problem.compare( "Euler2D" ) == 0 ) {
+        return new Euler2D( inputFile );
     }
     else {
         std::cerr << "Invalid problem type" << std::endl;

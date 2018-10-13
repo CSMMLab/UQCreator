@@ -27,6 +27,7 @@ Mesh2D::Mesh2D( std::string inputFile ) : Mesh( 2 ) {
     }
     _outputFile = settings->get_as<std::string>( "outputFile" ).value_or( "" );
     LoadSU2MeshFromFile( _SU2MeshFile );
+    std::cout << "[mesh]: Mesh loaded" << std::endl;
 }
 
 Mesh2D::~Mesh2D() {
@@ -178,7 +179,10 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                 }
             }
         }
-        std::cout << "Boundaries Set" << std::endl;
+        _neighbors.resize( _numCells );
+        for( unsigned j = 0; j < _numCells; ++j ) {
+            _neighbors[j] = _cells[j]->GetNeighborIDs();
+        }
     }
     else {
         std::cerr << "File not found" << std::endl;

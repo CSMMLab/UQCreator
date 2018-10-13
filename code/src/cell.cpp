@@ -37,4 +37,4 @@ double Cell::GetArea() { return _area; }
 
 const Vector& Cell::GetCenter() { return _center; }
 
-blaze::DynamicVector<unsigned> Cell::GetNeighborIDs() {}
+blaze::DynamicVector<unsigned> Cell::GetNeighborIDs() { return _neighborIDs; }

@@ -1,6 +1,7 @@
 #include "euler2d.h"
 
 Euler2D::Euler2D( std::string inputFile ) : Problem( inputFile ) {
+    _nStates = 4;
     try {
         auto file = cpptoml::parse_file( _inputFile );
 

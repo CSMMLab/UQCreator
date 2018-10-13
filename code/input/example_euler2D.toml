@@ -1,6 +1,6 @@
 [general]
-# avaiable problems: Burgers, Euler
-problem = "Euler"
+# avaiable problems: Burgers, Euler, Euler2D
+problem = "Euler2D"
 outputDir = "results"
 
 [mesh]
@@ -15,14 +15,14 @@ timestepping = "explicitEuler"
 CFL = 5.0
 # available limiter: minmod, none|off
 limiter = "none"
-tEnd = 0.14
+tEnd = 0.0
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler
 closure = "Euler"
-moments = 15
+moments = 1
 quadType = "legendre"
-quadPoints = 50
+quadPoints = 2
 maxIterations = 200
 epsilon = 5e-5
 

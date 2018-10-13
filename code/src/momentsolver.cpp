@@ -37,18 +37,26 @@ void MomentSolver::Solve() {
     double t = 0;
     // create solution fields
     std::vector<Matrix> uNew( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
-    _lambda                = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
-    std::vector<Matrix> u  = SetupIC();
+    _lambda               = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
+    std::vector<Matrix> u = SetupIC();
+    std::cout << "IC set" << std::endl;
     std::vector<Matrix> uQ = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _problem->GetNQuadPoints(), 0.0 ) );
 
     for( unsigned j = 0; j < _nCells; ++j ) {
+        std::cout << "dual cell " << j << std::endl;
         if( _problem->GetProblemType() == "Euler" ) {
             _lambda[j]( 2, 0 ) = -1.0;
             _lambda[j]( 0, 0 ) = 1.0;
         }
+        if( _problem->GetProblemType() == "Euler2D" ) {
+            _lambda[j]( 3, 0 ) = -1.0;
+            _lambda[j]( 0, 0 ) = 1.0;
+        }
+        std::cout << u[j] << std::endl;
         _lambda[j] = _closure->SolveClosure( u[j], _lambda[j] );
         u[j]       = CalculateMoments( _lambda[j] );    // kann raus!
     }
+    std::cout << "IC dual computed" << std::endl;
 
     // Begin time loop
     while( t < _tEnd ) {
@@ -57,6 +65,7 @@ void MomentSolver::Solve() {
             u[j]  = CalculateMoments( _lambda[j] );
             uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
         }
+        std::cout << "->Moments Updated" << std::endl;
 
         // Time Update Moments
         _time->Advance(
@@ -64,13 +73,16 @@ void MomentSolver::Solve() {
             uNew,
             u,
             uQ );
+        std::cout << "->Moments Evolved" << std::endl;
+
         // Time Update dual variables
         //#pragma omp parallel for
         for( unsigned j = 0; j < _nCells; ++j ) {
             _lambda[j] = _closure->SolveClosure( uNew[j], _lambda[j] );
         }
+        std::cout << "->Duals Evolved" << std::endl;
 
-        Plot( t );
+        // Plot( t );
 
         if( std::fabs( t ) <= std::numeric_limits<double>::epsilon() )
             std::cout << std::fixed << std::setprecision( 8 ) << "t = " << t << std::flush;
@@ -183,9 +195,11 @@ Vector MomentSolver::IC( Vector x, double xi ) {
 
         y[0]                  = rhoFarfield;
         y[1]                  = rhoFarfield * uF;
+        y[2]                  = rhoFarfield * vF;
         double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
         double innerEnergyL   = ( pFarfield / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-        y[2]                  = kineticEnergyL + innerEnergyL;
+        y[3]                  = kineticEnergyL + innerEnergyL;
+        return y;
     }
     std::cerr << "Reached end of IC. No initial condition set" << std::endl;
     exit( EXIT_FAILURE );
