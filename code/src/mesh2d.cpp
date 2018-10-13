@@ -135,6 +135,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         while( getline( ifs, line ) ) {
             if( line.find( "NELEM", 0 ) != std::string::npos ) {
                 unsigned numElements = GetTrailingNumber( line );
+                _numCells            = numElements;
                 for( unsigned i = 0; i < numElements; ++i ) {
                     getline( ifs, line );
                     std::stringstream ss;
