@@ -15,7 +15,7 @@ class Heun : public TimeSolver
     virtual void Advance( std::function<Matrix( const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
                           std::vector<Matrix>& uNew,
                           std::vector<Matrix>& u,
-                          std::vector<Matrix>& lambda ) {}
+                          std::vector<Matrix>& uQ ) {}
 };
 
 #endif    // HEUN_H

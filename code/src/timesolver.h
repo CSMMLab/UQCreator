@@ -28,7 +28,7 @@ class TimeSolver
     virtual void Advance( std::function<Matrix( const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
                           std::vector<Matrix>& uNew,
                           std::vector<Matrix>& u,
-                          std::vector<Matrix>& lambda ) = 0;
+                          std::vector<Matrix>& uQ ) = 0;
     double GetTimeStepSize();
     double GetNTimeSteps();
 };

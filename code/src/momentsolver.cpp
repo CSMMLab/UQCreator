@@ -37,9 +37,9 @@ void MomentSolver::Solve() {
     double t = 0;
     // create solution fields
     std::vector<Matrix> uNew( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
-    _lambda = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
-
-    std::vector<Matrix> u = SetupIC();
+    _lambda                = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
+    std::vector<Matrix> u  = SetupIC();
+    std::vector<Matrix> uQ = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _problem->GetNQuadPoints(), 0.0 ) );
 
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _problem->GetProblemType() == "Euler" ) {
@@ -54,7 +54,8 @@ void MomentSolver::Solve() {
     while( t < _tEnd ) {
         // Modify moments into realizable direction
         for( unsigned j = 0; j < _nCells; ++j ) {
-            u[j] = CalculateMoments( _lambda[j] );
+            u[j]  = CalculateMoments( _lambda[j] );
+            uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
         }
 
         // Time Update Moments
@@ -62,7 +63,7 @@ void MomentSolver::Solve() {
             std::bind( &MomentSolver::numFlux, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 ),
             uNew,
             u,
-            _lambda );
+            uQ );
         // Time Update dual variables
         //#pragma omp parallel for
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -86,8 +87,8 @@ void MomentSolver::Solve() {
               << std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 << "s" << std::endl;
 }
 
-Matrix MomentSolver::numFlux( const Matrix& lambda1, const Matrix& lambda2, const Vector& nUnit, const Vector& n ) {
-    Matrix g = _problem->G( _closure->U( _closure->EvaluateLambda( lambda1 ) ), _closure->U( _closure->EvaluateLambda( lambda2 ) ), nUnit, n );
+Matrix MomentSolver::numFlux( const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
+    Matrix g = _problem->G( u1, u2, nUnit, n );
     return 0.5 * g * _closure->GetPhiTildeW();
 }
 
