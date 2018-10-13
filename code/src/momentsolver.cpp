@@ -43,7 +43,6 @@ void MomentSolver::Solve() {
     std::vector<Matrix> uQ = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _problem->GetNQuadPoints(), 0.0 ) );
 
     for( unsigned j = 0; j < _nCells; ++j ) {
-        std::cout << "dual cell " << j << std::endl;
         if( _problem->GetProblemType() == "Euler" ) {
             _lambda[j]( 2, 0 ) = -1.0;
             _lambda[j]( 0, 0 ) = 1.0;
@@ -56,7 +55,6 @@ void MomentSolver::Solve() {
         _lambda[j] = _closure->SolveClosure( u[j], _lambda[j] );
         u[j]       = CalculateMoments( _lambda[j] );    // kann raus!
     }
-    std::cout << "IC dual computed" << std::endl;
 
     // Begin time loop
     while( t < _tEnd ) {
@@ -65,7 +63,6 @@ void MomentSolver::Solve() {
             u[j]  = CalculateMoments( _lambda[j] );
             uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
         }
-        std::cout << "->Moments Updated" << std::endl;
 
         // Time Update Moments
         _time->Advance(
@@ -73,14 +70,12 @@ void MomentSolver::Solve() {
             uNew,
             u,
             uQ );
-        std::cout << "->Moments Evolved" << std::endl;
 
         // Time Update dual variables
         //#pragma omp parallel for
         for( unsigned j = 0; j < _nCells; ++j ) {
             _lambda[j] = _closure->SolveClosure( uNew[j], _lambda[j] );
         }
-        std::cout << "->Duals Evolved" << std::endl;
 
         // Plot( t );
 
@@ -188,7 +183,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
 
         double rhoFarfield = 1.0;
         double pFarfield   = 1.0;
-        double uMax        = 0.001;
+        double uMax        = 1.0;
         double angle       = 0.0 + sigma;
         double uF          = uMax * cos( angle );
         double vF          = uMax * sin( angle );

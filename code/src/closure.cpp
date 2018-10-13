@@ -59,6 +59,12 @@ Closure* Closure::Create( Problem* problem ) {
 
 Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     int maxRefinements = 1000;
+
+    int* perm = new int( _nStates * _nMoments );
+    for( unsigned i = 0; i < _nStates * _nMoments; ++i ) {
+        perm[i] = i;
+    }
+
     Matrix H( _nStates * _nMoments, _nStates * _nMoments, 0.0 );
     Vector g( _nStates * _nMoments, 0.0 );
     Vector dlambdaNew( _nStates * _nMoments, 0.0 );
@@ -72,9 +78,12 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
     Hessian( H, lambda );
-    // std::cout << u << std::endl;
+    // std::cout << "lambda = " << lambda << std::endl;
     // std::cout << "g " << g << std::endl;
-    blaze::posv( H, g, 'L' );
+    // std::cout << "H " << H << std::endl;
+    // blaze::posv( H, g, 'L' );
+
+    blaze::gesv( H, g, perm );
     // std::cout << "H update " << g << std::endl;
     Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
     Gradient( dlambdaNew, lambdaNew, u );
@@ -87,7 +96,8 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
             dlambda = -g;
             // std::cout << "u = " << u << std::endl;
             Hessian( H, lambda );
-            blaze::posv( H, g, 'L' );
+            // blaze::posv( H, g, 'L' );
+            blaze::gesv( H, g, perm );
             lambdaNew = lambda - _alpha * stepSize * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
         }
