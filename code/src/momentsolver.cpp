@@ -87,7 +87,17 @@ void MomentSolver::Solve() {
               << std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 << "s" << std::endl;
 
     Matrix res( _nStates, _mesh->GetNumCells() );
-    // TODO
+    Vector tmp( _nStates, 0.0 );
+    auto xiQuad = _quad->GetNodes();
+    Vector w    = _quad->GetWeights();
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        for( unsigned i = 0; i < _nStates; ++i ) {
+            for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
+                _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
+                res( i, j ) += 0.5 * w[k] * tmp[i];
+            }
+        }
+    }
     _mesh->Export( res );
 }
 
