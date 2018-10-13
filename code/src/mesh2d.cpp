@@ -163,6 +163,22 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                 break;
             }
         }
+        _boundaryType.resize( _numCells );
+        assert( _cells.size() == _numCells );
+        for( unsigned i = 0; i < _numCells; ++i ) {
+            if( _cells[i]->IsBoundaryCell() ) {
+                for( unsigned k = 0; k < _cells[i]->GetNodeNum(); ++k ) {
+                    unsigned nodeId = _cells[i]->GetNode( k )->id;
+                    for( unsigned j = 0; j < _boundaries.size(); ++j ) {
+                        for( unsigned l = 0; l < _boundaries[j].elements.size(); ++l ) {
+                            if( _boundaries[j].elements[l].nodes[0] == nodeId || _boundaries[j].elements[l].nodes[1] == nodeId )
+                                _boundaryType[i] = _boundaries[j].type;
+                        }
+                    }
+                }
+            }
+        }
+        std::cout << "Boundaries Set" << std::endl;
     }
     else {
         std::cerr << "File not found" << std::endl;
