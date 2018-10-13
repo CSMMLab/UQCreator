@@ -1,10 +1,31 @@
 #include "mesh2d.h"
 
 Mesh2D::Mesh2D( std::string inputFile ) : Mesh( 2 ) {
-    auto file     = cpptoml::parse_file( inputFile );
-    auto settings = file->get_table( "mesh" );
-    _SU2MeshFile  = settings->get_as<std::string>( "SU2File" ).value_or( "" );
-    _outputFile   = settings->get_as<std::string>( "outputFile" ).value_or( "" );
+    auto file      = cpptoml::parse_file( inputFile );
+    auto settings  = file->get_table( "mesh" );
+    _SU2MeshFile   = settings->get_as<std::string>( "SU2File" ).value_or( "" );
+    auto BCStrings = settings->get_array_of<cpptoml::array>( "SU2BC" );
+    for( unsigned i = 0; i < BCStrings->size(); ++i ) {
+        auto BCString = ( *BCStrings )[i]->get_array_of<std::string>();
+        BoundaryType type;
+        if( ( *BCString )[1].compare( "noslip" ) == 0 ) {
+            type = BoundaryType::NOSLIP;
+        }
+        else if( ( *BCString )[1].compare( "dirichlet" ) == 0 ) {
+            type = BoundaryType::DIRICHLET;
+        }
+        else if( ( *BCString )[1].compare( "neumann" ) == 0 ) {
+            type = BoundaryType::NEUMANN;
+        }
+        else if( ( *BCString )[1].compare( "periodic" ) == 0 ) {
+            type = BoundaryType::PERIODIC;
+        }
+        else {
+            std::cerr << "Invalid boundary condition!" << std::endl;
+        }
+        _BCs.push_back( std::make_pair( ( *BCString )[0], type ) );
+    }
+    _outputFile = settings->get_as<std::string>( "outputFile" ).value_or( "" );
     LoadSU2MeshFromFile( _SU2MeshFile );
 }
 
@@ -97,7 +118,14 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                             exit( EXIT_FAILURE );
                         }
                     }
-                    _boundaries.push_back( Boundary{markerTag, boundaryElements} );
+                    BoundaryType type = BoundaryType::NONE;
+                    for( const auto& b : _BCs ) {
+                        if( b.first.compare( markerTag ) == 0 ) {
+                            type = b.second;
+                        }
+                    }
+                    assert( type != BoundaryType::NONE );
+                    _boundaries.push_back( Boundary{markerTag, type, boundaryElements} );
                 }
                 break;
             }
