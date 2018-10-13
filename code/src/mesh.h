@@ -10,6 +10,19 @@
 #include "cell.h"
 #include "typedefs.h"
 
+enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE };
+
+struct BoundaryElement {
+    unsigned type;
+    std::vector<unsigned> nodes;
+};
+
+struct Boundary {
+    std::string name;
+    BoundaryType type;
+    std::vector<BoundaryElement> elements;
+};
+
 class Mesh
 {
   private:
@@ -24,6 +37,7 @@ class Mesh
     std::string _outputFile;
 
     std::vector<blaze::DynamicVector<unsigned>> _neighbors;
+    std::vector<BoundaryType> _boundaryType;
 
   public:
     static Mesh* Create( std::string inputFile );
@@ -40,6 +54,8 @@ class Mesh
     virtual blaze::DynamicVector<unsigned> GetNeighborsIndex( unsigned i ) const;
     virtual Vector GetNormals( unsigned i, unsigned l ) const;
     virtual Vector GetUnitNormals( unsigned i, unsigned l ) const;
+
+    BoundaryType GetBoundaryType( unsigned i );
 
     virtual Vector GetNodePositionsX() const {};
 

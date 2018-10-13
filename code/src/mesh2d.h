@@ -24,19 +24,6 @@ using vtkTriangleSP                  = vtkSmartPointer<vtkTriangle>;
 using vtkCellArraySP                 = vtkSmartPointer<vtkCellArray>;
 using vtkXMLUnstructuredGridWriterSP = vtkSmartPointer<vtkXMLUnstructuredGridWriter>;
 
-enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE };
-
-struct BoundaryElement {
-    unsigned type;
-    std::vector<unsigned> nodes;
-};
-
-struct Boundary {
-    std::string name;
-    BoundaryType type;
-    std::vector<BoundaryElement> elements;
-};
-
 class Mesh2D : public Mesh
 {
   private:

@@ -38,3 +38,5 @@ Vector Mesh::GetCenterPos( unsigned i ) const { return _cells[i]->GetCenter(); }
 unsigned Mesh::GetNBoundaries() const { return _nBoundaries; }
 
 blaze::DynamicVector<unsigned> Mesh::GetNeighborsIndex( unsigned i ) const { return _neighbors[i]; }
+
+BoundaryType Mesh::GetBoundaryType( unsigned i ) { return _boundaryType[i]; }

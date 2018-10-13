@@ -11,7 +11,14 @@ void ExplicitEuler::Advance(
 
         blaze::DynamicVector<unsigned> neighbors = _problem->GetMesh()->GetNeighborsIndex( j );
         if( _problem->GetMesh()->GetGrid()[j]->IsBoundaryCell() ) {
-            lambda[_problem->GetMesh()->GetNumCells()] = lambda[j];
+            if( _problem->GetMesh()->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) {
+                uNew[j] = u[j];
+                continue;
+            }
+            if( _problem->GetMesh()->GetBoundaryType( j ) == BoundaryType::NEUMANN ) {
+                lambda[_problem->GetMesh()->GetNumCells()] = lambda[j];
+                // lambda[_problem->GetMesh()->GetNumCells()](1,:) *= -1.0;
+            }
         }
         Matrix rhs( lambda[0].rows(), lambda[0].columns(), 0.0 );
 
