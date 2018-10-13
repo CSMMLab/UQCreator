@@ -29,8 +29,7 @@ class MomentSolver
     PlotEngine* _plotEngine;
     double _dx, _dt, _a, _b, _uL, _uR, _tEnd;
     unsigned _nTimeSteps, _nCells, _nMoments, _nStates;
-    Matrix
-    numFlux( const Matrix& lambda0, const Matrix& lambda1, const Matrix& lambda2, const Matrix& lambda3, const Vector& nUnit, const Vector& n );
+    Matrix numFlux( const Matrix& lambda1, const Matrix& lambda2, const Vector& nUnit, const Vector& n );
     std::vector<Matrix> SetupIC();
     Vector IC( Vector x, double xi );
     Matrix CalculateMoments( const Matrix& lambda );

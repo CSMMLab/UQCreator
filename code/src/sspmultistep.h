@@ -14,7 +14,7 @@ class SSPMultiStep : public TimeSolver
     SSPMultiStep() = delete;
     SSPMultiStep( Problem* problem, Closure* closure );
     virtual ~SSPMultiStep();
-    void Advance( std::function<Matrix( const Matrix&, const Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
+    void Advance( std::function<Matrix( const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
                   std::vector<Matrix>& uNew,
                   std::vector<Matrix>& u,
                   std::vector<Matrix>& lambda ) {}

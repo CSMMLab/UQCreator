@@ -9,10 +9,10 @@ class ExplicitEuler : public TimeSolver
   public:
     ExplicitEuler() = delete;
     ExplicitEuler( Problem* problem );
-    void Advance( std::function<Matrix( const Matrix&, const Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
-                  std::vector<Matrix>& uNew,
-                  std::vector<Matrix>& u,
-                  std::vector<Matrix>& lambda );
+    virtual void Advance( std::function<Matrix( const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
+                          std::vector<Matrix>& uNew,
+                          std::vector<Matrix>& u,
+                          std::vector<Matrix>& lambda );
 };
 
 #endif    // EXPLICITEULER_H

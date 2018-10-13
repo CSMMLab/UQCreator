@@ -25,11 +25,10 @@ class TimeSolver
     TimeSolver( Problem* problem );
     virtual ~TimeSolver();
     static TimeSolver* Create( Problem* problem, Closure* closure );
-    virtual void
-    Advance( std::function<Matrix( const Matrix&, const Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
-             std::vector<Matrix>& uNew,
-             std::vector<Matrix>& u,
-             std::vector<Matrix>& lambda ) = 0;
+    virtual void Advance( std::function<Matrix( const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
+                          std::vector<Matrix>& uNew,
+                          std::vector<Matrix>& u,
+                          std::vector<Matrix>& lambda ) = 0;
     double GetTimeStepSize();
     double GetNTimeSteps();
 };

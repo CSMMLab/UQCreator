@@ -58,18 +58,11 @@ void MomentSolver::Solve() {
         }
 
         // Time Update Moments
-        _time->Advance( std::bind( &MomentSolver::numFlux,
-                                   this,
-                                   std::placeholders::_1,
-                                   std::placeholders::_2,
-                                   std::placeholders::_3,
-                                   std::placeholders::_4,
-                                   std::placeholders::_5,
-                                   std::placeholders::_6 ),
-                        uNew,
-                        u,
-                        _lambda );
-
+        _time->Advance(
+            std::bind( &MomentSolver::numFlux, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 ),
+            uNew,
+            u,
+            _lambda );
         // Time Update dual variables
         //#pragma omp parallel for
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -93,13 +86,8 @@ void MomentSolver::Solve() {
               << std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 << "s" << std::endl;
 }
 
-Matrix MomentSolver::numFlux(
-    const Matrix& lambda0, const Matrix& lambda1, const Matrix& lambda2, const Matrix& lambda3, const Vector& nUnit, const Vector& n ) {
-    Matrix g = _problem->G(
-        _closure->U( _closure->EvaluateLambda( lambda1 ) ) + 0.5 * _problem->GetMesh()->GetArea( 0 ) * _limiter->Slope( lambda0, lambda1, lambda2 ),
-        _closure->U( _closure->EvaluateLambda( lambda2 ) ) - 0.5 * _problem->GetMesh()->GetArea( 0 ) * _limiter->Slope( lambda1, lambda2, lambda3 ),
-        nUnit,
-        n );
+Matrix MomentSolver::numFlux( const Matrix& lambda1, const Matrix& lambda2, const Vector& nUnit, const Vector& n ) {
+    Matrix g = _problem->G( _closure->U( _closure->EvaluateLambda( lambda1 ) ), _closure->U( _closure->EvaluateLambda( lambda2 ) ), nUnit, n );
     return 0.5 * g * _closure->GetPhiTildeW();
 }
 
