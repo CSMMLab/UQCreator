@@ -1,6 +1,7 @@
 #include "closure.h"
 #include "boundedbarrier.h"
 #include "eulerclosure.h"
+#include "eulerclosure2d.h"
 #include "stochasticgalerkin.h"
 
 Closure::Closure( Problem* problem )
@@ -45,6 +46,9 @@ Closure* Closure::Create( Problem* problem ) {
     }
     else if( closure.compare( "Euler" ) == 0 ) {
         return new EulerClosure( problem );
+    }
+    else if( closure.compare( "Euler2D" ) == 0 ) {
+        return new EulerClosure2D( problem );
     }
     else {
         std::cerr << "Invalid closure type" << std::endl;
