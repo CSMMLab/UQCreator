@@ -170,33 +170,6 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
     DetermineNeighbors();
 }
 
-void Mesh2D::ExportToVTK( std::string vtkfile ) const {
-    auto writer = vtkXMLUnstructuredGridWriterSP::New();
-    vtkfile.append( "." );
-    vtkfile.append( writer->GetDefaultFileExtension() );
-    writer->SetFileName( vtkfile.c_str() );
-    auto grid = vtkUnstructuredGridSP::New();
-    auto pts  = vtkPointsSP::New();
-    pts->SetNumberOfPoints( static_cast<int>( _nodes.size() ) );
-    for( const auto& node : _nodes ) {
-        pts->SetPoint( node->id, node->coords[0], node->coords[1], node->coords[2] );
-    }
-    vtkCellArraySP cellArray = vtkCellArraySP::New();
-    for( unsigned i = 0; i < _cells.size(); ++i ) {
-        auto tri = vtkTriangleSP::New();
-        for( unsigned j = 0; j < _cells[i]->GetNodeNum(); ++j ) {
-            tri->GetPointIds()->SetId( j, _cells[i]->GetNode( j )->id );
-        }
-        cellArray->InsertNextCell( tri );
-    }
-    grid->SetCells( VTK_TRIANGLE, cellArray );
-    grid->SetPoints( pts );
-    grid->Squeeze();
-    writer->SetInputData( grid );
-    writer->SetDataModeToAscii();
-    writer->Write();
-}
-
 unsigned Mesh2D::GetTrailingNumber( std::string s ) {
     return static_cast<unsigned>( std::stoi( s.substr( s.find_first_of( "0123456789" ), s.length() - 1 ) ) );
 }
@@ -242,4 +215,70 @@ void Mesh2D::DetermineNeighbors() {
     }
 }
 
-void Mesh2D::Export() const { ExportToVTK( _outputFile ); }
+void Mesh2D::Export( Matrix results ) const {
+    std::string vtkFile = _outputFile;
+    auto writer         = vtkXMLUnstructuredGridWriterSP::New();
+    if( vtkFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "vtu" ) {
+        vtkFile.append( "." );
+        vtkFile.append( writer->GetDefaultFileExtension() );
+    }
+    writer->SetFileName( vtkFile.c_str() );
+    auto grid = vtkUnstructuredGridSP::New();
+    auto pts  = vtkPointsSP::New();
+    pts->SetNumberOfPoints( static_cast<int>( _nodes.size() ) );
+    for( const auto& node : _nodes ) {
+        pts->SetPoint( node->id, node->coords[0], node->coords[1], node->coords[2] );
+    }
+    vtkCellArraySP cellArray = vtkCellArraySP::New();
+    for( unsigned i = 0; i < _cells.size(); ++i ) {
+        auto tri = vtkTriangleSP::New();
+        for( unsigned j = 0; j < _cells[i]->GetNodeNum(); ++j ) {
+            tri->GetPointIds()->SetId( j, _cells[i]->GetNode( j )->id );
+        }
+        cellArray->InsertNextCell( tri );
+    }
+    grid->SetCells( VTK_TRIANGLE, cellArray );
+
+    auto cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "rho" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 0, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "rhoUx" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 1, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "rhoUy" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 2, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "rhoE" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 3, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    grid->SetPoints( pts );
+    grid->Squeeze();
+
+    writer->SetInputData( grid );
+    writer->SetDataModeToAscii();
+    writer->Write();
+}
+
+Vector Mesh2D::GetNodePositionsX() const {
+    Vector x( _numCells, 0.0 );
+    for( unsigned i = 0; i < _numCells; ++i ) {
+        x[i] = _cells[i]->GetCenter()[0];
+    }
+    return x;
+}

@@ -3,8 +3,6 @@
 #include <blaze/math/DynamicVector.h>
 #include <iostream>
 
-#include "burgers.h"
-#include "closure.h"
 #include "momentsolver.h"
 #include "problem.h"
 

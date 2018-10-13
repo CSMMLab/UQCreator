@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 #include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkDoubleArray.h>
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 #include <vtkTriangle.h>
@@ -22,6 +24,7 @@ using vtkPointsSP                    = vtkSmartPointer<vtkPoints>;
 using vtkUnstructuredGridSP          = vtkSmartPointer<vtkUnstructuredGrid>;
 using vtkTriangleSP                  = vtkSmartPointer<vtkTriangle>;
 using vtkCellArraySP                 = vtkSmartPointer<vtkCellArray>;
+using vtkDoubleArraySP               = vtkSmartPointer<vtkDoubleArray>;
 using vtkXMLUnstructuredGridWriterSP = vtkSmartPointer<vtkXMLUnstructuredGridWriter>;
 
 class Mesh2D : public Mesh
@@ -44,7 +47,8 @@ class Mesh2D : public Mesh
     Mesh2D( std::string inputFile );
     virtual ~Mesh2D();
 
-    virtual void Export() const;
+    virtual Vector GetNodePositionsX() const;
+    virtual void Export( Matrix results ) const;
 };
 
 #endif    // MESH2D_H

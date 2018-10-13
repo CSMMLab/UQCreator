@@ -21,7 +21,7 @@ class Mesh1D : public Mesh
     void CreateGrid( double a, double b );
 
   public:
-    virtual void Export() const;
+    virtual void Export( Matrix results ) const;
 
     Mesh1D( std::string inputFile );
     virtual Vector GetNodePositionsX() const;

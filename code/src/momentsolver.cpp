@@ -85,6 +85,10 @@ void MomentSolver::Solve() {
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     std::cout << "\nFinished!\nRuntime: " << std::setprecision( 3 )
               << std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 << "s" << std::endl;
+
+    Matrix res( _nStates, _mesh->GetNumCells() );
+    // TODO
+    _mesh->Export( res );
 }
 
 Matrix MomentSolver::numFlux( const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {

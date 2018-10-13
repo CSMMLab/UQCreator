@@ -57,9 +57,9 @@ class Mesh
 
     BoundaryType GetBoundaryType( unsigned i );
 
-    virtual Vector GetNodePositionsX() const {};
+    virtual Vector GetNodePositionsX() const = 0;
 
-    virtual void Export() const = 0;
+    virtual void Export( Matrix results ) const = 0;
 
     Mesh( unsigned dimension );
     virtual ~Mesh();

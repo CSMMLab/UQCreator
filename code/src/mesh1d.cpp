@@ -55,7 +55,7 @@ void Mesh1D::CreateGrid( double a, double b ) {
     }
 }
 
-void Mesh1D::Export() const {}
+void Mesh1D::Export( Matrix results ) const {}
 
 Vector Mesh1D::GetNodePositionsX() const {
     Vector x( _numCells, 0.0 );
