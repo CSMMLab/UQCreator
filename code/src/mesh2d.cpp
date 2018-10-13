@@ -125,6 +125,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                             type = b.second;
                         }
                     }
+
                     assert( type != BoundaryType::NONE );
                     _boundaries.push_back( Boundary{markerTag, type, boundaryElements} );
                 }
@@ -172,8 +173,9 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                     unsigned nodeId = _cells[i]->GetNode( k )->id;
                     for( unsigned j = 0; j < _boundaries.size(); ++j ) {
                         for( unsigned l = 0; l < _boundaries[j].elements.size(); ++l ) {
-                            if( _boundaries[j].elements[l].nodes[0] == nodeId || _boundaries[j].elements[l].nodes[1] == nodeId )
+                            if( _boundaries[j].elements[l].nodes[0] == nodeId || _boundaries[j].elements[l].nodes[1] == nodeId ) {
                                 _boundaryType[i] = _boundaries[j].type;
+                            }
                         }
                     }
                 }
@@ -181,7 +183,11 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         }
         _neighbors.resize( _numCells );
         for( unsigned j = 0; j < _numCells; ++j ) {
-            _neighbors[j] = _cells[j]->GetNeighborIDs();
+            _neighbors[j] = _cells[j]->GetNeighborIDs();    // TODO: Boundary Element must have ghost cell as neighbor
+            if( _neighbors[j].size() == 2 ) {
+                _neighbors[j].resize( 3 );
+                _neighbors[j][2] = _numCells;
+            }
         }
     }
     else {

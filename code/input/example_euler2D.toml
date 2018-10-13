@@ -12,10 +12,10 @@ outputFile = "../results/euler_naca0012.vtu"
 [problem]
 # available timesteppings: explicitEuler, Heun, SSPMultiStep
 timestepping = "explicitEuler"
-CFL = 5.0
+CFL = 100.0
 # available limiter: minmod, none|off
 limiter = "none"
-tEnd = 0.01
+tEnd = 1.0
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D

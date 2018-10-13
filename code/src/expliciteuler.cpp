@@ -14,7 +14,7 @@ void ExplicitEuler::Advance( std::function<Matrix( const Matrix&, const Matrix&,
                 uNew[j] = u[j];
                 continue;
             }
-            if( _problem->GetMesh()->GetBoundaryType( j ) == BoundaryType::NEUMANN ) {
+            if( _problem->GetMesh()->GetBoundaryType( j ) == BoundaryType::NOSLIP ) {
                 uQ[_problem->GetMesh()->GetNumCells()] = uQ[j];
                 for( unsigned k = 0; k < uQ[_problem->GetMesh()->GetNumCells()].columns(); ++k ) {
                     Vector v( 2, 0.0 );

@@ -9,6 +9,7 @@ Triangle::Triangle( unsigned id, std::vector<Node*> nodes ) : Cell( CELL_TYPE::T
     }
     if( boundaryNodeCtr == 2 ) {
         _isBoundaryCell = true;
+        // this->AddNeighbor(_numCells)
     }
     else {
         _isBoundaryCell = false;
