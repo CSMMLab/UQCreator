@@ -8,7 +8,7 @@ void ExplicitEuler::Advance( std::function<Matrix( const Matrix&, const Matrix&,
                              std::vector<Matrix>& uQ ) {
     for( unsigned j = 0; j < _problem->GetMesh()->GetNumCells(); ++j ) {
 
-        blaze::DynamicVector<unsigned> neighbors = _problem->GetMesh()->GetNeighborsIndex( j );
+        auto neighbors = _problem->GetMesh()->GetNeighborIDs( j );
         if( _problem->GetMesh()->GetGrid()[j]->IsBoundaryCell() ) {
             if( _problem->GetMesh()->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) {
                 uNew[j] = u[j];

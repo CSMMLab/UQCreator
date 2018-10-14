@@ -13,6 +13,8 @@ Euler2D::Euler2D( std::string inputFile ) : Problem( inputFile ) {
     }
 }
 
+Euler2D::~Euler2D() {}
+
 double Euler2D::GetGamma() const { return _gamma; }
 
 void Euler2D::Solve() {}
@@ -48,8 +50,8 @@ Vector Euler2D::G( const Vector& u, const Vector& v, const Vector& nUnit, const 
 }
 
 Matrix Euler2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
-    unsigned nStates = u.rows();
-    unsigned Nq      = u.columns();
+    unsigned nStates = static_cast<unsigned>( u.rows() );
+    unsigned Nq      = static_cast<unsigned>( u.columns() );
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
         column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
@@ -66,14 +68,14 @@ Matrix Euler2D::F( const Vector& u ) {
     double p      = ( _gamma - 1.0 ) * ( u[3] - 0.5 * u[0] * ( pow( v1, 2 ) + pow( v2, 2 ) ) );
     Matrix flux( u.size(), 2 );
 
-    flux( 1, 1 ) = u[1];
-    flux( 2, 1 ) = u[1] * v1 + p;
-    flux( 3, 1 ) = u[1] * v2;
-    flux( 4, 1 ) = ( u[3] + p ) * v1;
-    flux( 1, 2 ) = u[2];
-    flux( 2, 2 ) = u[2] * v1;
-    flux( 3, 2 ) = u[2] * v2 + p;
-    flux( 4, 2 ) = ( u[3] + p ) * v2;
+    flux( 0, 0 ) = u[1];
+    flux( 1, 0 ) = u[1] * v1 + p;
+    flux( 2, 0 ) = u[1] * v2;
+    flux( 3, 0 ) = ( u[3] + p ) * v1;
+    flux( 0, 1 ) = u[2];
+    flux( 1, 1 ) = u[2] * v1;
+    flux( 2, 1 ) = u[2] * v2 + p;
+    flux( 3, 1 ) = ( u[3] + p ) * v2;
 
     return flux;
 }

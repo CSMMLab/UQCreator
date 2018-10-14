@@ -10,6 +10,7 @@ class Euler2D : public Problem
 
   public:
     Euler2D( std::string inputFile );
+    virtual ~Euler2D();
     virtual void Solve();
     virtual Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );

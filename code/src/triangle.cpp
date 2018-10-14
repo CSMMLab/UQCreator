@@ -38,6 +38,14 @@ void Triangle::SetupEdges() {
 
         _edges[i] = new Edge{A, B, length, unitNormal, scaledNormal};
     }
+    Node* A           = _nodes[_N - 1];
+    Node* B           = _nodes[0];
+    double length     = std::sqrt( std::pow( A->coords[0] - B->coords[0], 2 ) + std::pow( A->coords[1] - B->coords[1], 2 ) );
+    Vector unitNormal = getOutwardNormal( A, B );
+    unitNormal /= blaze::norm( unitNormal );
+    Vector scaledNormal = length * unitNormal;
+
+    _edges[_N - 1] = new Edge{A, B, length, unitNormal, scaledNormal};
 }
 
 Vector Triangle::getOutwardNormal( Node* A, Node* B ) {

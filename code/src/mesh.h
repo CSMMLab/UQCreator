@@ -36,7 +36,7 @@ class Mesh
     std::vector<Node*> _nodes;
     std::string _outputFile;
 
-    std::vector<blaze::DynamicVector<unsigned>> _neighbors;
+    std::vector<blaze::DynamicVector<unsigned>> _neighborIDs;
     std::vector<BoundaryType> _boundaryType;
 
   public:
@@ -51,7 +51,7 @@ class Mesh
     unsigned GetNBoundaries() const;
 
     virtual std::vector<Cell*> GetNeighbors( unsigned i ) const;
-    virtual blaze::DynamicVector<unsigned> GetNeighborsIndex( unsigned i ) const;
+    virtual blaze::DynamicVector<unsigned> GetNeighborIDs( unsigned i ) const;
     virtual Vector GetNormals( unsigned i, unsigned l ) const;
     virtual Vector GetUnitNormals( unsigned i, unsigned l ) const;
 

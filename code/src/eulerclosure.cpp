@@ -5,7 +5,6 @@ EulerClosure::EulerClosure( Problem* problem ) : Closure( problem ), _gamma( pro
 EulerClosure::~EulerClosure() {}
 
 void EulerClosure::U( Vector& out, const Vector& Lambda ) {
-    std::cout << "13 o====8" << std::endl;
     out[0] = exp( ( 2.0 * Lambda[0] * Lambda[2] - 2.0 * Lambda[2] * log( -Lambda[2] ) - 2.0 * Lambda[2] * _gamma - pow( Lambda[1], 2.0 ) ) /
                   ( 2.0 * Lambda[2] * ( _gamma - 1.0 ) ) );
     out[1] = -( Lambda[1] / Lambda[2] ) * out[0];
@@ -13,7 +12,6 @@ void EulerClosure::U( Vector& out, const Vector& Lambda ) {
 }
 
 Matrix EulerClosure::U( const Matrix& Lambda ) {
-    std::cout << "ERROR" << std::endl;
     Matrix y( _nStates, Lambda.columns(), 0.0 );
     for( unsigned k = 0; k < Lambda.columns(); ++k ) {
         y( 0, k ) = exp( ( 2.0 * Lambda( 0, k ) * Lambda( 2, k ) - 2.0 * Lambda( 2, k ) * log( -Lambda( 2, k ) ) - 2.0 * Lambda( 2, k ) * _gamma -

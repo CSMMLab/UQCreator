@@ -18,22 +18,22 @@ Mesh1D::Mesh1D( std::string inputFile ) : Mesh( 1 ) {
     }
     _cells[_numCells - 1]->AddNeighbor( _cells[_numCells - 2] );
 
-    _neighbors.resize( _numCells );
+    _neighborIDs.resize( _numCells );
     _boundaryType.resize( _numCells );
     for( unsigned i = 1; i < _numCells - 1; ++i ) {
-        _neighbors[i].resize( 2 );
-        _neighbors[i][0] = i - 1;
-        _neighbors[i][1] = i + 1;
-        _boundaryType[i] = BoundaryType::NONE;
+        _neighborIDs[i].resize( 2 );
+        _neighborIDs[i][0] = i - 1;
+        _neighborIDs[i][1] = i + 1;
+        _boundaryType[i]   = BoundaryType::NONE;
     }
-    _neighbors[0].resize( 2 );
-    _neighbors[0][0] = _numCells;
-    _neighbors[0][1] = _numCells;
-    _neighbors[_numCells - 1].resize( 2 );
-    _neighbors[_numCells - 1][0] = _numCells;
-    _neighbors[_numCells - 1][1] = _numCells;
-    _boundaryType[0]             = BoundaryType::DIRICHLET;
-    _boundaryType[_numCells - 1] = BoundaryType::DIRICHLET;
+    _neighborIDs[0].resize( 2 );
+    _neighborIDs[0][0] = _numCells;
+    _neighborIDs[0][1] = _numCells;
+    _neighborIDs[_numCells - 1].resize( 2 );
+    _neighborIDs[_numCells - 1][0] = _numCells;
+    _neighborIDs[_numCells - 1][1] = _numCells;
+    _boundaryType[0]               = BoundaryType::DIRICHLET;
+    _boundaryType[_numCells - 1]   = BoundaryType::DIRICHLET;
 }
 
 Mesh1D::~Mesh1D() {}

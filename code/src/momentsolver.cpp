@@ -37,9 +37,8 @@ void MomentSolver::Solve() {
     double t = 0;
     // create solution fields
     std::vector<Matrix> uNew( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
-    _lambda               = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
-    std::vector<Matrix> u = SetupIC();
-    std::cout << "IC set" << std::endl;
+    _lambda                = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
+    std::vector<Matrix> u  = SetupIC();
     std::vector<Matrix> uQ = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _problem->GetNQuadPoints(), 0.0 ) );
 
     for( unsigned j = 0; j < _nCells; ++j ) {
@@ -51,7 +50,6 @@ void MomentSolver::Solve() {
             _lambda[j]( 3, 0 ) = -1.0;
             _lambda[j]( 0, 0 ) = 1.0;
         }
-        std::cout << u[j] << std::endl;
         _lambda[j] = _closure->SolveClosure( u[j], _lambda[j] );
         u[j]       = CalculateMoments( _lambda[j] );    // kann raus!
     }
@@ -214,20 +212,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
     exit( EXIT_FAILURE );
 }
 
-void MomentSolver::Print() {
-    /*
-    int cellIndex = 55;
-    int nXi = 20;
-    Vector xi(nXi,0.0);
-    for( int k = 0; k<nXi; ++k ){
-        xi[k] = -1 + k/(nXi-1.0)*2.0;
-    }
-    std::cout<<_x[cellIndex]<<std::endl;
-    std::cout<<_closure->U(_closure->EvaluateLambda(_lambda[cellIndex-1],xi))<<std::endl;*/
-}
-
 void MomentSolver::Plot( double time ) {
-    unsigned plotInterval   = 1;
     static unsigned plotCtr = 0;
     if( _problem->GetMesh()->GetDimension() == 1 ) {
         const unsigned int nQuadFine = 200;

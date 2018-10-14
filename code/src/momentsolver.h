@@ -40,7 +40,6 @@ class MomentSolver
     MomentSolver( Problem* problem );
     ~MomentSolver();
     void Solve();
-    void Print();
 };
 
 #endif    // MOMENTSOLVER_H

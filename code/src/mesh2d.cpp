@@ -27,7 +27,6 @@ Mesh2D::Mesh2D( std::string inputFile ) : Mesh( 2 ) {
     }
     _outputFile = settings->get_as<std::string>( "outputFile" ).value_or( "" );
     LoadSU2MeshFromFile( _SU2MeshFile );
-    std::cout << "[mesh]: Mesh loaded" << std::endl;
 }
 
 Mesh2D::~Mesh2D() {
@@ -181,20 +180,20 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                 }
             }
         }
-        _neighbors.resize( _numCells );
-        for( unsigned j = 0; j < _numCells; ++j ) {
-            _neighbors[j] = _cells[j]->GetNeighborIDs();    // TODO: Boundary Element must have ghost cell as neighbor
-            if( _neighbors[j].size() == 2 ) {
-                _neighbors[j].resize( 3 );
-                _neighbors[j][2] = _numCells;
-            }
-        }
     }
     else {
         std::cerr << "File not found" << std::endl;
     }
     ifs.close();
     DetermineNeighbors();
+    _neighborIDs.resize( _numCells );
+    for( unsigned j = 0; j < _numCells; ++j ) {
+        _neighborIDs[j] = _cells[j]->GetNeighborIDs();    // TODO: Boundary Element must have ghost cell as neighbor
+        if( _neighborIDs[j].size() == 2 ) {
+            _neighborIDs[j].resize( 3 );
+            _neighborIDs[j][2] = _numCells;
+        }
+    }
 }
 
 unsigned Mesh2D::GetTrailingNumber( std::string s ) {

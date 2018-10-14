@@ -13,6 +13,8 @@ Euler::Euler( std::string inputFile ) : Problem( inputFile ) {
     }
 }
 
+Euler::~Euler() {}
+
 double Euler::GetGamma() const { return _gamma; }
 
 void Euler::Solve() {}
@@ -44,8 +46,8 @@ Vector Euler::G( const Vector& u, const Vector& v, const Vector& nUnit, const Ve
 }
 
 Matrix Euler::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
-    unsigned nStates = u.rows();
-    unsigned Nq      = u.columns();
+    unsigned nStates = static_cast<unsigned>( u.rows() );
+    unsigned Nq      = static_cast<unsigned>( u.columns() );
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
         column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
