@@ -193,18 +193,18 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         double innerEnergyL   = ( pFarfield / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
         y[3]                  = kineticEnergyL + innerEnergyL;
         if( x[0] > 0.0 ) {
-            rhoFarfield    = 0.8;
-            pFarfield      = 0.8;
-            uMax           = 1.0;
-            angle          = 0.0 + sigma;
-            uF             = uMax * cos( angle );
-            vF             = uMax * sin( angle );
-            y[0]           = rhoFarfield;
-            y[1]           = rhoFarfield * uF;
-            y[2]           = rhoFarfield * vF;
+            rhoFarfield = 0.8;
+            pFarfield   = 0.8;
+            uMax        = 1.0;
+            angle       = 0.0 + sigma;
+            uF          = uMax * cos( angle );
+            vF          = uMax * sin( angle );
+            // y[0]           = rhoFarfield;
+            // y[1]           = rhoFarfield * uF;
+            // y[2]           = rhoFarfield * vF;
             kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
             innerEnergyL   = ( pFarfield / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-            y[3]           = kineticEnergyL + innerEnergyL;
+            // y[3]           = kineticEnergyL + innerEnergyL;
         }
         return y;
     }
