@@ -76,5 +76,8 @@ int main( int argc, char* argv[] ) {
 
     std::cout << "\nProcess exited normally." << std::endl;
 
+    delete problem;
+    delete solver;
+
     return app.exec();
 }

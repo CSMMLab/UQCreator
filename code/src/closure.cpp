@@ -34,6 +34,16 @@ Closure::Closure( Problem* problem )
     double du = 0.0;
     _uMinus   = 3.0 - du;
     _uPlus    = 12.0 + du;
+
+    _perm = new int[_nStates * _nMoments];
+    for( int i = 0; i < static_cast<int>( _nStates * _nMoments ); ++i ) {
+        _perm[i] = i;
+    }
+}
+
+Closure::~Closure() {
+    delete _basis;
+    delete _quad;
 }
 
 Closure* Closure::Create( Problem* problem ) {
@@ -60,11 +70,6 @@ Closure* Closure::Create( Problem* problem ) {
 Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     int maxRefinements = 1000;
 
-    int* perm = new int( _nStates * _nMoments );
-    for( unsigned i = 0; i < _nStates * _nMoments; ++i ) {
-        perm[i] = i;
-    }
-
     Matrix H( _nStates * _nMoments, _nStates * _nMoments, 0.0 );
     Vector g( _nStates * _nMoments, 0.0 );
     Vector dlambdaNew( _nStates * _nMoments, 0.0 );
@@ -78,38 +83,25 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
     Hessian( H, lambda );
-    // std::cout << "lambda = " << lambda << std::endl;
-    // std::cout << "g " << g << std::endl;
-    // std::cout << "H " << H << std::endl;
     // blaze::posv( H, g, 'L' );
-
-    blaze::gesv( H, g, perm );
-    // std::cout << "H update " << g << std::endl;
+    blaze::gesv( H, g, _perm );
     Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
     for( unsigned l = 0; l < _problem->GetMaxIterations(); ++l ) {
-        // std::cout << l << std::endl;
         double stepSize = 1.0;
         if( l != 0 ) {
             Gradient( g, lambda, u );
             dlambda = -g;
-            // std::cout << "u = " << u << std::endl;
             Hessian( H, lambda );
             // blaze::posv( H, g, 'L' );
-            blaze::gesv( H, g, perm );
+            blaze::gesv( H, g, _perm );
             lambdaNew = lambda - _alpha * stepSize * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
         }
-        // std::cout << "g " << g << std::endl;
-        // std::cout << H << std::endl;
-        // std::cout << "lambdaNew " << lambdaNew << std::endl;
         int refinementCounter = 0;
 
-        // std::cout << "Residual: " << CalcNorm( dlambda ) << std::endl;
-        // std::cout << "Residual: " << CalcNorm( dlambdaNew ) << std::endl;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) ) {
-            // std::cout << "Refining..." << std::endl;
             stepSize *= 0.5;
             lambdaNew = lambda - stepSize * _alpha * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );

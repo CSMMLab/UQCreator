@@ -4,7 +4,14 @@
 // TODO: read Boundaries
 Mesh::Mesh( unsigned dimension ) : _dimension( dimension ), _nBoundaries( 2 ) {}
 
-Mesh::~Mesh() {}
+Mesh::~Mesh() {
+    for( auto& c : _cells ) {
+        delete c;
+    }
+    for( auto& n : _nodes ) {
+        delete n;
+    }
+}
 
 Mesh* Mesh::Create( std::string inputFile ) {
     auto file     = cpptoml::parse_file( inputFile );

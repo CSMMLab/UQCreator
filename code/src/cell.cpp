@@ -13,7 +13,11 @@ Cell::Cell( CELL_TYPE type, unsigned id, std::vector<Node*> nodes ) : _type( typ
     _edges.resize( _N );
 }
 
-Cell::~Cell() {}
+Cell::~Cell() {
+    for( auto& e : _edges ) {
+        delete e;
+    }
+}
 
 Node* Cell::GetNode( unsigned i ) { return _nodes[i]; }
 

@@ -8,6 +8,9 @@
 
 class Closure
 {
+  private:
+    int* _perm;
+
   protected:
     Problem* _problem;
     Polynomial* _basis;
@@ -32,7 +35,7 @@ class Closure
      * @param pointer to problem class
      */
     Closure( Problem* problem );
-    virtual ~Closure() {}
+    virtual ~Closure();
     static Closure* Create( Problem* problem );
     /**
      * calculate dual vector fulfilling the moment constraint

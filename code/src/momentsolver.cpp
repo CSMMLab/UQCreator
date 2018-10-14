@@ -29,6 +29,7 @@ MomentSolver::~MomentSolver() {
     delete _closure;
     delete _limiter;
     delete _time;
+    delete _plotEngine;
 }
 
 void MomentSolver::Solve() {
@@ -213,15 +214,16 @@ Vector MomentSolver::IC( Vector x, double xi ) {
 }
 
 void MomentSolver::Plot( double time ) {
+
     static unsigned plotCtr = 0;
     if( _problem->GetMesh()->GetDimension() == 1 ) {
         const unsigned int nQuadFine = 200;
-        Legendre* quadFine           = new Legendre( nQuadFine );
-        Vector wFine                 = quadFine->GetWeights();
-        Vector xiQuadFine            = quadFine->GetNodes();
-        Vector w                     = _quad->GetWeights();
-        Vector xiQuad                = _quad->GetNodes();
-        Vector x                     = _mesh->GetNodePositionsX();
+        Legendre quadFine( nQuadFine );
+        Vector wFine      = quadFine.GetWeights();
+        Vector xiQuadFine = quadFine.GetNodes();
+        Vector w          = _quad->GetWeights();
+        Vector xiQuad     = _quad->GetNodes();
+        Vector x          = _mesh->GetNodePositionsX();
         unsigned nFine;
 
         try {
