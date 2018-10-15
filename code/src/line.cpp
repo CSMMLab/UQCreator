@@ -17,6 +17,8 @@ Line::Line( unsigned id, std::vector<Node*> nodes ) : Cell( CELL_TYPE::LINE, id,
     _center = Vector{( _nodes[0]->coords[0] + _nodes[0]->coords[0] ) / 2};
 
     SetupEdges();
+    _neighbors.resize( 2 );
+    _neighborIDs.resize( 2 );
 }
 
 Line::~Line() {}

@@ -217,27 +217,39 @@ Node* Mesh2D::FindNodeByID( unsigned id ) {
 }
 
 void Mesh2D::DetermineNeighbors() {
+    unsigned index0, index1;
     for( auto& i : _cells ) {
+        for( unsigned l = 0; l < i->GetNeighborIDs().size(); ++l ) {
+            i->GetNeighborIDs()[0] = _numCells;
+            i->GetNeighborIDs()[1] = _numCells;
+            i->GetNeighborIDs()[2] = _numCells;
+        }
         for( auto& j : _cells ) {
-            if( i->GetNeighbors().size() == i->GetNodeNum() - i->IsBoundaryCell() ) {
-                goto cnt;
-            }
+            // if( i->GetNeighbors().size() == i->GetNodeNum() - i->IsBoundaryCell() ) {
+            //    goto cnt;
+            //}
             if( i->GetID() != j->GetID() ) {
                 unsigned matchCtr = 0;
-                for( const auto& k : i->GetNodes() ) {
+                for( unsigned n = 0; n < i->GetNodeNum(); ++n ) {
+                    Node* k = i->GetNodes()[n];
                     for( const auto& l : j->GetNodes() ) {
                         if( k->id == l->id ) {
                             matchCtr++;
+                            if( matchCtr == 1 ) index0 = n;
+                            if( matchCtr == 2 ) index1 = n;
                         }
                     }
                     if( matchCtr == 2 ) {
-                        i->AddNeighbor( j );
+                        if( index0 == 0 && index1 == 2 )
+                            i->AddNeighbor( j, 2 );
+                        else
+                            i->AddNeighbor( j, index0 );
                         break;
                     }
                 }
             }
         }
-    cnt:;
+        // cnt:;
     }
 }
 

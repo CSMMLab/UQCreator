@@ -23,10 +23,9 @@ Node* Cell::GetNode( unsigned i ) { return _nodes[i]; }
 
 std::vector<Node*> Cell::GetNodes() { return _nodes; }
 
-void Cell::AddNeighbor( const Cell* n ) {
-    _neighbors.push_back( const_cast<Cell*>( n ) );
-    _neighborIDs.resize( _neighbors.size() );
-    _neighborIDs[_neighbors.size() - 1] = n->_id;
+void Cell::AddNeighbor( const Cell* n, unsigned k ) {
+    _neighbors[k]   = const_cast<Cell*>( n );
+    _neighborIDs[k] = n->_id;
 }
 
 std::vector<Cell*> Cell::GetNeighbors() { return _neighbors; }

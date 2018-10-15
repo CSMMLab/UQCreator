@@ -43,7 +43,7 @@ class Closure
      * @param initial guess for dual vector
      * @return correct dual vector
      */
-    Matrix SolveClosure( const Matrix& uMatrix, Matrix& lambda );
+    virtual Matrix SolveClosure( const Matrix& uMatrix, Matrix& lambda );
     /**
      * calculate entropic variable from given dual vector
      * @param dual variable

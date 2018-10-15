@@ -21,6 +21,8 @@ Triangle::Triangle( unsigned id, std::vector<Node*> nodes ) : Cell( CELL_TYPE::T
     _center = Vector{( _nodes[0]->coords[0] + _nodes[1]->coords[0] + _nodes[2]->coords[0] ) / 3,
                      ( _nodes[0]->coords[1] + _nodes[1]->coords[1] + _nodes[2]->coords[1] ) / 3};
     SetupEdges();
+    _neighbors.resize( 3 );
+    _neighborIDs.resize( 3 );
 }
 
 Triangle::~Triangle() {}

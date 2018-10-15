@@ -11,12 +11,12 @@ Mesh1D::Mesh1D( std::string inputFile ) : Mesh( 1 ) {
     else {
         this->CreateGrid( a, b );
     }
-    _cells[0]->AddNeighbor( _cells[1] );
+    _cells[0]->AddNeighbor( _cells[1], 1 );
     for( unsigned i = 1; i < _numCells - 1; ++i ) {
-        _cells[i]->AddNeighbor( _cells[i - 1] );
-        _cells[i]->AddNeighbor( _cells[i + 1] );
+        _cells[i]->AddNeighbor( _cells[i - 1], 0 );
+        _cells[i]->AddNeighbor( _cells[i + 1], 1 );
     }
-    _cells[_numCells - 1]->AddNeighbor( _cells[_numCells - 2] );
+    _cells[_numCells - 1]->AddNeighbor( _cells[_numCells - 2], 0 );
 
     _neighborIDs.resize( _numCells );
     _boundaryType.resize( _numCells );

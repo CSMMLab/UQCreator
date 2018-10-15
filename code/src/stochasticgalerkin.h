@@ -5,14 +5,15 @@
 
 class StochasticGalerkin : public Closure
 {
-public:
+  public:
     StochasticGalerkin() = delete;
-    StochasticGalerkin(Problem* problem);
+    StochasticGalerkin( Problem* problem );
     virtual ~StochasticGalerkin();
 
     virtual void U( Vector& out, const Vector& Lambda );
     virtual Matrix U( const Matrix& Lambda );
     virtual void DU( Matrix& y, const Vector& Lambda );
+    virtual Matrix SolveClosure( const Matrix& u, Matrix& lambda );
 };
 
-#endif // STOCHASTICGALERKIN_H
+#endif    // STOCHASTICGALERKIN_H
