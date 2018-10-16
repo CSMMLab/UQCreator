@@ -188,10 +188,27 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
     DetermineNeighbors();
     _neighborIDs.resize( _numCells );
     for( unsigned j = 0; j < _numCells; ++j ) {
-        _neighborIDs[j] = _cells[j]->GetNeighborIDs();    // TODO: Boundary Element must have ghost cell as neighbor
-        if( _neighborIDs[j].size() == 2 ) {
-            _neighborIDs[j].resize( 3 );
-            _neighborIDs[j][2] = _numCells;
+        _neighborIDs[j] = _cells[j]->GetNeighborIDs();
+        if( _cells[j]->IsBoundaryCell() ) {
+            if( _neighborIDs[j][0] != _numCells && _neighborIDs[j][1] != _numCells && _neighborIDs[j][2] != _numCells ) {
+                std::cerr << "Wrong boundary cell " << j << " detected" << std::endl;
+                std::cerr << "Neighbors are " << _neighborIDs[j][0] << " " << _neighborIDs[j][1] << " " << _neighborIDs[j][2] << std::endl;
+                std::cout << "Points are " << _cells[j]->GetNodes()[0]->id << " " << _cells[j]->GetNodes()[1]->id << " "
+                          << _cells[j]->GetNodes()[2]->id << std::endl;
+                std::cout << "Points A are " << _cells[_neighborIDs[j][0]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][0]]->GetNodes()[1]->id
+                          << " " << _cells[_neighborIDs[j][0]]->GetNodes()[2]->id << std::endl;
+                std::cout << "Points B are " << _cells[_neighborIDs[j][1]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][1]]->GetNodes()[1]->id
+                          << " " << _cells[_neighborIDs[j][1]]->GetNodes()[2]->id << std::endl;
+                std::cout << "Points C are " << _cells[_neighborIDs[j][2]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][2]]->GetNodes()[1]->id
+                          << " " << _cells[_neighborIDs[j][2]]->GetNodes()[2]->id << std::endl;
+                exit( EXIT_FAILURE );
+            }
+
+            if( _cells[j]->GetNeighborIDs()[0] != _numCells && _cells[j]->GetNeighborIDs()[1] != _numCells &&
+                _cells[j]->GetNeighborIDs()[2] != _numCells ) {
+                std::cerr << "Wrong boundary cell " << j << " detected" << std::endl;
+                exit( EXIT_FAILURE );
+            }
         }
     }
 }
@@ -220,9 +237,9 @@ void Mesh2D::DetermineNeighbors() {
     unsigned index0, index1;
     for( auto& i : _cells ) {
         for( unsigned l = 0; l < i->GetNeighborIDs().size(); ++l ) {
-            i->GetNeighborIDs()[0] = _numCells;
-            i->GetNeighborIDs()[1] = _numCells;
-            i->GetNeighborIDs()[2] = _numCells;
+            i->AddNeighborId( _numCells, 0 );
+            i->AddNeighborId( _numCells, 1 );
+            i->AddNeighborId( _numCells, 2 );
         }
         for( auto& j : _cells ) {
             // if( i->GetNeighbors().size() == i->GetNodeNum() - i->IsBoundaryCell() ) {

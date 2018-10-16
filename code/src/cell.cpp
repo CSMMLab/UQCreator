@@ -28,6 +28,8 @@ void Cell::AddNeighbor( const Cell* n, unsigned k ) {
     _neighborIDs[k] = n->_id;
 }
 
+void Cell::AddNeighborId( unsigned n, unsigned k ) { _neighborIDs[k] = n; }
+
 std::vector<Cell*> Cell::GetNeighbors() { return _neighbors; }
 
 bool Cell::IsBoundaryCell() { return _isBoundaryCell; }

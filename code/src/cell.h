@@ -50,6 +50,7 @@ class Cell
     std::vector<Node*> GetNodes();
     virtual unsigned GetNodeNum() = 0;
     void AddNeighbor( const Cell* n, unsigned k );
+    void AddNeighborId( unsigned n, unsigned k );
     std::vector<Cell*> GetNeighbors();
     blaze::DynamicVector<unsigned> GetNeighborIDs();
     bool IsBoundaryCell();

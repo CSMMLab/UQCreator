@@ -18,13 +18,21 @@ void ExplicitEuler::Advance( std::function<Matrix( const Matrix&, const Matrix&,
                 uQ[_problem->GetMesh()->GetNumCells()] = uQ[j];
                 for( unsigned k = 0; k < uQ[_problem->GetMesh()->GetNumCells()].columns(); ++k ) {
                     Vector v( 2, 0.0 );
-                    v[0] = uQ[_problem->GetMesh()->GetNumCells()]( 1, k );
-                    v[1] = uQ[_problem->GetMesh()->GetNumCells()]( 2, k );
-                    int index;
+                    v[0]           = uQ[_problem->GetMesh()->GetNumCells()]( 1, k );
+                    v[1]           = uQ[_problem->GetMesh()->GetNumCells()]( 2, k );
+                    unsigned index = 100;
+                    // if( _problem->GetMesh()->GetGrid()[j]->IsBoundaryCell() ) {
+                    //    std::cout << "Is boundary cell and has " << neighbors.size() << " neighbors" << std::endl;
+                    //}
                     for( unsigned l = 0; l < neighbors.size(); ++l ) {
+                        // std::cout << neighbors[l] << " != " << _problem->GetMesh()->GetNumCells() << std::endl;
                         if( neighbors[l] == _problem->GetMesh()->GetNumCells() ) {
                             index = l;
                         }
+                    }
+                    if( index == 100 ) {
+                        std::cerr << "Boundary Cell " << j << " has no ghost cell neighbor." << std::endl;
+                        exit( EXIT_FAILURE );
                     }
                     Vector n                                       = _problem->GetMesh()->GetUnitNormals( j, index );
                     uQ[_problem->GetMesh()->GetNumCells()]( 1, k ) = -v[0] * n[0];
