@@ -302,16 +302,14 @@ void Mesh2D::Export( Matrix results ) const {
     grid->GetCellData()->AddArray( cellData );
 
     cellData = vtkDoubleArraySP::New();
-    cellData->SetName( "rhoUx" );
+    cellData->SetName( "rhoU" );
+    cellData->SetNumberOfComponents( 2 );
+    cellData->SetComponentName( 0, "x" );
+    cellData->SetComponentName( 1, "y" );
+    cellData->SetNumberOfTuples( _numCells );
     for( unsigned i = 0; i < _numCells; i++ ) {
-        cellData->InsertNextValue( results( 1, i ) );
-    }
-    grid->GetCellData()->AddArray( cellData );
-
-    cellData = vtkDoubleArraySP::New();
-    cellData->SetName( "rhoUy" );
-    for( unsigned i = 0; i < _numCells; i++ ) {
-        cellData->InsertNextValue( results( 2, i ) );
+        double tmp[2] = {results( 1, i ), results( 2, i )};
+        cellData->SetTuple( i, tmp );
     }
     grid->GetCellData()->AddArray( cellData );
 
