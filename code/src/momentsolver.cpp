@@ -189,7 +189,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         double rhoFarfield = 1.0;
         double pFarfield   = 1.0;
         double uMax        = 0.1;
-        double angle       = -0.4 + sigma * xi;
+        double angle       = 0.3 + sigma * xi;
         double uF          = uMax * cos( angle );
         double vF          = uMax * sin( angle );
 

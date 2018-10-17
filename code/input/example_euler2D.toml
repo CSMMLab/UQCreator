@@ -15,14 +15,14 @@ timestepping = "explicitEuler"
 CFL = 10.0
 # available limiter: minmod, none|off
 limiter = "none"
-tEnd = 1.0
+tEnd = 5.0
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
-closure = "StochasticGalerkin"
-moments = 1
+closure = "Euler2D"
+moments = 5
 quadType = "legendre"
-quadPoints = 1
+quadPoints = 20
 maxIterations = 200
 epsilon = 5e-5
 
