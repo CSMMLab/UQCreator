@@ -1,4 +1,4 @@
-﻿#include "momentsolver.h"
+#include "momentsolver.h"
 
 MomentSolver::MomentSolver( Problem* problem ) : _problem( problem ) {
     _quad = new Legendre( _problem->GetNQuadPoints() );
@@ -69,6 +69,12 @@ void MomentSolver::Solve() {
             uNew,
             u,
             uQ );
+
+        double tmp = 0;
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            tmp += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) );
+        }
+        std::cout << " -> E[rho] update is " << tmp << std::endl;
 
         // Time Update dual variables
         //#pragma omp parallel for
@@ -177,13 +183,13 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         return y;
     }
     else if( _problem->GetProblemType() == "Euler2D" ) {
-        double sigma = 0.0;
+        double sigma = 0.1;
         double gamma = 1.4;
 
         double rhoFarfield = 1.0;
         double pFarfield   = 1.0;
-        double uMax        = 0.0;
-        double angle       = 0.0 + sigma;
+        double uMax        = 0.1;
+        double angle       = -0.2 + sigma * xi;
         double uF          = uMax * cos( angle );
         double vF          = uMax * sin( angle );
 
