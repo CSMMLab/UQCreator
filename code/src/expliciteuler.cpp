@@ -18,8 +18,8 @@ void ExplicitEuler::Advance( std::function<Matrix( const Matrix&, const Matrix&,
                 uQ[_problem->GetMesh()->GetNumCells()] = uQ[j];
                 for( unsigned k = 0; k < uQ[_problem->GetMesh()->GetNumCells()].columns(); ++k ) {
                     Vector v( 2, 0.0 );
-                    v[0]           = uQ[_problem->GetMesh()->GetNumCells()]( 1, k );
-                    v[1]           = uQ[_problem->GetMesh()->GetNumCells()]( 2, k );
+                    v[0]           = uQ[_problem->GetMesh()->GetNumCells()]( 1, k ) / uQ[_problem->GetMesh()->GetNumCells()]( 0, k );
+                    v[1]           = uQ[_problem->GetMesh()->GetNumCells()]( 2, k ) / uQ[_problem->GetMesh()->GetNumCells()]( 0, k );
                     unsigned index = 100;
                     // if( _problem->GetMesh()->GetGrid()[j]->IsBoundaryCell() ) {
                     //    std::cout << "Is boundary cell and has " << neighbors.size() << " neighbors" << std::endl;
@@ -35,8 +35,11 @@ void ExplicitEuler::Advance( std::function<Matrix( const Matrix&, const Matrix&,
                         exit( EXIT_FAILURE );
                     }
                     Vector n                                       = _problem->GetMesh()->GetUnitNormals( j, index );
-                    uQ[_problem->GetMesh()->GetNumCells()]( 1, k ) = -v[0] * n[0];
-                    uQ[_problem->GetMesh()->GetNumCells()]( 2, k ) = -v[1] * n[1];
+                    double vn                                      = n[0] * v[0] + n[1] * v[1];
+                    Vector Vn                                      = vn * n;
+                    Vector Vt                                      = v - Vn;
+                    uQ[_problem->GetMesh()->GetNumCells()]( 1, k ) = uQ[_problem->GetMesh()->GetNumCells()]( 0, k ) * ( -Vn[0] + Vt[0] );
+                    uQ[_problem->GetMesh()->GetNumCells()]( 2, k ) = uQ[_problem->GetMesh()->GetNumCells()]( 0, k ) * ( -Vn[1] + Vt[1] );
                 }
             }
         }

@@ -1,4 +1,4 @@
-#include "momentsolver.h"
+﻿#include "momentsolver.h"
 
 MomentSolver::MomentSolver( Problem* problem ) : _problem( problem ) {
     _quad = new Legendre( _problem->GetNQuadPoints() );
@@ -74,7 +74,7 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             tmp += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) );
         }
-        std::cout << " -> E[rho] update is " << tmp << std::endl;
+        std::cout << " -> E[rho] residual is " << tmp << std::endl;
 
         // Time Update dual variables
         //#pragma omp parallel for
@@ -189,7 +189,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         double rhoFarfield = 1.0;
         double pFarfield   = 1.0;
         double uMax        = 0.1;
-        double angle       = -0.2 + sigma * xi;
+        double angle       = -0.4 + sigma * xi;
         double uF          = uMax * cos( angle );
         double vF          = uMax * sin( angle );
 
@@ -200,18 +200,18 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         double innerEnergyL   = ( pFarfield / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
         y[3]                  = kineticEnergyL + innerEnergyL;
         if( x[0] > 0.0 ) {
-            rhoFarfield    = 0.3;
-            pFarfield      = 0.3;
-            uMax           = 0.0;
-            angle          = 0.0 + sigma;
-            uF             = uMax * cos( angle );
-            vF             = uMax * sin( angle );
-            y[0]           = rhoFarfield;
-            y[1]           = rhoFarfield * uF;
-            y[2]           = rhoFarfield * vF;
+            rhoFarfield = 0.3;
+            pFarfield   = 0.3;
+            uMax        = 0.0;
+            angle       = 0.0 + sigma * xi;
+            uF          = uMax * cos( angle );
+            vF          = uMax * sin( angle );
+            // y[0]           = rhoFarfield;
+            // y[1]           = rhoFarfield * uF;
+            // y[2]           = rhoFarfield * vF;
             kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
             innerEnergyL   = ( pFarfield / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-            y[3]           = kineticEnergyL + innerEnergyL;
+            // y[3]           = kineticEnergyL + innerEnergyL;
         }
         return y;
     }
