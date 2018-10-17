@@ -29,14 +29,7 @@ Mesh2D::Mesh2D( std::string inputFile ) : Mesh( 2 ) {
     LoadSU2MeshFromFile( _SU2MeshFile );
 }
 
-Mesh2D::~Mesh2D() {
-    for( auto& i : _cells ) {
-        delete i;
-    }
-    for( auto& i : _nodes ) {
-        delete i;
-    }
-}
+Mesh2D::~Mesh2D() {}
 
 void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
     std::ifstream ifs( meshfile, std::ios::in );
@@ -303,13 +296,13 @@ void Mesh2D::Export( Matrix results ) const {
 
     cellData = vtkDoubleArraySP::New();
     cellData->SetName( "rhoU" );
-    cellData->SetNumberOfComponents( 2 );
+    cellData->SetNumberOfComponents( 3 );
     cellData->SetComponentName( 0, "x" );
     cellData->SetComponentName( 1, "y" );
+    cellData->SetComponentName( 2, "z" );
     cellData->SetNumberOfTuples( _numCells );
     for( unsigned i = 0; i < _numCells; i++ ) {
-        double tmp[2] = {results( 1, i ), results( 2, i )};
-        cellData->SetTuple( i, tmp );
+        cellData->SetTuple3( i, results( 1, i ), results( 2, i ), 0.0 );
     }
     grid->GetCellData()->AddArray( cellData );
 
@@ -323,8 +316,16 @@ void Mesh2D::Export( Matrix results ) const {
     grid->SetPoints( pts );
     grid->Squeeze();
 
-    writer->SetInputData( grid );
+    auto converter = vtkCellDataToPointDataSP::New();
+    converter->AddInputDataObject( grid );
+    converter->PassCellDataOn();
+    converter->Update();
+
+    auto conv_grid = converter->GetOutput();
+
+    writer->SetInputData( conv_grid );
     writer->SetDataModeToAscii();
+
     writer->Write();
 }
 

@@ -31,7 +31,7 @@ include_directories( ${BLAS_INCLUDE_DIR} )
 find_package( LAPACK REQUIRED )
 include_directories( ${LAPACK_INCLUDE_DIR} )
 
-find_package( VTK REQUIRED COMPONENTS vtkIOXML )
+find_package( VTK REQUIRED COMPONENTS vtkIOXML vtkFiltersCore )
 
 find_package( Git REQUIRED )
 ExternalProject_Add( blaze
