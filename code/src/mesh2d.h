@@ -8,10 +8,12 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkCellDataToPointData.h>
 #include <vtkDoubleArray.h>
-#include <vtkPoints.h>
+#include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 #include <vtkTriangle.h>
 #include <vtkUnstructuredGrid.h>
@@ -26,6 +28,7 @@ using vtkTriangleSP                  = vtkSmartPointer<vtkTriangle>;
 using vtkCellArraySP                 = vtkSmartPointer<vtkCellArray>;
 using vtkDoubleArraySP               = vtkSmartPointer<vtkDoubleArray>;
 using vtkXMLUnstructuredGridWriterSP = vtkSmartPointer<vtkXMLUnstructuredGridWriter>;
+using vtkCellDataToPointDataSP       = vtkSmartPointer<vtkCellDataToPointData>;
 
 class Mesh2D : public Mesh
 {
