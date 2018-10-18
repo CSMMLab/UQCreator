@@ -185,34 +185,26 @@ Vector MomentSolver::IC( Vector x, double xi ) {
     else if( _problem->GetProblemType() == "Euler2D" ) {
         double sigma = 0.1;
         double gamma = 1.4;
+        double R     = 287.87;
+        double T     = 273.15;
+        double p     = 101325.0;
+        double Ma    = 0.8;
+        double a     = sqrt( gamma * R * T );
+        double pi    = 3.14159265359;
 
-        double rhoFarfield = 1.0;
-        double pFarfield   = 1.0;
-        double uMax        = 0.1;
-        double angle       = 0.3 + sigma * xi;
-        double uF          = uMax * cos( angle );
-        double vF          = uMax * sin( angle );
+        double uMax  = Ma * a;
+        double angle = ( 1.25 + sigma * xi ) * ( 2.0 * pi ) / 360.0;
+        double uF    = uMax * cos( angle );
+        double vF    = uMax * sin( angle );
+
+        double rhoFarfield = p / ( R * T );
 
         y[0]                  = rhoFarfield;
         y[1]                  = rhoFarfield * uF;
         y[2]                  = rhoFarfield * vF;
         double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
-        double innerEnergyL   = ( pFarfield / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
+        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
         y[3]                  = kineticEnergyL + innerEnergyL;
-        if( x[0] > 0.0 ) {
-            rhoFarfield = 0.3;
-            pFarfield   = 0.3;
-            uMax        = 0.0;
-            angle       = 0.0 + sigma * xi;
-            uF          = uMax * cos( angle );
-            vF          = uMax * sin( angle );
-            // y[0]           = rhoFarfield;
-            // y[1]           = rhoFarfield * uF;
-            // y[2]           = rhoFarfield * vF;
-            kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
-            innerEnergyL   = ( pFarfield / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-            // y[3]           = kineticEnergyL + innerEnergyL;
-        }
         return y;
     }
     std::cerr << "Reached end of IC. No initial condition set" << std::endl;
