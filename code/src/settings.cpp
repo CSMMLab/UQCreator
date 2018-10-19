@@ -69,4 +69,6 @@ ProblemType Settings::GetProblemType() const { return _problemType; }
 
 unsigned Settings::GetNumCells() const { return _numCells; }
 
-void Settings::SetNumCells( unsigned n ) const { _numCells = n; }
+void Settings::SetNumCells( unsigned n ) { _numCells = n; }
+
+double Settings::GetGamma() const { return _gamma; }

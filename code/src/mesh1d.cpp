@@ -1,6 +1,6 @@
 #include "mesh1d.h"
 
-Mesh1D::Mesh1D( const Settings* settings ) : Mesh( settings, 1 ) {
+Mesh1D::Mesh1D( Settings* settings ) : Mesh( settings, 1 ) {
     auto file  = cpptoml::parse_file( _settings->GetInputFile() );
     auto table = file->get_table( "mesh" );
     _numCells  = table->get_as<unsigned>( "NumberOfCells" ).value_or( 0 );

@@ -1,7 +1,6 @@
 ﻿#include "momentsolver.h"
 
-MomentSolver::MomentSolver( const Settings* settings, const Mesh* mesh, const Problem* problem )
-    : _settings( settings ), _mesh( mesh ), _problem( problem ) {
+MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
 
     /*
     _a      = 0.0;
@@ -18,8 +17,8 @@ MomentSolver::MomentSolver( const Settings* settings, const Mesh* mesh, const Pr
 
     _quad    = new Legendre( _nQuadPoints );
     _closure = Closure::Create( _settings );
-    _limiter = Limiter::Create( _closure, _problem );
-    _time    = TimeSolver::Create( _problem, _closure );
+    _limiter = Limiter::Create( _settings, _mesh, _closure );
+    _time    = TimeSolver::Create( _settings, _mesh );
 
     _dt = _time->GetTimeStepSize();
 
@@ -45,11 +44,11 @@ void MomentSolver::Solve() {
     std::vector<Matrix> uQ = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nQuadPoints, 0.0 ) );
 
     for( unsigned j = 0; j < _nCells; ++j ) {
-        if( _problem->GetProblemType() == ProblemType::P_EULER_1D ) {
+        if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {
             _lambda[j]( 2, 0 ) = -1.0;
             _lambda[j]( 0, 0 ) = 1.0;
         }
-        else if( _problem->GetProblemType() == ProblemType::P_EULER_2D ) {
+        else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
             _lambda[j]( 3, 0 ) = -1.0;
             _lambda[j]( 0, 0 ) = 1.0;
         }
@@ -131,7 +130,7 @@ std::vector<Matrix> MomentSolver::SetupIC() {
     Matrix phiTildeW = _closure->GetPhiTildeW();
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned k = 0; k < _nQuadPoints; ++k ) {
-            column( uIC, k ) = IC( _mesh()->GetCenterPos( j ), xi[k] );
+            column( uIC, k ) = IC( _mesh->GetCenterPos( j ), xi[k] );
         }
         out[j] = 0.5 * uIC * phiTildeW;
     }

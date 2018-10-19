@@ -51,7 +51,7 @@ class Mesh2D : public Mesh
     Mesh2D();
 
   public:
-    Mesh2D( std::string inputFile );
+    Mesh2D( Settings* settings );
     virtual ~Mesh2D();
 
     virtual Vector GetNodePositionsX() const;

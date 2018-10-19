@@ -63,4 +63,4 @@ find_package( Qt5 COMPONENTS Core Widgets Gui PrintSupport REQUIRED )
 set( OpenGL_GL_PREFERENCE LEGACY )
 find_package( OpenGL )
 
-target_link_libraries( ${CMAKE_PROJECT_NAME}  LINK_PUBLIC Qt5::Core Qt5::Widgets Qt5::Gui Qt5::PrintSupport ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${VTK_LIBRARIES})
+target_link_libraries( ${CMAKE_PROJECT_NAME}  LINK_PUBLIC Qt5::Core Qt5::Widgets Qt5::Gui Qt5::PrintSupport ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${VTK_LIBRARIES} -lstdc++fs)

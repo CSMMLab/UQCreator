@@ -2,7 +2,7 @@
 #include "mesh1d.h"
 #include "mesh2d.h"
 // TODO: read Boundaries
-Mesh::Mesh( const Settings* settings, unsigned dimension ) : _settings( settings ), _dimension( dimension ), _nBoundaries( 2 ) {}
+Mesh::Mesh( Settings* settings, unsigned dimension ) : _settings( settings ), _dimension( dimension ), _nBoundaries( 2 ) {}
 
 Mesh::~Mesh() {
     for( auto& c : _cells ) {
@@ -13,7 +13,7 @@ Mesh::~Mesh() {
     }
 }
 
-Mesh* Mesh::Create( const Settings* settings ) {
+Mesh* Mesh::Create( Settings* settings ) {
     auto file    = cpptoml::parse_file( settings->GetInputFile() );
     auto table   = file->get_table( "mesh" );
     unsigned dim = table->get_as<unsigned>( "Dimension" ).value_or( 0 );
@@ -32,6 +32,8 @@ unsigned Mesh::GetDimension() const { return _dimension; }
 
 std::vector<Cell*>& Mesh::GetGrid() { return _cells; }
 
+std::vector<Cell*> Mesh::GetGrid() const { return _cells; }
+
 double Mesh::GetArea( unsigned i ) const { return _cells[i]->GetArea(); }
 
 std::vector<Cell*> Mesh::GetNeighbors( unsigned i ) const { return _cells[i]->GetNeighbors(); }
@@ -46,4 +48,4 @@ unsigned Mesh::GetNBoundaries() const { return _nBoundaries; }
 
 blaze::DynamicVector<unsigned> Mesh::GetNeighborIDs( unsigned i ) const { return _neighborIDs[i]; }
 
-BoundaryType Mesh::GetBoundaryType( unsigned i ) { return _boundaryType[i]; }
+BoundaryType Mesh::GetBoundaryType( unsigned i ) const { return _boundaryType[i]; }

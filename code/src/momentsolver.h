@@ -20,6 +20,7 @@
 class MomentSolver
 {
   private:
+    Settings* _settings;
     Legendre* _quad;
     Closure* _closure;
     Mesh* _mesh;
@@ -28,7 +29,6 @@ class MomentSolver
     Vector _x;
     std::vector<Matrix> _lambda;
     Problem* _problem;
-    Settings* _settings;
     //    PlotEngine* _plotEngine;
     double _dx, _dt, _a, _b, _uL, _uR, _tEnd;
     unsigned _nTimeSteps, _nCells, _nMoments, _nStates, _nQuadPoints;
@@ -40,7 +40,7 @@ class MomentSolver
     void Plot( double time );
 
   public:
-    MomentSolver( const Settings* settings, const Mesh* mesh, const Problem* problem );
+    MomentSolver( Settings* settings, Mesh* mesh, Problem* problem );
     ~MomentSolver();
     void Solve();
 };

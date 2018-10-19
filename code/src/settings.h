@@ -33,6 +33,9 @@ class Settings
 
     // mesh dependent settings
 
+    // problem specific settings
+    double _gamma;
+
     Settings() {}
 
   public:
@@ -53,7 +56,9 @@ class Settings
     ClosureType GetClosureType() const;
     ProblemType GetProblemType() const;
     unsigned GetNumCells() const;
-    void SetNumCells( unsigned n ) const;
+    double GetGamma() const;
+
+    void SetNumCells( unsigned n );
 };
 
 #endif    // SETTINGS_H

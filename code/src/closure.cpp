@@ -4,8 +4,8 @@
 #include "eulerclosure2d.h"
 #include "stochasticgalerkin.h"
 
-Closure::Closure( Problem* problem )
-    : _problem( problem ), _nMoments( _problem->GetNMoments() ), _nQuadPoints( _problem->GetNQuadPoints() ), _nStates( _problem->GetNStates() ) {
+Closure::Closure( Settings* settings )
+    : _settings( settings ), _nMoments( _settings->GetNMoments() ), _nQuadPoints( _settings->GetNQuadPoints() ), _nStates( _settings->GetNStates() ) {
     // initialize classes
     _basis = new Legendre( _nMoments );
     _quad  = new Legendre( _nQuadPoints );
@@ -46,24 +46,23 @@ Closure::~Closure() {
     delete _quad;
 }
 
-Closure* Closure::Create( Problem* problem ) {
-    std::string closure = problem->GetClosureType();
-    if( closure.compare( "BoundedBarrier" ) == 0 || closure.compare( "BB" ) == 0 ) {
-        return new BoundedBarrier( problem );
+Closure* Closure::Create( Settings* settings ) {
+    auto closureType = settings->GetClosureType();
+    if( closureType == ClosureType::C_BOUNDEDBARRIER ) {
+        return new BoundedBarrier( settings );
     }
-    else if( closure.compare( "StochasticGalerkin" ) == 0 || closure.compare( "SG" ) == 0 ) {
-        return new StochasticGalerkin( problem );
+    else if( closureType == ClosureType::C_STOCHASTICGALERKIN ) {
+        return new StochasticGalerkin( settings );
     }
-    else if( closure.compare( "Euler" ) == 0 ) {
-        return new EulerClosure( problem );
+    else if( closureType == ClosureType::C_EULER_1D ) {
+        return new EulerClosure( settings );
     }
-    else if( closure.compare( "Euler2D" ) == 0 ) {
-        return new EulerClosure2D( problem );
+    else if( closureType == ClosureType::C_EULER_2D ) {
+        return new EulerClosure2D( settings );
     }
     else {
         std::cerr << "Invalid closure type" << std::endl;
         exit( EXIT_FAILURE );
-        return nullptr;
     }
 }
 
@@ -77,7 +76,7 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     // check if initial guess is good enough
     Gradient( g, lambda, u );
 
-    if( CalcNorm( g ) < _problem->GetEpsilon() ) {
+    if( CalcNorm( g ) < _settings->GetEpsilon() ) {
         return lambda;
     }
     // calculate initial Hessian and gradient
@@ -88,7 +87,7 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
-    for( unsigned l = 0; l < _problem->GetMaxIterations(); ++l ) {
+    for( unsigned l = 0; l < _settings->GetMaxIterations(); ++l ) {
         double stepSize = 1.0;
         if( l != 0 ) {
             Gradient( g, lambda, u );
@@ -105,7 +104,7 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
             stepSize *= 0.5;
             lambdaNew = lambda - stepSize * _alpha * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
-            if( CalcNorm( dlambdaNew ) < _problem->GetEpsilon() ) {
+            if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
                 return lambdaNew;
             }
             else if( ++refinementCounter > maxRefinements ) {
@@ -115,7 +114,7 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
         }
         lambda = lambdaNew;
 
-        if( CalcNorm( dlambdaNew ) < _problem->GetEpsilon() ) {
+        if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
             return lambdaNew;
         }
     }

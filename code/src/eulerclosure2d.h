@@ -8,10 +8,10 @@ class EulerClosure2D : public Closure
 {
   private:
     double _gamma;
+    EulerClosure2D() = delete;
 
   public:
-    EulerClosure2D() = delete;
-    EulerClosure2D( Problem* problem );
+    EulerClosure2D( Settings* settings );
     virtual ~EulerClosure2D();
 
     virtual void U( Vector& out, const Vector& Lambda );

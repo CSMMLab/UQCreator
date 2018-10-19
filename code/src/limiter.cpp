@@ -1,9 +1,10 @@
 #include "limiter.h"
 #include "minmod.h"
 #include "nolimiter.h"
-#include <algorithm>
 
-Limiter::Limiter( Closure* closure, Problem* problem ) : _closure( closure ), _problem( problem ) { _dx = _problem->GetMesh()->GetArea( 0 ); }
+Limiter::Limiter( Settings* settings, Mesh* mesh, Closure* closure ) : _settings( settings ), _mesh( mesh ), _closure( closure ) {
+    _dx = _mesh->GetArea( 0 );
+}
 
 Limiter::~Limiter() {}
 
@@ -32,19 +33,18 @@ Matrix Limiter::SlopeInternal( const Matrix& u0, const Matrix& u1, const Matrix&
     return y;
 }
 
-Limiter* Limiter::Create( const Closure* closure, const Settings* settings ) {
+Limiter* Limiter::Create( Settings* settings, Mesh* mesh, Closure* closure ) {
     auto file           = cpptoml::parse_file( settings->GetInputFile() );
     auto general        = file->get_table( "problem" );
     std::string limiter = general->get_as<std::string>( "limiter" ).value_or( "" );
     if( limiter.compare( "minmod" ) == 0 ) {
-        return new Minmod( closure, settings );
+        return new Minmod( settings, mesh, closure );
     }
     else if( limiter.compare( "none" ) == 0 || limiter.compare( "off" ) == 0 ) {
-        return new NoLimiter( closure, settings );
+        return new NoLimiter( settings, mesh, closure );
     }
     else {
         std::cerr << "Invalid limiter type" << std::endl;
         exit( EXIT_FAILURE );
-        return nullptr;
     }
 }

@@ -23,7 +23,7 @@ class Mesh1D : public Mesh
   public:
     virtual void Export( Matrix results ) const;
 
-    Mesh1D( const Settings* settings );
+    Mesh1D( Settings* settings );
     virtual Vector GetNodePositionsX() const;
     virtual ~Mesh1D();
 };

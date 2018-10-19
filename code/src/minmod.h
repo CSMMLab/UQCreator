@@ -12,7 +12,7 @@ class Minmod : public Limiter
     double minmod( const double& a, const double& b );
 
   public:
-    Minmod( const Closure* closure, const Settings* settings );
+    Minmod( Settings* settings, Mesh* mesh, Closure* closure );
     virtual ~Minmod();
 };
 

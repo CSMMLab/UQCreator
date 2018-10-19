@@ -1,6 +1,6 @@
 #include "boundedbarrier.h"
 
-BoundedBarrier::BoundedBarrier( Problem* problem ) : Closure( problem ) { _alpha = 1.0; }
+BoundedBarrier::BoundedBarrier( Settings* settings ) : Closure( settings ) { _alpha = 1.0; }
 
 BoundedBarrier::~BoundedBarrier() {}
 
