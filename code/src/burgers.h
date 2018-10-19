@@ -22,7 +22,7 @@ class Burgers : public Problem
     Burgers() {}
 
   public:
-    Burgers( std::string inputFile );
+    Burgers( const Settings* settings );
     Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );
     virtual double ExactSolution( double t, double x, double xi );

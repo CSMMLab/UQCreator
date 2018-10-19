@@ -3,6 +3,7 @@
 
 #include <blaze/math/DynamicVector.h>
 #include <chrono>
+#include <omp.h>
 
 #include "closure.h"
 #include "expliciteuler.h"
@@ -10,9 +11,10 @@
 #include "limiter.h"
 #include "minmod.h"
 #include "nolimiter.h"
-#include "omp.h"
-#include "plotengine.h"
+//#include "plotengine.h"
+#include "mesh.h"
 #include "problem.h"
+#include "settings.h"
 #include "typedefs.h"
 
 class MomentSolver
@@ -26,9 +28,10 @@ class MomentSolver
     Vector _x;
     std::vector<Matrix> _lambda;
     Problem* _problem;
-    PlotEngine* _plotEngine;
+    Settings* _settings;
+    //    PlotEngine* _plotEngine;
     double _dx, _dt, _a, _b, _uL, _uR, _tEnd;
-    unsigned _nTimeSteps, _nCells, _nMoments, _nStates;
+    unsigned _nTimeSteps, _nCells, _nMoments, _nStates, _nQuadPoints;
     Matrix numFlux( const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
     std::vector<Matrix> SetupIC();
     Vector IC( Vector x, double xi );
@@ -37,7 +40,7 @@ class MomentSolver
     void Plot( double time );
 
   public:
-    MomentSolver( Problem* problem );
+    MomentSolver( const Settings* settings, const Mesh* mesh, const Problem* problem );
     ~MomentSolver();
     void Solve();
 };

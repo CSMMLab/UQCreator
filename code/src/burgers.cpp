@@ -1,14 +1,16 @@
 #include "burgers.h"
 
-Burgers::Burgers( std::string inputFile ) : Problem( inputFile ) {
-    //_x          = _mesh->GetGrid();
-    _dx         = _mesh->GetArea( 0 );
-    _dt         = _dx * _CFL / 12.0;
-    _nCells     = _mesh->GetNumCells();
-    _nStates    = 1;
-    _nTimeSteps = static_cast<unsigned>( _tEnd / _dt );
-    _tEnd       = _nTimeSteps * _dt;
-    _u          = Vector( _nCells + 4, 0.0 );
+Burgers::Burgers( const Settings* settings ) : Problem( settings ) {
+    _nStates = 1;
+    try {
+        auto file = cpptoml::parse_file( _settings->GetInputFile() );
+
+        auto problem = file->get_table( "problem" );
+        // TODO
+    } catch( const cpptoml::parse_exception& e ) {
+        std::cerr << "Failed to parse " << _settings->GetInputFile() << ": " << e.what() << std::endl;
+        exit( EXIT_FAILURE );
+    }
 }
 
 Vector Burgers::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {

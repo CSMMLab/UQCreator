@@ -1,27 +1,29 @@
 ﻿#include "momentsolver.h"
 
-MomentSolver::MomentSolver( Problem* problem ) : _problem( problem ) {
-    _quad = new Legendre( _problem->GetNQuadPoints() );
+MomentSolver::MomentSolver( const Settings* settings, const Mesh* mesh, const Problem* problem )
+    : _settings( settings ), _mesh( mesh ), _problem( problem ) {
 
-    _mesh   = _problem->GetMesh();
-    _nCells = _mesh->GetNumCells();
+    /*
     _a      = 0.0;
     _b      = 3.0;
 
     _uL = 12.0;
     _uR = 3.0;
+    */
+    _nCells      = _mesh->GetNumCells();
+    _nMoments    = _settings->GetNMoments();
+    _tEnd        = _settings->GetTEnd();
+    _nStates     = _settings->GetNStates();
+    _nQuadPoints = _settings->GetNQuadPoints();
 
-    _nMoments = _problem->GetNMoments();
-    _tEnd     = _problem->GetTEnd();
-    _nStates  = _problem->GetNStates();
-
-    _closure = Closure::Create( _problem );
+    _quad    = new Legendre( _nQuadPoints );
+    _closure = Closure::Create( _settings );
     _limiter = Limiter::Create( _closure, _problem );
     _time    = TimeSolver::Create( _problem, _closure );
 
     _dt = _time->GetTimeStepSize();
 
-    _plotEngine = new PlotEngine( _problem );
+    //_plotEngine = new PlotEngine( _problem );
 }
 
 MomentSolver::~MomentSolver() {
@@ -29,7 +31,7 @@ MomentSolver::~MomentSolver() {
     delete _closure;
     delete _limiter;
     delete _time;
-    delete _plotEngine;
+    // delete _plotEngine;
 }
 
 void MomentSolver::Solve() {
@@ -40,14 +42,14 @@ void MomentSolver::Solve() {
     std::vector<Matrix> uNew( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
     _lambda                = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
     std::vector<Matrix> u  = SetupIC();
-    std::vector<Matrix> uQ = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _problem->GetNQuadPoints(), 0.0 ) );
+    std::vector<Matrix> uQ = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nQuadPoints, 0.0 ) );
 
     for( unsigned j = 0; j < _nCells; ++j ) {
-        if( _problem->GetProblemType() == "Euler" ) {
+        if( _problem->GetProblemType() == ProblemType::P_EULER_1D ) {
             _lambda[j]( 2, 0 ) = -1.0;
             _lambda[j]( 0, 0 ) = 1.0;
         }
-        if( _problem->GetProblemType() == "Euler2D" ) {
+        else if( _problem->GetProblemType() == ProblemType::P_EULER_2D ) {
             _lambda[j]( 3, 0 ) = -1.0;
             _lambda[j]( 0, 0 ) = 1.0;
         }
@@ -104,7 +106,7 @@ void MomentSolver::Solve() {
     Vector w    = _quad->GetWeights();
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned i = 0; i < _nStates; ++i ) {
-            for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
+            for( unsigned k = 0; k < _nQuadPoints; ++k ) {
                 _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
                 res( i, j ) += 0.5 * w[k] * tmp[i];
             }
@@ -123,13 +125,13 @@ Matrix MomentSolver::CalculateMoments( const Matrix& lambda ) {
 }
 
 std::vector<Matrix> MomentSolver::SetupIC() {
-    std::vector<Matrix> out( _nCells + _problem->GetMesh()->GetNBoundaries(), Matrix( _nStates, _nMoments, 0.0 ) );
+    std::vector<Matrix> out( _nCells + _mesh->GetNBoundaries(), Matrix( _nStates, _nMoments, 0.0 ) );
     Vector xi = _quad->GetNodes();
-    Matrix uIC( _nStates, _problem->GetNQuadPoints(), 0.0 );
+    Matrix uIC( _nStates, _nQuadPoints, 0.0 );
     Matrix phiTildeW = _closure->GetPhiTildeW();
     for( unsigned j = 0; j < _nCells; ++j ) {
-        for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-            column( uIC, k ) = IC( _problem->GetMesh()->GetCenterPos( j ), xi[k] );
+        for( unsigned k = 0; k < _nQuadPoints; ++k ) {
+            column( uIC, k ) = IC( _mesh()->GetCenterPos( j ), xi[k] );
         }
         out[j] = 0.5 * uIC * phiTildeW;
     }
@@ -138,7 +140,7 @@ std::vector<Matrix> MomentSolver::SetupIC() {
 
 Vector MomentSolver::IC( Vector x, double xi ) {
     Vector y( _nStates );
-    if( _problem->GetProblemType() == "Burgers" ) {
+    if( _settings->GetProblemType() == ProblemType::P_BURGERS_1D ) {
         double a     = 0.5;
         double b     = 1.5;
         double sigma = 0.2;
@@ -155,7 +157,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
             return y;
         }
     }
-    else if( _problem->GetProblemType() == "Euler" ) {
+    else if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {
         double x0    = 0.3;
         double sigma = 0.05;
         double gamma = 1.4;
@@ -182,7 +184,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         }
         return y;
     }
-    else if( _problem->GetProblemType() == "Euler2D" ) {
+    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
         double sigma = 0.1;
         double gamma = 1.4;
         double R     = 287.87;
@@ -212,7 +214,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
 }
 
 void MomentSolver::Plot( double time ) {
-
+    /*
     static unsigned plotCtr = 0;
     if( _problem->GetMesh()->GetDimension() == 1 ) {
         const unsigned int nQuadFine = 200;
@@ -294,4 +296,5 @@ void MomentSolver::Plot( double time ) {
     if( plotCtr == 1 ) {
         _plotEngine->show();
     }
+    */
 }

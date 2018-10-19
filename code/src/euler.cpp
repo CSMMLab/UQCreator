@@ -1,14 +1,14 @@
 #include "euler.h"
 
-Euler::Euler( std::string inputFile ) : Problem( inputFile ) {
+Euler::Euler( const Settings* settings ) : Problem( settings ) {
     _nStates = 3;
     try {
-        auto file = cpptoml::parse_file( _inputFile );
+        auto file = cpptoml::parse_file( _settings->GetInputFile() );
 
         auto problem = file->get_table( "problem" );
         _gamma       = problem->get_as<double>( "gamma" ).value_or( 1.4 );
     } catch( const cpptoml::parse_exception& e ) {
-        std::cerr << "Failed to parse " << _inputFile << ": " << e.what() << std::endl;
+        std::cerr << "Failed to parse " << _settings->GetInputFile() << ": " << e.what() << std::endl;
         exit( EXIT_FAILURE );
     }
 }

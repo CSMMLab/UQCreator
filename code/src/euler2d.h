@@ -9,7 +9,7 @@ class Euler2D : public Problem
     double _gamma;
 
   public:
-    Euler2D( std::string inputFile );
+    Euler2D( const Settings* settings );
     virtual ~Euler2D();
     virtual void Solve();
     virtual Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );

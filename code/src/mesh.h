@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "cell.h"
+#include "settings.h"
 #include "typedefs.h"
 
 enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE };
@@ -35,12 +36,13 @@ class Mesh
     std::vector<Cell*> _cells;
     std::vector<Node*> _nodes;
     std::string _outputFile;
+    Settings* _settings;
 
     std::vector<blaze::DynamicVector<unsigned>> _neighborIDs;
     std::vector<BoundaryType> _boundaryType;
 
   public:
-    static Mesh* Create( std::string inputFile );
+    static Mesh* Create( const Settings* settings );
 
     unsigned GetNumCells() const;
     unsigned GetDimension() const;
@@ -61,7 +63,7 @@ class Mesh
 
     virtual void Export( Matrix results ) const = 0;
 
-    Mesh( unsigned dimension );
+    Mesh( const Settings* settings, unsigned dimension );
     virtual ~Mesh();
 };
 

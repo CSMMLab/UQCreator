@@ -2,7 +2,7 @@
 #include "mesh1d.h"
 #include "mesh2d.h"
 // TODO: read Boundaries
-Mesh::Mesh( unsigned dimension ) : _dimension( dimension ), _nBoundaries( 2 ) {}
+Mesh::Mesh( const Settings* settings, unsigned dimension ) : _settings( settings ), _dimension( dimension ), _nBoundaries( 2 ) {}
 
 Mesh::~Mesh() {
     for( auto& c : _cells ) {
@@ -13,15 +13,15 @@ Mesh::~Mesh() {
     }
 }
 
-Mesh* Mesh::Create( std::string inputFile ) {
-    auto file     = cpptoml::parse_file( inputFile );
-    auto settings = file->get_table( "mesh" );
-    unsigned dim  = settings->get_as<unsigned>( "Dimension" ).value_or( 0 );
+Mesh* Mesh::Create( const Settings* settings ) {
+    auto file    = cpptoml::parse_file( settings->GetInputFile() );
+    auto table   = file->get_table( "mesh" );
+    unsigned dim = table->get_as<unsigned>( "Dimension" ).value_or( 0 );
     if( dim == 1 ) {
-        return new Mesh1D( inputFile );
+        return new Mesh1D( settings );
     }
     else if( dim == 2 ) {
-        return new Mesh2D( inputFile );
+        return new Mesh2D( settings );
     }
     return nullptr;
 }

@@ -1,11 +1,11 @@
 #include "mesh1d.h"
 
-Mesh1D::Mesh1D( std::string inputFile ) : Mesh( 1 ) {
-    auto file     = cpptoml::parse_file( inputFile );
-    auto settings = file->get_table( "mesh" );
-    _numCells     = settings->get_as<unsigned>( "NumberOfCells" ).value_or( 0 );
-    double a      = settings->get_as<double>( "a" ).value_or( 0.0 );
-    double b      = settings->get_as<double>( "b" ).value_or( 0.0 );
+Mesh1D::Mesh1D( const Settings* settings ) : Mesh( settings, 1 ) {
+    auto file  = cpptoml::parse_file( _settings->GetInputFile() );
+    auto table = file->get_table( "mesh" );
+    _numCells  = table->get_as<unsigned>( "NumberOfCells" ).value_or( 0 );
+    double a   = table->get_as<double>( "a" ).value_or( 0.0 );
+    double b   = table->get_as<double>( "b" ).value_or( 0.0 );
     if( ( std::fabs( a ) <= std::numeric_limits<double>::epsilon() && std::fabs( b ) <= std::numeric_limits<double>::epsilon() ) || _numCells == 0 )
         std::cerr << "[ERROR]: Mesh1D::Mesh invalid mesh parameters" << std::endl;
     else {
