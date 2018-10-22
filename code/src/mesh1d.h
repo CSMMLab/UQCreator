@@ -2,7 +2,6 @@
 #define Mesh1D_H
 
 #include <assert.h>
-#include <blaze/math/DynamicVector.h>
 #include <cpptoml.h>
 #include <iostream>
 #include <string.h>
@@ -23,7 +22,7 @@ class Mesh1D : public Mesh
   public:
     virtual void Export( Matrix results ) const;
 
-    Mesh1D( std::string inputFile );
+    Mesh1D( Settings* settings );
     virtual Vector GetNodePositionsX() const;
     virtual ~Mesh1D();
 };

@@ -2,23 +2,15 @@
 #define PLOTENGINE_H
 
 #include <QWidget>
-#include <blaze/math/DynamicMatrix.h>
 #include <iostream>
 
+#include "closure.h"
+#include "legendre.h"
+#include "mesh.h"
 #include "problem.h"
 #include "qcustomplot.h"
+#include "settings.h"
 #include "typedefs.h"
-
-struct Result1D {
-    Vector x;
-    Vector y;
-};
-
-struct Result2D {
-    std::pair<double, double> xRange;
-    std::pair<double, double> yRange;
-    Matrix data;
-};
 
 namespace Ui {
 class PlotEngine;
@@ -29,20 +21,29 @@ class PlotEngine : public QWidget
     Q_OBJECT
 
   public:
-    explicit PlotEngine( Problem* p );
+    explicit PlotEngine( Settings* s, Closure* c, Mesh* m, Problem* p );
     ~PlotEngine();
     std::vector<QCustomPlot*> _plots;
 
-    void setupPlot( unsigned id, QString title, QString xLabel, QString yLabel );
-    void addPlotData( unsigned id, Result1D data, QString name );
-    void addPlotData( unsigned id, Result2D data, QString name );
-    void updatePlotData( unsigned id, Result1D data, QString name );
-    void replot();
+    void setupPlots();
+    void updatePlotData( double time, const std::vector<Matrix>& );
+    void refresh();
 
   private:
     Ui::PlotEngine* ui;
+    Settings* _settings;
+    Closure* _closure;
+    Mesh* _mesh;
     Problem* _problem;
+
+    const unsigned _nQuadFine = 200;
+    const unsigned _nFine     = 1000;
+    Vector _w, _wFine, _xiQuad, _xiQuadFine;
+    Vector _x, _xFine;
+
     QVector<double> BlazeToQVector( const Vector& v );
+    void setupPlot( unsigned id, QString title, QString xLabel, QString yLabel );
+    void replot();
 
   private slots:
     void keyPressEvent( QKeyEvent* event );

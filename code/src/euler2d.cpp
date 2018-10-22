@@ -1,21 +1,21 @@
 #include "euler2d.h"
 
-Euler2D::Euler2D( std::string inputFile ) : Problem( inputFile ) {
+Euler2D::Euler2D( Settings* settings ) : Problem( settings ) {
     _nStates = 4;
+    _settings->SetNStates( _nStates );
     try {
-        auto file = cpptoml::parse_file( _inputFile );
+        auto file = cpptoml::parse_file( _settings->GetInputFile() );
 
         auto problem = file->get_table( "problem" );
         _gamma       = problem->get_as<double>( "gamma" ).value_or( 1.4 );
+        _settings->SetGamma( _gamma );
     } catch( const cpptoml::parse_exception& e ) {
-        std::cerr << "Failed to parse " << _inputFile << ": " << e.what() << std::endl;
+        std::cerr << "Failed to parse " << _settings->GetInputFile() << ": " << e.what() << std::endl;
         exit( EXIT_FAILURE );
     }
 }
 
 Euler2D::~Euler2D() {}
-
-double Euler2D::GetGamma() const { return _gamma; }
 
 void Euler2D::Solve() {}
 

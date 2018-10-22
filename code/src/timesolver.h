@@ -1,30 +1,31 @@
 #ifndef TIMESOLVER_H
 #define TIMESOLVER_H
 
-#include <blaze/math/DynamicVector.h>
 #include <cpptoml.h>
 #include <functional>
 #include <iostream>
 
-#include "closure.h"
-#include "problem.h"
+#include "mesh.h"
+#include "settings.h"
 
 class TimeSolver
 {
   private:
   protected:
-    Problem* _problem;
+    const Settings* _settings;
+    const Mesh* _mesh;
     double _CFL;
     double _dt;
     double _dx;
     double _tEnd;
     unsigned _nTimeSteps;
 
-  public:
     TimeSolver() = delete;
-    TimeSolver( Problem* problem );
+
+  public:
+    TimeSolver( Settings* settings, Mesh* mesh );
     virtual ~TimeSolver();
-    static TimeSolver* Create( Problem* problem, Closure* closure );
+    static TimeSolver* Create( Settings* settings, Mesh* mesh );
     virtual void Advance( std::function<Matrix( const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
                           std::vector<Matrix>& uNew,
                           std::vector<Matrix>& u,

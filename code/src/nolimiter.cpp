@@ -1,6 +1,6 @@
 #include "nolimiter.h"
 
-NoLimiter::NoLimiter( Closure* pClosure, Problem* problem ) : Limiter( pClosure, problem ) {}
+NoLimiter::NoLimiter( Settings* settings, Mesh* mesh, Closure* closure ) : Limiter( settings, mesh, closure ) {}
 
 NoLimiter::~NoLimiter() {}
 

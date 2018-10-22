@@ -5,9 +5,11 @@
 
 class StochasticGalerkin : public Closure
 {
-  public:
+  private:
     StochasticGalerkin() = delete;
-    StochasticGalerkin( Problem* problem );
+
+  public:
+    StochasticGalerkin( Settings* settings );
     virtual ~StochasticGalerkin();
 
     virtual void U( Vector& out, const Vector& Lambda );

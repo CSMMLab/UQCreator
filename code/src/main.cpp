@@ -1,20 +1,19 @@
 #include <QApplication>
-#include <blaze/math/DynamicMatrix.h>
-#include <blaze/math/DynamicVector.h>
 #include <iostream>
 
+#include "mesh.h"
 #include "momentsolver.h"
 #include "problem.h"
+#include "settings.h"
 
-bool CheckInput( std::string& configFile, int argc, char* argv[] ) {
+bool CheckInput( std::string& configFile, bool& batchMode, int argc, char* argv[] ) {
     std::string usage_help = "\n"
                              "Usage: " +
                              std::string( argv[0] ) +
                              " -c inputfile\n\n"
                              "Options:\n"
                              "  -h               displays this message\n"
-                             "  -c <config.json> provide toml input file <input.toml>\n"
-                             "  -t               number of threads to use (default = all available)\n";
+                             "  -b               runs in batch mode (not displaying plots)";
 
     if( argc < 3 ) {
         std::cout << usage_help;
@@ -29,10 +28,13 @@ bool CheckInput( std::string& configFile, int argc, char* argv[] ) {
         else if( arg == "-c" ) {
             configFile = std::string( argv[++i] );
             std::ifstream f( configFile );
-            if( !f.is_open() ) return false;
+            if( !f.is_open() ) {
+                std::cerr << "[ERROR] Unable to open specified inputfile!" << std::endl;
+                return false;
+            }
         }
-        else if( arg == "-t" ) {
-            omp_set_num_threads( std::atoi( argv[++i] ) );
+        else if( arg == "-b" ) {
+            batchMode = true;
         }
         else {
             std::cout << usage_help;
@@ -61,23 +63,36 @@ void PrintInit( std::string configFile ) {
 
 int main( int argc, char* argv[] ) {
     std::string configFile = "";
+    bool batchMode         = false;
 
-    if( !CheckInput( configFile, argc, argv ) ) {
-        return -1;
+    if( !CheckInput( configFile, batchMode, argc, argv ) ) {
+        return EXIT_FAILURE;
     }
     PrintInit( configFile );
 
-    QApplication app( argc, argv );
+    QApplication* app = nullptr;
+    if( !batchMode ) {
+        app = new QApplication( argc, argv );
+    }
 
-    Problem* problem     = Problem::Create( configFile );
-    MomentSolver* solver = new MomentSolver( problem );
+    Settings* settings   = new Settings( configFile );
+    Mesh* mesh           = Mesh::Create( settings );
+    Problem* problem     = Problem::Create( settings );
+    MomentSolver* solver = new MomentSolver( settings, mesh, problem );
 
     solver->Solve();
 
     std::cout << "\nProcess exited normally." << std::endl;
 
-    delete problem;
     delete solver;
+    delete problem;
+    delete mesh;
+    delete settings;
 
-    return app.exec();
+    if( !batchMode && app ) {
+        return app->exec();
+    }
+    else {
+        return EXIT_SUCCESS;
+    }
 }

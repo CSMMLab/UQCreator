@@ -1,18 +1,22 @@
 #ifndef CLOSURE_H
 #define CLOSURE_H
 
-#include "legendre.h"
-#include "problem.h"
-#include <blaze/math/LAPACK.h>
+#include <blaze/math/lapack/gesv.h>
+//#include <blaze/math/lapack/posv.h>
 #include <vector>
+
+#include "legendre.h"
+#include "settings.h"
+#include "typedefs.h"
 
 class Closure
 {
   private:
     int* _perm;
+    Closure() = delete;
 
   protected:
-    Problem* _problem;
+    Settings* _settings;
     Polynomial* _basis;
     Polynomial* _quad;
     std::vector<Vector> _phi;    // stores basis functions evaluated at quadrature points
@@ -34,9 +38,9 @@ class Closure
      * constructor of class Closure
      * @param pointer to problem class
      */
-    Closure( Problem* problem );
+    Closure( Settings* settings );
     virtual ~Closure();
-    static Closure* Create( Problem* problem );
+    static Closure* Create( Settings* settings );
     /**
      * calculate dual vector fulfilling the moment constraint
      * @param moment vector

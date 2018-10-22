@@ -1,7 +1,7 @@
 #include "minmod.h"
 #include "math.h"
 
-Minmod::Minmod( Closure* pClosure, Problem* problem ) : Limiter( pClosure, problem ) {}
+Minmod::Minmod( Settings* settings, Mesh* mesh, Closure* closure ) : Limiter( settings, mesh, closure ) {}
 
 Minmod::~Minmod() {}
 

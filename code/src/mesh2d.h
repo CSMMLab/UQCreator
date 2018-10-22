@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <boost/algorithm/string.hpp>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -33,8 +34,11 @@ using vtkCellDataToPointDataSP       = vtkSmartPointer<vtkCellDataToPointData>;
 class Mesh2D : public Mesh
 {
   private:
+    enum MeshFormat { SU2 };
     std::vector<std::pair<std::string, BoundaryType>> _BCs;
+    MeshFormat _format;
     std::vector<Boundary> _boundaries;
+
     std::string _SU2MeshFile;
 
     unsigned GetTrailingNumber( std::string s );
@@ -47,7 +51,7 @@ class Mesh2D : public Mesh
     Mesh2D();
 
   public:
-    Mesh2D( std::string inputFile );
+    Mesh2D( Settings* settings );
     virtual ~Mesh2D();
 
     virtual Vector GetNodePositionsX() const;

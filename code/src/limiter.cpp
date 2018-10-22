@@ -1,9 +1,10 @@
 #include "limiter.h"
 #include "minmod.h"
 #include "nolimiter.h"
-#include <algorithm>
 
-Limiter::Limiter( Closure* pClosure, Problem* problem ) : _closure( pClosure ), _problem( problem ) { _dx = _problem->GetMesh()->GetArea( 0 ); }
+Limiter::Limiter( Settings* settings, Mesh* mesh, Closure* closure ) : _settings( settings ), _mesh( mesh ), _closure( closure ) {
+    _dx = _mesh->GetArea( 0 );
+}
 
 Limiter::~Limiter() {}
 
@@ -20,10 +21,10 @@ double Limiter::SlopeBoundPres( const double& u, const double& slope ) {
 }
 
 Matrix Limiter::SlopeInternal( const Matrix& u0, const Matrix& u1, const Matrix& u2 ) {
-    unsigned nQ = _problem->GetNQuadPoints();
+    unsigned nQ = _settings->GetNQuadPoints();
     double classicalSlope;
-    Matrix y( _problem->GetNStates(), nQ );
-    for( unsigned l = 0; l < _problem->GetNStates(); ++l ) {
+    Matrix y( _settings->GetNStates(), nQ );
+    for( unsigned l = 0; l < _settings->GetNStates(); ++l ) {
         for( unsigned k = 0; k < nQ; ++k ) {
             classicalSlope = CalculateSlope( u0( l, k ), u1( l, k ), u2( l, k ) );
             y( l, k )      = classicalSlope * SlopeBoundPres( u1( l, k ), classicalSlope );
@@ -32,19 +33,15 @@ Matrix Limiter::SlopeInternal( const Matrix& u0, const Matrix& u1, const Matrix&
     return y;
 }
 
-Limiter* Limiter::Create( Closure* closure, Problem* problem ) {
-    auto file           = cpptoml::parse_file( problem->GetInputFile() );
-    auto general        = file->get_table( "problem" );
-    std::string limiter = general->get_as<std::string>( "limiter" ).value_or( "" );
-    if( limiter.compare( "minmod" ) == 0 ) {
-        return new Minmod( closure, problem );
+Limiter* Limiter::Create( Settings* settings, Mesh* mesh, Closure* closure ) {
+    if( settings->GetLimiterType() == LimiterType::L_MINMOD ) {
+        return new Minmod( settings, mesh, closure );
     }
-    else if( limiter.compare( "none" ) == 0 || limiter.compare( "off" ) == 0 ) {
-        return new NoLimiter( closure, problem );
+    else if( settings->GetLimiterType() == LimiterType::L_NONE ) {
+        return new NoLimiter( settings, mesh, closure );
     }
     else {
-        std::cerr << "Invalid limiter type" << std::endl;
+        std::cerr << "[Limiter] Invalid limiter type!" << std::endl;
         exit( EXIT_FAILURE );
-        return nullptr;
     }
 }

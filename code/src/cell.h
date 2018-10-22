@@ -1,7 +1,6 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
-#include <blaze/math/DynamicVector.h>
 #include <iostream>
 #include <vector>
 

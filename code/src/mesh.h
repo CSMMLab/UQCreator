@@ -2,12 +2,12 @@
 #define MESH_H
 
 #include <assert.h>
-#include <blaze/math/DynamicVector.h>
 #include <cpptoml.h>
 #include <iostream>
 #include <string.h>
 
 #include "cell.h"
+#include "settings.h"
 #include "typedefs.h"
 
 enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE };
@@ -26,9 +26,10 @@ struct Boundary {
 class Mesh
 {
   private:
-    Mesh() {}
+    Mesh() = delete;
 
   protected:
+    Settings* _settings;
     unsigned _dimension;
     unsigned _numCells;
     unsigned _nBoundaries;
@@ -40,11 +41,12 @@ class Mesh
     std::vector<BoundaryType> _boundaryType;
 
   public:
-    static Mesh* Create( std::string inputFile );
+    static Mesh* Create( Settings* settings );
 
     unsigned GetNumCells() const;
     unsigned GetDimension() const;
     std::vector<Cell*>& GetGrid();
+    std::vector<Cell*> GetGrid() const;
     double GetArea( unsigned i ) const;
     Vector GetCenterPos( unsigned i ) const;
 
@@ -55,13 +57,13 @@ class Mesh
     virtual Vector GetNormals( unsigned i, unsigned l ) const;
     virtual Vector GetUnitNormals( unsigned i, unsigned l ) const;
 
-    BoundaryType GetBoundaryType( unsigned i );
+    BoundaryType GetBoundaryType( unsigned i ) const;
 
     virtual Vector GetNodePositionsX() const = 0;
 
     virtual void Export( Matrix results ) const = 0;
 
-    Mesh( unsigned dimension );
+    Mesh( Settings* settings, unsigned dimension );
     virtual ~Mesh();
 };
 

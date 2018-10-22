@@ -6,9 +6,11 @@
 
 class BoundedBarrier : public Closure
 {
-public:
+  private:
     BoundedBarrier() = delete;
-    BoundedBarrier(Problem* problem);
+
+  public:
+    BoundedBarrier( Settings* settings );
     virtual ~BoundedBarrier();
 
     virtual void U( Vector& out, const Vector& Lambda );
@@ -16,4 +18,4 @@ public:
     virtual void DU( Matrix& y, const Vector& Lambda );
 };
 
-#endif // BOUNDEDBARRIER_H
+#endif    // BOUNDEDBARRIER_H

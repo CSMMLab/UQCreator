@@ -1,6 +1,6 @@
 #include "stochasticgalerkin.h"
 
-StochasticGalerkin::StochasticGalerkin( Problem* problem ) : Closure( problem ) { _alpha = 1.0; }
+StochasticGalerkin::StochasticGalerkin( Settings* settings ) : Closure( settings ) { _alpha = 1.0; }
 
 StochasticGalerkin::~StochasticGalerkin() {}
 
