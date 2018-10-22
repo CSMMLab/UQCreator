@@ -34,17 +34,14 @@ Matrix Limiter::SlopeInternal( const Matrix& u0, const Matrix& u1, const Matrix&
 }
 
 Limiter* Limiter::Create( Settings* settings, Mesh* mesh, Closure* closure ) {
-    auto file           = cpptoml::parse_file( settings->GetInputFile() );
-    auto general        = file->get_table( "problem" );
-    std::string limiter = general->get_as<std::string>( "limiter" ).value_or( "" );
-    if( limiter.compare( "minmod" ) == 0 ) {
+    if( settings->GetLimiterType() == LimiterType::L_MINMOD ) {
         return new Minmod( settings, mesh, closure );
     }
-    else if( limiter.compare( "none" ) == 0 || limiter.compare( "off" ) == 0 ) {
+    else if( settings->GetLimiterType() == LimiterType::L_NONE ) {
         return new NoLimiter( settings, mesh, closure );
     }
     else {
-        std::cerr << "Invalid limiter type" << std::endl;
+        std::cerr << "[Limiter] Invalid limiter type!" << std::endl;
         exit( EXIT_FAILURE );
     }
 }

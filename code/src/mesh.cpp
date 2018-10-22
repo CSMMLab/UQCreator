@@ -1,7 +1,7 @@
 #include "mesh.h"
 #include "mesh1d.h"
 #include "mesh2d.h"
-// TODO: read Boundaries
+
 Mesh::Mesh( Settings* settings, unsigned dimension ) : _settings( settings ), _dimension( dimension ), _nBoundaries( 2 ) {}
 
 Mesh::~Mesh() {
@@ -14,14 +14,15 @@ Mesh::~Mesh() {
 }
 
 Mesh* Mesh::Create( Settings* settings ) {
-    auto file    = cpptoml::parse_file( settings->GetInputFile() );
-    auto table   = file->get_table( "mesh" );
-    unsigned dim = table->get_as<unsigned>( "Dimension" ).value_or( 0 );
+    unsigned dim = settings->GetMeshDimension();
     if( dim == 1 ) {
         return new Mesh1D( settings );
     }
     else if( dim == 2 ) {
         return new Mesh2D( settings );
+    }
+    else {
+        std::cerr << "[Mesh] Unsupported mesh dimension: " + std::to_string( dim ) << std::endl;
     }
     return nullptr;
 }

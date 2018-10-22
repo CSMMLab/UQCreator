@@ -1,8 +1,6 @@
 #ifndef QUADRATURE_H
 #define QUADRATURE_H
 
-#include <blaze/math/DynamicVector.h>
-
 #include "polynomial.h"
 #include "problem.h"
 

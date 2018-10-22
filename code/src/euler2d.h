@@ -9,7 +9,7 @@ class Euler2D : public Problem
     double _gamma;
 
   public:
-    Euler2D( const Settings* settings );
+    Euler2D( Settings* settings );
     virtual ~Euler2D();
     virtual void Solve();
     virtual Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
@@ -17,7 +17,6 @@ class Euler2D : public Problem
     virtual double ExactSolution( double t, double x, double xi );
     Matrix F( const Vector& u );
     Matrix F( const Matrix& u );
-    double GetGamma() const;
 };
 
 #endif    // EULER2D_H

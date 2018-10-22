@@ -1,13 +1,20 @@
 #include "mesh1d.h"
 
 Mesh1D::Mesh1D( Settings* settings ) : Mesh( settings, 1 ) {
-    auto file  = cpptoml::parse_file( _settings->GetInputFile() );
-    auto table = file->get_table( "mesh" );
-    _numCells  = table->get_as<unsigned>( "NumberOfCells" ).value_or( 0 );
-    double a   = table->get_as<double>( "a" ).value_or( 0.0 );
-    double b   = table->get_as<double>( "b" ).value_or( 0.0 );
+    auto file     = cpptoml::parse_file( _settings->GetInputFile() );
+    auto table    = file->get_table( "mesh" );
+    auto numCells = table->get_as<unsigned>( "numberOfCells" );
+    if( numCells ) {
+        _numCells = *numCells;
+        _settings->SetNumCells( _numCells );
+    }
+    else {
+        std::cerr << "[Inputfile][mesh][(unsigned)numberOfCells] Not set!" << std::endl;
+    }
+    double a = table->get_as<double>( "a" ).value_or( 0.0 );
+    double b = table->get_as<double>( "b" ).value_or( 0.0 );
     if( ( std::fabs( a ) <= std::numeric_limits<double>::epsilon() && std::fabs( b ) <= std::numeric_limits<double>::epsilon() ) || _numCells == 0 )
-        std::cerr << "[ERROR]: Mesh1D::Mesh invalid mesh parameters" << std::endl;
+        std::cerr << "[Mesh1D]: Invalid mesh parameters!" << std::endl;
     else {
         this->CreateGrid( a, b );
     }
@@ -55,7 +62,20 @@ void Mesh1D::CreateGrid( double a, double b ) {
     }
 }
 
-void Mesh1D::Export( Matrix results ) const {}
+void Mesh1D::Export( Matrix results ) const {
+    auto csvFile = _settings->GetOutputFile();
+    if( csvFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "csv" ) {
+        csvFile.append( ".csv" );
+    }
+    std::ofstream writer( csvFile );
+    for( unsigned i = 0; i < _settings->GetNStates(); ++i ) {
+        for( unsigned j = 0; j < _settings->GetNumCells() - 1; ++j ) {
+            writer << results( i, j ) << ",";
+        }
+        writer << results( i, _settings->GetNumCells() - 1 ) << std::endl;
+    }
+    writer.close();
+}
 
 Vector Mesh1D::GetNodePositionsX() const {
     Vector x( _numCells, 0.0 );

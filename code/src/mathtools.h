@@ -1,9 +1,6 @@
 #ifndef MATHTOOLS_H
 #define MATHTOOLS_H
 
-#include <blaze/math/DynamicMatrix.h>
-#include <blaze/math/DynamicVector.h>
-
 #include <iostream>
 
 #include "typedefs.h"

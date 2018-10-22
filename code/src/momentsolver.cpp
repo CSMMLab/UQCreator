@@ -1,15 +1,7 @@
 ﻿#include "momentsolver.h"
 
 MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
-
-    /*
-    _a      = 0.0;
-    _b      = 3.0;
-
-    _uL = 12.0;
-    _uR = 3.0;
-    */
-    _nCells      = _mesh->GetNumCells();
+    _nCells      = _settings->GetNumCells();
     _nMoments    = _settings->GetNMoments();
     _tEnd        = _settings->GetTEnd();
     _nStates     = _settings->GetNStates();
@@ -22,7 +14,12 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
 
     _dt = _time->GetTimeStepSize();
 
-    //_plotEngine = new PlotEngine( _problem );
+    if( _settings->GetPlotEnabled() ) {
+        _plotEngine = new PlotEngine( _settings, _closure, _mesh, _problem );
+    }
+    else {
+        _plotEngine = nullptr;
+    }
 }
 
 MomentSolver::~MomentSolver() {
@@ -30,7 +27,7 @@ MomentSolver::~MomentSolver() {
     delete _closure;
     delete _limiter;
     delete _time;
-    // delete _plotEngine;
+    delete _plotEngine;
 }
 
 void MomentSolver::Solve() {
@@ -44,19 +41,16 @@ void MomentSolver::Solve() {
     std::vector<Matrix> uQ = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nQuadPoints, 0.0 ) );
 
     for( unsigned j = 0; j < _nCells; ++j ) {
-        if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {
-            _lambda[j]( 2, 0 ) = -1.0;
-            _lambda[j]( 0, 0 ) = 1.0;
-        }
-        else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
-            _lambda[j]( 3, 0 ) = -1.0;
-            _lambda[j]( 0, 0 ) = 1.0;
+        if( _settings->GetProblemType() == ProblemType::P_EULER_1D || _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
+            _lambda[j]( _settings->GetNStates() - 1, 0 ) = -1.0;
+            _lambda[j]( 0, 0 )                           = 1.0;
         }
         _lambda[j] = _closure->SolveClosure( u[j], _lambda[j] );
         u[j]       = CalculateMoments( _lambda[j] );    // kann raus!
     }
 
     // Begin time loop
+    unsigned nSteps = 0;
     while( t < _tEnd ) {
         // Modify moments into realizable direction
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -71,11 +65,11 @@ void MomentSolver::Solve() {
             u,
             uQ );
 
-        double tmp = 0;
+        double residual = 0;
         for( unsigned j = 0; j < _nCells; ++j ) {
-            tmp += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) );
+            residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) );
         }
-        std::cout << " -> E[rho] residual is " << tmp << std::endl;
+        std::cout << " -> E[rho] residual is " << residual << std::endl;
 
         // Time Update dual variables
         //#pragma omp parallel for
@@ -83,7 +77,7 @@ void MomentSolver::Solve() {
             _lambda[j] = _closure->SolveClosure( uNew[j], _lambda[j] );
         }
 
-        // Plot( t );
+        Plot( t, nSteps );
 
         if( std::fabs( t ) <= std::numeric_limits<double>::epsilon() )
             std::cout << std::fixed << std::setprecision( 8 ) << "t = " << t << std::flush;
@@ -91,6 +85,7 @@ void MomentSolver::Solve() {
             std::cout << std::fixed << std::setprecision( 8 ) << "\r"
                       << "t = " << t << std::flush;
         t += _dt;
+        nSteps++;
     }
 
     _tEnd = t;
@@ -143,16 +138,18 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         double a     = 0.5;
         double b     = 1.5;
         double sigma = 0.2;
+        double uL    = 12.0;
+        double uR    = 3.0;
         if( x[0] < a + sigma * xi ) {
-            y[0] = _uL;
+            y[0] = uL;
             return y;
         }
         else if( x[0] < b + sigma * xi ) {
-            y[0] = _uL + ( _uR - _uL ) * ( a + sigma * xi - x[0] ) / ( a - b );
+            y[0] = uL + ( uR - uL ) * ( a + sigma * xi - x[0] ) / ( a - b );
             return y;
         }
         else {
-            y[0] = _uR;
+            y[0] = uR;
             return y;
         }
     }
@@ -212,88 +209,23 @@ Vector MomentSolver::IC( Vector x, double xi ) {
     exit( EXIT_FAILURE );
 }
 
-void MomentSolver::Plot( double time ) {
-    /*
-    static unsigned plotCtr = 0;
-    if( _problem->GetMesh()->GetDimension() == 1 ) {
-        const unsigned int nQuadFine = 200;
-        Legendre quadFine( nQuadFine );
-        Vector wFine      = quadFine.GetWeights();
-        Vector xiQuadFine = quadFine.GetNodes();
-        Vector w          = _quad->GetWeights();
-        Vector xiQuad     = _quad->GetNodes();
-        Vector x          = _mesh->GetNodePositionsX();
-        unsigned nFine;
-
-        try {
-            auto file = cpptoml::parse_file( _problem->GetInputFile() );
-            auto plot = file->get_table( "plot" );
-
-            nFine = plot->get_as<unsigned>( "evalPoints" ).value_or( 0 );
-        } catch( const cpptoml::parse_exception& e ) {
-            std::cerr << "Failed to parse " << _problem->GetInputFile() << ": " << e.what() << std::endl;
-            exit( EXIT_FAILURE );
+void MomentSolver::Plot( double time, unsigned nSteps ) {
+    static double lastPlotTime = 0.0;
+    if( _plotEngine != nullptr ) {
+        bool execPlot = false;
+        if( std::fabs( _settings->GetPlotTimeInterval() + 1.0 ) < std::numeric_limits<double>::epsilon() &&
+            time - lastPlotTime > _settings->GetPlotTimeInterval() ) {
+            lastPlotTime = time;
+            execPlot     = true;
         }
-
-        Vector xFine( nFine, 0.0 ), exResMean( nFine, 0.0 ), resMean( _nCells, 0.0 );
-
-        for( unsigned int j = 0; j < nFine; ++j ) {
-            xFine[j] = _a + j * ( _b - _a ) / ( nFine - 1 );
-            for( unsigned int k = 0; k < nQuadFine; ++k ) {
-                exResMean[j] += 0.5 * wFine[k] * _problem->ExactSolution( _tEnd, xFine[j], xiQuadFine[k] );
-            }
+        if( _settings->GetPlotStepInterval() != 0 && nSteps % _settings->GetPlotStepInterval() == 0 ) {
+            execPlot = true;
         }
-        Vector resVec( _nStates, 0.0 );
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-                _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
-                resMean[j] += 0.5 * w[k] * resVec[0];
-            }
-        }
-
-        Vector exResVar( nFine, 0.0 ), resVar( _nCells, 0.0 );
-        for( unsigned int j = 0; j < nFine; ++j ) {
-            for( unsigned int k = 0; k < nQuadFine; ++k ) {
-                exResVar[j] += 0.5 * wFine[k] * _problem->ExactSolution( _tEnd, xFine[j], xiQuadFine[k] );
-            }
-        }
-
-        resVec.reset();
-        double expectValue;
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            expectValue = 0.0;
-            for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-                _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
-                expectValue += 0.5 * w[k] * resVec[0];
-            }
-            for( unsigned k = 0; k < _problem->GetNQuadPoints(); ++k ) {
-                _closure->U( resVec, _closure->EvaluateLambda( _lambda[j], xiQuad, k ) );
-                resVar[j] += 0.5 * w[k] * pow( resVec[0] - expectValue, 2 );
-            }
-        }
-
-        if( plotCtr == 0 ) {
-            _plotEngine->setupPlot( 0, "Mean", "x", "y" );
-            _plotEngine->setupPlot( 1, "Var", "x", "y" );
-            _plotEngine->addPlotData( 0, Result1D{x, resMean}, "simulation" );
-            //_plotEngine->addPlotData( 0, Result1D{xFine, exResMean}, "exact" );
-            _plotEngine->addPlotData( 1, Result1D{x, resVar}, "simulation" );
-            //_plotEngine->addPlotData( 1, Result1D{xFine, exResVar}, "exact" );
+        if( execPlot ) {
+            _plotEngine->updatePlotData( time, _lambda );
         }
         else {
-            _plotEngine->updatePlotData( 0, Result1D{x, resMean}, "simulation" );
-            //            _plotEngine->updatePlotData( 0, Result1D{xFine, exResMean}, "exact" );
-            _plotEngine->updatePlotData( 1, Result1D{x, resVar}, "simulation" );
-            //_plotEngine->updatePlotData( 1, Result1D{_x, exResVar}, "exact" );
+            _plotEngine->refresh();
         }
-        _plotEngine->replot();
-        plotCtr++;
     }
-    else if( _problem->GetMesh()->GetDimension() == 2 ) {
-        // TODO
-    }
-    if( plotCtr == 1 ) {
-        _plotEngine->show();
-    }
-    */
 }

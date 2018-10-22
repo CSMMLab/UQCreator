@@ -34,7 +34,7 @@ using vtkCellDataToPointDataSP       = vtkSmartPointer<vtkCellDataToPointData>;
 class Mesh2D : public Mesh
 {
   private:
-    enum MeshFormat { VTK };
+    enum MeshFormat { SU2 };
     std::vector<std::pair<std::string, BoundaryType>> _BCs;
     MeshFormat _format;
     std::vector<Boundary> _boundaries;

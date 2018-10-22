@@ -1,6 +1,4 @@
 #include <QApplication>
-#include <blaze/math/DynamicMatrix.h>
-#include <blaze/math/DynamicVector.h>
 #include <iostream>
 
 #include "mesh.h"
@@ -15,7 +13,6 @@ bool CheckInput( std::string& configFile, bool& batchMode, int argc, char* argv[
                              " -c inputfile\n\n"
                              "Options:\n"
                              "  -h               displays this message\n"
-                             "  -c <config.json> provide toml input file <input.toml>\n"
                              "  -b               runs in batch mode (not displaying plots)";
 
     if( argc < 3 ) {
@@ -31,7 +28,10 @@ bool CheckInput( std::string& configFile, bool& batchMode, int argc, char* argv[
         else if( arg == "-c" ) {
             configFile = std::string( argv[++i] );
             std::ifstream f( configFile );
-            if( !f.is_open() ) return false;
+            if( !f.is_open() ) {
+                std::cerr << "[ERROR] Unable to open specified inputfile!" << std::endl;
+                return false;
+            }
         }
         else if( arg == "-b" ) {
             batchMode = true;
@@ -66,7 +66,7 @@ int main( int argc, char* argv[] ) {
     bool batchMode         = false;
 
     if( !CheckInput( configFile, batchMode, argc, argv ) ) {
-        return -1;
+        return EXIT_FAILURE;
     }
     PrintInit( configFile );
 

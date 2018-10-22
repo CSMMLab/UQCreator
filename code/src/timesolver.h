@@ -1,7 +1,6 @@
 #ifndef TIMESOLVER_H
 #define TIMESOLVER_H
 
-#include <blaze/math/DynamicVector.h>
 #include <cpptoml.h>
 #include <functional>
 #include <iostream>

@@ -118,9 +118,8 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
             return lambdaNew;
         }
     }
-    std::cerr << "[ERROR]: Newton did not converge!" << std::endl;
+    std::cerr << "[Closure][ERROR]: Newton did not converge!" << std::endl;
     exit( EXIT_FAILURE );
-    return Matrix( _nStates, _nMoments, -1.0 );
 }
 
 double Closure::CalcNorm( Vector& test ) {

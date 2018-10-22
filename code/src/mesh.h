@@ -2,7 +2,6 @@
 #define MESH_H
 
 #include <assert.h>
-#include <blaze/math/DynamicVector.h>
 #include <cpptoml.h>
 #include <iostream>
 #include <string.h>

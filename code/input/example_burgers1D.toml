@@ -1,14 +1,13 @@
 [general]
-# avaiable problems: Burgers, Euler
-problem = "Burgers"
+problem = "Burgers1D"
 outputDir = "results"
 
 [mesh]
-SU2File = "../input/naca0012.su2"
-Dimension = 1
-NumberOfCells = 100
+dimension = 1
+numberOfCells = 100
 a = 0
 b = 3
+outputFile = "burgers_shock"
 
 [problem]
 # available timesteppings: explicitEuler, Heun, SSPMultiStep
@@ -22,11 +21,11 @@ tEnd = 0.14
 # available closures: BoundedBarrier, StochasticGalerkin, Euler
 closure = "BoundedBarrier"
 moments = 3
-quadType = "legendre"
 quadPoints = 10
 maxIterations = 200
 epsilon = 5e-5
 
 [plot]
-cellIndex = 10
-evalPoints = 1000
+enabled = true
+steps = 5
+time  = 0.01

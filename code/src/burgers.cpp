@@ -1,12 +1,11 @@
 #include "burgers.h"
 
-Burgers::Burgers( const Settings* settings ) : Problem( settings ) {
+Burgers::Burgers( Settings* settings ) : Problem( settings ) {
     _nStates = 1;
+    _settings->SetNStates( _nStates );
     try {
-        auto file = cpptoml::parse_file( _settings->GetInputFile() );
-
+        auto file    = cpptoml::parse_file( _settings->GetInputFile() );
         auto problem = file->get_table( "problem" );
-        // TODO
     } catch( const cpptoml::parse_exception& e ) {
         std::cerr << "Failed to parse " << _settings->GetInputFile() << ": " << e.what() << std::endl;
         exit( EXIT_FAILURE );

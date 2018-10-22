@@ -1,9 +1,6 @@
 #ifndef POLYNOMIAL_H
 #define POLYNOMIAL_H
 
-#include <blaze/math/DynamicMatrix.h>
-#include <blaze/math/DynamicVector.h>
-
 #include "typedefs.h"
 
 class Polynomial

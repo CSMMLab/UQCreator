@@ -3,37 +3,57 @@
 Mesh2D::Mesh2D( Settings* settings ) : Mesh( settings, 2 ) {
     auto file         = cpptoml::parse_file( _settings->GetInputFile() );
     auto table        = file->get_table( "mesh" );
-    auto formatString = table->get_as<std::string>( "format" ).value_or( "" );
-    if( formatString.compare( "SU2" ) == 0 ) {
-        _format = MeshFormat::VTK;
+    auto formatString = table->get_as<std::string>( "format" );
+    if( formatString ) {
+        if( formatString->compare( "SU2" ) == 0 ) {
+            _format = MeshFormat::SU2;
+        }
+        else {
+            std::cerr << "[Inputfile][mesh][(string)format] Unsupported mesh format!\nPlease set one of the following formats: SU2" << std::endl;
+            exit( EXIT_FAILURE );
+        }
     }
     else {
-        std::cerr << "Unsupported mesh format!" << std::endl;
+        std::cerr << "[Inputfile][mesh][(string)format] Not set!\nPlease set one of the following formats: SU2" << std::endl;
         exit( EXIT_FAILURE );
     }
 
-    if( _format == MeshFormat::VTK ) {
-        _SU2MeshFile   = table->get_as<std::string>( "file" ).value_or( "" );
-        auto BCStrings = table->get_array_of<cpptoml::array>( "bc" );
-        for( unsigned i = 0; i < BCStrings->size(); ++i ) {
-            auto BCString = ( *BCStrings )[i]->get_array_of<std::string>();
-            BoundaryType type;
-            if( ( *BCString )[1].compare( "noslip" ) == 0 ) {
-                type = BoundaryType::NOSLIP;
+    if( _format == MeshFormat::SU2 ) {
+        auto SU2MeshFile = table->get_as<std::string>( "SU2MeshFile" );
+        if( SU2MeshFile ) {
+            _SU2MeshFile = _settings->GetInputDir() + "/" + *SU2MeshFile;
+        }
+        else {
+            std::cerr << "[Inputfile][mesh][(string)SU2MeshFile] Not set!" << std::endl;
+            exit( EXIT_FAILURE );
+        }
+        auto BCStrings = table->get_array_of<cpptoml::array>( "SU2BC" );
+        if( BCStrings ) {
+            for( unsigned i = 0; i < BCStrings->size(); ++i ) {
+                auto BCString = ( *BCStrings )[i]->get_array_of<std::string>();
+                BoundaryType type;
+                if( ( *BCString )[1].compare( "noslip" ) == 0 ) {
+                    type = BoundaryType::NOSLIP;
+                }
+                else if( ( *BCString )[1].compare( "dirichlet" ) == 0 ) {
+                    type = BoundaryType::DIRICHLET;
+                }
+                else if( ( *BCString )[1].compare( "neumann" ) == 0 ) {
+                    type = BoundaryType::NEUMANN;
+                }
+                else if( ( *BCString )[1].compare( "periodic" ) == 0 ) {
+                    type = BoundaryType::PERIODIC;
+                }
+                else {
+                    std::cerr << "[Inputfile][mesh][SU2BC] Invalid boundary condition on boundary '" + ( *BCString )[0] + "'!" << std::endl;
+                    exit( EXIT_FAILURE );
+                }
+                _BCs.push_back( std::make_pair( ( *BCString )[0], type ) );
             }
-            else if( ( *BCString )[1].compare( "dirichlet" ) == 0 ) {
-                type = BoundaryType::DIRICHLET;
-            }
-            else if( ( *BCString )[1].compare( "neumann" ) == 0 ) {
-                type = BoundaryType::NEUMANN;
-            }
-            else if( ( *BCString )[1].compare( "periodic" ) == 0 ) {
-                type = BoundaryType::PERIODIC;
-            }
-            else {
-                std::cerr << "Invalid boundary condition!" << std::endl;
-            }
-            _BCs.push_back( std::make_pair( ( *BCString )[0], type ) );
+        }
+        else {
+            std::cerr << "[Inputfile][mesh][SU2BC] Not set!" << std::endl;
+            exit( EXIT_FAILURE );
         }
         _outputFile = table->get_as<std::string>( "outputFile" ).value_or( "" );
         LoadSU2MeshFromFile( _SU2MeshFile );
@@ -198,13 +218,13 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
             if( _neighborIDs[j][0] != _numCells && _neighborIDs[j][1] != _numCells && _neighborIDs[j][2] != _numCells ) {
                 std::cerr << "Wrong boundary cell " << j << " detected" << std::endl;
                 std::cerr << "Neighbors are " << _neighborIDs[j][0] << " " << _neighborIDs[j][1] << " " << _neighborIDs[j][2] << std::endl;
-                std::cout << "Points are " << _cells[j]->GetNodes()[0]->id << " " << _cells[j]->GetNodes()[1]->id << " "
+                std::cerr << "Points are " << _cells[j]->GetNodes()[0]->id << " " << _cells[j]->GetNodes()[1]->id << " "
                           << _cells[j]->GetNodes()[2]->id << std::endl;
-                std::cout << "Points A are " << _cells[_neighborIDs[j][0]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][0]]->GetNodes()[1]->id
+                std::cerr << "Points A are " << _cells[_neighborIDs[j][0]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][0]]->GetNodes()[1]->id
                           << " " << _cells[_neighborIDs[j][0]]->GetNodes()[2]->id << std::endl;
-                std::cout << "Points B are " << _cells[_neighborIDs[j][1]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][1]]->GetNodes()[1]->id
+                std::cerr << "Points B are " << _cells[_neighborIDs[j][1]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][1]]->GetNodes()[1]->id
                           << " " << _cells[_neighborIDs[j][1]]->GetNodes()[2]->id << std::endl;
-                std::cout << "Points C are " << _cells[_neighborIDs[j][2]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][2]]->GetNodes()[1]->id
+                std::cerr << "Points C are " << _cells[_neighborIDs[j][2]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][2]]->GetNodes()[1]->id
                           << " " << _cells[_neighborIDs[j][2]]->GetNodes()[2]->id << std::endl;
                 exit( EXIT_FAILURE );
             }

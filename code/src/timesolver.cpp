@@ -11,16 +11,12 @@ TimeSolver::TimeSolver( Settings* settings, Mesh* mesh ) : _settings( settings )
 TimeSolver::~TimeSolver() {}
 
 TimeSolver* TimeSolver::Create( Settings* settings, Mesh* mesh ) {
-    auto file          = cpptoml::parse_file( settings->GetInputFile() );
-    auto section       = file->get_table( "problem" );
-    std::string method = section->get_as<std::string>( "timestepping" ).value_or( "" );
-    if( method.compare( "explicitEuler" ) == 0 || method.compare( "EE" ) == 0 ) {
+    if( settings->GetTimesteppingType() == TimesteppingType::T_EXPLICITEULER ) {
         return new ExplicitEuler( settings, mesh );
     }
     else {
-        std::cerr << "Invalid timesolver type" << std::endl;
+        std::cerr << "[Timesolver] Invalid timesolver type" << std::endl;
         exit( EXIT_FAILURE );
-        return nullptr;
     }
 }
 
