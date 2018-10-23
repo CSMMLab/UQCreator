@@ -12,8 +12,9 @@ bool CheckInput( std::string& configFile, bool& batchMode, int argc, char* argv[
                              std::string( argv[0] ) +
                              " -c inputfile\n\n"
                              "Options:\n"
-                             "  -h               displays this message\n"
-                             "  -b               runs in batch mode (not displaying plots)";
+                             "  -t N             number of threads to use\n"
+                             "  -b               runs in batch mode (not displaying plots)\n"
+                             "  -h               displays this message\n";
 
     if( argc < 3 ) {
         std::cout << usage_help;
@@ -35,6 +36,9 @@ bool CheckInput( std::string& configFile, bool& batchMode, int argc, char* argv[
         }
         else if( arg == "-b" ) {
             batchMode = true;
+        }
+        else if( arg == "-t" ) {
+            omp_set_num_threads( std::atoi( argv[++i] ) );
         }
         else {
             std::cout << usage_help;
