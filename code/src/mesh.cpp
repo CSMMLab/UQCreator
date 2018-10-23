@@ -2,7 +2,9 @@
 #include "mesh1d.h"
 #include "mesh2d.h"
 
-Mesh::Mesh( Settings* settings, unsigned dimension ) : _settings( settings ), _dimension( dimension ), _nBoundaries( 2 ) {}
+Mesh::Mesh( Settings* settings, unsigned dimension ) : _settings( settings ), _dimension( dimension ), _nBoundaries( 2 ) {
+    _outputFile = _settings->GetOutputFile();
+}
 
 Mesh::~Mesh() {
     for( auto& c : _cells ) {

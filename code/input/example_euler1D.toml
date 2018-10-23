@@ -10,7 +10,7 @@ b = 1
 outputFile = "euler_shock"
 
 [problem]
-# available timesteppings: explicitEuler, Heun, SSPMultiStep
+# available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 CFL = 5.0
 # available limiter: minmod, none|off

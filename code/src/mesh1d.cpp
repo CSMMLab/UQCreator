@@ -63,12 +63,13 @@ void Mesh1D::CreateGrid( double a, double b ) {
 }
 
 void Mesh1D::Export( Matrix results ) const {
+    assert( results.rows() == _settings->GetNStates() * 2 );
     auto csvFile = _settings->GetOutputFile();
     if( csvFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "csv" ) {
         csvFile.append( ".csv" );
     }
     std::ofstream writer( csvFile );
-    for( unsigned i = 0; i < _settings->GetNStates(); ++i ) {
+    for( unsigned i = 0; i < _settings->GetNStates() * 2; ++i ) {
         for( unsigned j = 0; j < _settings->GetNumCells() - 1; ++j ) {
             writer << results( i, j ) << ",";
         }

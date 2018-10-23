@@ -25,12 +25,11 @@ class MomentSolver
     Mesh* _mesh;
     TimeSolver* _time;
     Limiter* _limiter;
-    Vector _x;
     std::vector<Matrix> _lambda;
     Problem* _problem;
     PlotEngine* _plotEngine;
-    double _dx, _dt, _tEnd;
-    unsigned _nTimeSteps, _nCells, _nMoments, _nStates, _nQuadPoints;
+    double _dt, _tEnd;
+    unsigned _nCells, _nMoments, _nStates, _nQuadPoints;
     Matrix numFlux( const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
     std::vector<Matrix> SetupIC();
     Vector IC( Vector x, double xi );

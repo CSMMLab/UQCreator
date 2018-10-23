@@ -10,7 +10,7 @@ b = 3
 outputFile = "burgers_shock"
 
 [problem]
-# available timesteppings: explicitEuler, Heun, SSPMultiStep
+# available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 CFL = 0.5
 # available limiter: minmod, none|off

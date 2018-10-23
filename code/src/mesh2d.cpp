@@ -55,7 +55,6 @@ Mesh2D::Mesh2D( Settings* settings ) : Mesh( settings, 2 ) {
             std::cerr << "[Inputfile][mesh][SU2BC] Not set!" << std::endl;
             exit( EXIT_FAILURE );
         }
-        _outputFile = table->get_as<std::string>( "outputFile" ).value_or( "" );
         LoadSU2MeshFromFile( _SU2MeshFile );
     }
     _settings->SetNumCells( _numCells );
@@ -296,7 +295,8 @@ void Mesh2D::DetermineNeighbors() {
 }
 
 void Mesh2D::Export( Matrix results ) const {
-    std::string vtkFile = _outputFile;
+    assert( results.rows() == _settings->GetNStates() * 2 );
+    std::string vtkFile = _settings->GetOutputFile();
     auto writer         = vtkXMLUnstructuredGridWriterSP::New();
     if( vtkFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "vtu" ) {
         vtkFile.append( "." );
@@ -320,14 +320,14 @@ void Mesh2D::Export( Matrix results ) const {
     grid->SetCells( VTK_TRIANGLE, cellArray );
 
     auto cellData = vtkDoubleArraySP::New();
-    cellData->SetName( "rho" );
+    cellData->SetName( "E(ρ)" );
     for( unsigned i = 0; i < _numCells; i++ ) {
         cellData->InsertNextValue( results( 0, i ) );
     }
     grid->GetCellData()->AddArray( cellData );
 
     cellData = vtkDoubleArraySP::New();
-    cellData->SetName( "rhoU" );
+    cellData->SetName( "E(ρU)" );
     cellData->SetNumberOfComponents( 3 );
     cellData->SetComponentName( 0, "x" );
     cellData->SetComponentName( 1, "y" );
@@ -339,9 +339,35 @@ void Mesh2D::Export( Matrix results ) const {
     grid->GetCellData()->AddArray( cellData );
 
     cellData = vtkDoubleArraySP::New();
-    cellData->SetName( "rhoE" );
+    cellData->SetName( "E(ρE)" );
     for( unsigned i = 0; i < _numCells; i++ ) {
         cellData->InsertNextValue( results( 3, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "Var(ρ)" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 4, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "Var(ρU)" );
+    cellData->SetNumberOfComponents( 3 );
+    cellData->SetComponentName( 0, "x" );
+    cellData->SetComponentName( 1, "y" );
+    cellData->SetComponentName( 2, "z" );
+    cellData->SetNumberOfTuples( _numCells );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->SetTuple3( i, results( 5, i ), results( 6, i ), 0.0 );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "Var(ρE)" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 7, i ) );
     }
     grid->GetCellData()->AddArray( cellData );
 

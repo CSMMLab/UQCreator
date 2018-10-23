@@ -10,16 +10,16 @@ SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
 outputFile = "euler_naca0012"
 
 [problem]
-# available timesteppings: explicitEuler, Heun, SSPMultiStep
+# available timesteppings: explicitEuler
 timestepping = "explicitEuler"
-CFL = 0.01
-tEnd = 0.01
+CFL = 10.0
+tEnd = 0.1
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
-closure = "StochasticGalerkin"
-moments = 1
-quadPoints = 1
+closure = "Euler2D"
+moments = 5
+quadPoints = 20
 maxIterations = 200
 epsilon = 5e-5
 
