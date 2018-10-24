@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <blaze/Math.h>
 #include <iostream>
 
 #include "mesh.h"
@@ -38,7 +39,7 @@ bool CheckInput( std::string& configFile, bool& batchMode, int argc, char* argv[
             batchMode = true;
         }
         else if( arg == "-t" ) {
-            omp_set_num_threads( std::atoi( argv[++i] ) );
+            blaze::setNumThreads( std::strtoul( argv[++i], nullptr, 10 ) );
         }
         else {
             std::cout << usage_help;
@@ -74,12 +75,16 @@ int main( int argc, char* argv[] ) {
     }
     PrintInit( configFile );
 
+    Settings* settings = new Settings( configFile );
+    if( !settings->GetPlotEnabled() ) {
+        batchMode = true;
+    }
+
     QApplication* app = nullptr;
     if( !batchMode ) {
         app = new QApplication( argc, argv );
     }
 
-    Settings* settings   = new Settings( configFile );
     Mesh* mesh           = Mesh::Create( settings );
     Problem* problem     = Problem::Create( settings );
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );
