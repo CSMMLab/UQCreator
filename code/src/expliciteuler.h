@@ -1,6 +1,7 @@
 #ifndef EXPLICITEULER_H
 #define EXPLICITEULER_H
 
+#include "euler2d.h"
 #include "timesolver.h"
 
 class ExplicitEuler : public TimeSolver
