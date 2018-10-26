@@ -17,6 +17,21 @@ void EulerClosure2D::U( Vector& out, const Vector& Lambda ) {
     out[3] = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
 }
 
+void EulerClosure2D::U( Matrix& out, const Matrix& Lambda ) {
+    double expTerm, v1, v2, v3, v4;
+    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+        v1      = Lambda( 0, k );
+        v2      = Lambda( 1, k );
+        v3      = Lambda( 2, k );
+        v4      = Lambda( 3, k );
+        expTerm = pow( -exp( ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) );
+        out( 0, k ) = expTerm;
+        out( 1, k ) = -( ( v2 * expTerm ) / v4 );
+        out( 2, k ) = -( ( v3 * expTerm ) / v4 );
+        out( 3, k ) = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
+    }
+}
+
 Matrix EulerClosure2D::U( const Matrix& Lambda ) {
     double expTerm, v1, v2, v3, v4;
     Matrix y( _nStates, Lambda.columns(), 0.0 );

@@ -26,7 +26,7 @@ class PlotEngine : public QWidget
     std::vector<QCustomPlot*> _plots;
 
     void setupPlots();
-    void updatePlotData( double time, const std::vector<Matrix>& );
+    void updatePlotData( double time, const MatVec& );
     void refresh();
 
   private:

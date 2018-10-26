@@ -27,7 +27,7 @@ Closure::Closure( Settings* settings )
     }
     _phiTildeTrans = blaze::trans( _phiTilde );
     // calculate partial matrix for Hessian calculation
-    _hPartial = std::vector<Matrix>( _nQuadPoints, Matrix( _nMoments, _nMoments, 0.0 ) );
+    _hPartial = MatVec( _nQuadPoints, Matrix( _nMoments, _nMoments, 0.0 ) );
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         _hPartial[k] = blaze::trans( row( _phiTilde, k ) ) * row( _phiTilde, k ) * w[k];
     }
@@ -66,7 +66,7 @@ Closure* Closure::Create( Settings* settings ) {
     }
 }
 
-Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
+void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     int maxRefinements = 1000;
 
     Matrix H( _nStates * _nMoments, _nStates * _nMoments, 0.0 );
@@ -77,7 +77,7 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     Gradient( g, lambda, u );
 
     if( CalcNorm( g ) < _settings->GetEpsilon() ) {
-        return lambda;
+        return;
     }
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
@@ -105,7 +105,8 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
             lambdaNew = lambda - stepSize * _alpha * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
             if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
-                return lambdaNew;
+                lambda = lambdaNew;
+                return;
             }
             else if( ++refinementCounter > maxRefinements ) {
                 std::cerr << "[ERROR]: Newton needed too many refinement steps!" << std::endl;
@@ -115,7 +116,8 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
         lambda = lambdaNew;
 
         if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
-            return lambdaNew;
+            lambda = lambdaNew;
+            return;
         }
     }
     std::cerr << "[Closure][ERROR]: Newton did not converge!" << std::endl;
@@ -138,6 +140,8 @@ double Closure::CalcNorm( Vector& test ) {
 Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k ) { return lambda * _phiTildeVec[k]; }
 
 Matrix Closure::EvaluateLambda( const Matrix& lambda ) const { return lambda * _phiTildeTrans; }
+
+void Closure::EvaluateLambda( Matrix& out, const Matrix& lambda ) const { out = lambda * _phiTildeTrans; }
 
 Vector Closure::EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k ) {
     Vector out = Vector( _nStates, 0.0 );

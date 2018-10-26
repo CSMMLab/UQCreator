@@ -41,6 +41,8 @@ Mesh1D::Mesh1D( Settings* settings ) : Mesh( settings, 1 ) {
     _neighborIDs[_numCells - 1][1] = _numCells;
     _boundaryType[0]               = BoundaryType::DIRICHLET;
     _boundaryType[_numCells - 1]   = BoundaryType::DIRICHLET;
+    _cells[0]->SetBoundaryType( BoundaryType::DIRICHLET );
+    _cells[_numCells - 1]->SetBoundaryType( BoundaryType::DIRICHLET );
 }
 
 Mesh1D::~Mesh1D() {}

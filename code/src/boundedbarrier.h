@@ -14,6 +14,7 @@ class BoundedBarrier : public Closure
     virtual ~BoundedBarrier();
 
     virtual void U( Vector& out, const Vector& Lambda );
+    virtual void U( Matrix& out, const Matrix& Lambda );
     virtual Matrix U( const Matrix& Lambda );
     virtual void DU( Matrix& y, const Vector& Lambda );
 };

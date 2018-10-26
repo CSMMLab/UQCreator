@@ -198,6 +198,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                         for( unsigned l = 0; l < _boundaries[j].elements.size(); ++l ) {
                             if( _boundaries[j].elements[l].nodes[0] == nodeId || _boundaries[j].elements[l].nodes[1] == nodeId ) {
                                 _boundaryType[i] = _boundaries[j].type;
+                                _cells[i]->SetBoundaryType( _boundaries[j].type );
                             }
                         }
                     }
@@ -266,9 +267,6 @@ void Mesh2D::DetermineNeighbors() {
             i->AddNeighborId( _numCells, 2 );
         }
         for( auto& j : _cells ) {
-            // if( i->GetNeighbors().size() == i->GetNodeNum() - i->IsBoundaryCell() ) {
-            //    goto cnt;
-            //}
             if( i->GetID() != j->GetID() ) {
                 unsigned matchCtr = 0;
                 for( unsigned n = 0; n < i->GetNodeNum(); ++n ) {
@@ -290,7 +288,7 @@ void Mesh2D::DetermineNeighbors() {
                 }
             }
         }
-        // cnt:;
+        i->UpdateBoundaryNormal();
     }
 }
 

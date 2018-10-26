@@ -11,6 +11,16 @@ void EulerClosure::U( Vector& out, const Vector& Lambda ) {
     out[2] = ( ( pow( Lambda[1], 2.0 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2.0 ) ) ) * out[0];
 }
 
+void EulerClosure::U( Matrix& out, const Matrix& Lambda ) {
+    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+        out( 0, k ) = exp( ( 2.0 * Lambda( 0, k ) * Lambda( 2, k ) - 2.0 * Lambda( 2, k ) * log( -Lambda( 2, k ) ) - 2.0 * Lambda( 2, k ) * _gamma -
+                             pow( Lambda( 1, k ), 2.0 ) ) /
+                           ( 2.0 * Lambda( 2, k ) * ( _gamma - 1.0 ) ) );
+        out( 1, k ) = -( Lambda( 1, k ) / Lambda( 2, k ) ) * out( 0, k );
+        out( 2, k ) = ( ( pow( Lambda( 1, k ), 2.0 ) - 2.0 * Lambda( 2, k ) ) / ( 2.0 * pow( Lambda( 2, k ), 2.0 ) ) ) * out( 0, k );
+    }
+}
+
 Matrix EulerClosure::U( const Matrix& Lambda ) {
     Matrix y( _nStates, Lambda.columns(), 0.0 );
     for( unsigned k = 0; k < Lambda.columns(); ++k ) {

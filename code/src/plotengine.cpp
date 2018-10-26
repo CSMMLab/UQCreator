@@ -89,7 +89,7 @@ void PlotEngine::setupPlot( unsigned id, QString title, QString xLabel, QString 
     }
 }
 
-void PlotEngine::updatePlotData( double time, const std::vector<Matrix>& lambda ) {
+void PlotEngine::updatePlotData( double time, const MatVec& lambda ) {
     ui->lTimeValue->setText( QString::fromStdString( std::to_string( time ) + " [s]" ) );
     if( _settings->GetMeshDimension() == 1 ) {
         Vector exResMean( _nFine, 0.0 ), resMean( _settings->GetNumCells(), 0.0 );

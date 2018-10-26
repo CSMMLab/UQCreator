@@ -10,8 +10,6 @@
 #include "settings.h"
 #include "typedefs.h"
 
-enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE };
-
 struct BoundaryElement {
     unsigned type;
     std::vector<unsigned> nodes;

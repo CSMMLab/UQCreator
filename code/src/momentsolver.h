@@ -2,18 +2,14 @@
 #define MOMENTSOLVER_H
 
 #include <chrono>
-#include <omp.h>
 
 #include "closure.h"
-#include "expliciteuler.h"
 #include "legendre.h"
-#include "limiter.h"
 #include "mesh.h"
-#include "minmod.h"
-#include "nolimiter.h"
 #include "plotengine.h"
 #include "problem.h"
 #include "settings.h"
+#include "timesolver.h"
 #include "typedefs.h"
 
 class MomentSolver
@@ -24,16 +20,16 @@ class MomentSolver
     Closure* _closure;
     Mesh* _mesh;
     TimeSolver* _time;
-    Limiter* _limiter;
-    std::vector<Matrix> _lambda;
+    MatVec _lambda;
     Problem* _problem;
     PlotEngine* _plotEngine;
     double _dt, _tEnd;
     unsigned _nCells, _nMoments, _nStates, _nQuadPoints;
-    Matrix numFlux( const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
-    std::vector<Matrix> SetupIC();
+
+    void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
+    void SetupIC( MatVec& out );
     Vector IC( Vector x, double xi );
-    Matrix CalculateMoments( const Matrix& lambda );
+    void CalculateMoments( MatVec& out, const MatVec& lambda );
     Vector EvalLambda( const Vector& lambda, const Vector& xi );
     void Plot( double time, unsigned nSteps );
 

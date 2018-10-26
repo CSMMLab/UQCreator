@@ -33,19 +33,11 @@ include_directories( ${LAPACK_INCLUDE_DIR} )
 
 find_package( VTK REQUIRED COMPONENTS vtkIOXML vtkFiltersCore )
 
-find_package( Git REQUIRED )
-ExternalProject_Add( blaze
-  PREFIX ${CMAKE_BINARY_DIR}/blaze
-  GIT_REPOSITORY https://bitbucket.org/blaze-lib/blaze
-  UPDATE_COMMAND git pull
-  UPDATE_DISCONNECTED 1
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND cmake ../blaze -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/blaze
-  INSTALL_COMMAND make install
-)
-include_directories( ${CMAKE_BINARY_DIR}/blaze/include )
-add_dependencies ( ${CMAKE_PROJECT_NAME} blaze )
+find_package( blaze REQUIRED )
+add_library( blaze_target INTERFACE )
+target_link_libraries( blaze_target INTERFACE blaze::blaze )
 
+find_package( Git REQUIRED )
 ExternalProject_Add( cpptoml
   PREFIX ${CMAKE_BINARY_DIR}/cpptoml
   GIT_REPOSITORY https://github.com/skystrife/cpptoml

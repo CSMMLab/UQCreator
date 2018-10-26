@@ -6,6 +6,8 @@
 
 #include "typedefs.h"
 
+enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE };
+
 struct Node {
     unsigned id;
     bool isBoundaryNode;
@@ -36,8 +38,10 @@ class Cell
     std::vector<Cell*> _neighbors;
     blaze::DynamicVector<unsigned> _neighborIDs;
     bool _isBoundaryCell;
+    BoundaryType _boundaryType;
     double _area;
     Vector _center;
+    Vector _boundaryNormal;
 
     virtual void SetupEdges() = 0;
 
@@ -57,6 +61,12 @@ class Cell
     unsigned GetID();
     double GetArea();
     const Vector& GetCenter();
+    void SetBoundaryType( BoundaryType type );
+    BoundaryType GetBoundaryType() const;
+    void UpdateBoundaryNormal();
+    Vector GetBoundaryUnitNormal();
+    Vector GetUnitNormal( unsigned i );
+    Vector GetNormal( unsigned i );
 };
 
 #endif    // ELEMENT_H
