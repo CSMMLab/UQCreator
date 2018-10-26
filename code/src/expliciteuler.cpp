@@ -21,11 +21,7 @@ void ExplicitEuler::Advance( std::function<Matrix( const Matrix&, const Matrix&,
                     v[0]           = uQ[_mesh->GetNumCells()]( 1, k ) / uQ[_mesh->GetNumCells()]( 0, k );
                     v[1]           = uQ[_mesh->GetNumCells()]( 2, k ) / uQ[_mesh->GetNumCells()]( 0, k );
                     unsigned index = 100;
-                    // if( _problem->GetMesh()->GetGrid()[j]->IsBoundaryCell() ) {
-                    //    std::cout << "Is boundary cell and has " << neighbors.size() << " neighbors" << std::endl;
-                    //}
                     for( unsigned l = 0; l < neighbors.size(); ++l ) {
-                        // std::cout << neighbors[l] << " != " << _problem->GetMesh()->GetNumCells() << std::endl;
                         if( neighbors[l] == _mesh->GetNumCells() ) {
                             index = l;
                         }

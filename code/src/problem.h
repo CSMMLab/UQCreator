@@ -23,6 +23,7 @@ class Problem
     virtual void Solve() {}
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) = 0;
     virtual double ExactSolution( double t, double x, double xi )                              = 0;
+    virtual double ComputeDt( Vector& u, double dx ) const                                     = 0;
 };
 
 #endif    // PROBLEM_H
