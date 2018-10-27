@@ -13,14 +13,14 @@ outputFile = "euler_naca0012"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 CFL = 0.04
-tEnd = 0.001
+tEnd = 0.01
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
-closure = "StochasticGalerkin"
-moments = 1
-quadPoints = 1
-maxIterations = 200
+closure = "Euler2D"
+moments = 5
+quadPoints = 20
+maxIterations = 2000
 epsilon = 5e-5
 
 [plot]
