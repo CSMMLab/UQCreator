@@ -85,3 +85,24 @@ Matrix Euler2D::F( const Matrix& u ) {
     exit( EXIT_FAILURE );
     return 0.5 * blaze::pow( u, 2 );
 }
+
+double Euler2D::ComputeDt( Vector& u, double dx ) const {
+    double rhoInv = 1.0 / u[0];
+    double uU     = u[1] * rhoInv;
+    double vU     = u[2] * rhoInv;
+    double p      = ( _gamma - 1.0 ) * ( u[3] - 0.5 * u[0] * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
+    double a      = sqrt( _gamma * p * rhoInv );
+
+    double dt1 = dx * _settings->GetCFL() * ( uU - a );
+    double dt2 = dx * _settings->GetCFL() * ( uU + a );
+    double dt3 = dx * _settings->GetCFL() * ( vU - a );
+    double dt4 = dx * _settings->GetCFL() * ( vU + a );
+    if( dt1 < dt2 && dt1 < dt3 && dt1 < dt4 )
+        return dt1;
+    else if( dt2 < dt1 && dt2 < dt3 && dt2 < dt4 )
+        return dt2;
+    else if( dt3 < dt1 && dt3 < dt2 && dt3 < dt4 )
+        return dt3;
+    else
+        return dt4;
+}

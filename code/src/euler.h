@@ -17,6 +17,7 @@ class Euler : public Problem
     virtual double ExactSolution( double t, double x, double xi );
     Matrix F( const Vector& u );
     Matrix F( const Matrix& u );
+    virtual double ComputeDt( Vector& u, double dx ) const;
 };
 
 #endif    // EULER_H

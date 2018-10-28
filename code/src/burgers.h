@@ -26,6 +26,7 @@ class Burgers : public Problem
     Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );
     virtual double ExactSolution( double t, double x, double xi );
+    virtual double ComputeDt( Vector& u, double dx ) const;
 };
 
 #endif    // BURGERS_H

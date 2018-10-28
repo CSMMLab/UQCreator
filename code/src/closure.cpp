@@ -75,6 +75,8 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
 
     // check if initial guess is good enough
     Gradient( g, lambda, u );
+    // std::cout << "Gradient " << g << std::endl;
+    // exit( EXIT_FAILURE );
 
     if( CalcNorm( g ) < _settings->GetEpsilon() ) {
         return lambda;
@@ -82,6 +84,7 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
     Hessian( H, lambda );
+    // std::cout << "Hessian " << H << std::endl;
     // blaze::posv( H, g, 'L' );
     blaze::gesv( H, g, _perm );
     Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
@@ -99,11 +102,12 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
             Gradient( dlambdaNew, lambdaNew, u );
         }
         int refinementCounter = 0;
-
+        // std::cout << "Norm is " << CalcNorm( dlambdaNew ) << std::endl;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) ) {
             stepSize *= 0.5;
             lambdaNew = lambda - stepSize * _alpha * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
+            // std::cout << "[refining] Norm is " << CalcNorm( dlambdaNew ) << std::endl;
             if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
                 return lambdaNew;
             }
@@ -166,6 +170,9 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
     Vector uKinetic( _nStates, 0.0 );
     g.reset();
 
+    // std::cout << "lambda = " << lambda << std::endl;
+    // std::cout << "u = " << u << std::endl;
+
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         U( uKinetic, lambda * _phiTildeVec[k] );
         for( unsigned j = 0; j < _nMoments; ++j ) {
@@ -174,6 +181,8 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
             }
         }
     }
+
+    // std::cout << "int(u(Lambda)) = " << g << std::endl;
 
     g = 0.5 * g - MakeVector( u );
 }

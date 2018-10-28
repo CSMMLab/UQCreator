@@ -21,11 +21,7 @@ void ExplicitEuler::Advance( std::function<Matrix( const Matrix&, const Matrix&,
                     v[0]           = uQ[_mesh->GetNumCells()]( 1, k ) / uQ[_mesh->GetNumCells()]( 0, k );
                     v[1]           = uQ[_mesh->GetNumCells()]( 2, k ) / uQ[_mesh->GetNumCells()]( 0, k );
                     unsigned index = 100;
-                    // if( _problem->GetMesh()->GetGrid()[j]->IsBoundaryCell() ) {
-                    //    std::cout << "Is boundary cell and has " << neighbors.size() << " neighbors" << std::endl;
-                    //}
                     for( unsigned l = 0; l < neighbors.size(); ++l ) {
-                        // std::cout << neighbors[l] << " != " << _problem->GetMesh()->GetNumCells() << std::endl;
                         if( neighbors[l] == _mesh->GetNumCells() ) {
                             index = l;
                         }
@@ -37,16 +33,25 @@ void ExplicitEuler::Advance( std::function<Matrix( const Matrix&, const Matrix&,
                     Vector n                         = _mesh->GetUnitNormals( j, index );
                     double vn                        = n[0] * v[0] + n[1] * v[1];
                     Vector Vn                        = vn * n;
-                    Vector Vt                        = v - Vn;
-                    uQ[_mesh->GetNumCells()]( 1, k ) = uQ[_mesh->GetNumCells()]( 0, k ) * ( -Vn[0] + Vt[0] );
-                    uQ[_mesh->GetNumCells()]( 2, k ) = uQ[_mesh->GetNumCells()]( 0, k ) * ( -Vn[1] + Vt[1] );
+                    Vector Vb                        = -Vn + v;
+                    double velMagB                   = Vb[0] * Vb[0] + Vb[1] * Vb[1];
+                    double velMag                    = v[0] * v[0] + v[1] * v[1];
+                    double rho                       = uQ[_mesh->GetNumCells()]( 0, k );
+                    uQ[_mesh->GetNumCells()]( 1, k ) = rho * ( Vb[0] );
+                    uQ[_mesh->GetNumCells()]( 2, k ) = rho * ( Vb[1] );
+                    uQ[_mesh->GetNumCells()]( 3, k ) += rho * 0.5 * ( velMagB - velMag );
                 }
             }
         }
         Matrix rhs( u[0].rows(), u[0].columns(), 0.0 );
 
         for( unsigned l = 0; l < neighbors.size(); ++l ) {
-            rhs += fluxFunc( uQ[j], uQ[neighbors[l]], _mesh->GetUnitNormals( j, l ), _mesh->GetNormals( j, l ) );
+            if( _mesh->GetBoundaryType( j ) == BoundaryType::NOSLIP && neighbors[l] == _mesh->GetNumCells() ) {
+                rhs += fluxFunc( uQ[neighbors[l]], uQ[neighbors[l]], _mesh->GetUnitNormals( j, l ), _mesh->GetNormals( j, l ) );
+            }
+            else {
+                rhs += fluxFunc( uQ[j], uQ[neighbors[l]], _mesh->GetUnitNormals( j, l ), _mesh->GetNormals( j, l ) );
+            }
         }
         uNew[j] = u[j] - ( _dt / _mesh->GetArea( j ) ) * rhs;
     }

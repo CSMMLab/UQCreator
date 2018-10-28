@@ -88,3 +88,5 @@ double Burgers::ExactSolution( double t, double x, double xi ) {
     }
     return y;
 }
+
+double Burgers::ComputeDt( Vector& u, double dx ) const { return dx * _settings->GetCFL() / u[0]; }

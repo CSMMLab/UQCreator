@@ -1,20 +1,22 @@
 #include "eulerclosure2d.h"
 
-EulerClosure2D::EulerClosure2D( Settings* settings ) : Closure( settings ), _gamma( settings->GetGamma() ) { _alpha = 0.1; }
+EulerClosure2D::EulerClosure2D( Settings* settings ) : Closure( settings ), _gamma( settings->GetGamma() ) { _alpha = 0.5; }
 
 EulerClosure2D::~EulerClosure2D() {}
 
 void EulerClosure2D::U( Vector& out, const Vector& Lambda ) {
-    double v1 = Lambda[0];
-    double v2 = Lambda[1];
-    double v3 = Lambda[2];
-    double v4 = Lambda[3];
-    double expTerm =
-        pow( -exp( ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) );
+    // std::cout << "Lambda is " << Lambda << std::endl;
+    double v1      = Lambda[0];
+    double v2      = Lambda[1];
+    double v3      = Lambda[2];
+    double v4      = Lambda[3];
+    double expTerm = exp( 1.0 / ( 1.0 + _gamma ) * ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) *
+                     pow( -v4, 1.0 / ( 1.0 + _gamma ) );
     out[0] = expTerm;
     out[1] = -( ( v2 * expTerm ) / v4 );
     out[2] = -( ( v3 * expTerm ) / v4 );
     out[3] = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
+    // std::cout << "out is " << out << std::endl;
 }
 
 Matrix EulerClosure2D::U( const Matrix& Lambda ) {
