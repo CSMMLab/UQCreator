@@ -25,11 +25,11 @@ Closure::Closure( Settings* settings )
             _phiTildeVec[k][i] = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
         }
     }
-    _phiTildeTrans = blaze::trans( _phiTilde );
+    _phiTildeTrans = trans( _phiTilde );
     // calculate partial matrix for Hessian calculation
     _hPartial = MatVec( _nQuadPoints, Matrix( _nMoments, _nMoments, 0.0 ) );
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
-        _hPartial[k] = blaze::trans( row( _phiTilde, k ) ) * row( _phiTilde, k ) * w[k];
+        _hPartial[k] = outer( row( _phiTilde, k ), row( _phiTilde, k ) ) * w[k];
     }
     double du = 0.0;
     _uMinus   = 3.0 - du;

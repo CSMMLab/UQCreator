@@ -42,7 +42,7 @@ double Cell::GetArea() { return _area; }
 
 const Vector& Cell::GetCenter() { return _center; }
 
-blaze::DynamicVector<unsigned> Cell::GetNeighborIDs() { return _neighborIDs; }
+VectorU Cell::GetNeighborIDs() { return _neighborIDs; }
 
 void Cell::SetBoundaryType( BoundaryType type ) { _boundaryType = type; }
 

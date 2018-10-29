@@ -1,6 +1,7 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
+#include <assert.h>
 #include <iostream>
 #include <vector>
 
@@ -36,7 +37,7 @@ class Cell
     std::vector<Node*> _nodes;
     std::vector<Edge*> _edges;
     std::vector<Cell*> _neighbors;
-    blaze::DynamicVector<unsigned> _neighborIDs;
+    VectorU _neighborIDs;
     bool _isBoundaryCell;
     BoundaryType _boundaryType;
     double _area;
@@ -55,7 +56,7 @@ class Cell
     void AddNeighbor( const Cell* n, unsigned k );
     void AddNeighborId( unsigned n, unsigned k );
     std::vector<Cell*> GetNeighbors();
-    blaze::DynamicVector<unsigned> GetNeighborIDs();
+    VectorU GetNeighborIDs();
     bool IsBoundaryCell();
     std::vector<Edge*> GetEdges();
     unsigned GetID();

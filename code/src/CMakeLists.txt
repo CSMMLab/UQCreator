@@ -33,9 +33,9 @@ include_directories( ${LAPACK_INCLUDE_DIR} )
 
 find_package( VTK REQUIRED COMPONENTS vtkIOXML vtkFiltersCore )
 
-find_package( blaze REQUIRED )
-add_library( blaze_target INTERFACE )
-target_link_libraries( blaze_target INTERFACE blaze::blaze )
+#find_package( blaze REQUIRED )
+#add_library( blaze_target INTERFACE )
+#target_link_libraries( blaze_target INTERFACE blaze::blaze )
 
 find_package( Git REQUIRED )
 ExternalProject_Add( cpptoml

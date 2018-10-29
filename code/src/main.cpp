@@ -1,5 +1,6 @@
 #include <QApplication>
-#include <blaze/Math.h>
+#define BLAZE_USE_SHARED_MEMORY_PARALLELIZATION 0
+#include <blaze/Blaze.h>
 #include <iostream>
 
 #include "mesh.h"

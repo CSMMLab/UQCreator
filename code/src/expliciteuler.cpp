@@ -9,6 +9,8 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
     auto numCells = _mesh->GetNumCells();
     auto cells    = _mesh->GetGrid();
     Matrix rhs( u[0].rows(), u[0].columns(), 0.0 );
+
+#pragma omp parallel for
     for( unsigned j = 0; j < numCells; ++j ) {
         Cell* cell     = cells[j];
         auto neighbors = cell->GetNeighborIDs();

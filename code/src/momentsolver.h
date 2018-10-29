@@ -2,6 +2,7 @@
 #define MOMENTSOLVER_H
 
 #include <chrono>
+#include <omp.h>
 
 #include "closure.h"
 #include "legendre.h"
