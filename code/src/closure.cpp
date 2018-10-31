@@ -89,6 +89,8 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     blaze::gesv( H, g, _perm );
     Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
     Gradient( dlambdaNew, lambdaNew, u );
+    // std::cout << "update is " << lambdaNew - lambda << std::endl;
+    // std::cout << "lambdaNew is " << lambdaNew << std::endl;
     // perform Newton iterations
     for( unsigned l = 0; l < _settings->GetMaxIterations(); ++l ) {
         double stepSize = 1.0;

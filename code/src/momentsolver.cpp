@@ -43,18 +43,17 @@ void MomentSolver::Solve() {
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _settings->GetProblemType() == ProblemType::P_EULER_1D || _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
 
-            double gamma       = _settings->GetGamma();
+            double gamma       = -_settings->GetGamma();
             double rho         = u[j]( 0, 0 );
             double rhoU        = u[j]( 1, 0 );
             double rhoV        = u[j]( 2, 0 );
-            double rhoU2       = rhoU * rhoU / rho;
-            double rhoV2       = rhoV * rhoV / rho;
+            double rhoU2       = pow( rhoU, 2 );
+            double rhoV2       = pow( rhoV, 2 );
             double rhoE        = u[j]( 3, 0 );
             _lambda[j]( 0, 0 ) = ( rhoU2 + rhoV2 + gamma * ( 2 * rho * rhoE - rhoU2 - rhoV2 ) ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) -
                                  std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
-            _lambda[j]( 1, 0 ) = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-            _lambda[j]( 2, 0 ) = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-
+            _lambda[j]( 1, 0 )                           = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
+            _lambda[j]( 2, 0 )                           = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
             _lambda[j]( _settings->GetNStates() - 1, 0 ) = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
         }
         _lambda[j] = _closure->SolveClosure( u[j], _lambda[j] );
@@ -87,6 +86,7 @@ void MomentSolver::Solve() {
         // Time Update dual variables
         //#pragma omp parallel for
         for( unsigned j = 0; j < _nCells; ++j ) {
+
             _lambda[j] = _closure->SolveClosure( uNew[j], _lambda[j] );
         }
 
@@ -228,7 +228,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         return y;
     }
     else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
-        double sigma = 0.5;
+        double sigma = 1.25;
         double gamma = 1.4;
         double R     = 287.87;
         double T     = 273.15;
