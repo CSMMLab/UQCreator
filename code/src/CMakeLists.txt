@@ -22,20 +22,10 @@ if( OPENMP_FOUND )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 endif()
 
-find_package( Boost COMPONENTS system iostreams filesystem REQUIRED )
-include_directories( ${Boost_INCLUDE_DIR} )
-
-find_package( BLAS REQUIRED )
-include_directories( ${BLAS_INCLUDE_DIR} )
-
 find_package( LAPACK REQUIRED )
 include_directories( ${LAPACK_INCLUDE_DIR} )
 
 find_package( VTK REQUIRED COMPONENTS vtkIOXML vtkFiltersCore )
-
-#find_package( blaze REQUIRED )
-#add_library( blaze_target INTERFACE )
-#target_link_libraries( blaze_target INTERFACE blaze::blaze )
 
 find_package( Git REQUIRED )
 ExternalProject_Add( cpptoml
@@ -55,4 +45,4 @@ find_package( Qt5 COMPONENTS Core Widgets Gui PrintSupport REQUIRED )
 set( OpenGL_GL_PREFERENCE LEGACY )
 find_package( OpenGL )
 
-target_link_libraries( ${CMAKE_PROJECT_NAME}  LINK_PUBLIC Qt5::Core Qt5::Widgets Qt5::Gui Qt5::PrintSupport ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${VTK_LIBRARIES} -lstdc++fs)
+target_link_libraries( ${CMAKE_PROJECT_NAME}  LINK_PUBLIC Qt5::Core Qt5::Widgets Qt5::Gui Qt5::PrintSupport ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${LAPACK_LIBRARIES} ${VTK_LIBRARIES} -lstdc++fs)

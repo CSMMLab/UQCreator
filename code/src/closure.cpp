@@ -29,7 +29,7 @@ Closure::Closure( Settings* settings )
     // calculate partial matrix for Hessian calculation
     _hPartial = MatVec( _nQuadPoints, Matrix( _nMoments, _nMoments, 0.0 ) );
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
-        _hPartial[k] = outer( row( _phiTilde, k ), row( _phiTilde, k ) ) * w[k];
+        _hPartial[k] = outer( column( _phiTildeTrans, k ), column( _phiTildeTrans, k ) ) * w[k];
     }
     double du = 0.0;
     _uMinus   = 3.0 - du;
@@ -83,7 +83,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     Vector dlambda = -g;
     Hessian( H, lambda );
     // blaze::posv( H, g, 'L' );
-    blaze::gesv( H, g, _perm );
+    gesv( H, g, _perm );
     Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
@@ -94,7 +94,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
             dlambda = -g;
             Hessian( H, lambda );
             // blaze::posv( H, g, 'L' );
-            blaze::gesv( H, g, _perm );
+            gesv( H, g, _perm );
             lambdaNew = lambda - _alpha * stepSize * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
         }

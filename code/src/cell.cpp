@@ -52,8 +52,14 @@ Vector Cell::GetBoundaryUnitNormal() { return _boundaryNormal; }
 
 void Cell::UpdateBoundaryNormal() {
     assert( this->IsBoundaryCell() );
-    auto elemPtr    = std::max_element( _neighborIDs.begin(), _neighborIDs.end() );
-    unsigned id     = static_cast<unsigned>( std::distance( _neighborIDs.begin(), elemPtr ) );
+    // auto elemPtr    = std::max_element( _neighborIDs.begin(), _neighborIDs.end() );
+    // unsigned id     = static_cast<unsigned>( std::distance( _neighborIDs.begin(), elemPtr ) );
+    unsigned id = 0;
+    for( unsigned i = 1; i < _neighborIDs.size(); ++i ) {
+        if( _neighborIDs[i] > _neighborIDs[id] ) {
+            id = i;
+        }
+    }
     _boundaryNormal = _edges[id]->unitNormal;
 }
 

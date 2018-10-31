@@ -11,8 +11,6 @@
 // typedef blaze::DynamicVector<unsigned> VectorU;
 // typedef blaze::DynamicVector<blaze::DynamicMatrix<double>> MatVec;
 
-#include "matrix.h"
-#include "vector.h"
 #include "vectorspace.cpp"
 
 typedef VectorSpace::Matrix<double> Matrix;

@@ -1,7 +1,6 @@
 #include <QApplication>
-#define BLAZE_USE_SHARED_MEMORY_PARALLELIZATION 0
-#include <blaze/Blaze.h>
 #include <iostream>
+#include <omp.h>
 
 #include "mesh.h"
 #include "momentsolver.h"
@@ -40,7 +39,7 @@ bool CheckInput( std::string& configFile, bool& batchMode, int argc, char* argv[
             batchMode = true;
         }
         else if( arg == "-t" ) {
-            blaze::setNumThreads( std::strtoul( argv[++i], nullptr, 10 ) );
+            omp_set_num_threads( std::stoi( argv[++i] ) );
         }
         else {
             std::cout << usage_help;

@@ -27,7 +27,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
                     v[0]      = uQ[numCells]( 1, k ) / uQ[numCells]( 0, k );
                     v[1]      = uQ[numCells]( 2, k ) / uQ[numCells]( 0, k );
                     Vector n  = cell->GetBoundaryUnitNormal();
-                    double vn = blaze::dot( n, v );
+                    double vn = dot( n, v );
                     Vector Vn = vn * n;
                     Vector Vt = v - Vn;
 
