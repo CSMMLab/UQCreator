@@ -85,8 +85,8 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
     Vector dlambda = -g;
     Hessian( H, lambda );
     // std::cout << "Hessian " << H << std::endl;
-    // blaze::posv( H, g, 'L' );
-    blaze::gesv( H, g, _perm );
+    blaze::posv( H, g, 'L' );
+    // blaze::gesv( H, g, _perm );
     Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
     Gradient( dlambdaNew, lambdaNew, u );
     // std::cout << "update is " << lambdaNew - lambda << std::endl;
@@ -98,8 +98,8 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
             Gradient( g, lambda, u );
             dlambda = -g;
             Hessian( H, lambda );
-            // blaze::posv( H, g, 'L' );
-            blaze::gesv( H, g, _perm );
+            blaze::posv( H, g, 'L' );
+            // blaze::gesv( H, g, _perm );
             lambdaNew = lambda - _alpha * stepSize * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
         }
