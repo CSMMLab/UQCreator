@@ -283,12 +283,12 @@ void Mesh2D::DetermineNeighbors() {
                             i->AddNeighbor( j, 2 );
                         else
                             i->AddNeighbor( j, index0 );
+                        i->UpdateBoundaryNormal();
                         break;
                     }
                 }
             }
         }
-        i->UpdateBoundaryNormal();
     }
 }
 
