@@ -46,6 +46,7 @@ void MomentSolver::Solve() {
         }
     }
 
+#pragma omp parallel for
     for( unsigned j = 0; j < _nCells; ++j ) {
         _closure->SolveClosure( _lambda[j], u[j] );
     }
@@ -72,6 +73,7 @@ void MomentSolver::Solve() {
                         uQ );
 
         // Time Update dual variables
+#pragma omp parallel for
         for( unsigned j = 0; j < _nCells; ++j ) {
             _closure->SolveClosure( _lambda[j], uNew[j] );
         }

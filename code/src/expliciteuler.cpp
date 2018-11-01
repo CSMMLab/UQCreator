@@ -8,8 +8,8 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
                              MatVec& uQ ) {
     auto numCells = _mesh->GetNumCells();
     auto cells    = _mesh->GetGrid();
-    Matrix rhs( u[0].rows(), u[0].columns(), 0.0 );
 
+#pragma omp parallel for
     for( unsigned j = 0; j < numCells; ++j ) {
         Cell* cell     = cells[j];
         auto neighbors = cell->GetNeighborIDs();
@@ -36,7 +36,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
             }
         }
 
-        rhs.reset();
+        Matrix rhs( u[0].rows(), u[0].columns(), 0.0 );
         for( unsigned l = 0; l < neighbors.size(); ++l ) {
             fluxFunc( rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ) );
         }

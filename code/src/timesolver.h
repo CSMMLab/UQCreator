@@ -4,6 +4,7 @@
 #include <cpptoml.h>
 #include <functional>
 #include <iostream>
+#include <omp.h>
 
 #include "mesh.h"
 #include "settings.h"
