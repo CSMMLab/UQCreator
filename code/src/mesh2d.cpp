@@ -283,11 +283,15 @@ void Mesh2D::DetermineNeighbors() {
                             i->AddNeighbor( j, 2 );
                         else
                             i->AddNeighbor( j, index0 );
-                        i->UpdateBoundaryNormal();
                         break;
                     }
                 }
             }
+        }
+    }
+    for( auto& i : _cells ) {
+        if( i->IsBoundaryCell() ) {
+            i->UpdateBoundaryNormal();
         }
     }
 }
