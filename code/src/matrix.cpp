@@ -40,14 +40,14 @@ template <class T> class Matrix    // column major
     friend void gesv<>( Matrix<T>& A, Vector<T>& b, int* ipiv );
 };
 
-template <class T> Matrix<T>::Matrix() : _rows( 0 ), _columns( 0 ) {}
+template <class T> Matrix<T>::Matrix() : _data( nullptr ), _rows( 0 ), _columns( 0 ) {}
 
 template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skipZeroInit ) : _rows( rows ), _columns( columns ) {
     _data = new T[_rows * _columns];
     if( !skipZeroInit ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             for( unsigned j = 0; j < _columns; ++j ) {
-                _data[i * _rows + j] = 0.0;
+                _data[i * _columns + j] = 0.0;
             }
         }
     }
@@ -57,7 +57,7 @@ template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) 
     _data = new T[_rows * _columns];
     for( unsigned i = 0; i < _rows; ++i ) {
         for( unsigned j = 0; j < _columns; ++j ) {
-            _data[i * _rows + j] = init;
+            _data[i * _columns + j] = init;
         }
     }
 }
@@ -68,16 +68,16 @@ template <class T> Matrix<T>::Matrix( const Matrix& other ) {
     _data    = new T[_rows * _columns];
     for( unsigned i = 0; i < _rows; ++i ) {
         for( unsigned j = 0; j < _columns; ++j ) {
-            _data[i * _rows + j] = other._data[i * _rows + j];
+            _data[i * _columns + j] = other._data[i * _columns + j];
         }
     }
 }
 
 template <class T> Matrix<T>::~Matrix() { delete[] _data; }
 
-template <class T> T& Matrix<T>::operator()( unsigned i, unsigned j ) { return _data[i * _rows + j]; }
+template <class T> T& Matrix<T>::operator()( unsigned i, unsigned j ) { return _data[i * _columns + j]; }
 
-template <class T> const T& Matrix<T>::operator()( unsigned i, unsigned j ) const { return _data[i * _rows + j]; }
+template <class T> const T& Matrix<T>::operator()( unsigned i, unsigned j ) const { return _data[i * _columns + j]; }
 
 template <class T> Matrix<T> Matrix<T>::operator+( const Matrix<T>& other ) const {
     Matrix<T> res( _rows, _columns, true );
@@ -132,6 +132,11 @@ template <class T> Vector<T> Matrix<T>::operator*( const Vector<T>& vector ) con
 }
 
 template <class T> void Matrix<T>::operator=( const Matrix<T>& other ) {
+    if( _data == nullptr ) {
+        _rows    = other._rows;
+        _columns = other._columns;
+        _data    = new T[_rows * _columns];
+    }
     for( unsigned i = 0; i < _rows; ++i ) {
         for( unsigned j = 0; j < _columns; ++j ) {
             ( *this )( i, j ) = other( i, j );

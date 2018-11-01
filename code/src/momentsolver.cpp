@@ -37,16 +37,15 @@ void MomentSolver::Solve() {
     _lambda = MatVec( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
     MatVec u( _nCells );
     SetupIC( u );
-    MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints, 0.0 ) );
+    MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints ) );
 
-#pragma omp parallel for
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _settings->GetProblemType() == ProblemType::P_EULER_1D || _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
             _lambda[j]( 0, 0 )                           = 1.0;
             _lambda[j]( _settings->GetNStates() - 1, 0 ) = -1.0;
         }
     }
-#pragma omp parallel for
+
     for( unsigned j = 0; j < _nCells; ++j ) {
         _closure->SolveClosure( _lambda[j], u[j] );
     }
@@ -72,8 +71,7 @@ void MomentSolver::Solve() {
                         u,
                         uQ );
 
-// Time Update dual variables
-#pragma omp parallel for
+        // Time Update dual variables
         for( unsigned j = 0; j < _nCells; ++j ) {
             _closure->SolveClosure( _lambda[j], uNew[j] );
         }

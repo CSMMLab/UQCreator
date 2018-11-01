@@ -17,7 +17,7 @@ template <class T> class Vector
   private:
     unsigned _N;
     T* _data;
-    bool ref;
+    bool _ref;
 
   public:
     typedef T* iterator;
@@ -54,9 +54,9 @@ template <class T> class Vector
     friend void gesv<>( Matrix<T>& A, Vector<T>& b, int* ipiv );
 };
 
-template <class T> Vector<T>::Vector() : _N( 0 ), ref( false ) {}
+template <class T> Vector<T>::Vector() : _data( nullptr ), _N( 0 ), _ref( false ) {}
 
-template <class T> Vector<T>::Vector( unsigned n, bool skipZeroInit ) : _N( n ), ref( false ) {
+template <class T> Vector<T>::Vector( unsigned n, bool skipZeroInit ) : _N( n ), _ref( false ) {
     _data = new T[_N];
     if( !skipZeroInit ) {
         for( unsigned i = 0; i < _N; ++i ) {
@@ -65,34 +65,33 @@ template <class T> Vector<T>::Vector( unsigned n, bool skipZeroInit ) : _N( n ),
     }
 }
 
-template <class T> Vector<T>::Vector( unsigned n, T init ) : _N( n ), ref( false ) {
+template <class T> Vector<T>::Vector( unsigned n, T init ) : _N( n ), _ref( false ) {
     _data = new T[_N];
     for( unsigned i = 0; i < _N; ++i ) {
         _data[i] = init;
     }
 }
 
-template <class T> Vector<T>::Vector( unsigned n, T* ptr ) : _N( n ), ref( true ) { _data = ptr; }
+template <class T> Vector<T>::Vector( unsigned n, T* ptr ) : _N( n ), _ref( true ) { _data = ptr; }
 
 template <class T> Vector<T>::~Vector() {
-    if( !ref ) {
+    if( !_ref ) {
         delete[] _data;
     }
 }
 
-template <class T> Vector<T>::Vector( const Vector& other ) : _N( other._N ), ref( false ) {
+template <class T> Vector<T>::Vector( const Vector& other ) : _N( other._N ), _ref( false ) {
     _data = new T[_N];
     for( unsigned i = 0; i < _N; ++i ) {
         _data[i] = other._data[i];
     }
 }
 
-template <class T> Vector<T>::Vector( std::initializer_list<T> initList ) : _N( initList.size() ), ref( false ) {
+template <class T> Vector<T>::Vector( std::initializer_list<T> initList ) : _N( initList.size() ), _ref( false ) {
     _data        = new T[_N];
     auto listPtr = initList.begin();
     for( unsigned i = 0; i < _N; ++i ) {
         _data[i] = *listPtr;
-        std::cout << _data[i] << std::endl;
         ++listPtr;
     }
 }
@@ -142,6 +141,11 @@ template <class T> Vector<T> Vector<T>::operator/( const Vector& other ) const {
 }
 
 template <class T> void Vector<T>::operator=( const Vector& other ) {
+    if( _data == nullptr ) {
+        _N    = other._N;
+        _ref  = false;
+        _data = new T[_N];
+    }
     for( unsigned i = 0; i < _N; ++i ) {
         this->_data[i] = other._data[i];
     }
@@ -186,12 +190,19 @@ template <class T> void Vector<T>::reset() {
 }
 
 template <class T> void Vector<T>::resize( unsigned newSize ) {
-    T* _newData = new T[newSize];
-    for( unsigned i = 0; i < std::min( _N, newSize ); ++i ) {
-        _newData[i] = _data[i];
+    if( _data != nullptr ) {
+        T* _newData = new T[newSize];
+        for( unsigned i = 0; i < std::min( _N, newSize ); ++i ) {
+            _newData[i] = _data[i];
+        }
+        delete[] _data;
+        _N    = newSize;
+        _data = _newData;
     }
-    delete[] _data;
-    _data = _newData;
+    else {
+        _N    = newSize;
+        _data = new T[newSize];
+    }
 }
 
 template <class T> T* Vector<T>::begin() { return &_data[0]; }

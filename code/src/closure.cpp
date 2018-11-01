@@ -17,6 +17,7 @@ Closure::Closure( Settings* settings )
 
     Vector xi = _quad->GetNodes();
     Vector w  = _quad->GetWeights();
+
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         for( unsigned i = 0; i < _nMoments; ++i ) {
             _phi[k][i]         = _basis->Evaluate( i, xi[k] );
@@ -44,6 +45,7 @@ Closure::Closure( Settings* settings )
 Closure::~Closure() {
     delete _basis;
     delete _quad;
+    delete _perm;
 }
 
 Closure* Closure::Create( Settings* settings ) {

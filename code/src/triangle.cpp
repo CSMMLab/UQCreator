@@ -54,17 +54,12 @@ Vector Triangle::getOutwardNormal( Node* A, Node* B ) {
     double dx = A->coords[0] - B->coords[0];
     double dy = A->coords[1] - B->coords[1];
     Vector n{-dy, dx};
-    std::cout << "n = " << n << std::endl;
     Vector p{A->coords[0], A->coords[1]};
-    std::cout << "p = " << p << std::endl;
     Vector a{_center[0], _center[1]};
-    std::cout << "a = " << a << std::endl;
     if( dot( n, a - p ) > 0 ) {
         n *= -1.0;
     }
-    std::cout << "n = " << n << std::endl;
     n /= norm( n );
-    std::cout << "n_norm = " << n << std::endl;
     return n;
 }
 
