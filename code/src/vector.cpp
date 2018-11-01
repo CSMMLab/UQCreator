@@ -30,20 +30,30 @@ template <class T> class Vector
     Vector( const Vector& other );
     Vector( std::initializer_list<T> initList );
     ~Vector();
+    void operator=( const Vector& other );
 
     T& operator[]( unsigned i );
     const T& operator[]( unsigned i ) const;
+
     Vector operator+( const Vector& other ) const;
     Vector operator-( const Vector& other ) const;
     Vector operator*( const Vector& other ) const;
-    Vector operator*( const T& scalar ) const;
     Vector operator/( const Vector& other ) const;
-    void operator=( const Vector& other );
+
+    Vector operator+( const T& scalar ) const;
+    Vector operator-( const T& scalar ) const;
+    Vector operator*( const T& scalar ) const;
+    Vector operator/( const T& scalar ) const;
+
     void operator+=( const Vector& other );
     void operator-=( const Vector& other );
     void operator*=( const Vector& other );
-    void operator*=( const T& scalar );
     void operator/=( const Vector& other );
+
+    void operator+=( const T& scalar );
+    void operator-=( const T& scalar );
+    void operator*=( const T& scalar );
+    void operator/=( const T& scalar );
 
     unsigned size() const;
     void reset();
@@ -96,6 +106,17 @@ template <class T> Vector<T>::Vector( std::initializer_list<T> initList ) : _N( 
     }
 }
 
+template <class T> void Vector<T>::operator=( const Vector& other ) {
+    if( _data == nullptr ) {
+        _N    = other._N;
+        _ref  = false;
+        _data = new T[_N];
+    }
+    for( unsigned i = 0; i < _N; ++i ) {
+        this->_data[i] = other._data[i];
+    }
+}
+
 template <class T> T& Vector<T>::operator[]( unsigned i ) { return _data[i]; }
 
 template <class T> const T& Vector<T>::operator[]( unsigned i ) const { return _data[i]; }
@@ -124,14 +145,6 @@ template <class T> Vector<T> Vector<T>::operator*( const Vector& other ) const {
     return res;
 }
 
-template <class T> Vector<T> Vector<T>::operator*( const T& scalar ) const {
-    Vector<T> res( _N );
-    for( unsigned i = 0; i < _N; ++i ) {
-        res[i] = this->_data[i] * scalar;
-    }
-    return res;
-}
-
 template <class T> Vector<T> Vector<T>::operator/( const Vector& other ) const {
     Vector<T> res( _N );
     for( unsigned i = 0; i < _N; ++i ) {
@@ -140,15 +153,36 @@ template <class T> Vector<T> Vector<T>::operator/( const Vector& other ) const {
     return res;
 }
 
-template <class T> void Vector<T>::operator=( const Vector& other ) {
-    if( _data == nullptr ) {
-        _N    = other._N;
-        _ref  = false;
-        _data = new T[_N];
-    }
+template <class T> Vector<T> Vector<T>::operator+( const T& scalar ) const {
+    Vector<T> res( _N );
     for( unsigned i = 0; i < _N; ++i ) {
-        this->_data[i] = other._data[i];
+        res[i] = this->_data[i] + scalar;
     }
+    return res;
+}
+
+template <class T> Vector<T> Vector<T>::operator-( const T& scalar ) const {
+    Vector<T> res( _N );
+    for( unsigned i = 0; i < _N; ++i ) {
+        res[i] = this->_data[i] - scalar;
+    }
+    return res;
+}
+
+template <class T> Vector<T> Vector<T>::operator*( const T& scalar ) const {
+    Vector<T> res( _N );
+    for( unsigned i = 0; i < _N; ++i ) {
+        res[i] = this->_data[i] * scalar;
+    }
+    return res;
+}
+
+template <class T> Vector<T> Vector<T>::operator/( const T& scalar ) const {
+    Vector<T> res( _N );
+    for( unsigned i = 0; i < _N; ++i ) {
+        res[i] = this->_data[i] / scalar;
+    }
+    return res;
 }
 
 template <class T> void Vector<T>::operator+=( const Vector& other ) {
@@ -169,15 +203,33 @@ template <class T> void Vector<T>::operator*=( const Vector& other ) {
     }
 }
 
+template <class T> void Vector<T>::operator/=( const Vector& other ) {
+    for( unsigned i = 0; i < _N; ++i ) {
+        this->_data[i] /= other._data[i];
+    }
+}
+
+template <class T> void Vector<T>::operator+=( const T& scalar ) {
+    for( unsigned i = 0; i < _N; ++i ) {
+        this->_data[i] += scalar;
+    }
+}
+
+template <class T> void Vector<T>::operator-=( const T& scalar ) {
+    for( unsigned i = 0; i < _N; ++i ) {
+        this->_data[i] -= scalar;
+    }
+}
+
 template <class T> void Vector<T>::operator*=( const T& scalar ) {
     for( unsigned i = 0; i < _N; ++i ) {
         this->_data[i] *= scalar;
     }
 }
 
-template <class T> void Vector<T>::operator/=( const Vector& other ) {
+template <class T> void Vector<T>::operator/=( const T& scalar ) {
     for( unsigned i = 0; i < _N; ++i ) {
-        this->_data[i] /= other._data[i];
+        this->_data[i] /= scalar;
     }
 }
 
