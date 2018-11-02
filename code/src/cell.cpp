@@ -66,3 +66,9 @@ void Cell::UpdateBoundaryNormal() {
 Vector Cell::GetUnitNormal( unsigned i ) { return _edges[i]->unitNormal; }
 
 Vector Cell::GetNormal( unsigned i ) { return _edges[i]->scaledNormal; }
+
+void Cell::SetDefaultCellId( unsigned id ) {
+    for( unsigned i = 0; i < _N; ++i ) {
+        this->AddNeighborId( id, i );
+    }
+}

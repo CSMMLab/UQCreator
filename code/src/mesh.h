@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <cpptoml.h>
 #include <iostream>
+#include <omp.h>
 #include <string.h>
 
 #include "cell.h"

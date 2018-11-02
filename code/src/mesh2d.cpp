@@ -184,6 +184,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                         ss >> id;
                     }
                     _cells.push_back( new Triangle( id, elementNodes ) );
+                    _cells.back()->SetDefaultCellId( _numCells );
                 }
                 break;
             }
@@ -210,7 +211,9 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         std::cerr << "File not found" << std::endl;
     }
     ifs.close();
+    std::cout << "pre" << std::endl;
     DetermineNeighbors();
+    std::cout << "post" << std::endl;
     _neighborIDs.resize( _numCells );
     for( unsigned j = 0; j < _numCells; ++j ) {
         _neighborIDs[j] = _cells[j]->GetNeighborIDs();
@@ -258,40 +261,54 @@ Node* Mesh2D::FindNodeByID( unsigned id ) {
     return _nodes[pos];
 }
 
+void Mesh2D::AddNeighbor( Cell* c, Cell* neighbor, unsigned index0, unsigned index1 ) {
+    if( index0 > index1 ) {
+        unsigned tmp = index0;
+        index0       = index1;
+        index1       = tmp;
+    }
+    if( index0 == 0 && index1 == 1 ) {
+        c->AddNeighbor( neighbor, 0 );
+    }
+    else if( index0 == 1 && index1 == 2 ) {
+        c->AddNeighbor( neighbor, 1 );
+    }
+    else if( index0 == 0 && index1 == 2 ) {
+        c->AddNeighbor( neighbor, 2 );
+    }
+}
+
 void Mesh2D::DetermineNeighbors() {
-    unsigned index0 = 0, index1 = 0;
-    for( auto& i : _cells ) {
-        for( unsigned l = 0; l < i->GetNeighborIDs().size(); ++l ) {
-            i->AddNeighborId( _numCells, 0 );
-            i->AddNeighborId( _numCells, 1 );
-            i->AddNeighborId( _numCells, 2 );
-        }
-        for( auto& j : _cells ) {
-            if( i->GetID() != j->GetID() ) {
-                unsigned matchCtr = 0;
-                for( unsigned n = 0; n < i->GetNodeNum(); ++n ) {
-                    Node* k = i->GetNodes()[n];
-                    for( const auto& l : j->GetNodes() ) {
-                        if( k->id == l->id ) {
-                            matchCtr++;
-                            if( matchCtr == 1 ) index0 = n;
-                            if( matchCtr == 2 ) index1 = n;
+#pragma omp parallel for
+    for( unsigned i = 0; i < _numCells; ++i ) {
+        Cell* ci = _cells[i];
+        for( unsigned j = i + 1; j < _numCells; ++j ) {
+            Cell* cj         = _cells[j];
+            unsigned indexI0 = 0, indexI1 = 0;
+            unsigned indexJ0 = 0, indexJ1 = 0;
+            unsigned matchCtr = 0;
+            for( unsigned ni = 0; ni < ci->GetNodeNum(); ++ni ) {
+                for( unsigned nj = 0; nj < cj->GetNodeNum(); ++nj ) {
+                    if( ci->GetNode( ni )->id == cj->GetNode( nj )->id ) {
+                        matchCtr++;
+                        if( matchCtr == 1 ) {
+                            indexI0 = ni;
+                            indexJ0 = nj;
                         }
-                    }
-                    if( matchCtr == 2 ) {
-                        if( index0 == 0 && index1 == 2 )
-                            i->AddNeighbor( j, 2 );
-                        else
-                            i->AddNeighbor( j, index0 );
-                        break;
+                        else if( matchCtr == 2 ) {
+                            indexI1 = ni;
+                            indexJ1 = nj;
+                            this->AddNeighbor( ci, cj, indexI0, indexI1 );
+                            this->AddNeighbor( cj, ci, indexJ0, indexJ1 );
+                            goto cnt;
+                        }
                     }
                 }
             }
+        cnt:;
         }
-    }
-    for( auto& i : _cells ) {
-        if( i->IsBoundaryCell() ) {
-            i->UpdateBoundaryNormal();
+        if( _cells[i]->IsBoundaryCell() ) {
+            _cells[i]->UpdateBoundaryNormal();
         }
     }
 }

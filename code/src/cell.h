@@ -68,6 +68,7 @@ class Cell
     Vector GetBoundaryUnitNormal();
     Vector GetUnitNormal( unsigned i );
     Vector GetNormal( unsigned i );
+    void SetDefaultCellId( unsigned id );
 };
 
 #endif    // ELEMENT_H
