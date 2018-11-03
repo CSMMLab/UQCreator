@@ -52,9 +52,9 @@ template <class T> Matrix<T>::Matrix() : _data( nullptr ), _rows( 0 ), _columns(
 template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skipZeroInit ) : _rows( rows ), _columns( columns ) {
     _data = new T[_rows * _columns];
     if( !skipZeroInit ) {
-        for( unsigned i = 0; i < _rows; ++i ) {
-            for( unsigned j = 0; j < _columns; ++j ) {
-                _data[i * _columns + j] = 0.0;
+        for( unsigned j = 0; j < _columns; ++j ) {
+            for( unsigned i = 0; i < _rows; ++i ) {
+                _data[j * _rows + i] = 0.0;
             }
         }
     }
@@ -62,18 +62,18 @@ template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skip
 
 template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) : _rows( rows ), _columns( columns ) {
     _data = new T[_rows * _columns];
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
-            _data[i * _columns + j] = init;
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
+            _data[j * _rows + i] = init;
         }
     }
 }
 
 template <class T> Matrix<T>::Matrix( const Matrix& other ) : _rows( other._rows ), _columns( other._columns ) {
     _data = new T[_rows * _columns];
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
-            _data[i * _columns + j] = other._data[i * _columns + j];
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
+            _data[j * _rows + i] = other._data[j * _rows + i];
         }
     }
 }
@@ -86,21 +86,23 @@ template <class T> void Matrix<T>::operator=( const Matrix<T>& other ) {
         _columns = other._columns;
         _data    = new T[_rows * _columns];
     }
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             ( *this )( i, j ) = other( i, j );
         }
     }
 }
 
-template <class T> T& Matrix<T>::operator()( unsigned i, unsigned j ) { return _data[i * _columns + j]; }
+template <class T> T& Matrix<T>::operator()( unsigned i, unsigned j ) { return _data[j * _rows + i]; }
 
-template <class T> const T& Matrix<T>::operator()( unsigned i, unsigned j ) const { return _data[i * _columns + j]; }
+template <class T> const T& Matrix<T>::operator()( unsigned i, unsigned j ) const { return _data[j * _rows + i]; }
 
 template <class T> Matrix<T> Matrix<T>::operator+( const Matrix<T>& other ) const {
     Matrix<T> res( _rows, _columns, true );
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             res( i, j ) = ( *this )( i, j ) + other( i, j );
         }
     }
@@ -109,8 +111,8 @@ template <class T> Matrix<T> Matrix<T>::operator+( const Matrix<T>& other ) cons
 
 template <class T> Matrix<T> Matrix<T>::operator-( const Matrix<T>& other ) const {
     Matrix<T> res( _rows, _columns, true );
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             res( i, j ) = ( *this )( i, j ) - other( i, j );
         }
     }
@@ -119,8 +121,8 @@ template <class T> Matrix<T> Matrix<T>::operator-( const Matrix<T>& other ) cons
 
 template <class T> Matrix<T> Matrix<T>::operator*( const Matrix<T>& other ) const {
     Matrix<T> res( this->_rows, other.columns() );
-    for( unsigned i = 0; i < _rows; i++ ) {
-        for( unsigned j = 0; j < other.columns(); j++ ) {
+    for( unsigned j = 0; j < other._columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             for( unsigned k = 0; k < other.rows(); k++ ) {
                 res( i, j ) += ( *this )( i, k ) * other( k, j );
             }
@@ -131,8 +133,8 @@ template <class T> Matrix<T> Matrix<T>::operator*( const Matrix<T>& other ) cons
 
 template <class T> Matrix<T> Matrix<T>::operator+( const T& scalar ) const {
     Matrix<T> res( _rows, columns(), true );
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             res( i, j ) = ( *this )( i, j ) + scalar;
         }
     }
@@ -141,8 +143,8 @@ template <class T> Matrix<T> Matrix<T>::operator+( const T& scalar ) const {
 
 template <class T> Matrix<T> Matrix<T>::operator-( const T& scalar ) const {
     Matrix<T> res( _rows, columns(), true );
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             res( i, j ) = ( *this )( i, j ) - scalar;
         }
     }
@@ -151,8 +153,8 @@ template <class T> Matrix<T> Matrix<T>::operator-( const T& scalar ) const {
 
 template <class T> Matrix<T> Matrix<T>::operator*( const T& scalar ) const {
     Matrix<T> res( _rows, columns(), true );
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             res( i, j ) = ( *this )( i, j ) * scalar;
         }
     }
@@ -161,8 +163,8 @@ template <class T> Matrix<T> Matrix<T>::operator*( const T& scalar ) const {
 
 template <class T> Matrix<T> Matrix<T>::operator/( const T& scalar ) const {
     Matrix<T> res( _rows, columns(), true );
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             res( i, j ) = ( *this )( i, j ) / scalar;
         }
     }
@@ -171,8 +173,8 @@ template <class T> Matrix<T> Matrix<T>::operator/( const T& scalar ) const {
 
 template <class T> Vector<T> Matrix<T>::operator*( const Vector<T>& vector ) const {
     Vector<T> res( _rows );
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             res[i] += ( *this )( i, j ) * vector[j];
         }
     }
@@ -180,16 +182,16 @@ template <class T> Vector<T> Matrix<T>::operator*( const Vector<T>& vector ) con
 }
 
 template <class T> void Matrix<T>::operator+=( const Matrix<T>& other ) {
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             ( *this )( i, j ) += other( i, j );
         }
     }
 }
 
 template <class T> void Matrix<T>::operator-=( const Matrix<T>& other ) {
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             ( *this )( i, j ) -= other( i, j );
         }
     }
@@ -200,16 +202,16 @@ template <class T> unsigned Matrix<T>::rows() const { return _rows; }
 template <class T> unsigned Matrix<T>::columns() const { return _columns; }
 
 template <class T> void Matrix<T>::reset() {
-    for( unsigned i = 0; i < _rows; ++i ) {
-        for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             ( *this )( i, j ) = 0.0;
         }
     }
 }
 
 template <class T> bool Matrix<T>::isSymmetric() const {
-    for( unsigned i = 1; i < _rows; ++i ) {
-        for( unsigned j = i - 1; j < _columns; ++j ) {
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
             if( ( *this )( i, j ) != ( *this )( j, i ) ) {
                 return false;
             }

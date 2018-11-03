@@ -1,6 +1,6 @@
 [general]
 problem = "Burgers1D"
-outputDir = "results"
+outputDir = "../results"
 
 [mesh]
 dimension = 1
@@ -13,12 +13,10 @@ outputFile = "burgers_shock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 CFL = 0.5
-# available limiter: minmod, none|off
-limiter = "none"
 tEnd = 0.14
 
 [moment_system]
-# available closures: BoundedBarrier, StochasticGalerkin, Euler
+# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
 closure = "BoundedBarrier"
 moments = 3
 quadPoints = 10
@@ -26,6 +24,5 @@ maxIterations = 200
 epsilon = 5e-5
 
 [plot]
-enabled = true
 steps = 5
 time  = 0.01

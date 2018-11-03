@@ -12,20 +12,12 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _time    = TimeSolver::Create( _settings, _mesh );
 
     _dt = _time->GetTimeStepSize();
-
-    if( _settings->GetPlotEnabled() ) {
-        _plotEngine = new PlotEngine( _settings, _closure, _mesh, _problem );
-    }
-    else {
-        _plotEngine = nullptr;
-    }
 }
 
 MomentSolver::~MomentSolver() {
     delete _quad;
     delete _closure;
     delete _time;
-    delete _plotEngine;
 }
 
 void MomentSolver::Solve() {
@@ -78,7 +70,6 @@ void MomentSolver::Solve() {
             _closure->SolveClosure( _lambda[j], uNew[j] );
         }
 
-        Plot( t, nSteps );
         double residual = 0;
         for( unsigned j = 0; j < _nCells; ++j ) {
             residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) );
@@ -213,25 +204,4 @@ Vector MomentSolver::IC( Vector x, double xi ) {
     }
     std::cerr << "Reached end of IC. No initial condition set" << std::endl;
     exit( EXIT_FAILURE );
-}
-
-void MomentSolver::Plot( double time, unsigned nSteps ) {
-    static double lastPlotTime = 0.0;
-    if( _plotEngine != nullptr ) {
-        bool execPlot = false;
-        if( std::fabs( _settings->GetPlotTimeInterval() + 1.0 ) < std::numeric_limits<double>::epsilon() &&
-            time - lastPlotTime > _settings->GetPlotTimeInterval() ) {
-            lastPlotTime = time;
-            execPlot     = true;
-        }
-        if( _settings->GetPlotStepInterval() != 0 && nSteps % _settings->GetPlotStepInterval() == 0 ) {
-            execPlot = true;
-        }
-        if( execPlot ) {
-            _plotEngine->updatePlotData( time, _lambda );
-        }
-        else {
-            _plotEngine->refresh();
-        }
-    }
 }

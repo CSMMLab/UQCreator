@@ -20,7 +20,7 @@ class Mesh1D : public Mesh
     void CreateGrid( double a, double b );
 
   public:
-    virtual void Export( Matrix results ) const;
+    virtual void Export( const Matrix& results ) const;
 
     Mesh1D( Settings* settings );
     virtual Vector GetNodePositionsX() const;

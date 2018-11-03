@@ -31,7 +31,6 @@ class Settings
     double _epsilon;
     double _CFL;
     double _tEnd;
-    bool _plotEnabled;
     unsigned _plotStepInterval;
     double _plotTimeInterval;
     LimiterType _limiterType;

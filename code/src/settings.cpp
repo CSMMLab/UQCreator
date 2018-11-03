@@ -154,15 +154,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
 
         // section plot
-        auto plot        = file->get_table( "plot" );
-        auto plotEnabled = plot->get_as<bool>( "enabled" );
-        if( plotEnabled ) {
-            _plotEnabled = *plotEnabled;
-        }
-        else {
-            std::cerr << "[Inputfile][plot][(bool)enabled] Not set!" << std::endl;
-            validConfig = false;
-        }
+        auto plot         = file->get_table( "plot" );
         _plotStepInterval = plot->get_as<unsigned>( "steps" ).value_or( 0 );
         _plotTimeInterval = plot->get_as<double>( "time" ).value_or( -1.0 );
 
@@ -207,6 +199,5 @@ unsigned Settings::GetMaxIterations() const { return _maxIterations; }
 double Settings::GetEpsilon() const { return _epsilon; }
 
 // plot
-bool Settings::GetPlotEnabled() const { return _plotEnabled; }
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }
 double Settings::GetPlotTimeInterval() const { return _plotTimeInterval; }

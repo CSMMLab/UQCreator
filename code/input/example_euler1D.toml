@@ -1,6 +1,6 @@
 [general]
 problem = "Euler1D"
-outputDir = "results"
+outputDir = "../results"
 
 [mesh]
 dimension = 1
@@ -13,12 +13,10 @@ outputFile = "euler_shock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 CFL = 5.0
-# available limiter: minmod, none|off
-limiter = "none"
 tEnd = 0.14
 
 [moment_system]
-# available closures: BoundedBarrier, StochasticGalerkin, Euler
+# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
 closure = "Euler"
 moments = 5
 quadPoints = 50
@@ -26,6 +24,5 @@ maxIterations = 200
 epsilon = 5e-5
 
 [plot]
-enabled = true
 steps = 10
 time = 0.01

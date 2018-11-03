@@ -7,7 +7,6 @@
 #include "closure.h"
 #include "legendre.h"
 #include "mesh.h"
-#include "plotengine.h"
 #include "problem.h"
 #include "settings.h"
 #include "timesolver.h"
@@ -23,7 +22,6 @@ class MomentSolver
     TimeSolver* _time;
     MatVec _lambda;
     Problem* _problem;
-    PlotEngine* _plotEngine;
     double _dt, _tEnd;
     unsigned _nCells, _nMoments, _nStates, _nQuadPoints;
 

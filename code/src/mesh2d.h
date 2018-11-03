@@ -56,7 +56,7 @@ class Mesh2D : public Mesh
     virtual ~Mesh2D();
 
     virtual Vector GetNodePositionsX() const;
-    virtual void Export( Matrix results ) const;
+    virtual void Export( const Matrix& results ) const;
 };
 
 #endif    // MESH2D_H

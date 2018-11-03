@@ -34,9 +34,9 @@ template <class T, class U> VectorSpace::Matrix<T> operator*( const U& scalar, c
 }
 
 template <class T> VectorSpace::Matrix<T> trans( const VectorSpace::Matrix<T>& mat ) {
-    VectorSpace::Matrix<T> res( mat.rows(), mat.columns() );
-    for( unsigned j = 0; j < mat.columns(); ++j ) {
-        for( unsigned i = 0; i < mat.rows(); ++i ) {
+    VectorSpace::Matrix<T> res( mat.columns(), mat.rows() );
+    for( unsigned j = 0; j < mat.rows(); ++j ) {
+        for( unsigned i = 0; i < mat.columns(); ++i ) {
             res( i, j ) = mat( j, i );
         }
     }
@@ -65,7 +65,7 @@ template <class T> double dot( const VectorSpace::Vector<T>& a, const VectorSpac
 }
 
 template <class T> VectorSpace::Matrix<T> outer( const VectorSpace::Vector<T>& a, const VectorSpace::Vector<T>& b ) {
-    VectorSpace::Matrix<T> res( a.size(), a.size(), true );
+    VectorSpace::Matrix<T> res( a.size(), a.size() );
     for( unsigned i = 0; i < a.size(); ++i ) {
         for( unsigned j = 0; j < b.size(); ++j ) {
             res( i, j ) += a[i] * b[j];
@@ -135,6 +135,25 @@ template <class T> inline void gesv( VectorSpace::Matrix<T>& A, VectorSpace::Vec
     }
 
     dgesv_( &n, &nrhs, A._data, &lda, ipiv, b._data, &ldb, &info );
+
+    if( info > 0 ) {
+        std::cerr << ( "Inversion of singular matrix failed" ) << std::endl;
+        exit( EXIT_FAILURE );
+    }
+}
+
+template <class T> inline void posv( VectorSpace::Matrix<T>& A, VectorSpace::Vector<T>& b ) {
+    int n( A.rows() );
+    int nrhs( 1 );
+    int lda( A.columns() );
+    int ldb( b.size() );
+    int info( 0 );
+
+    if( n == 0 ) {
+        return;
+    }
+
+    dposv_( 'U', &n, &nrhs, A._data, &lda, b._data, &ldb, &info );
 
     if( info > 0 ) {
         std::cerr << ( "Inversion of singular matrix failed" ) << std::endl;

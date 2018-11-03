@@ -26,7 +26,6 @@ class Closure
     std::vector<Vector> _phiTildeVec;
     MatVec _hPartial;    // stores partial matrices for Hessian computation
     double _alpha;
-    double _uMinus, _uPlus;    // IPM bounds for scalar problems
     unsigned _nMoments;
     unsigned _nQuadPoints;
     unsigned _nStates;
@@ -85,8 +84,6 @@ class Closure
      */
     Matrix MakeMatrix( const Vector& vec ) const;
 
-    double GetUPlus() const { return _uPlus; }
-    double GetUMinus() const { return _uMinus; }
     double CalcNorm( Vector& test );
 };
 

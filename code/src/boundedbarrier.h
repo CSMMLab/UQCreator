@@ -7,6 +7,7 @@
 class BoundedBarrier : public Closure
 {
   private:
+    double _uMinus, _uPlus;
     BoundedBarrier() = delete;
 
   public:

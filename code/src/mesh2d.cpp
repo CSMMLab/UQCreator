@@ -211,9 +211,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         std::cerr << "File not found" << std::endl;
     }
     ifs.close();
-    std::cout << "pre" << std::endl;
     DetermineNeighbors();
-    std::cout << "post" << std::endl;
     _neighborIDs.resize( _numCells );
     for( unsigned j = 0; j < _numCells; ++j ) {
         _neighborIDs[j] = _cells[j]->GetNeighborIDs();
@@ -313,7 +311,7 @@ void Mesh2D::DetermineNeighbors() {
     }
 }
 
-void Mesh2D::Export( Matrix results ) const {
+void Mesh2D::Export( const Matrix& results ) const {
     assert( results.rows() == _settings->GetNStates() * 2 );
     std::string vtkFile = _settings->GetOutputFile();
     auto writer         = vtkXMLUnstructuredGridWriterSP::New();

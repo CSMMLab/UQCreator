@@ -60,7 +60,7 @@ class Mesh
 
     virtual Vector GetNodePositionsX() const = 0;
 
-    virtual void Export( Matrix results ) const = 0;
+    virtual void Export( const Matrix& results ) const = 0;
 
     Mesh( Settings* settings, unsigned dimension );
     virtual ~Mesh();

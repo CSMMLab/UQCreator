@@ -9,6 +9,7 @@ template <class T> class Matrix;
 }    // namespace VectorSpace
 
 template <class T> inline void gesv( VectorSpace::Matrix<T>& A, VectorSpace::Vector<T>& b, int* ipiv );
+template <class T> inline void posv( VectorSpace::Matrix<T>& A, VectorSpace::Vector<T>& b );
 
 namespace VectorSpace {
 
@@ -62,6 +63,7 @@ template <class T> class Vector
     iterator end();
 
     friend void gesv<>( Matrix<T>& A, Vector<T>& b, int* ipiv );
+    friend void posv<>( Matrix<T>& A, Vector<T>& b );
 };
 
 template <class T> Vector<T>::Vector() : _data( nullptr ), _N( 0 ), _ref( false ) {}

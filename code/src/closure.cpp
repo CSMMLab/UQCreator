@@ -32,9 +32,6 @@ Closure::Closure( Settings* settings )
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         _hPartial[k] = outer( column( _phiTildeTrans, k ), column( _phiTildeTrans, k ) ) * w[k];
     }
-    double du = 0.0;
-    _uMinus   = 3.0 - du;
-    _uPlus    = 12.0 + du;
 
     _perm = new int[_nStates * _nMoments];
     for( int i = 0; i < static_cast<int>( _nStates * _nMoments ); ++i ) {
@@ -84,7 +81,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
     Hessian( H, lambda );
-    // blaze::posv( H, g, 'L' );
+    // posv( H, g );
     gesv( H, g, _perm );
     Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
     Gradient( dlambdaNew, lambdaNew, u );
@@ -116,7 +113,6 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
             }
         }
         lambda = lambdaNew;
-
         if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
             lambda = lambdaNew;
             return;
