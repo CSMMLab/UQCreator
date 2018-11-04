@@ -1,10 +1,13 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
+#include <assert.h>
 #include <iostream>
 #include <vector>
 
 #include "typedefs.h"
+
+enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE };
 
 struct Node {
     unsigned id;
@@ -34,10 +37,12 @@ class Cell
     std::vector<Node*> _nodes;
     std::vector<Edge*> _edges;
     std::vector<Cell*> _neighbors;
-    blaze::DynamicVector<unsigned> _neighborIDs;
+    VectorU _neighborIDs;
     bool _isBoundaryCell;
+    BoundaryType _boundaryType;
     double _area;
     Vector _center;
+    Vector _boundaryNormal;
 
     virtual void SetupEdges() = 0;
 
@@ -51,12 +56,19 @@ class Cell
     void AddNeighbor( const Cell* n, unsigned k );
     void AddNeighborId( unsigned n, unsigned k );
     std::vector<Cell*> GetNeighbors();
-    blaze::DynamicVector<unsigned> GetNeighborIDs();
+    VectorU GetNeighborIDs();
     bool IsBoundaryCell();
     std::vector<Edge*> GetEdges();
     unsigned GetID();
     double GetArea();
     const Vector& GetCenter();
+    void SetBoundaryType( BoundaryType type );
+    BoundaryType GetBoundaryType() const;
+    void UpdateBoundaryNormal();
+    Vector GetBoundaryUnitNormal();
+    Vector GetUnitNormal( unsigned i );
+    Vector GetNormal( unsigned i );
+    void SetDefaultCellId( unsigned id );
 };
 
 #endif    // ELEMENT_H

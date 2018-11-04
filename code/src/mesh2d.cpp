@@ -184,6 +184,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                         ss >> id;
                     }
                     _cells.push_back( new Triangle( id, elementNodes ) );
+                    _cells.back()->SetDefaultCellId( _numCells );
                 }
                 break;
             }
@@ -198,6 +199,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                         for( unsigned l = 0; l < _boundaries[j].elements.size(); ++l ) {
                             if( _boundaries[j].elements[l].nodes[0] == nodeId || _boundaries[j].elements[l].nodes[1] == nodeId ) {
                                 _boundaryType[i] = _boundaries[j].type;
+                                _cells[i]->SetBoundaryType( _boundaries[j].type );
                             }
                         }
                     }
@@ -257,44 +259,59 @@ Node* Mesh2D::FindNodeByID( unsigned id ) {
     return _nodes[pos];
 }
 
-void Mesh2D::DetermineNeighbors() {
-    unsigned index0 = 0, index1 = 0;
-    for( auto& i : _cells ) {
-        for( unsigned l = 0; l < i->GetNeighborIDs().size(); ++l ) {
-            i->AddNeighborId( _numCells, 0 );
-            i->AddNeighborId( _numCells, 1 );
-            i->AddNeighborId( _numCells, 2 );
-        }
-        for( auto& j : _cells ) {
-            // if( i->GetNeighbors().size() == i->GetNodeNum() - i->IsBoundaryCell() ) {
-            //    goto cnt;
-            //}
-            if( i->GetID() != j->GetID() ) {
-                unsigned matchCtr = 0;
-                for( unsigned n = 0; n < i->GetNodeNum(); ++n ) {
-                    Node* k = i->GetNodes()[n];
-                    for( const auto& l : j->GetNodes() ) {
-                        if( k->id == l->id ) {
-                            matchCtr++;
-                            if( matchCtr == 1 ) index0 = n;
-                            if( matchCtr == 2 ) index1 = n;
-                        }
-                    }
-                    if( matchCtr == 2 ) {
-                        if( index0 == 0 && index1 == 2 )
-                            i->AddNeighbor( j, 2 );
-                        else
-                            i->AddNeighbor( j, index0 );
-                        break;
-                    }
-                }
-            }
-        }
-        // cnt:;
+void Mesh2D::AddNeighbor( Cell* c, Cell* neighbor, unsigned index0, unsigned index1 ) {
+    if( index0 > index1 ) {
+        unsigned tmp = index0;
+        index0       = index1;
+        index1       = tmp;
+    }
+    if( index0 == 0 && index1 == 1 ) {
+        c->AddNeighbor( neighbor, 0 );
+    }
+    else if( index0 == 1 && index1 == 2 ) {
+        c->AddNeighbor( neighbor, 1 );
+    }
+    else if( index0 == 0 && index1 == 2 ) {
+        c->AddNeighbor( neighbor, 2 );
     }
 }
 
-void Mesh2D::Export( Matrix results ) const {
+void Mesh2D::DetermineNeighbors() {
+#pragma omp parallel for
+    for( unsigned i = 0; i < _numCells; ++i ) {
+        Cell* ci = _cells[i];
+        for( unsigned j = i + 1; j < _numCells; ++j ) {
+            Cell* cj         = _cells[j];
+            unsigned indexI0 = 0, indexI1 = 0;
+            unsigned indexJ0 = 0, indexJ1 = 0;
+            unsigned matchCtr = 0;
+            for( unsigned ni = 0; ni < ci->GetNodeNum(); ++ni ) {
+                for( unsigned nj = 0; nj < cj->GetNodeNum(); ++nj ) {
+                    if( ci->GetNode( ni )->id == cj->GetNode( nj )->id ) {
+                        matchCtr++;
+                        if( matchCtr == 1 ) {
+                            indexI0 = ni;
+                            indexJ0 = nj;
+                        }
+                        else if( matchCtr == 2 ) {
+                            indexI1 = ni;
+                            indexJ1 = nj;
+                            this->AddNeighbor( ci, cj, indexI0, indexI1 );
+                            this->AddNeighbor( cj, ci, indexJ0, indexJ1 );
+                            goto cnt;
+                        }
+                    }
+                }
+            }
+        cnt:;
+        }
+        if( _cells[i]->IsBoundaryCell() ) {
+            _cells[i]->UpdateBoundaryNormal();
+        }
+    }
+}
+
+void Mesh2D::Export( const Matrix& results ) const {
     assert( results.rows() == _settings->GetNStates() * 2 );
     std::string vtkFile = _settings->GetOutputFile();
     auto writer         = vtkXMLUnstructuredGridWriterSP::New();

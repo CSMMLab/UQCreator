@@ -1,20 +1,18 @@
-#include <QApplication>
-#include <blaze/Math.h>
 #include <iostream>
+#include <omp.h>
 
 #include "mesh.h"
 #include "momentsolver.h"
 #include "problem.h"
 #include "settings.h"
 
-bool CheckInput( std::string& configFile, bool& batchMode, int argc, char* argv[] ) {
+bool CheckInput( std::string& configFile, int argc, char* argv[] ) {
     std::string usage_help = "\n"
                              "Usage: " +
                              std::string( argv[0] ) +
                              " -c inputfile\n\n"
                              "Options:\n"
                              "  -t N             number of threads to use\n"
-                             "  -b               runs in batch mode (not displaying plots)\n"
                              "  -h               displays this message\n";
 
     if( argc < 3 ) {
@@ -35,11 +33,8 @@ bool CheckInput( std::string& configFile, bool& batchMode, int argc, char* argv[
                 return false;
             }
         }
-        else if( arg == "-b" ) {
-            batchMode = true;
-        }
         else if( arg == "-t" ) {
-            blaze::setNumThreads( std::strtoul( argv[++i], nullptr, 10 ) );
+            omp_set_num_threads( std::stoi( argv[++i] ) );
         }
         else {
             std::cout << usage_help;
@@ -68,23 +63,13 @@ void PrintInit( std::string configFile ) {
 
 int main( int argc, char* argv[] ) {
     std::string configFile = "";
-    bool batchMode         = false;
 
-    if( !CheckInput( configFile, batchMode, argc, argv ) ) {
+    if( !CheckInput( configFile, argc, argv ) ) {
         return EXIT_FAILURE;
     }
     PrintInit( configFile );
 
-    Settings* settings = new Settings( configFile );
-    if( !settings->GetPlotEnabled() ) {
-        batchMode = true;
-    }
-
-    QApplication* app = nullptr;
-    if( !batchMode ) {
-        app = new QApplication( argc, argv );
-    }
-
+    Settings* settings   = new Settings( configFile );
     Mesh* mesh           = Mesh::Create( settings );
     Problem* problem     = Problem::Create( settings );
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );
@@ -97,11 +82,5 @@ int main( int argc, char* argv[] ) {
     delete problem;
     delete mesh;
     delete settings;
-
-    if( !batchMode && app ) {
-        return app->exec();
-    }
-    else {
-        return EXIT_SUCCESS;
-    }
+    return EXIT_SUCCESS;
 }

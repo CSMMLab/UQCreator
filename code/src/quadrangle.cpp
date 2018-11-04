@@ -15,9 +15,9 @@ Quadrangle::Quadrangle( unsigned id, std::vector<Node*> nodes ) : Cell( CELL_TYP
     }
     Vector d1{_nodes[0]->coords[0] - _nodes[2]->coords[0], _nodes[1]->coords[1] - _nodes[3]->coords[1]};
     Vector d2{_nodes[1]->coords[0] - _nodes[3]->coords[0], _nodes[1]->coords[1] - _nodes[3]->coords[1]};
-    double angle = std::acos( blaze::inner( d1, d2 ) / ( blaze::norm( d1 ) * blaze::norm( d2 ) ) );
+    double angle = std::acos( dot( d1, d2 ) / ( norm( d1 ) * norm( d2 ) ) );
 
-    _area = 0.5 * std::abs( inner( d1, d2 ) * std::sin( angle ) );
+    _area = 0.5 * std::abs( dot( d1, d2 ) * std::sin( angle ) );
 
     _center = Vector{( _nodes[0]->coords[0] + _nodes[1]->coords[0] + _nodes[2]->coords[0] + _nodes[3]->coords[0] ) / 4.0,
                      ( _nodes[0]->coords[1] + _nodes[1]->coords[1] + _nodes[2]->coords[1] + _nodes[3]->coords[1] ) / 4.0};
@@ -34,7 +34,7 @@ void Quadrangle::SetupEdges() {
         Node* B           = _nodes[i + 1];
         double length     = std::sqrt( std::pow( A->coords[0] - B->coords[0], 2 ) + std::pow( A->coords[1] - B->coords[1], 2 ) );
         Vector unitNormal = getOutwardNormal( A, B );
-        unitNormal /= blaze::norm( unitNormal );
+        unitNormal /= norm( unitNormal );
         Vector scaledNormal = length * unitNormal;
 
         _edges[i] = new Edge{A, B, length, unitNormal, scaledNormal};

@@ -24,9 +24,8 @@ class Closure
     Matrix _phiTildeTrans;       // stores scaled basis functions evaluated at quadrature points
     Matrix _phiTildeW;           // stores scaled basis functions evaluated at quadrature points times weight
     std::vector<Vector> _phiTildeVec;
-    std::vector<Matrix> _hPartial;    // stores partial matrices for Hessian computation
+    MatVec _hPartial;    // stores partial matrices for Hessian computation
     double _alpha;
-    double _uMinus, _uPlus;    // IPM bounds for scalar problems
     unsigned _nMoments;
     unsigned _nQuadPoints;
     unsigned _nStates;
@@ -47,7 +46,7 @@ class Closure
      * @param initial guess for dual vector
      * @return correct dual vector
      */
-    virtual Matrix SolveClosure( const Matrix& uMatrix, Matrix& lambda );
+    virtual void SolveClosure( Matrix& lambda, const Matrix& u );
     /**
      * calculate entropic variable from given dual vector
      * @param dual variable
@@ -56,12 +55,14 @@ class Closure
      */
     Vector EvaluateLambda( const Matrix& lambda, unsigned k );
     Matrix EvaluateLambda( const Matrix& lambda ) const;
+    void EvaluateLambda( Matrix& out, const Matrix& lambda ) const;
     Vector EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k );
     Matrix EvaluateLambda( const Matrix& lambda, const Vector& xi );
     /**
      * calculate solution for kinetic entropy with given entropic variable
      */
     virtual void U( Vector& out, const Vector& Lambda ) = 0;
+    virtual void U( Matrix& out, const Matrix& Lambda ) = 0;
     virtual Matrix U( const Matrix& Lambda )            = 0;
     /**
      * calculate derivative of solution for kinetic entropy with given entropic variable
@@ -83,8 +84,6 @@ class Closure
      */
     Matrix MakeMatrix( const Vector& vec ) const;
 
-    double GetUPlus() const { return _uPlus; }
-    double GetUMinus() const { return _uMinus; }
     double CalcNorm( Vector& test );
 };
 

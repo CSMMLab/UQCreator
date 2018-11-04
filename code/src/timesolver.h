@@ -4,6 +4,7 @@
 #include <cpptoml.h>
 #include <functional>
 #include <iostream>
+#include <omp.h>
 
 #include "mesh.h"
 #include "settings.h"
@@ -26,10 +27,10 @@ class TimeSolver
     TimeSolver( Settings* settings, Mesh* mesh );
     virtual ~TimeSolver();
     static TimeSolver* Create( Settings* settings, Mesh* mesh );
-    virtual void Advance( std::function<Matrix( const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
-                          std::vector<Matrix>& uNew,
-                          std::vector<Matrix>& u,
-                          std::vector<Matrix>& uQ ) = 0;
+    virtual void Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
+                          MatVec& uNew,
+                          MatVec& u,
+                          MatVec& uQ ) = 0;
     double GetTimeStepSize();
     double GetNTimeSteps();
 };

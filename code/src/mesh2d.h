@@ -47,6 +47,7 @@ class Mesh2D : public Mesh
     void DetermineNeighbors();
     void LoadSU2MeshFromFile( std::string meshfile );
     void ExportToVTK( std::string vtkfile ) const;
+    void AddNeighbor( Cell* c, Cell* neighbor, unsigned index0, unsigned index1 );
 
     Mesh2D();
 
@@ -55,7 +56,7 @@ class Mesh2D : public Mesh
     virtual ~Mesh2D();
 
     virtual Vector GetNodePositionsX() const;
-    virtual void Export( Matrix results ) const;
+    virtual void Export( const Matrix& results ) const;
 };
 
 #endif    // MESH2D_H

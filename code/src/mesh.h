@@ -4,13 +4,12 @@
 #include <assert.h>
 #include <cpptoml.h>
 #include <iostream>
+#include <omp.h>
 #include <string.h>
 
 #include "cell.h"
 #include "settings.h"
 #include "typedefs.h"
-
-enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE };
 
 struct BoundaryElement {
     unsigned type;
@@ -37,7 +36,7 @@ class Mesh
     std::vector<Node*> _nodes;
     std::string _outputFile;
 
-    std::vector<blaze::DynamicVector<unsigned>> _neighborIDs;
+    std::vector<VectorU> _neighborIDs;
     std::vector<BoundaryType> _boundaryType;
 
   public:
@@ -53,7 +52,7 @@ class Mesh
     unsigned GetNBoundaries() const;
 
     virtual std::vector<Cell*> GetNeighbors( unsigned i ) const;
-    virtual blaze::DynamicVector<unsigned> GetNeighborIDs( unsigned i ) const;
+    virtual VectorU GetNeighborIDs( unsigned i ) const;
     virtual Vector GetNormals( unsigned i, unsigned l ) const;
     virtual Vector GetUnitNormals( unsigned i, unsigned l ) const;
 
@@ -61,7 +60,7 @@ class Mesh
 
     virtual Vector GetNodePositionsX() const = 0;
 
-    virtual void Export( Matrix results ) const = 0;
+    virtual void Export( const Matrix& results ) const = 0;
 
     Mesh( Settings* settings, unsigned dimension );
     virtual ~Mesh();

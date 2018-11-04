@@ -17,6 +17,7 @@ Closure::Closure( Settings* settings )
 
     Vector xi = _quad->GetNodes();
     Vector w  = _quad->GetWeights();
+
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         for( unsigned i = 0; i < _nMoments; ++i ) {
             _phi[k][i]         = _basis->Evaluate( i, xi[k] );
@@ -25,15 +26,12 @@ Closure::Closure( Settings* settings )
             _phiTildeVec[k][i] = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
         }
     }
-    _phiTildeTrans = blaze::trans( _phiTilde );
+    _phiTildeTrans = trans( _phiTilde );
     // calculate partial matrix for Hessian calculation
-    _hPartial = std::vector<Matrix>( _nQuadPoints, Matrix( _nMoments, _nMoments, 0.0 ) );
+    _hPartial = MatVec( _nQuadPoints, Matrix( _nMoments, _nMoments, 0.0 ) );
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
-        _hPartial[k] = blaze::trans( row( _phiTilde, k ) ) * row( _phiTilde, k ) * w[k];
+        _hPartial[k] = outer( column( _phiTildeTrans, k ), column( _phiTildeTrans, k ) ) * w[k];
     }
-    double du = 0.0;
-    _uMinus   = 3.0 - du;
-    _uPlus    = 12.0 + du;
 
     _perm = new int[_nStates * _nMoments];
     for( int i = 0; i < static_cast<int>( _nStates * _nMoments ); ++i ) {
@@ -44,6 +42,7 @@ Closure::Closure( Settings* settings )
 Closure::~Closure() {
     delete _basis;
     delete _quad;
+    delete _perm;
 }
 
 Closure* Closure::Create( Settings* settings ) {
@@ -66,7 +65,7 @@ Closure* Closure::Create( Settings* settings ) {
     }
 }
 
-Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
+void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     int maxRefinements = 1000;
 
     Matrix H( _nStates * _nMoments, _nStates * _nMoments, 0.0 );
@@ -75,22 +74,16 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
 
     // check if initial guess is good enough
     Gradient( g, lambda, u );
-    // std::cout << "Gradient " << g << std::endl;
-    // exit( EXIT_FAILURE );
-
     if( CalcNorm( g ) < _settings->GetEpsilon() ) {
-        return lambda;
+        return;
     }
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
     Hessian( H, lambda );
-    // std::cout << "Hessian " << H << std::endl;
-    blaze::posv( H, g, 'L' );
-    // blaze::gesv( H, g, _perm );
+    posv( H, g );
+    // gesv( H, g, _perm );
     Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
     Gradient( dlambdaNew, lambdaNew, u );
-    // std::cout << "update is " << lambdaNew - lambda << std::endl;
-    // std::cout << "lambdaNew is " << lambdaNew << std::endl;
     // perform Newton iterations
     for( unsigned l = 0; l < _settings->GetMaxIterations(); ++l ) {
         double stepSize = 1.0;
@@ -98,20 +91,19 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
             Gradient( g, lambda, u );
             dlambda = -g;
             Hessian( H, lambda );
-            blaze::posv( H, g, 'L' );
-            // blaze::gesv( H, g, _perm );
+            posv( H, g );
+            // gesv( H, g, _perm );
             lambdaNew = lambda - _alpha * stepSize * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
         }
         int refinementCounter = 0;
-        // std::cout << "Norm is " << CalcNorm( dlambdaNew ) << std::endl;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) ) {
             stepSize *= 0.5;
             lambdaNew = lambda - stepSize * _alpha * MakeMatrix( g );
             Gradient( dlambdaNew, lambdaNew, u );
-            // std::cout << "[refining] Norm is " << CalcNorm( dlambdaNew ) << std::endl;
             if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
-                return lambdaNew;
+                lambda = lambdaNew;
+                return;
             }
             else if( ++refinementCounter > maxRefinements ) {
                 std::cerr << "[ERROR]: Newton needed too many refinement steps!" << std::endl;
@@ -119,9 +111,9 @@ Matrix Closure::SolveClosure( const Matrix& u, Matrix& lambda ) {
             }
         }
         lambda = lambdaNew;
-
         if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
-            return lambdaNew;
+            lambda = lambdaNew;
+            return;
         }
     }
     std::cerr << "[Closure][ERROR]: Newton did not converge!" << std::endl;
@@ -144,6 +136,8 @@ double Closure::CalcNorm( Vector& test ) {
 Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k ) { return lambda * _phiTildeVec[k]; }
 
 Matrix Closure::EvaluateLambda( const Matrix& lambda ) const { return lambda * _phiTildeTrans; }
+
+void Closure::EvaluateLambda( Matrix& out, const Matrix& lambda ) const { out = lambda * _phiTildeTrans; }
 
 Vector Closure::EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k ) {
     Vector out = Vector( _nStates, 0.0 );
@@ -172,9 +166,6 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
     Vector uKinetic( _nStates, 0.0 );
     g.reset();
 
-    // std::cout << "lambda = " << lambda << std::endl;
-    // std::cout << "u = " << u << std::endl;
-
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         U( uKinetic, lambda * _phiTildeVec[k] );
         for( unsigned j = 0; j < _nMoments; ++j ) {
@@ -183,8 +174,6 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
             }
         }
     }
-
-    // std::cout << "int(u(Lambda)) = " << g << std::endl;
 
     g = 0.5 * g - MakeVector( u );
 }

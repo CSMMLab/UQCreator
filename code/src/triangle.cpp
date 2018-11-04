@@ -35,7 +35,7 @@ void Triangle::SetupEdges() {
         Node* B           = _nodes[i + 1];
         double length     = std::sqrt( std::pow( A->coords[0] - B->coords[0], 2 ) + std::pow( A->coords[1] - B->coords[1], 2 ) );
         Vector unitNormal = getOutwardNormal( A, B );
-        unitNormal /= blaze::norm( unitNormal );
+        unitNormal /= norm( unitNormal );
         Vector scaledNormal = length * unitNormal;
 
         _edges[i] = new Edge{A, B, length, unitNormal, scaledNormal};
@@ -44,7 +44,7 @@ void Triangle::SetupEdges() {
     Node* B           = _nodes[0];
     double length     = std::sqrt( std::pow( A->coords[0] - B->coords[0], 2 ) + std::pow( A->coords[1] - B->coords[1], 2 ) );
     Vector unitNormal = getOutwardNormal( A, B );
-    unitNormal /= blaze::norm( unitNormal );
+    unitNormal /= norm( unitNormal );
     Vector scaledNormal = length * unitNormal;
 
     _edges[_N - 1] = new Edge{A, B, length, unitNormal, scaledNormal};
@@ -57,7 +57,7 @@ Vector Triangle::getOutwardNormal( Node* A, Node* B ) {
     Vector p{A->coords[0], A->coords[1]};
     Vector a{_center[0], _center[1]};
     if( dot( n, a - p ) > 0 ) {
-        n *= -1;
+        n *= -1.0;
     }
     n /= norm( n );
     return n;

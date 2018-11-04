@@ -9,25 +9,15 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
 
     _quad    = new Legendre( _nQuadPoints );
     _closure = Closure::Create( _settings );
-    _limiter = Limiter::Create( _settings, _mesh, _closure );
     _time    = TimeSolver::Create( _settings, _mesh );
 
     _dt = _time->GetTimeStepSize();
-
-    if( _settings->GetPlotEnabled() ) {
-        _plotEngine = new PlotEngine( _settings, _closure, _mesh, _problem );
-    }
-    else {
-        _plotEngine = nullptr;
-    }
 }
 
 MomentSolver::~MomentSolver() {
     delete _quad;
     delete _closure;
-    delete _limiter;
     delete _time;
-    delete _plotEngine;
 }
 
 void MomentSolver::Solve() {
@@ -35,10 +25,11 @@ void MomentSolver::Solve() {
 
     double t = 0;
     // create solution fields
-    std::vector<Matrix> uNew( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
-    _lambda                = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
-    std::vector<Matrix> u  = SetupIC();
-    std::vector<Matrix> uQ = std::vector<Matrix>( _nCells + 1, Matrix( _nStates, _nQuadPoints, 0.0 ) );
+    MatVec uNew( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
+    _lambda = MatVec( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
+    MatVec u( _nCells );
+    SetupIC( u );
+    MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints ) );
 
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _settings->GetProblemType() == ProblemType::P_EULER_1D || _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
@@ -56,47 +47,47 @@ void MomentSolver::Solve() {
             _lambda[j]( 2, 0 )                           = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
             _lambda[j]( _settings->GetNStates() - 1, 0 ) = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
         }
-        _lambda[j] = _closure->SolveClosure( u[j], _lambda[j] );
-        u[j]       = CalculateMoments( _lambda[j] );    // kann raus!
     }
-    std::cout << "Dual variables IC computed." << std::endl;
+
+#pragma omp parallel for
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        _closure->SolveClosure( _lambda[j], u[j] );
+    }
 
     // Begin time loop
     unsigned nSteps = 0;
     while( t < _tEnd ) {
         // Modify moments into realizable direction
+        CalculateMoments( u, _lambda );
         for( unsigned j = 0; j < _nCells; ++j ) {
-            u[j]  = CalculateMoments( _lambda[j] );
-            uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+            _closure->U( uQ[j], _closure->EvaluateLambda( _lambda[j] ) );
         }
 
         // Time Update Moments
-        _time->Advance(
-            std::bind( &MomentSolver::numFlux, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 ),
-            uNew,
-            u,
-            uQ );
+        _time->Advance( std::bind( &MomentSolver::numFlux,
+                                   this,
+                                   std::placeholders::_1,
+                                   std::placeholders::_2,
+                                   std::placeholders::_3,
+                                   std::placeholders::_4,
+                                   std::placeholders::_5 ),
+                        uNew,
+                        u,
+                        uQ );
+
+        // Time Update dual variables
+#pragma omp parallel for
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            _closure->SolveClosure( _lambda[j], uNew[j] );
+        }
 
         double residual = 0;
         for( unsigned j = 0; j < _nCells; ++j ) {
             residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) );
         }
-        std::cout << " -> E[rho] residual is " << residual << std::endl;
 
-        // Time Update dual variables
-        //#pragma omp parallel for
-        for( unsigned j = 0; j < _nCells; ++j ) {
-
-            _lambda[j] = _closure->SolveClosure( uNew[j], _lambda[j] );
-        }
-
-        Plot( t, nSteps );
-
-        if( std::fabs( t ) <= std::numeric_limits<double>::epsilon() )
-            std::cout << std::fixed << std::setprecision( 8 ) << "t = " << t << std::flush;
-        else
-            std::cout << std::fixed << std::setprecision( 8 ) << "\r"
-                      << "t = " << t << std::flush;
+        std::cout << std::fixed << std::setprecision( 8 ) << "\r"
+                  << "t = " << t << " -> E[rho] residual is " << residual << std::endl;
         t += _dt;
         nSteps++;
     }
@@ -135,9 +126,6 @@ void MomentSolver::Solve() {
         for( unsigned k = 0; k < _nQuadPoints; ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
-                // mean
-                // std::cout << "tmp = " << tmp[i] << std::endl;
-                // std::cout << "w = " << w[k] << std::endl;
                 meanAndVar( i, j ) += 0.5 * w[k] * tmp[i];
             }
         }
@@ -146,8 +134,6 @@ void MomentSolver::Solve() {
         for( unsigned k = 0; k < _nQuadPoints; ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
-                // std::cout << "tmp = " << tmp[i] << std::endl;
-                // std::cout << "mean = " << meanAndVar( i, j ) << std::endl;
                 meanAndVar( i + _nStates, j ) += 0.5 * w[k] * pow( tmp[i] - meanAndVar( i, j ), 2 );
             }
         }
@@ -156,17 +142,21 @@ void MomentSolver::Solve() {
     _mesh->Export( meanAndVar );
 }
 
-Matrix MomentSolver::numFlux( const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
-    Matrix g = _problem->G( u1, u2, nUnit, n );
-    return 0.5 * g * _closure->GetPhiTildeW();
+void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
+    out += 0.5 * _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeW();
 }
 
-Matrix MomentSolver::CalculateMoments( const Matrix& lambda ) {
-    return 0.5 * _closure->U( _closure->EvaluateLambda( lambda ) ) * _closure->GetPhiTildeW();
+void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
+    Matrix U( _nStates, _nQuadPoints, 0.0 );
+    Matrix evalLambda( _nStates, _nQuadPoints, 0.0 );
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        _closure->EvaluateLambda( evalLambda, lambda[j] );
+        _closure->U( U, evalLambda );
+        out[j] = 0.5 * U * _closure->GetPhiTildeW();
+    }
 }
 
-std::vector<Matrix> MomentSolver::SetupIC() {
-    std::vector<Matrix> out( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
+void MomentSolver::SetupIC( MatVec& out ) {
     Vector xi = _quad->GetNodes();
     Matrix uIC( _nStates, _nQuadPoints, 0.0 );
     Matrix phiTildeW = _closure->GetPhiTildeW();
@@ -176,7 +166,6 @@ std::vector<Matrix> MomentSolver::SetupIC() {
         }
         out[j] = 0.5 * uIC * phiTildeW;
     }
-    return out;
 }
 
 Vector MomentSolver::IC( Vector x, double xi ) {
@@ -254,25 +243,4 @@ Vector MomentSolver::IC( Vector x, double xi ) {
     }
     std::cerr << "Reached end of IC. No initial condition set" << std::endl;
     exit( EXIT_FAILURE );
-}
-
-void MomentSolver::Plot( double time, unsigned nSteps ) {
-    static double lastPlotTime = 0.0;
-    if( _plotEngine != nullptr ) {
-        bool execPlot = false;
-        if( std::fabs( _settings->GetPlotTimeInterval() + 1.0 ) < std::numeric_limits<double>::epsilon() &&
-            time - lastPlotTime > _settings->GetPlotTimeInterval() ) {
-            lastPlotTime = time;
-            execPlot     = true;
-        }
-        if( _settings->GetPlotStepInterval() != 0 && nSteps % _settings->GetPlotStepInterval() == 0 ) {
-            execPlot = true;
-        }
-        if( execPlot ) {
-            _plotEngine->updatePlotData( time, _lambda );
-        }
-        else {
-            _plotEngine->refresh();
-        }
-    }
 }

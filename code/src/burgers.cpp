@@ -22,8 +22,8 @@ Vector Burgers::G( const Vector& u, const Vector& v, const Vector& nUnit, const 
 }
 
 Matrix Burgers::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
-    unsigned long nStates = u.rows();
-    unsigned long Nq      = u.columns();
+    unsigned nStates = u.rows();
+    unsigned Nq      = u.columns();
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
         column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
@@ -37,7 +37,7 @@ Vector Burgers::F( double u ) {
     return y;
 }
 
-Matrix Burgers::F( const Matrix& u ) { return 0.5 * blaze::pow( u, 2 ); }
+Matrix Burgers::F( const Matrix& u ) { return 0.5 * pow( u, 2 ); }
 
 double Burgers::IC( double x, double uL, double uR ) {
     double a = 0.5;

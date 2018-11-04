@@ -1,6 +1,11 @@
 #include "boundedbarrier.h"
 
-BoundedBarrier::BoundedBarrier( Settings* settings ) : Closure( settings ) { _alpha = 1.0; }
+BoundedBarrier::BoundedBarrier( Settings* settings ) : Closure( settings ) {
+    _alpha    = 1.0;
+    double du = 0.0;
+    _uMinus   = 3.0 - du;
+    _uPlus    = 12.0 + du;
+}
 
 BoundedBarrier::~BoundedBarrier() {}
 
@@ -14,6 +19,22 @@ void BoundedBarrier::U( Vector& out, const Vector& Lambda ) {
         }
         else {
             out[l] = _uMinus / ( ePos + 1.0 ) + _uPlus * ePos / ( 1.0 + ePos );
+        }
+    }
+}
+
+void BoundedBarrier::U( Matrix& out, const Matrix& Lambda ) {
+    double ePos, eNeg;
+    for( unsigned l = 0; l < _nStates; ++l ) {
+        for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
+            ePos = exp( Lambda( l, k ) );
+            eNeg = 1.0 / ePos;
+            if( Lambda( l, k ) > 0 ) {
+                out( l, k ) = _uPlus / ( eNeg + 1.0 ) + _uMinus * eNeg / ( 1.0 + eNeg );
+            }
+            else {
+                out( l, k ) = _uMinus / ( ePos + 1.0 ) + _uPlus * ePos / ( 1.0 + ePos );
+            }
         }
     }
 }

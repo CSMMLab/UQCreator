@@ -83,7 +83,7 @@ Matrix Euler2D::F( const Vector& u ) {
 Matrix Euler2D::F( const Matrix& u ) {
     std::cerr << "Flux not implemented" << std::endl;
     exit( EXIT_FAILURE );
-    return 0.5 * blaze::pow( u, 2 );
+    return 0.5 * pow( u, 2 );
 }
 
 double Euler2D::ComputeDt( Vector& u, double dx ) const {

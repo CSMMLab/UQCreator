@@ -1,6 +1,6 @@
 #include "cell.h"
 
-Cell::Cell( CELL_TYPE type, unsigned id, std::vector<Node*> nodes ) : _type( type ), _id( id ), _nodes( nodes ) {
+Cell::Cell( CELL_TYPE type, unsigned id, std::vector<Node*> nodes ) : _type( type ), _id( id ), _nodes( nodes ), _boundaryType( BoundaryType::NONE ) {
     if( _type == CELL_TYPE::LINE ) {
         _N = 2;
     }
@@ -42,4 +42,33 @@ double Cell::GetArea() { return _area; }
 
 const Vector& Cell::GetCenter() { return _center; }
 
-blaze::DynamicVector<unsigned> Cell::GetNeighborIDs() { return _neighborIDs; }
+VectorU Cell::GetNeighborIDs() { return _neighborIDs; }
+
+void Cell::SetBoundaryType( BoundaryType type ) { _boundaryType = type; }
+
+BoundaryType Cell::GetBoundaryType() const { return _boundaryType; }
+
+Vector Cell::GetBoundaryUnitNormal() { return _boundaryNormal; }
+
+void Cell::UpdateBoundaryNormal() {
+    assert( this->IsBoundaryCell() );
+    // auto elemPtr    = std::max_element( _neighborIDs.begin(), _neighborIDs.end() );
+    // unsigned id     = static_cast<unsigned>( std::distance( _neighborIDs.begin(), elemPtr ) );
+    unsigned id = 0;
+    for( unsigned i = 1; i < _neighborIDs.size(); ++i ) {
+        if( _neighborIDs[i] > _neighborIDs[id] ) {
+            id = i;
+        }
+    }
+    _boundaryNormal = _edges[id]->unitNormal;
+}
+
+Vector Cell::GetUnitNormal( unsigned i ) { return _edges[i]->unitNormal; }
+
+Vector Cell::GetNormal( unsigned i ) { return _edges[i]->scaledNormal; }
+
+void Cell::SetDefaultCellId( unsigned id ) {
+    for( unsigned i = 0; i < _N; ++i ) {
+        this->AddNeighborId( id, i );
+    }
+}

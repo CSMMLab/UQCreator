@@ -1,6 +1,8 @@
 #ifndef POLYNOMIAL_H
 #define POLYNOMIAL_H
 
+#include <algorithm>
+
 #include "typedefs.h"
 
 class Polynomial
