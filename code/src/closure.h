@@ -72,15 +72,13 @@ class Closure
     const Matrix& GetPhiTilde() { return _phiTilde; }
     const Matrix& GetPhiTildeW() { return _phiTildeW; }
     /**
-     * Transform matrix to vector
-     * @return
+     * Add matrix A and vector b and save result in a matrix
      */
-    Vector MakeVector( const Matrix& mat ) const;
+    void AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y ) const;
     /**
-     * Transform vector to matrix
-     * @return
+     * Add matrix A and vector b and save result in b
      */
-    Matrix MakeMatrix( const Vector& vec ) const;
+    void SubstractVectorMatrixOnVector( Vector& b, const Matrix& A ) const;
 
     double CalcNorm( Vector& test );
 };

@@ -82,7 +82,8 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     Hessian( H, lambda );
     posv( H, g );
     // gesv( H, g, _perm );
-    Matrix lambdaNew = lambda - _alpha * MakeMatrix( g );
+    Matrix lambdaNew( _nStates, _nMoments );
+    AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
     for( unsigned l = 0; l < _settings->GetMaxIterations(); ++l ) {
@@ -93,13 +94,13 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
             Hessian( H, lambda );
             posv( H, g );
             // gesv( H, g, _perm );
-            lambdaNew = lambda - _alpha * stepSize * MakeMatrix( g );
+            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
             Gradient( dlambdaNew, lambdaNew, u );
         }
         int refinementCounter = 0;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) ) {
             stepSize *= 0.5;
-            lambdaNew = lambda - stepSize * _alpha * MakeMatrix( g );
+            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
             Gradient( dlambdaNew, lambdaNew, u );
             if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
                 lambda = lambdaNew;
@@ -170,12 +171,12 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
         U( uKinetic, lambda * _phiTildeVec[k] );
         for( unsigned j = 0; j < _nMoments; ++j ) {
             for( unsigned l = 0; l < _nStates; ++l ) {
-                g[l * _nMoments + j] += uKinetic[l] * _phiTildeW( k, j );
+                g[l * _nMoments + j] += 0.5 * uKinetic[l] * _phiTildeW( k, j );
             }
         }
     }
 
-    g = 0.5 * g - MakeVector( u );
+    SubstractVectorMatrixOnVector( g, u );
 }
 
 void Closure::Hessian( Matrix& H, const Matrix& lambda ) {
@@ -196,22 +197,18 @@ void Closure::Hessian( Matrix& H, const Matrix& lambda ) {
     }
 }
 
-Vector Closure::MakeVector( const Matrix& mat ) const {
-    Vector y( _nStates * _nMoments, 0.0 );
+void Closure::AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y ) const {
     for( unsigned l = 0; l < _nStates; ++l ) {
         for( unsigned j = 0; j < _nMoments; ++j ) {
-            y[l * _nMoments + j] = mat( l, j );
+            y( l, j ) = A( l, j ) + b[l * _nMoments + j];
         }
     }
-    return y;
 }
 
-Matrix Closure::MakeMatrix( const Vector& vec ) const {
-    Matrix y( _nStates, _nMoments, 0.0 );
+void Closure::SubstractVectorMatrixOnVector( Vector& b, const Matrix& A ) const {
     for( unsigned l = 0; l < _nStates; ++l ) {
         for( unsigned j = 0; j < _nMoments; ++j ) {
-            y( l, j ) = vec[l * _nMoments + j];
+            b[l * _nMoments + j] = b[l * _nMoments + j] - A( l, j );
         }
     }
-    return y;
 }
