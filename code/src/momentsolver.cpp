@@ -32,7 +32,18 @@ void MomentSolver::Solve() {
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints ) );
 
     for( unsigned j = 0; j < _nCells; ++j ) {
-        if( _settings->GetProblemType() == ProblemType::P_EULER_1D || _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
+        if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {
+            double gamma       = -_settings->GetGamma();
+            double rho         = u[j]( 0, 0 );
+            double rhoU        = u[j]( 1, 0 );
+            double rhoU2       = pow( rhoU, 2 );
+            double rhoE        = u[j]( 2, 0 );
+            _lambda[j]( 0, 0 ) = ( rhoU2 + gamma * ( 2 * rho * rhoE - rhoU2 ) ) / ( -2 * rho * rhoE + rhoU2 ) -
+                                 std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
+            _lambda[j]( 1, 0 ) = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 ) );
+            _lambda[j]( 2, 0 ) = -( rho / ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
+        }
+        else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
 
             double gamma       = -_settings->GetGamma();
             double rho         = u[j]( 0, 0 );
@@ -43,9 +54,9 @@ void MomentSolver::Solve() {
             double rhoE        = u[j]( 3, 0 );
             _lambda[j]( 0, 0 ) = ( rhoU2 + rhoV2 + gamma * ( 2 * rho * rhoE - rhoU2 - rhoV2 ) ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) -
                                  std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
-            _lambda[j]( 1, 0 )                           = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-            _lambda[j]( 2, 0 )                           = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-            _lambda[j]( _settings->GetNStates() - 1, 0 ) = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
+            _lambda[j]( 1, 0 ) = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
+            _lambda[j]( 2, 0 ) = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
+            _lambda[j]( 3, 0 ) = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
         }
     }
 
