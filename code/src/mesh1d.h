@@ -10,6 +10,24 @@
 #include "mesh.h"
 #include "typedefs.h"
 
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkCellDataToPointData.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkQuad.h>
+#include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkXMLUnstructuredGridWriter.h>
+
+using vtkPointsSP                    = vtkSmartPointer<vtkPoints>;
+using vtkUnstructuredGridSP          = vtkSmartPointer<vtkUnstructuredGrid>;
+using vtkCellArraySP                 = vtkSmartPointer<vtkCellArray>;
+using vtkDoubleArraySP               = vtkSmartPointer<vtkDoubleArray>;
+using vtkXMLUnstructuredGridWriterSP = vtkSmartPointer<vtkXMLUnstructuredGridWriter>;
+using vtkCellDataToPointDataSP       = vtkSmartPointer<vtkCellDataToPointData>;
+using vtkQuadSP                      = vtkSmartPointer<vtkQuad>;
+
 class Mesh1D : public Mesh
 {
   private:

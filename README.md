@@ -2,19 +2,22 @@
 - Compiler with C++14 support e.g. g++ >= v4.9
 - cmake >= v3.5
 - LAPACK
-- git
 - vtk 
+- git
+- ninja or make
  
 # Build instructions:
-Note that an active internet connection is required for the first build in order to download the latest versions of the libraries/tools blaze, cpptoml, gnuplot-iostream and matplotlib-cpp!
+Note that an active internet connection is required for the first build in order to download the latest versions of the required submodules!
 If an if an active internet connection is present, run:
 
      git submodule init
      git submodule update
 
+Afterwards compile the code with (in case of Ninja):
+
      cd code/build/release
-     cmake -DCMAKE_BUILD_TYPE=Release ../../src
-     make
+     cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ../../src
+     ninja
  
 The binary will afterwards be placed in the code/bin folder.
  

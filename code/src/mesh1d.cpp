@@ -66,18 +66,115 @@ void Mesh1D::CreateGrid( double a, double b ) {
 
 void Mesh1D::Export( const Matrix& results ) const {
     assert( results.rows() == _settings->GetNStates() * 2 );
-    auto csvFile = _settings->GetOutputFile();
-    if( csvFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "csv" ) {
-        csvFile.append( ".csv" );
+    double height       = ( _nodes[_numCells]->coords[0] - _nodes[0]->coords[0] ) / 10;
+    std::string vtkFile = _settings->GetOutputFile();
+    auto writer         = vtkXMLUnstructuredGridWriterSP::New();
+    if( vtkFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "vtu" ) {
+        vtkFile.append( "." );
+        vtkFile.append( writer->GetDefaultFileExtension() );
     }
-    std::ofstream writer( csvFile );
-    for( unsigned i = 0; i < _settings->GetNStates() * 2; ++i ) {
-        for( unsigned j = 0; j < _settings->GetNumCells() - 1; ++j ) {
-            writer << results( i, j ) << ",";
+    writer->SetFileName( vtkFile.c_str() );
+    auto grid = vtkUnstructuredGridSP::New();
+    auto pts  = vtkPointsSP::New();
+    pts->SetNumberOfPoints( static_cast<int>( _nodes.size() * 2 ) );
+    for( const auto& node : _nodes ) {
+        pts->SetPoint( node->id, node->coords[0], 0.0, 0.0 );
+        pts->SetPoint( node->id + _numCells + 1, node->coords[0], height, 0.0 );
+    }
+    vtkCellArraySP cellArray = vtkCellArraySP::New();
+    for( unsigned i = 0; i < _cells.size(); ++i ) {
+        auto quad = vtkQuadSP::New();
+        quad->GetPointIds()->SetId( 0, _cells[i]->GetNode( 0 )->id );
+        quad->GetPointIds()->SetId( 1, _cells[i]->GetNode( 0 )->id + _numCells + 1 );
+        quad->GetPointIds()->SetId( 2, _cells[i]->GetNode( 1 )->id + _numCells + 1 );
+        quad->GetPointIds()->SetId( 3, _cells[i]->GetNode( 1 )->id );
+        cellArray->InsertNextCell( quad );
+    }
+    grid->SetCells( VTK_QUAD, cellArray );
+
+    if( _settings->GetProblemType() == ProblemType::P_BURGERS_1D ) {
+        auto cellData = vtkDoubleArraySP::New();
+        cellData->SetName( "E(u)" );
+        for( unsigned i = 0; i < _numCells; i++ ) {
+            cellData->InsertNextValue( results( 0, i ) );
         }
-        writer << results( i, _settings->GetNumCells() - 1 ) << std::endl;
+        grid->GetCellData()->AddArray( cellData );
+
+        cellData = vtkDoubleArraySP::New();
+        cellData->SetName( "Var(u)" );
+        for( unsigned i = 0; i < _numCells; i++ ) {
+            cellData->InsertNextValue( results( 1, i ) );
+        }
+        grid->GetCellData()->AddArray( cellData );
     }
-    writer.close();
+    else if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {
+        auto cellData = vtkDoubleArraySP::New();
+        cellData->SetName( "E(ρ)" );
+        for( unsigned i = 0; i < _numCells; i++ ) {
+            cellData->InsertNextValue( results( 0, i ) );
+        }
+        grid->GetCellData()->AddArray( cellData );
+
+        cellData = vtkDoubleArraySP::New();
+        cellData->SetName( "E(ρU)" );
+        cellData->SetNumberOfComponents( 3 );
+        cellData->SetComponentName( 0, "x" );
+        cellData->SetComponentName( 1, "y" );
+        cellData->SetComponentName( 2, "z" );
+        cellData->SetNumberOfTuples( _numCells );
+        for( unsigned i = 0; i < _numCells; i++ ) {
+            cellData->SetTuple3( i, results( 1, i ), 0.0, 0.0 );
+        }
+        grid->GetCellData()->AddArray( cellData );
+
+        cellData = vtkDoubleArraySP::New();
+        cellData->SetName( "E(ρE)" );
+        for( unsigned i = 0; i < _numCells; i++ ) {
+            cellData->InsertNextValue( results( 2, i ) );
+        }
+        grid->GetCellData()->AddArray( cellData );
+
+        cellData = vtkDoubleArraySP::New();
+        cellData->SetName( "Var(ρ)" );
+        for( unsigned i = 0; i < _numCells; i++ ) {
+            cellData->InsertNextValue( results( 3, i ) );
+        }
+        grid->GetCellData()->AddArray( cellData );
+
+        cellData = vtkDoubleArraySP::New();
+        cellData->SetName( "Var(ρU)" );
+        cellData->SetNumberOfComponents( 3 );
+        cellData->SetComponentName( 0, "x" );
+        cellData->SetComponentName( 1, "y" );
+        cellData->SetComponentName( 2, "z" );
+        cellData->SetNumberOfTuples( _numCells );
+        for( unsigned i = 0; i < _numCells; i++ ) {
+            cellData->SetTuple3( i, results( 4, i ), 0.0, 0.0 );
+        }
+        grid->GetCellData()->AddArray( cellData );
+
+        cellData = vtkDoubleArraySP::New();
+        cellData->SetName( "Var(ρE)" );
+        for( unsigned i = 0; i < _numCells; i++ ) {
+            cellData->InsertNextValue( results( 5, i ) );
+        }
+        grid->GetCellData()->AddArray( cellData );
+    }
+
+    grid->SetPoints( pts );
+    grid->Squeeze();
+
+    auto converter = vtkCellDataToPointDataSP::New();
+    converter->AddInputDataObject( grid );
+    converter->PassCellDataOn();
+    converter->Update();
+
+    auto conv_grid = converter->GetOutput();
+
+    writer->SetInputData( conv_grid );
+    writer->SetDataModeToAscii();
+
+    writer->Write();
 }
 
 Vector Mesh1D::GetNodePositionsX() const {
