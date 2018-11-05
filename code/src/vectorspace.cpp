@@ -2,6 +2,11 @@
 
 #include "matrix.cpp"
 
+extern "C" {
+void dgesv_( int* n, int* nrhs, double* A, int* lda, int* ipiv, double* b, int* ldb, int* info );
+void dposv_( char* uplo, int* n, int* nrhs, double* A, int* lda, double* b, int* ldb, int* info );
+}
+
 // MATRIX //////////////////////////////////////////////////////////////////////////
 
 template <class T> VectorSpace::Vector<T> column( VectorSpace::Matrix<T>& mat, unsigned i ) {

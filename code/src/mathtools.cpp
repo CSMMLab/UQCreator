@@ -7,7 +7,6 @@ double MathTools::Pythag( const double a, const double b ) {
 }
 
 std::pair<Vector, Matrix> MathTools::ComputeEigenValTriDiagMatrix( const Matrix mat ) {
-    // assert( blaze::isSymmetric( mat ) );
     unsigned n = static_cast<unsigned>( mat.rows() );
 
     Vector d( n, 0.0 ), e( n, 0.0 );

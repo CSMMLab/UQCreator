@@ -3,14 +3,6 @@
 
 #include <vector>
 
-//#include <blaze/math/DynamicMatrix.h>
-//#include <blaze/math/DynamicVector.h>
-
-// typedef blaze::DynamicMatrix<double> Matrix;
-// typedef blaze::DynamicVector<double> Vector;
-// typedef blaze::DynamicVector<unsigned> VectorU;
-// typedef blaze::DynamicVector<blaze::DynamicMatrix<double>> MatVec;
-
 #include "vectorspace.cpp"
 
 typedef VectorSpace::Matrix<double> Matrix;

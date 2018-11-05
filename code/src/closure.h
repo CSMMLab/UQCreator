@@ -1,8 +1,6 @@
 #ifndef CLOSURE_H
 #define CLOSURE_H
 
-#include <blaze/math/lapack/gesv.h>
-#include <blaze/math/lapack/posv.h>
 #include <vector>
 
 #include "legendre.h"
