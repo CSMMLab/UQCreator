@@ -16,8 +16,8 @@ namespace VectorSpace {
 template <class T> class Vector
 {
   private:
-    unsigned _N;
     T* _data;
+    unsigned _N;
     bool _ref;
 
   public:

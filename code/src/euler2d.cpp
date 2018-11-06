@@ -54,12 +54,10 @@ Matrix Euler2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const 
     unsigned Nq      = static_cast<unsigned>( u.columns() );
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
-        column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
+        column( u, k ) = G( column( u, k ), column( v, k ), nUnit, n );
     }
     return y;
 }
-
-double Euler2D::ExactSolution( double t, double x, double xi ) { return 0.0; }
 
 Matrix Euler2D::F( const Vector& u ) {
     double rhoInv = 1.0 / u[0];
@@ -84,6 +82,26 @@ Matrix Euler2D::F( const Matrix& u ) {
     std::cerr << "Flux not implemented" << std::endl;
     exit( EXIT_FAILURE );
     return 0.5 * pow( u, 2 );
+}
+
+MatVec Euler2D::InitLambda( const MatVec& u ) {
+    MatVec lambda( _settings->GetNumCells() + 1, Matrix( _settings->GetNStates(), _settings->GetNMoments(), 0.0 ) );
+    for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
+
+        double gamma      = -_settings->GetGamma();
+        double rho        = u[j]( 0, 0 );
+        double rhoU       = u[j]( 1, 0 );
+        double rhoV       = u[j]( 2, 0 );
+        double rhoU2      = pow( rhoU, 2 );
+        double rhoV2      = pow( rhoV, 2 );
+        double rhoE       = u[j]( 3, 0 );
+        lambda[j]( 0, 0 ) = ( rhoU2 + rhoV2 + gamma * ( 2 * rho * rhoE - rhoU2 - rhoV2 ) ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) -
+                            std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
+        lambda[j]( 1, 0 ) = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
+        lambda[j]( 2, 0 ) = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
+        lambda[j]( 3, 0 ) = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
+    }
+    return lambda;
 }
 
 double Euler2D::ComputeDt( Vector& u, double dx ) const {

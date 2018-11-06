@@ -55,8 +55,6 @@ Matrix Euler::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Ve
     return y;
 }
 
-double Euler::ExactSolution( double t, double x, double xi ) { return 0.0; }
-
 Matrix Euler::F( const Vector& u ) {
     double rhoInv = 1.0 / u[0];
     double v      = u[1] * rhoInv;
@@ -71,7 +69,22 @@ Matrix Euler::F( const Vector& u ) {
 Matrix Euler::F( const Matrix& u ) {
     std::cerr << "Flux not implemented" << std::endl;
     exit( EXIT_FAILURE );
-    return 0.5 * pow( u, 2 );
+}
+
+MatVec Euler::InitLambda( const MatVec& u ) {
+    MatVec lambda( _settings->GetNumCells() + 1, Matrix( _settings->GetNStates(), _settings->GetNMoments(), 0.0 ) );
+    for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
+        double gamma      = -_settings->GetGamma();
+        double rho        = u[j]( 0, 0 );
+        double rhoU       = u[j]( 1, 0 );
+        double rhoU2      = pow( rhoU, 2 );
+        double rhoE       = u[j]( 2, 0 );
+        lambda[j]( 0, 0 ) = ( rhoU2 + gamma * ( 2 * rho * rhoE - rhoU2 ) ) / ( -2 * rho * rhoE + rhoU2 ) -
+                            std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
+        lambda[j]( 1, 0 ) = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 ) );
+        lambda[j]( 2, 0 ) = -( rho / ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
+    }
+    return lambda;
 }
 
 double Euler::ComputeDt( Vector& u, double dx ) const {

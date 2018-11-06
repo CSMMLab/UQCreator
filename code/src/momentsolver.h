@@ -26,7 +26,7 @@ class MomentSolver
     unsigned _nCells, _nMoments, _nStates, _nQuadPoints;
 
     void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
-    void SetupIC( MatVec& out );
+    MatVec SetupIC();
     Vector IC( Vector x, double xi );
     void CalculateMoments( MatVec& out, const MatVec& lambda );
     Vector EvalLambda( const Vector& lambda, const Vector& xi );

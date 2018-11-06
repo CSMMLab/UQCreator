@@ -23,107 +23,44 @@ MomentSolver::~MomentSolver() {
 void MomentSolver::Solve() {
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
-    double t = 0;
     // create solution fields
     MatVec uNew( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
-    _lambda = MatVec( _nCells + 1, Matrix( _nStates, _nMoments, 0.0 ) );
-    MatVec u( _nCells );
-    SetupIC( u );
+    MatVec u  = SetupIC();
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints ) );
+    _lambda   = _problem->InitLambda( u );
 
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {
-            double gamma       = -_settings->GetGamma();
-            double rho         = u[j]( 0, 0 );
-            double rhoU        = u[j]( 1, 0 );
-            double rhoU2       = pow( rhoU, 2 );
-            double rhoE        = u[j]( 2, 0 );
-            _lambda[j]( 0, 0 ) = ( rhoU2 + gamma * ( 2 * rho * rhoE - rhoU2 ) ) / ( -2 * rho * rhoE + rhoU2 ) -
-                                 std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
-            _lambda[j]( 1, 0 ) = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 ) );
-            _lambda[j]( 2, 0 ) = -( rho / ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
-        }
-        else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
+    auto numFluxPtr = std::bind( &MomentSolver::numFlux,
+                                 this,
+                                 std::placeholders::_1,
+                                 std::placeholders::_2,
+                                 std::placeholders::_3,
+                                 std::placeholders::_4,
+                                 std::placeholders::_5 );
 
-            double gamma       = -_settings->GetGamma();
-            double rho         = u[j]( 0, 0 );
-            double rhoU        = u[j]( 1, 0 );
-            double rhoV        = u[j]( 2, 0 );
-            double rhoU2       = pow( rhoU, 2 );
-            double rhoV2       = pow( rhoV, 2 );
-            double rhoE        = u[j]( 3, 0 );
-            _lambda[j]( 0, 0 ) = ( rhoU2 + rhoV2 + gamma * ( 2 * rho * rhoE - rhoU2 - rhoV2 ) ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) -
-                                 std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
-            _lambda[j]( 1, 0 ) = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-            _lambda[j]( 2, 0 ) = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-            _lambda[j]( 3, 0 ) = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
-        }
-    }
-
-#pragma omp parallel for
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        _closure->SolveClosure( _lambda[j], u[j] );
-    }
-
+    // std::cout << std::fixed << std::setprecision( 8 ) << std::setw( 10 ) << "t" << std::setw( 15 ) << "residual" << std::endl;
     // Begin time loop
-    unsigned nSteps = 0;
-    while( t < _tEnd ) {
-        // Modify moments into realizable direction
-        CalculateMoments( u, _lambda );
+    for( double t = 0; t < _tEnd; t += _dt ) {
+#pragma omp parallel for
         for( unsigned j = 0; j < _nCells; ++j ) {
-            _closure->U( uQ[j], _closure->EvaluateLambda( _lambda[j] ) );
+            uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+            u[j]  = 0.5 * uQ[j] * _closure->GetPhiTildeW();
         }
 
-        // Time Update Moments
-        _time->Advance( std::bind( &MomentSolver::numFlux,
-                                   this,
-                                   std::placeholders::_1,
-                                   std::placeholders::_2,
-                                   std::placeholders::_3,
-                                   std::placeholders::_4,
-                                   std::placeholders::_5 ),
-                        uNew,
-                        u,
-                        uQ );
+        _time->Advance( numFluxPtr, uNew, u, uQ );
 
-        // Time Update dual variables
 #pragma omp parallel for
         for( unsigned j = 0; j < _nCells; ++j ) {
             _closure->SolveClosure( _lambda[j], uNew[j] );
         }
 
         double residual = 0;
+#pragma omp parallel for reduction( + : residual )
         for( unsigned j = 0; j < _nCells; ++j ) {
             residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
         }
 
-        std::cout << std::fixed << std::setprecision( 8 ) << "\r"
-                  << "t = " << t << " -> E[rho] residual is " << residual << std::endl;
-        t += _dt;
-        nSteps++;
+        std::cout << std::fixed << std::setprecision( 8 ) << std::setw( 10 ) << t << std::setw( 15 ) << residual << std::endl;
     }
-
-    double maxRho = 0.0;
-    double maxMx  = 0.0;
-    double maxMy  = 0.0;
-    double maxE   = 0.0;
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        if( uNew[j]( 0, 0 ) > maxRho ) {
-            maxRho = uNew[j]( 0, 0 );
-        }
-        if( uNew[j]( 0, 0 ) > maxMx ) {
-            maxMx = uNew[j]( 1, 0 );
-        }
-        if( uNew[j]( 0, 0 ) > maxMy ) {
-            maxMy = uNew[j]( 2, 0 );
-        }
-        if( uNew[j]( 0, 0 ) > maxE ) {
-            maxE = uNew[j]( 3, 0 );
-        }
-    }
-    std::cout << "Max Rho = " << maxRho << ", Max Mx = " << maxMx << ", Max My = " << maxMy << ", Max maxE " << maxE << std::endl;
-
-    _tEnd = t;
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     std::cout << "\nFinished!\nRuntime: " << std::setprecision( 3 )
@@ -167,7 +104,8 @@ void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
     }
 }
 
-void MomentSolver::SetupIC( MatVec& out ) {
+MatVec MomentSolver::SetupIC() {
+    MatVec u( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
     Vector xi = _quad->GetNodes();
     Matrix uIC( _nStates, _nQuadPoints, 0.0 );
     Matrix phiTildeW = _closure->GetPhiTildeW();
@@ -175,8 +113,9 @@ void MomentSolver::SetupIC( MatVec& out ) {
         for( unsigned k = 0; k < _nQuadPoints; ++k ) {
             column( uIC, k ) = IC( _mesh->GetCenterPos( j ), xi[k] );
         }
-        out[j] = 0.5 * uIC * phiTildeW;
+        u[j] = 0.5 * uIC * phiTildeW;
     }
+    return u;
 }
 
 Vector MomentSolver::IC( Vector x, double xi ) {
