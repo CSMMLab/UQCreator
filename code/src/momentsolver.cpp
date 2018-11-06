@@ -94,7 +94,7 @@ void MomentSolver::Solve() {
 
         double residual = 0;
         for( unsigned j = 0; j < _nCells; ++j ) {
-            residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) );
+            residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
         }
 
         std::cout << std::fixed << std::setprecision( 8 ) << "\r"
