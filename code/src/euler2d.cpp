@@ -54,7 +54,34 @@ Matrix Euler2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const 
     unsigned Nq      = static_cast<unsigned>( u.columns() );
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
-        column( u, k ) = G( column( u, k ), column( v, k ), nUnit, n );
+        // column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
+
+        double rhoInv = 1.0 / u( 0, k );
+        double uU     = u( 1, k ) * rhoInv;
+        double vU     = u( 2, k ) * rhoInv;
+        double p      = ( _gamma - 1.0 ) * ( u( 3, k ) - 0.5 * u( 0, k ) * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
+        double aU     = sqrt( _gamma * p * rhoInv );
+
+        rhoInv    = 1.0 / v( 0, k );
+        double uV = v( 1, k ) * rhoInv;
+        double vV = v( 2, k ) * rhoInv;
+        p         = ( _gamma - 1.0 ) * ( v( 3, k ) - 0.5 * v( 0, k ) * ( pow( uV, 2 ) + pow( vV, 2 ) ) );
+        double aV = sqrt( _gamma * p * rhoInv );
+
+        double uUProjected = nUnit[0] * uU + nUnit[1] * vU;
+        double uVProjected = nUnit[0] * uV + nUnit[1] * vV;
+
+        double lambdaMin = uUProjected - aU;
+        double lambdaMax = uVProjected + aV;
+
+        if( lambdaMin >= 0 )
+            column( y, k ) = F( column( u, k ) ) * n;
+        else if( lambdaMax <= 0 )
+            column( y, k ) = F( column( v, k ) ) * n;
+        else {
+            column( y, k ) = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( column( u, k ) ) * n - lambdaMin * F( column( v, k ) ) * n +
+                                                                     lambdaMax * lambdaMin * ( column( v, k ) - column( u, k ) ) * norm( n ) );
+        }
     }
     return y;
 }
@@ -85,9 +112,8 @@ Matrix Euler2D::F( const Matrix& u ) {
 }
 
 MatVec Euler2D::InitLambda( const MatVec& u ) {
-    MatVec lambda( _settings->GetNumCells() + 1, Matrix( _settings->GetNStates(), _settings->GetNMoments(), 0.0 ) );
+    MatVec lambda( _settings->GetNumCells() + 1, Matrix( _settings->GetNStates(), _settings->GetNMoments() ) );
     for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
-
         double gamma      = -_settings->GetGamma();
         double rho        = u[j]( 0, 0 );
         double rhoU       = u[j]( 1, 0 );

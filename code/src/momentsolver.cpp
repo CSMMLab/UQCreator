@@ -24,10 +24,10 @@ void MomentSolver::Solve() {
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
     // create solution fields
-    MatVec uNew( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
-    MatVec u  = SetupIC();
-    MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints ) );
-    _lambda   = _problem->InitLambda( u );
+    MatVec u    = SetupIC();
+    MatVec uNew = MatVec( _nCells, Matrix( _nStates, _nMoments ) );
+    MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints ) );
+    _lambda     = _problem->InitLambda( u );
 
     auto numFluxPtr = std::bind( &MomentSolver::numFlux,
                                  this,
@@ -37,29 +37,37 @@ void MomentSolver::Solve() {
                                  std::placeholders::_4,
                                  std::placeholders::_5 );
 
-    // std::cout << std::fixed << std::setprecision( 8 ) << std::setw( 10 ) << "t" << std::setw( 15 ) << "residual" << std::endl;
-    // Begin time loop
-    for( double t = 0; t < _tEnd; t += _dt ) {
 #pragma omp parallel for
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-            u[j]  = 0.5 * uQ[j] * _closure->GetPhiTildeW();
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        _closure->SolveClosure( _lambda[j], u[j] );
+    }
+
+    std::cout << std::fixed << std::setprecision( 8 ) << std::setw( 10 ) << "t" << std::setw( 15 ) << "residual" << std::endl;
+    // Begin time loop
+    for( double t = 0.0; t < _tEnd; t += _dt ) {
+        double residual = 0;
+        if( t == 0.0 ) {
+#pragma omp parallel for
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+                u[j]  = 0.5 * uQ[j] * _closure->GetPhiTildeW();
+            }
+        }
+        else {
+#pragma omp parallel for reduction( + : residual )
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                _closure->SolveClosure( _lambda[j], uNew[j] );
+                residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
+
+                uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+                u[j]  = 0.5 * uQ[j] * _closure->GetPhiTildeW();
+            }
+            std::cout << std::fixed << std::setprecision( 8 ) << std::setw( 10 ) << t << std::setw( 15 ) << residual << std::endl;
         }
 
         _time->Advance( numFluxPtr, uNew, u, uQ );
 
-#pragma omp parallel for
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            _closure->SolveClosure( _lambda[j], uNew[j] );
-        }
-
-        double residual = 0;
-#pragma omp parallel for reduction( + : residual )
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
-        }
-
-        std::cout << std::fixed << std::setprecision( 8 ) << std::setw( 10 ) << t << std::setw( 15 ) << residual << std::endl;
+        // exit( EXIT_FAILURE );
     }
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();

@@ -1,0 +1,6569 @@
+# callgrind format
+version: 1
+creator: callgrind-3.14.0
+pid: 14402
+cmd:  ./UQCreator -c ../input/example_euler2D.toml -t 1
+part: 1
+
+
+desc: I1 cache: 
+desc: D1 cache: 
+desc: LL cache: 
+
+desc: Timerange: Basic block 0 - 3858816879
+desc: Trigger: dump
+
+positions: line
+events: Ir
+summary: 28295545362
+
+
+ob=(3) /usr/lib/libc-2.28.so
+fl=(6) ???
+fn=(16) free
+0 427375957
+cfn=(18) _int_free
+calls=18581561 0 
+0 1135428622
+0 18
+
+fn=(780) _IO_setb
+0 114
+
+fn=(786) _IO_default_xsputn
+0 240
+
+fn=(804) __printf_fp_l
+0 558
+cfn=(826) __memcpy_avx_unaligned_erms
+calls=6 0 
+0 66
+0 438
+cfn=(826)
+calls=3 0 
+0 33
+0 123
+cfn=(814) __mpn_rshift
+calls=3 0 
+0 54
+0 21
+cfn=(814)
+calls=3 0 
+0 54
+0 171
+cfn=(816) __libc_alloca_cutoff
+calls=6 0 
+0 66
+0 126
+cfn=(818) hack_digit
+calls=3 0 
+0 327
+0 9
+cfn=(818)
+calls=3 0 
+0 327
+0 285
+cfn=(818)
+calls=48 0 
+0 3264
+0 330
+cfn=(818)
+calls=6 0 
+0 500
+0 402
+cfn=(806) __mpn_extract_double
+calls=6 0 
+0 120
+0 128
+cfn=(858) __mpn_cmp
+calls=6 0 
+0 72
+0 165
+cfn=(808) __mpn_lshift
+calls=3 0 
+0 48
+0 597
+cfn=(810) __mpn_mul
+calls=6 0 
+0 456
+0 192
+cob=(5) ???
+cfi=(3) ???
+cfn=(820) 0x0000000006b502d0
+calls=6 0 
+0 132
+0 792
+cfn=(824) __mempcpy_avx_unaligned_erms
+calls=6 0 
+0 108
+0 1079
+cfn=(814)
+calls=5 0 
+0 90
+0 97
+cfn=(808)
+calls=3 0 
+0 48
+0 96
+cfn=(812) __mpn_mul_1
+calls=3 0 
+0 106
+0 35
+cfn=(808)
+calls=1 0 
+0 20
+0 47
+cfn=(814)
+calls=2 0 
+0 40
+0 73
+cfn=(808)
+calls=1 0 
+0 20
+0 34
+
+fn=(852) _IO_file_xsputn@@GLIBC_2.2.5
+0 150
+cfn=(824)
+calls=6 0 
+0 90
+0 525
+
+fn=(352) malloc_consolidate
+0 399
+
+fn=(358) sbrk
+0 582369
+
+fn=(772) vsnprintf
+0 144
+cfn=(774) _IO_no_init
+calls=6 0 
+0 300
+0 48
+cfn=(778) _IO_str_init_static_internal
+calls=6 0 
+0 330
+0 24
+cfn=(782) vfprintf
+calls=6 0 
+0 16519
+0 90
+
+fn=(886) _IO_file_overflow@@GLIBC_2.2.5
+0 117
+cfn=(888) _IO_do_write@@GLIBC_2.2.5
+calls=3 0 
+0 471
+0 6
+
+fn=(894) write
+0 39
+cfn=(896) __libc_enable_asynccancel
+calls=3 0 
+0 36
+0 33
+cfn=(898) __libc_disable_asynccancel
+calls=3 0 
+0 39
+0 18
+
+fn=(906) fflush
+0 99
+cfn=(908) _IO_file_sync@@GLIBC_2.2.5
+calls=3 0 
+0 54
+0 60
+
+fn=(286) _int_malloc
+0 109981368
+
+fn=(798) __memset_avx2_unaligned_erms
+0 141
+
+fn=(806)
+0 120
+
+fn=(836) __strcmp_avx2
+0 126
+
+fn=(860) __mpn_divrem
+0 1276
+
+fn=(888)
+0 18
+cfn=(890) new_do_write
+calls=3 0 
+0 435
+0 18
+
+fn=(898)
+0 39
+
+fn=(778)
+0 96
+cfn=(780)
+calls=6 0 
+0 114
+0 120
+
+fn=(790) __parse_one_specmb
+0 486
+cfn=(784) __strchrnul_avx2
+calls=6 0 
+0 138
+0 294
+cob=(4) /usr/lib/libquadmath.so.0.0.0
+cfi=(55) /build/gcc/src/gcc/libquadmath/printf/quadmath-printf.c
+cfn=(792) flt128_ais
+calls=6 288 
+0 36
+0 48
+
+fn=(802) __printf_fp
+0 42
+cfn=(804)
+calls=6 0 
+0 11749
+
+fn=(824)
+0 198
+
+fn=(850) fwrite
+0 282
+cfn=(852)
+calls=6 0 
+0 765
+0 168
+
+fn=(884) __overflow
+0 54
+cfn=(886)
+calls=3 0 
+0 594
+
+fn=(890)
+0 72
+cfn=(892) _IO_file_write@@GLIBC_2.2.5
+calls=3 0 
+0 276
+0 87
+
+fn=(896)
+0 36
+
+fn=(18)
+0 1133068039
+cfn=(352)
+calls=3 0 
+0 399
+0 490473
+cfn=(354) systrim.isra.1.constprop.10
+calls=30651 0 
+0 1839060
+0 30651
+
+fn=(56) malloc
+0 892084766
+cfn=(286)
+calls=1451841 0 
+0 109981368
+0 26133138
+
+fn=(776) _IO_old_init
+0 162
+
+fn=(808)
+0 136
+
+fn=(812)
+0 1258
+
+fn=(816)
+0 66
+
+fn=(822) __strlen_avx2
+0 120
+
+fn=(770) uselocale
+0 264
+
+fn=(784)
+0 252
+
+fn=(788) printf_positional
+0 336
+cfn=(790)
+calls=6 0 
+0 1002
+0 60
+cfn=(794) __libc_scratch_buffer_set_array_size
+calls=6 0 
+0 108
+0 102
+cob=(5)
+cfi=(3)
+cfn=(796) 0x0000000006b50370
+calls=6 0 
+0 102
+0 1548
+cob=(4)
+cfi=(55)
+cfn=(800) flt128_printf_fp
+calls=6 364 
+0 120
+0 150
+cfn=(786)
+calls=6 0 
+0 120
+0 180
+cfn=(802)
+calls=6 0 
+0 11791
+0 24
+
+fn=(818)
+0 930
+cfn=(860)
+calls=33 0 
+0 1276
+0 528
+cfn=(812)
+calls=33 0 
+0 693
+0 415
+cfn=(812)
+calls=9 0 
+0 261
+0 315
+
+fn=(882) putc
+0 132
+cfn=(884)
+calls=3 0 
+0 648
+0 6
+
+fn=(892)
+0 42
+cfn=(894)
+calls=3 0 
+0 165
+0 69
+
+fn=(908)
+0 54
+
+fn=(810)
+0 222
+cfn=(812)
+calls=6 0 
+0 198
+0 36
+
+fn=(354)
+0 643671
+cfn=(356) __default_morecore
+calls=30651 0 
+0 827577
+0 367812
+
+fn=(356)
+0 91953
+cfn=(358)
+calls=30651 0 
+0 582369
+0 153255
+
+fn=(794)
+0 108
+
+fn=(826)
+0 245457
+
+fn=(858)
+0 72
+
+fn=(774)
+0 66
+cfn=(776)
+calls=6 0 
+0 162
+0 72
+
+fn=(782)
+0 216
+cfn=(784)
+calls=6 0 
+0 114
+0 132
+cfn=(786)
+calls=6 0 
+0 120
+0 276
+cfn=(788)
+calls=6 0 
+0 15643
+0 18
+
+fn=(814)
+0 238
+
+fn=(844) __memchr_avx2
+0 114
+
+ob=(8) /usr/lib/libm-2.28.so
+fl=(21) ???
+fn=(228) pow
+0 109787690
+cfn=(230) 0x0000000000079d50
+calls=21957538 0 
+0 1233003079
+0 307409620
+
+fn=(252) sqrt
+0 22128675
+cfn=(254) __sqrt_finite
+calls=4425735 0 
+0 13277205
+
+fn=(462) 0x0000000000079580
+0 122064360
+
+fn=(530) 0x0000000000079c80
+0 12245409
+
+fn=(254)
+0 13277205
+
+fn=(230)
+0 965952252
+cfn=(462)
+calls=839563 0 
+0 55411158
+0 14257740
+cfn=(462)
+calls=678940 0 
+0 44810040
+0 22913422
+cfn=(530)
+calls=330957 0 
+0 12245409
+0 6346764
+cfn=(231) 0x0000000000079d50'2
+calls=263920 0 
+0 59909904
+0 35870906
+cfn=(231)
+calls=67037 0 
+0 15218447
+0 67037
+
+fn=(231)
+0 48315830
+cfn=(462)
+calls=330957 0 
+0 21843162
+0 4969359
+
+fn=(428) exp
+0 5550400
+cfn=(430) 0x0000000000078fb0
+calls=1387600 0 
+0 106845200
+0 16651200
+
+fn=(430)
+0 106845200
+
+ob=(2) /usr/lib/libstdc++.so.6.0.25
+fl=(16) /build/gcc/src/gcc/libstdc++-v3/libsupc++/new_op.cc
+fn=(54) operator new(unsigned long)
+43 37163114
++5 18581557
+-5 18581557
++5 37163114
++2 37163114
+cob=(3)
+cfi=(6)
+cfn=(56)
+calls=18581557 -50 
+* 1028197949
+* 37163114
++9 37163114
+
+fl=(49) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/bits/locale_facets.tcc
+fn=(752) std::__use_cache<std::__numpunct_cache<char> >::operator()(std::locale const&) const
+53 42
++2 12
+cfi=(50) /build/gcc/src/gcc/libstdc++-v3/src/c++98/locale.cc
+cfn=(754) std::locale::id::_M_id() const
+calls=6 471 
+* 36
+* 6
++1 6
++1 30
++16 36
+
+fn=(864) std::__pad<char, std::char_traits<char> >::_S_pad(std::ios_base&, char, char*, char const*, long, long)
+1208 33
++4 6
+-4 3
+fi=(52) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/bits/ios_base.h
+84 6
+fe=(49)
+1216 9
++8 6
+fi=(62) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/bits/char_traits.h
+356 9
++2 12
+cob=(3)
+cfi=(6)
+cfn=(798)
+calls=3 0 
+* 51
+-10 6
+fe=(49)
+1253 3
+fi=(62)
+350 9
+fe=(49)
+1253 18
+fi=(62)
+350 3
+cob=(3)
+cfi=(6)
+cfn=(826)
+calls=3 0 
+* 39
+fe=(49)
+
+fn=(748) std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::do_put(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, double) const
+1157 6
++2 18
+cfn=(750) std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_float<double>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, char, double) const
+calls=6 974 
+* 21958
+
+fn=(750)
+974 30
++19 6
+-19 42
++7 6
+-7 42
+fi=(52)
+777 6
+fe=(49)
+981 6
+fi=(52)
+777 6
+fe=(49)
+981 6
+cfn=(752)
+calls=6 53 
+* 168
++3 6
++9 12
+-12 6
++3 6
++9 6
+-9 12
++9 6
+cfi=(51) /build/gcc/src/gcc/libstdc++-v3/src/c++98/locale_facets.cc
+cfn=(756) std::__num_base::_S_format_float(std::ios_base const&, char*, char)
+calls=6 64 
+* 138
+fi=(52)
+84 6
+fe=(49)
+1003 12
+fi=(52)
+84 6
+fe=(49)
+1003 6
++1 12
++1 6
+cfi=(50)
+cfn=(762) std::locale::facet::_S_get_c_locale()
+calls=6 207 
+* 102
+* 66
+cfi=(54) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/x86_64-pc-linux-gnu/bits/c++locale.h
+cfn=(768) std::__convert_from_v(__locale_struct* const&, char*, int, char const*, ...)
+calls=6 73 
+* 18025
+* 6
++7 12
++32 12
+cfi=(56) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/bits/locale_classes.tcc
+cfn=(828) std::ctype<char> const& std::use_facet<std::ctype<char> >(std::locale const&)
+calls=6 132 
+* 1002
++2 24
+fi=(61) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/bits/locale_facets.h
+901 6
+fe=(49)
+1046 18
+fi=(61)
+901 12
+fi=(62)
+332 18
++2 30
+cob=(3)
+cfi=(6)
+cfn=(844)
+calls=6 0 
+* 114
+fe=(49)
+1053 24
++2 12
++1 12
++6 12
++26 6
++1 18
+fi=(52)
+726 6
++1 12
+fi=(65) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/bits/streambuf_iterator.h
+281 12
+fi=(63) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/streambuf
+458 30
+cfi=(64) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/ext/stdio_sync_filebuf.h
+cfn=(848) __gnu_cxx::stdio_sync_filebuf<char, std::char_traits<char> >::xsputn(char const*, long)
+calls=6 252 
+* 1251
+fi=(65)
+283 24
+fe=(49)
+1101 78
+-10 3
++2 9
+-2 3
++2 3
+-2 3
++2 3
+-2 3
++2 3
+-2 3
++2 6
++1 3
+-1 3
+cfn=(862) std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_pad(char, long, std::ios_base&, char*, char const*, int&) const
+calls=3 779 
+* 267
+* 12
+-25 6
+fi=(61)
+903 30
+cob=(3)
+cfi=(6)
+cfn=(826)
+calls=6 0 
+* 78
++1 18
+fe=(49)
+
+fn=(862)
+779 21
++6 6
+-6 6
++6 6
+cfn=(864)
+calls=3 1208 
+* 213
++2 3
++1 12
+
+fl=(50)
+fn=(754)
+471 12
++1 36
++25 12
++1 12
+
+fn=(762)
+207 6
++2 6
+-2 6
++2 6
+fi=(53) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/x86_64-pc-linux-gnu/bits/gthr-default.h
+699 18
+cob=(7) /usr/lib/libpthread-2.28.so
+cfi=(42) ???
+cfn=(766) pthread_once
+calls=6 0 
+* 36
+* 12
+fe=(50)
+218 12
+
+fl=(54)
+fn=(768)
+73 144
++2 12
+cob=(3)
+cfi=(6)
+cfn=(770)
+calls=6 -75 
+* 132
++17 18
+-17 6
++14 6
++3 6
+-3 30
++3 6
+cob=(3)
+cfi=(6)
+cfn=(772)
+calls=6 -92 
+* 17455
++8 6
+-8 6
++8 6
+cob=(3)
+cfi=(6)
+cfn=(770)
+calls=6 0 
+* 132
++9 60
+
+fl=(15) /build/gcc/src/gcc/libstdc++-v3/libsupc++/new_opv.cc
+fn=(52) operator new[](unsigned long)
+31 18581551
++1 18581551
+cfi=(16)
+cfn=(54)
+calls=18581551 +11 
+* 1251175544
+
+fl=(47) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/bits/ostream.tcc
+fn=(744) std::ostream::sentry::sentry(std::ostream&)
+46 54
++5 9
+-3 18
++3 63
++3 18
++1 9
++3 36
+
+fn=(742) std::ostream& std::ostream::_M_insert<double>(double)
+63 12
++3 6
+-3 42
++3 6
+-3 18
++3 12
+cfn=(744)
+calls=6 -20 
+* 138
++1 12
++5 24
+fi=(48) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/bits/basic_ios.h
+-23 12
+372 18
+fi=(61)
+2434 24
+fi=(65)
+241 6
+fi=(61)
+2434 6
+fi=(65)
+241 12
+fi=(61)
+2434 6
+cfi=(49)
+cfn=(748)
+calls=6 1157 
+* 21982
+fe=(47)
+73 12
+-7 12
+cfi=(43) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/ostream
+cfn=(856) std::ostream::sentry::~sentry()
+calls=6 454 
+* 42
++21 66
+
+fn=(876) std::ostream::put(char)
+148 9
++9 3
+-9 21
++9 9
+cfn=(744)
+calls=3 46 
+* 69
++1 6
++5 9
+fi=(63)
+434 9
+fe=(47)
+157 6
+cfi=(43)
+cfn=(856)
+calls=3 454 
+* 21
++21 27
+fi=(63)
+441 3
+fi=(62)
+-72 3
+fi=(63)
++72 3
+cfi=(64)
+cfn=(880) __gnu_cxx::stdio_sync_filebuf<char, std::char_traits<char> >::overflow(int)
+calls=3 171 
+* 807
+fe=(47)
+164 6
+
+fn=(900) std::ostream::flush()
+210 6
++9 3
+-9 3
++9 12
+fi=(63)
++59 6
+cfi=(64)
+cfn=(904) __gnu_cxx::stdio_sync_filebuf<char, std::char_traits<char> >::sync()
+calls=3 -88 
+* 222
+fe=(47)
+-59 6
++13 9
+
+fl=(51)
+fn=(756)
+64 6
++1 6
++1 12
++2 12
++2 12
+fi=(52)
++14 12
+fe=(51)
+-7 12
++4 6
++1 6
+-1 6
++4 12
++3 18
++1 6
++9 6
++1 6
+
+fl=(64)
+fn=(848)
+252 36
+cob=(3)
+cfi=(6)
+cfn=(850)
+calls=6 0 
+* 1215
+
+fn=(904)
+190 3
++1 6
+cob=(3)
+cfi=(6)
+cfn=(906)
+calls=3 0 
+* 213
+
+fn=(880)
+171 9
++3 6
++61 6
+cob=(3)
+cfi=(6)
+cfn=(882)
+calls=3 0 
+* 786
+
+fl=(57) /build/gcc/src/gcc/libstdc++-v3/libsupc++/dyncast.cc
+fn=(830) __dynamic_cast
+49 60
++1 6
+fi=(60) /build/gcc/src/gcc/libstdc++-v3/libsupc++/tinfo.h
++18 12
+fe=(57)
+-12 6
+fi=(60)
++94 18
+fe=(57)
+-82 6
+fi=(60)
++82 6
+fe=(57)
+-82 12
++4 18
+-1 54
+cfi=(58) /build/gcc/src/gcc/libstdc++-v3/libsupc++/vmi_class_type_info.cc
+cfn=(832) __cxxabiv1::__vmi_class_type_info::__do_dyncast(long, __cxxabiv1::__class_type_info::__sub_kind, __cxxabiv1::__class_type_info const*, void const*, __cxxabiv1::__class_type_info const*, void const*, __cxxabiv1::__class_type_info::__dyncast_result&) const
+calls=6 +16 
+* 528
++2 36
++2 6
+fi=(60)
++26 12
+fe=(57)
+-26 12
++20 54
+
+fl=(33) /build/gcc/src/gcc/libstdc++-v3/libsupc++/del_ops.cc
+fn=(382) operator delete(void*, unsigned long)
+32 3
++1 3
+cfi=(5) /build/gcc/src/gcc/libstdc++-v3/libsupc++/del_op.cc
+cfn=(14) operator delete(void*)
+calls=3 +15 
+* 252
+
+fl=(43)
+fn=(740) std::ostream::operator<<(double)
+220 6
++1 6
+cfi=(47)
+cfn=(742)
+calls=6 63 
+* 22468
+
+fn=(710) std::ostream::operator<<(std::ios_base& (*)(std::ios_base&))
+127 6
++5 3
+-5 3
++5 9
+cob=(1) /home/jannick/Projects/UQCreator/code/bin/UQCreator
+cfi=(44) /usr/include/c++/8.2.1/bits/ios_base.h
+cfn=(712) std::fixed(std::ios_base&)
+calls=3 1044 
+* 327
++2 9
+
+fn=(870) std::ostream::operator<<(std::ostream& (*)(std::ostream&))
+108 3
++5 3
+cfn=(872) std::basic_ostream<char, std::char_traits<char> >& std::endl<char, std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&)
+calls=3 590 
+* 1338
+
+fn=(872)
+590 12
++1 3
+fi=(48)
+450 6
+49 6
+fi=(61)
+874 9
++1 3
+fe=(43)
+591 6
+cfi=(47)
+cfn=(876)
+calls=3 148 
+* 1011
+* 6
++22 3
+-22 3
++22 3
+cfi=(47)
+cfn=(900)
+calls=3 210 
+* 267
+
+fn=(856)
+454 9
++3 45
++6 9
+
+fl=(5)
+fn=(14)
+48 18581555
++1 18581555
+cob=(3)
+cfi=(6)
+cfn=(16)
+calls=18581555 -49 
+* 1562803685
+
+fl=(56)
+fn=(828)
+132 18
++2 12
+cfi=(50)
+cfn=(754)
+calls=6 471 
+* 36
++1 12
++1 30
++3 24
+cfi=(57)
+cfn=(830)
+calls=6 -90 
+* 846
+* 12
++4 12
+
+fl=(58)
+fn=(832)
+87 120
++1 12
++1 12
++2 30
+fi=(59) /build/gcc/src/gcc/libstdc++-v3/libsupc++/typeinfo
++32 24
+fe=(58)
+-22 6
+-1 6
++1 6
++1 18
+fi=(60)
+-34 6
+fe=(58)
++36 12
++3 6
+-3 12
+-1 6
+302 72
+fi=(59)
+124 12
+cob=(3)
+cfi=(6)
+cfn=(836)
+calls=6 0 
+* 126
+-1 12
+fe=(58)
+-25 12
+fi=(59)
++25 18
+fe=(58)
+
+fl=(4) /build/gcc/src/gcc/libstdc++-v3/libsupc++/del_opv.cc
+fn=(12) operator delete[](void*)
+34 18581549
++1 18581549
+cfi=(5)
+cfn=(14)
+calls=18581549 +13 
+* 1599965532
+
+fl=(46) /build/gcc/src/gcc-build/x86_64-pc-linux-gnu/libstdc++-v3/include/iomanip
+fn=(730) std::basic_ostream<char, std::char_traits<char> >& std::operator<< <char, std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, std::_Setprecision)
+208 3
++2 6
+-2 3
+fi=(52)
+703 3
+fe=(46)
+210 3
++2 3
+
+fn=(736) std::basic_ostream<char, std::char_traits<char> >& std::operator<< <char, std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, std::_Setw)
+238 6
++2 12
+-2 6
+fi=(52)
+726 6
+fe=(46)
+240 6
++2 6
+
+ob=(7)
+fl=(42)
+fn=(586) pthread_mutex_unlock
+0 89073
+cfn=(588) __pthread_mutex_unlock_usercnt
+calls=29691 0 
+0 623511
+
+fn=(584) pthread_mutex_lock
+0 861039
+
+fn=(766)
+0 36
+
+fn=(588)
+0 623511
+
+fn=(590) pthread_getspecific
+0 178146
+
+ob=(1)
+fl=(66) /usr/include/c++/8.2.1/ext/alloc_traits.h
+fn=(996) __gnu_cxx::__alloc_traits<std::allocator<Cell*>, Cell*>::_S_select_on_copy(std::allocator<Cell*> const&)
+94 24
++1 15
+cfi=(30) /usr/include/c++/8.2.1/bits/alloc_traits.h
+cfn=(998) std::allocator_traits<std::allocator<Cell*> >::select_on_container_copy_construction(std::allocator<Cell*> const&)
+calls=3 504 
+* 99
+* 18
+
+fl=(14) /home/jannick/Projects/UQCreator/code/src/cell.cpp
+fn=(44) Cell::GetNormal(unsigned int)
+68 852720
+cfi=(13) /usr/include/c++/8.2.1/bits/stl_vector.h
+cfn=(46) std::vector<Edge*, std::allocator<Edge*> >::operator[](unsigned long)
+calls=71060 930 
+* 781660
+* 426360
+cfi=(11) /home/jannick/Projects/UQCreator/code/src/vector.cpp
+cfn=(48) VectorSpace::Vector<double>::Vector(VectorSpace::Vector<double> const&)
+calls=71060 +27 
+* 9237800
+* 213180
+
+fn=(304) Cell::GetNeighborIDs()
+45 262207
+cfi=(11)
+cfn=(306) VectorSpace::Vector<unsigned int>::Vector(VectorSpace::Vector<unsigned int> const&)
+calls=23837 +50 
+* 3527876
+* 71511
+
+fn=(308) Cell::IsBoundaryCell()
+35 166859
+
+fn=(312) Cell::GetBoundaryType() const
+49 8106
+
+fn=(1052) Cell::GetBoundaryUnitNormal()
+51 110880
+cfi=(11)
+cfn=(48)
+calls=10080 +44 
+* 1310400
+* 30240
+
+fn=(58) Cell::GetUnitNormal(unsigned int)
+66 852720
+cfi=(13)
+cfn=(46)
+calls=71060 930 
+* 781660
+* 426360
+cfi=(11)
+cfn=(48)
+calls=71060 +29 
+* 9237800
+* 213180
+
+fn=(294) Cell::GetArea()
+41 380345
+
+fl=(45) /usr/include/c++/8.2.1/iomanip
+fn=(726) std::setprecision(int)
+196 18
+
+fn=(732) std::setw(int)
+226 36
+
+fl=(13)
+fn=(60) std::vector<VectorSpace::Matrix<double>, std::allocator<VectorSpace::Matrix<double> > >::operator[](unsigned long)
+930 107866336
++3 134832920
++1 53933168
+
+fn=(1012) std::_Vector_base<Cell*, std::allocator<Cell*> >::_M_allocate(unsigned long)
+293 15
++3 21
+cfi=(30)
+cfn=(1014) std::allocator_traits<std::allocator<Cell*> >::allocate(std::allocator<Cell*>&, unsigned long)
+calls=3 435 
+* 1032
+* 3
++1 6
+
+fn=(1006) std::_Vector_base<Cell*, std::allocator<Cell*> >::_Vector_base(unsigned long, std::allocator<Cell*> const&)
+258 21
++1 15
+cfn=(1008) std::_Vector_base<Cell*, std::allocator<Cell*> >::_Vector_impl::_Vector_impl(std::allocator<Cell*> const&)
+calls=3 99 
+* 117
++1 15
+cfn=(1010) std::_Vector_base<Cell*, std::allocator<Cell*> >::_M_create_storage(unsigned long)
+calls=3 +49 
+* 1158
+* 15
+
+fn=(1008)
+99 15
++1 15
+cfi=(32) /usr/include/c++/8.2.1/bits/allocator.h
+cfn=(1000) std::allocator<Cell*>::allocator(std::allocator<Cell*> const&)
+calls=3 +33 
+* 60
+* 18
++1 9
+
+fn=(344) std::_Vector_base<Cell*, std::allocator<Cell*> >::_M_deallocate(Cell**, unsigned long)
+300 18
++3 6
++1 18
+cfi=(30)
+cfn=(346) std::allocator_traits<std::allocator<Cell*> >::deallocate(std::allocator<Cell*>&, Cell**, unsigned long)
+calls=3 461 
+* 1092
++1 9
+
+fn=(992) std::vector<Cell*, std::allocator<Cell*> >::vector(std::vector<Cell*, std::allocator<Cell*> > const&)
+458 33
++2 12
+cfn=(994) std::_Vector_base<Cell*, std::allocator<Cell*> >::_M_get_Tp_allocator() const
+calls=3 241 
+* 18
+* 15
+cfi=(66)
+cfn=(996)
+calls=3 94 
+* 156
+* 9
+cfn=(1004) std::vector<Cell*, std::allocator<Cell*> >::size() const
+calls=3 805 
+* 36
+* 18
+cfn=(1006)
+calls=3 258 
+* 1341
+* 9
+cfi=(32)
+cfn=(362) std::allocator<Cell*>::~allocator()
+calls=3 139 
+* 48
++5 9
+cfn=(334) std::_Vector_base<Cell*, std::allocator<Cell*> >::_M_get_Tp_allocator()
+calls=3 237 
+* 18
+* 3
+-2 15
+cfn=(1020) std::vector<Cell*, std::allocator<Cell*> >::end() const
+calls=3 725 
+* 96
+* 12
+cfn=(1024) std::vector<Cell*, std::allocator<Cell*> >::begin() const
+calls=3 707 
+* 96
+* 15
+cfi=(68) /usr/include/c++/8.2.1/bits/stl_uninitialized.h
+cfn=(1026) Cell** std::__uninitialized_copy_a<__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, Cell**, Cell*>(__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, __gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, Cell**, std::allocator<Cell*>&)
+calls=3 287 
+* 245802
+* 3
+-1 6
++4 30
+
+fn=(1010)
+309 15
++2 15
+cfn=(1012)
+calls=3 -18 
+* 1077
+* 9
++1 12
++1 21
++1 9
+
+fn=(40) std::vector<BoundaryType, std::allocator<BoundaryType> >::operator[](unsigned long) const
+948 284240
++3 355300
++1 142120
+
+fn=(360) std::_Vector_base<Cell*, std::allocator<Cell*> >::_Vector_impl::~_Vector_impl()
+88 21
+cfi=(32)
+cfn=(362)
+calls=3 +51 
+* 48
+* 9
+
+fn=(1004)
+805 9
++1 27
+
+fn=(332) std::vector<Cell*, std::allocator<Cell*> >::~vector()
+565 12
++3 9
+cfn=(334)
+calls=3 237 
+* 18
+* 3
+-1 21
+cfi=(29) /usr/include/c++/8.2.1/bits/stl_construct.h
+cfn=(336) void std::_Destroy<Cell**, Cell*>(Cell**, Cell**, std::allocator<Cell*>&)
+calls=3 203 
+* 102
++3 9
+cfn=(342) std::_Vector_base<Cell*, std::allocator<Cell*> >::~_Vector_base()
+calls=3 283 
+* 1293
+* 9
+
+fn=(334)
+237 18
++1 18
+
+fn=(342)
+283 12
++3 21
+-1 21
+cfn=(344)
+calls=3 +15 
+* 1143
++2 9
+cfn=(360)
+calls=3 88 
+* 78
+* 9
+
+fn=(1024)
+707 21
++1 24
+cfi=(67) /usr/include/c++/8.2.1/bits/stl_iterator.h
+cfn=(1022) __gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >::__normal_iterator(Cell* const* const&)
+calls=3 +75 
+* 33
+* 18
+
+fn=(994)
+241 9
++1 9
+
+fn=(46)
+930 568480
++3 710600
++1 284240
+
+fn=(302) std::vector<Cell*, std::allocator<Cell*> >::operator[](unsigned long)
+930 95348
++3 119185
++1 47674
+
+fn=(702) std::vector<Cell*, std::allocator<Cell*> >::operator[](unsigned long) const
+948 122592
++3 153240
++1 61296
+
+fn=(1020)
+725 21
++1 24
+cfi=(67)
+cfn=(1022)
+calls=3 +57 
+* 33
+* 18
+
+fn=(420) std::vector<VectorSpace::Vector<double>, std::allocator<VectorSpace::Vector<double> > >::operator[](unsigned long)
+930 3098560
++3 3873200
++1 1549280
+
+fl=(12) /home/jannick/Projects/UQCreator/code/src/mesh.cpp
+fn=(988) Mesh::GetNumCells() const
+32 21
+
+fn=(700) Mesh::GetArea(unsigned int) const
+40 337128
+cfi=(13)
+cfn=(702)
+calls=30648 948 
+* 337128
+* 91944
+cfi=(14)
+cfn=(294)
+calls=30648 +1 
+* 214536
+* 153240
+
+fn=(38) Mesh::GetBoundaryType(unsigned int) const
+54 781660
+cfi=(13)
+cfn=(40)
+calls=71060 948 
+* 781660
+* 213180
+
+fn=(990) Mesh::GetGrid() const
+38 33
+cfi=(13)
+cfn=(992)
+calls=3 458 
+* 247800
+* 9
+
+fl=(37) /home/jannick/Projects/UQCreator/code/src/closure.cpp
+fn=(482) Closure::SubstractVectorMatrixOnVector(VectorSpace::Vector<double>&, VectorSpace::Matrix<double> const&) const
+208 212598
++1 744093
++1 3543300
++1 7086600
+cfi=(11)
+cfn=(272) VectorSpace::Vector<double>::operator[](unsigned int)
+calls=708660 -89 
+* 7795260
+* 5669280
+cfi=(1) /home/jannick/Projects/UQCreator/code/src/matrix.cpp
+cfn=(2) VectorSpace::Matrix<double>::operator()(unsigned int, unsigned int) const
+calls=708660 100 
+* 12755880
+* 9921240
+cfi=(11)
+cfn=(272)
+calls=708660 -89 
+* 7795260
+* 1417320
+-1 1417320
+-1 283464
++5 106299
+
+fn=(412) Closure::SolveClosure(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&)
+68 306480
++1 30648
++2 459720
+cfi=(1)
+cfn=(310) VectorSpace::Matrix<double>::Matrix(unsigned int, unsigned int, double)
+calls=30648 -7 
+* 248340879
++1 306480
+cfi=(11)
+cfn=(414) VectorSpace::Vector<double>::Vector(unsigned int, double)
+calls=30648 +8 
+* 10849392
++1 306480
+cfi=(11)
+cfn=(414)
+calls=30648 +7 
+* 10849392
++3 183888
+cfn=(416) Closure::Gradient(VectorSpace::Vector<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&)
+calls=30648 +90 
+* 2715566040
++1 153240
+cfn=(484) Closure::CalcNorm(VectorSpace::Vector<double>&)
+calls=30648 +47 
+* 68868416
+* 153240
+cfi=(40) /home/jannick/Projects/UQCreator/code/src/settings.cpp
+cfn=(486) Settings::GetEpsilon() const
+calls=30648 199 
+* 214536
+* 122592
++4 9065
+cfi=(22) /home/jannick/Projects/UQCreator/code/src/vectorspace.cpp
+cfn=(488) VectorSpace::Vector<double> operator-<double>(VectorSpace::Vector<double> const&)
+calls=1813 +40 
+* 2210047
++1 10878
+cfn=(490) Closure::Hessian(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&)
+calls=1813 182 
+* 1981895511
++1 9065
+cfi=(22)
+cfn=(568) void posv<double>(VectorSpace::Matrix<double>&, VectorSpace::Vector<double>&)
+calls=1813 +67 
+* 34474195
++2 14504
+cfi=(1)
+cfn=(224) VectorSpace::Matrix<double>::Matrix(unsigned int, unsigned int, bool)
+calls=1813 -32 
+* 977207
++1 19943
+cfi=(22)
+cfn=(274) VectorSpace::Vector<double> operator*<double>(double const&, VectorSpace::Vector<double> const&)
+calls=1813 +27 
+* 2284380
+* 10878
+cfn=(696) Closure::AddMatrixVectorToMatrix(VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Matrix<double>&) const
+calls=1813 200 
+* 3080287
+* 5439
+cfi=(11)
+cfn=(34) VectorSpace::Vector<double>::~Vector()
+calls=1813 +3 
+* 193991
++1 10878
+cfn=(416)
+calls=1813 +79 
+* 160640873
++2 9065
+cfi=(40)
+cfn=(698) Settings::GetMaxIterations() const
+calls=1813 198 
+* 12691
+* 5944
+cfi=(40)
+cfn=(698)
+calls=1486 198 
+* 10402
+* 13196
++1 6598
++1 6598
++1 8916
+cfn=(416)
+calls=1486 +74 
+* 131667046
++1 7430
+cfi=(22)
+cfn=(488)
+calls=1486 +28 
+* 1811434
+* 7430
+cfi=(11)
+cfn=(290) VectorSpace::Vector<double>::operator=(VectorSpace::Vector<double> const&)
+calls=1486 +18 
+* 560222
+* 4458
+cfi=(11)
+cfn=(34)
+calls=1486 -4 
+* 159002
++1 8916
+cfn=(490)
+calls=1486 +88 
+* 1624512567
++1 7430
+cfi=(22)
+cfn=(568)
+calls=1486 +55 
+* 28256290
++2 19318
+cfi=(22)
+cfn=(274)
+calls=1486 +16 
+* 1872360
+* 8916
+cfn=(696)
+calls=1486 200 
+* 2524714
+* 4458
+cfi=(11)
+cfn=(34)
+calls=1486 -8 
+* 159002
++1 8916
+cfn=(416)
+calls=1486 +68 
+* 131667046
++2 3299
++1 16495
+cfn=(484)
+calls=3299 +23 
+* 7412853
+* 19794
+cfn=(484)
+calls=3299 +23 
+* 7413717
+* 13196
++13 16495
+cfi=(1)
+cfn=(298) VectorSpace::Matrix<double>::operator=(VectorSpace::Matrix<double> const&)
+calls=3299 -30 
+* 4064368
++1 16495
+cfn=(484)
+calls=3299 +9 
+* 7413717
+* 16495
+cfi=(40)
+cfn=(486)
+calls=3299 +84 
+* 23093
+* 13196
++1 9065
+cfi=(1)
+cfn=(298)
+calls=1813 -32 
+* 2233616
++1 1813
+-28 2972
+-4 5439
+cfi=(1)
+cfn=(8) VectorSpace::Matrix<double>::~Matrix()
+calls=1813 -3 
+* 184926
+-4 5439
+cfi=(11)
+cfn=(34)
+calls=1813 +8 
+* 193991
+* 1813
+-3 28835
+-5 86505
+cfi=(11)
+cfn=(34)
+calls=28835 +16 
+* 3085345
+* 5439
+cfi=(11)
+cfn=(34)
+calls=1813 +16 
+* 193991
+-1 91944
+cfi=(11)
+cfn=(34)
+calls=30648 +17 
+* 3279336
+-1 91944
+cfi=(1)
+cfn=(8)
+calls=30648 +11 
+* 6711912
++51 214536
+
+fn=(490)
+182 32990
++1 29691
+cfi=(1)
+cfn=(310)
+calls=3299 64 
+* 1474653
++1 9897
+cfi=(1)
+cfn=(492) VectorSpace::Matrix<double>::reset()
+calls=3299 +21 
+* 42992568
++2 280415
++1 659800
+cfi=(13)
+cfn=(420)
+calls=65980 930 
+* 725780
+* 395880
+cfi=(1)
+cfn=(282) VectorSpace::Matrix<double>::operator*(VectorSpace::Vector<double> const&) const
+calls=65980 -12 
+* 107811320
+* 395880
+cfi=(38) /home/jannick/Projects/UQCreator/code/src/eulerclosure2d.cpp
+cfn=(494) EulerClosure2D::DU(VectorSpace::Matrix<double>&, VectorSpace::Vector<double> const&)
+calls=65980 53 
+* 335848757
+* 197940
+cfi=(11)
+cfn=(34)
+calls=65980 -98 
+* 7059860
++1 1385580
++1 5542320
++1 26392000
++1 131960000
++1 158352000
+cfi=(13)
+cfn=(60)
+calls=26392000 930 
+* 290312000
+* 158352000
+cfi=(1)
+cfn=(4) VectorSpace::Matrix<double>::operator()(unsigned int, unsigned int)
+calls=26392000 -94 
+* 475056000
+* 263920000
+cfi=(1)
+cfn=(4)
+calls=26392000 -94 
+* 475056000
+* 501448000
+cfi=(1)
+cfn=(4)
+calls=26392000 -94 
+* 475056000
+* 79176000
+-1 52784000
+-1 10556800
+-1 2111360
+-1 527840
+-2 131960
+-3 9897
+cfi=(1)
+cfn=(8)
+calls=3299 82 
+* 336498
++15 26392
+
+fn=(704) Closure::EvaluateLambda(VectorSpace::Matrix<double> const&) const
+139 490368
+cfi=(1)
+cfn=(292) VectorSpace::Matrix<double>::operator*(VectorSpace::Matrix<double> const&) const
+calls=30648 -16 
+* 1292793936
+* 183888
+
+fn=(484)
+124 202725
++1 81090
++2 851445
++1 324360
++1 4054500
++1 8109000
+cfi=(11)
+cfn=(272)
+calls=810900 -8 
+* 8919900
+* 2432700
+cfi=(39) /usr/include/c++/8.2.1/cmath
+cfn=(424) __gnu_cxx::__promote_2<double, int, __gnu_cxx::__promote<double, std::__is_integer<double>::__value>::__type, __gnu_cxx::__promote<int, std::__is_integer<int>::__value>::__type>::__type std::pow<double, int>(double, int)
+calls=810900 415 
+* 58388888
+* 3243600
+-1 1621800
++3 324360
+cob=(8)
+cfi=(21)
+cfn=(252)
+calls=162180 0 
+* 1297440
+* 162180
+* 648720
+-5 324360
++7 40545
++1 81090
+
+fn=(696)
+200 23093
++1 69279
++1 329900
++1 395880
+cfi=(1)
+cfn=(2)
+calls=65980 100 
+* 1187640
+* 791760
+cfi=(11)
+cfn=(256) VectorSpace::Vector<double>::operator[](unsigned int) const
+calls=65980 -79 
+* 725780
+* 593820
+cfi=(1)
+cfn=(4)
+calls=65980 98 
+* 1187640
+* 131960
+-1 131960
+-1 26392
++5 9897
+
+fn=(416)
+166 389763
++1 248031
+cfi=(11)
+cfn=(414)
+calls=35433 -87 
+* 5173218
++1 106299
+cfi=(11)
+cfn=(418) VectorSpace::Vector<double>::reset()
+calls=35433 +72 
+* 9602343
++2 3011805
++1 7086600
+cfi=(13)
+cfn=(420)
+calls=708660 930 
+* 7795260
+* 4251960
+cfi=(1)
+cfn=(282)
+calls=708660 +4 
+* 1157950440
+* 4251960
+cfi=(38)
+cfn=(422) EulerClosure2D::U(VectorSpace::Vector<double>&, VectorSpace::Vector<double> const&)
+calls=708660 7 
+* 649132600
+* 2125980
+cfi=(11)
+cfn=(34)
+calls=708660 -82 
+* 75826620
++1 17716500
++1 74409300
++1 70866000
+cfi=(11)
+cfn=(272)
+calls=14173200 -52 
+* 155905200
+* 155905200
+cfi=(1)
+cfn=(4)
+calls=14173200 -76 
+* 255117600
+* 184251600
+cfi=(11)
+cfn=(272)
+calls=14173200 -52 
+* 155905200
+* 42519600
+-1 28346400
+-1 7086600
+-2 1417320
++9 212598
+cfn=(482)
+calls=35433 +29 
+* 58747914
+-12 106299
+cfi=(11)
+cfn=(34)
+calls=35433 -78 
+* 3791331
++13 283464
+
+fl=(19) /home/jannick/Projects/UQCreator/code/src/closure.h
+fn=(216) Closure::GetPhiTildeW()
+73 711956
+
+fl=(38)
+fn=(422)
+7 4251960
++1 2834640
+cfi=(11)
+cfn=(256)
+calls=708660 124 
+* 7795260
+* 1417320
++1 2834640
+cfi=(11)
+cfn=(256)
+calls=708660 124 
+* 7795260
+* 1417320
++1 2834640
+cfi=(11)
+cfn=(256)
+calls=708660 124 
+* 7795260
+* 1417320
++1 2834640
+cfi=(11)
+cfn=(256)
+calls=708660 124 
+* 7795260
+* 1417320
++1 7086600
+cfi=(39)
+cfn=(424)
+calls=708660 415 
+* 51023520
+* 2834640
+cfi=(39)
+cfn=(424)
+calls=708660 415 
+* 51023520
+* 13464540
+cob=(8)
+cfi=(21)
+cfn=(428)
+calls=708660 -12 
+* 65905380
+* 708660
+* 708660
++1 8503920
+cob=(8)
+cfi=(21)
+cfn=(228)
+calls=708660 -13 
+* 160865860
+* 708660
+* 1417320
++1 4251960
+cfi=(11)
+cfn=(272)
+calls=708660 122 
+* 7795260
+* 1417320
++1 7086600
+cfi=(11)
+cfn=(272)
+calls=708660 122 
+* 7795260
+* 1417320
++1 7086600
+cfi=(11)
+cfn=(272)
+calls=708660 122 
+* 7795260
+* 1417320
++1 2125980
+cfi=(39)
+cfn=(424)
+calls=708660 415 
+* 51023520
+* 4960620
+cfi=(39)
+cfn=(424)
+calls=708660 415 
+* 51023520
+* 7086600
+cfi=(39)
+cfn=(424)
+calls=708660 415 
+* 51023520
+* 7795260
+cfi=(11)
+cfn=(272)
+calls=708660 122 
+* 7795260
+* 1417320
++1 2125980
+
+fn=(494)
+53 593820
++1 263920
+cfi=(11)
+cfn=(256)
+calls=65980 +70 
+* 725780
+* 131960
++1 263920
+cfi=(11)
+cfn=(256)
+calls=65980 +69 
+* 725780
+* 131960
++1 263920
+cfi=(11)
+cfn=(256)
+calls=65980 +68 
+* 725780
+* 131960
++1 263920
+cfi=(11)
+cfn=(256)
+calls=65980 +67 
+* 725780
+* 131960
++1 659800
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 263920
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 1121660
+cob=(8)
+cfi=(21)
+cfn=(428)
+calls=65980 -58 
+* 6136140
+* 65980
+* 461860
+cob=(8)
+cfi=(21)
+cfn=(228)
+calls=65980 -58 
+* 15967160
+* 65980
+* 65980
++1 461860
++1 197940
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 263920
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 659800
++1 593820
+cfi=(1)
+cfn=(4)
+calls=65980 +37 
+* 1187640
+* 131960
++1 659800
+cfi=(1)
+cfn=(4)
+calls=65980 +36 
+* 1187640
+* 131960
++1 659800
+cfi=(1)
+cfn=(4)
+calls=65980 +35 
+* 1187640
+* 131960
++1 197940
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 263920
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 725780
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 791760
+cfi=(1)
+cfn=(4)
+calls=65980 +34 
+* 1187640
+* 131960
++1 659800
+cfi=(1)
+cfn=(4)
+calls=65980 +33 
+* 1187640
+* 131960
++1 197940
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 923720
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 725780
+cfi=(1)
+cfn=(4)
+calls=65980 +32 
+* 1187640
+* 131960
++1 593820
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 725780
+cfi=(1)
+cfn=(4)
+calls=65980 +31 
+* 1187640
+* 131960
++1 461860
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 26392016
+* 593820
+cfi=(1)
+cfn=(4)
+calls=65980 +30 
+* 1187640
+* 131960
++1 659800
+cfi=(1)
+cfn=(4)
+calls=65980 +29 
+* 1187640
+* 131960
++1 593820
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 725780
+cfi=(1)
+cfn=(4)
+calls=65980 +28 
+* 1187640
+* 131960
++1 197940
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 923720
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 725780
+cfi=(1)
+cfn=(4)
+calls=65980 +27 
+* 1187640
+* 131960
++1 461860
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 26392016
+* 593820
+cfi=(1)
+cfn=(4)
+calls=65980 +26 
+* 1187640
+* 131960
++1 197940
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 263920
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 725780
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 791760
+cfi=(1)
+cfn=(4)
+calls=65980 +25 
+* 1187640
+* 131960
++1 461860
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 26392016
+* 593820
+cfi=(1)
+cfn=(4)
+calls=65980 +24 
+* 1187640
+* 131960
++1 461860
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 26392016
+* 593820
+cfi=(1)
+cfn=(4)
+calls=65980 +23 
+* 1187640
+* 131960
++1 197940
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 17156348
+* 263920
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 17361669
+* 395880
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 857740
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 593820
++1 197940
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 329900
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 4750560
+* 659800
+-1 461860
++2 197940
+cfi=(39)
+cfn=(424)
+calls=65980 415 
+* 25138396
+* 197940
+-1 197940
+-1 329900
+cfi=(1)
+cfn=(4)
+calls=65980 +22 
+* 1187640
+* 131960
++3 395880
+
+fn=(706) EulerClosure2D::U(VectorSpace::Matrix<double> const&)
+35 275832
++2 91944
+cfi=(1)
+cfn=(222) VectorSpace::Matrix<double>::columns() const
+calls=30648 203 
+* 214536
+* 245184
+cfi=(1)
+cfn=(310)
+calls=30648 +27 
+* 56361672
++1 122592
+cfi=(1)
+cfn=(222)
+calls=30648 203 
+* 214536
+* 1838880
+cfi=(1)
+cfn=(222)
+calls=612960 203 
+* 4290720
+* 2574432
++1 3064800
+cfi=(1)
+cfn=(2)
+calls=612960 +61 
+* 11033280
+* 1225920
++1 3064800
+cfi=(1)
+cfn=(2)
+calls=612960 +60 
+* 11033280
+* 1225920
++1 3064800
+cfi=(1)
+cfn=(2)
+calls=612960 +59 
+* 11033280
+* 1225920
++1 3064800
+cfi=(1)
+cfn=(2)
+calls=612960 +58 
+* 11033280
+* 1225920
++1 6129600
+cfi=(39)
+cfn=(424)
+calls=612960 415 
+* 44133120
+* 2451840
+cfi=(39)
+cfn=(424)
+calls=612960 415 
+* 44133120
+* 12259200
+cob=(8)
+cfi=(21)
+cfn=(428)
+calls=612960 -43 
+* 57005280
+* 612960
+* 3677760
+cob=(8)
+cfi=(21)
+cfn=(228)
+calls=612960 -43 
+* 148336320
+* 612960
+* 1225920
++1 4290720
+cfi=(1)
+cfn=(4)
+calls=612960 +54 
+* 11033280
+* 1225920
++1 6742560
+cfi=(1)
+cfn=(4)
+calls=612960 +53 
+* 11033280
+* 1225920
++1 6742560
+cfi=(1)
+cfn=(4)
+calls=612960 +52 
+* 11033280
+* 1225920
++1 1838880
+cfi=(39)
+cfn=(424)
+calls=612960 415 
+* 44133120
+* 4290720
+cfi=(39)
+cfn=(424)
+calls=612960 415 
+* 44133120
+* 6129600
+cfi=(39)
+cfn=(424)
+calls=612960 415 
+* 44133120
+* 7355520
+cfi=(1)
+cfn=(4)
+calls=612960 +51 
+* 11033280
+* 1225920
+-9 1225920
++12 30648
++1 183888
+
+fl=(68)
+fn=(1030) Cell** std::__uninitialized_copy<true>::__uninit_copy<__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, Cell**>(__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, __gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, Cell**)
+99 18
++2 18
+cfi=(69) /usr/include/c++/8.2.1/bits/stl_algobase.h
+cfn=(1032) Cell** std::copy<__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, Cell**>(__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, __gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, Cell**)
+calls=3 446 
+* 245670
+* 6
+
+fn=(1026)
+287 21
++2 18
+cfn=(1028) Cell** std::uninitialized_copy<__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, Cell**>(__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, __gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, Cell**)
+calls=3 115 
+* 245757
+* 6
+
+fn=(1028)
+115 18
++13 3
++6 18
+cfn=(1030)
+calls=3 -35 
+* 245712
++1 6
+
+fl=(39)
+fn=(424)
+415 46002300
++3 27601380
+cob=(8)
+cfi=(21)
+cfn=(228)
+calls=9200460 0 
+* 665601325
+* 9200460
+* 27601380
++1 18400920
+
+fl=(2) /home/jannick/Projects/UQCreator/code/src/momentsolver.cpp
+fn=(6) MomentSolver::numFlux(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+101 923780
++1 284240
+cfi=(19)
+cfn=(216)
+calls=71060 -29 
+* 497420
+* 994840
+cfi=(20) /home/jannick/Projects/UQCreator/code/src/euler2d.cpp
+cfn=(218) Euler2D::G(VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+calls=71060 -50 
+* 13809507090
+* 568472
+cfi=(22)
+cfn=(280) VectorSpace::Matrix<double> operator*<double, double>(double const&, VectorSpace::Matrix<double> const&)
+calls=71059 -71 
+* 458970081
+* 426354
+cfi=(1)
+cfn=(292)
+calls=71059 +21 
+* 2803419668
+* 355295
+cfi=(1)
+cfn=(0) VectorSpace::Matrix<double>::operator+=(VectorSpace::Matrix<double> const&)
+calls=71059 +83 
+* 88681632
+cfi=(1)
+cfn=(0)
+calls=1 +89 
+* 437
+* 213180
+cfi=(1)
+cfn=(8)
+calls=71060 -20 
+* 7248120
+* 213180
+cfi=(1)
+cfn=(8)
+calls=71060 -20 
+* 7248120
+* 213180
+cfi=(1)
+cfn=(8)
+calls=71060 -20 
+* 7248120
++1 568480
+
+fn=(366) MomentSolver::Solve()
+47 12
++1 6
++1 18
++8 48
+cob=(9) /usr/lib/libgomp.so.1.0.0
+cfi=(23) /build/gcc/src/gcc/libgomp/parallel.c
+cfn=(314) GOMP_parallel
+calls=3 165 
+* 10787264606
+* 3
+* 6
++8 9
+cob=(2)
+cfi=(43)
+cfn=(710)
+calls=3 +62 
+* 357
+* 3
+* 9
+cfi=(45)
+cfn=(726)
+calls=3 196 
+* 18
+* 9
+cob=(2)
+cfi=(46)
+cfn=(730)
+calls=3 208 
+* 21
+* 3
+* 9
+cfi=(45)
+cfn=(732)
+calls=3 226 
+* 18
+* 9
+cob=(2)
+cfi=(46)
+cfn=(736)
+calls=3 238 
+* 21
+* 3
+* 9
+cob=(2)
+cfi=(43)
+cfn=(740)
+calls=3 220 
+* 9907
+* 3
+* 9
+cfi=(45)
+cfn=(732)
+calls=3 226 
+* 18
+* 9
+cob=(2)
+cfi=(46)
+cfn=(736)
+calls=3 238 
+* 21
+* 3
+* 9
+cob=(2)
+cfi=(43)
+cfn=(740)
+calls=3 220 
+* 12573
+* 3
+* 15
+cob=(2)
+cfi=(43)
+cfn=(870)
+calls=3 +43 
+* 1344
+* 3
++3 54
+cfi=(9) /usr/include/c++/8.2.1/bits/std_function.h
+cfn=(910) std::function<void (VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>::function<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>, void, void>(std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>)
+calls=3 666 
+* 2082
+* 24
+cfi=(10) /home/jannick/Projects/UQCreator/code/src/expliciteuler.cpp
+cfn=(330) ExplicitEuler::Advance(std::function<void (VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> const&, std::vector<VectorSpace::Matrix<double>, std::allocator<VectorSpace::Matrix<double> > >&, std::vector<VectorSpace::Matrix<double>, std::allocator<VectorSpace::Matrix<double> > >&, std::vector<VectorSpace::Matrix<double>, std::allocator<VectorSpace::Matrix<double> > >&)
+calls=3 -60 
+* 15429390961
+cfi=(23)
+cfn=(314)
+calls=1 -15 
+* 2078862575
+* 9
+cfi=(9)
+cfn=(368) std::function<void (VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>::~function()
+calls=3 370 
+* 525
+-21 18
+
+fn=(402) MomentSolver::Solve() [clone ._omp_fn.2]
+57 48
++1 12
+-1 48
+cob=(9)
+cfi=(23)
+cfn=(406) omp_get_num_threads
+calls=3 238 
+* 24
+* 3
+* 6
+cob=(9)
+cfi=(23)
+cfn=(410) omp_get_thread_num
+calls=3 245 
+* 12
+* 3
+* 54
++2 39
+cfi=(13)
+cfn=(60)
+calls=3 930 
+* 33
+* 398385
+cfi=(13)
+cfn=(60)
+calls=30645 930 
+* 337095
+* 214536
+cfi=(13)
+cfn=(60)
+calls=30648 930 
+* 337128
+* 122592
+cfi=(37)
+cfn=(412)
+calls=30648 +9 
+* 7208771003
++1 183888
+cfi=(13)
+cfn=(60)
+calls=30648 930 
+* 337128
+* 122592
+cfi=(1)
+cfn=(4)
+calls=30648 +38 
+* 551664
+* 245184
+cfi=(13)
+cfn=(60)
+calls=30648 930 
+* 337128
+* 122592
+cfi=(1)
+cfn=(4)
+calls=30648 +38 
+* 551664
+* 398424
+cfi=(12)
+cfn=(700)
+calls=30648 -20 
+* 1133976
+* 214536
++2 459720
+cfi=(13)
+cfn=(60)
+calls=30648 930 
+* 337128
+* 153240
+cfi=(37)
+cfn=(704)
+calls=30648 +77 
+* 1293468192
+* 153240
+cfi=(38)
+cfn=(706)
+calls=30648 -27 
+* 668371584
+* 183888
+cfi=(13)
+cfn=(60)
+calls=30648 930 
+* 337128
+* 153240
+cfi=(1)
+cfn=(298)
+calls=30648 +22 
+* 149470296
+* 91944
+cfi=(1)
+cfn=(8)
+calls=30648 +20 
+* 3126096
+* 91944
+cfi=(1)
+cfn=(8)
+calls=30648 +20 
+* 3126096
++1 122592
+cfi=(19)
+cfn=(216)
+calls=30648 +10 
+* 214536
+* 214536
+cfi=(13)
+cfn=(60)
+calls=30648 930 
+* 337128
+* 245184
+cfi=(22)
+cfn=(280)
+calls=30648 -32 
+* 197955432
+* 183888
+cfi=(1)
+cfn=(292)
+calls=30648 +60 
+* 1209124896
+* 183888
+cfi=(13)
+cfn=(60)
+calls=30648 930 
+* 337128
+* 153240
+cfi=(1)
+cfn=(298)
+calls=30648 +21 
+* 37758336
+* 91944
+cfi=(1)
+cfn=(8)
+calls=30648 +19 
+* 3126096
+* 91944
+cfi=(1)
+cfn=(8)
+calls=30648 +19 
+* 3126096
+* 91947
+-6 30
+
+fl=(8) /usr/include/c++/8.2.1/functional
+fn=(108) std::enable_if<(4ul)<std::tuple_size<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::value, std::tuple_element<4ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> > >::type::type&& std::_Mu<std::_Placeholder<5>, false, true>::operator()<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >(std::_Placeholder<5> const volatile&, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&) const volatile
+345 426360
++3 213180
+cfi=(17) /usr/include/c++/8.2.1/bits/move.h
+cfn=(110) std::remove_reference<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&>::type&& std::move<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+calls=71060 99 
+* 426360
+* 142120
+cfi=(18) /usr/include/c++/8.2.1/tuple
+cfn=(112) std::tuple_element<4ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::type&& std::get<4ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&&)
+calls=71060 1326 
+* 3624060
++1 142120
+
+fn=(130) std::enable_if<(3ul)<std::tuple_size<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::value, std::tuple_element<3ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> > >::type::type&& std::_Mu<std::_Placeholder<4>, false, true>::operator()<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >(std::_Placeholder<4> const volatile&, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&) const volatile
+345 426360
++3 213180
+cfi=(17)
+cfn=(110)
+calls=71060 99 
+* 426360
+* 142120
+cfi=(18)
+cfn=(132) std::tuple_element<3ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::type&& std::get<3ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&&)
+calls=71060 1326 
+* 3695120
++1 142120
+
+fn=(924) std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>::_Bind(std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>&&)
+472 18
++1 9
+cfi=(17)
+cfn=(926) std::remove_reference<void (MomentSolver::*&)(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>::type&& std::move<void (MomentSolver::*&)(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>(void (MomentSolver::*&)(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&))
+calls=3 99 
+* 18
+* 33
+cfi=(17)
+cfn=(928) std::remove_reference<std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&>::type&& std::move<std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&>(std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 99 
+* 18
+* 9
+cfi=(18)
+cfn=(930) std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::tuple(std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&&)
+calls=3 662 
+* 1392
++1 15
+
+fn=(150) std::enable_if<(2ul)<std::tuple_size<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::value, std::tuple_element<2ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> > >::type::type&& std::_Mu<std::_Placeholder<3>, false, true>::operator()<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >(std::_Placeholder<3> const volatile&, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&) const volatile
+345 426360
++3 213180
+cfi=(17)
+cfn=(110)
+calls=71060 99 
+* 426360
+* 142120
+cfi=(18)
+cfn=(152) std::tuple_element<2ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::type&& std::get<2ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&&)
+calls=71060 1326 
+* 3695120
++1 142120
+
+fn=(24) void std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>::__call<void, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&, 0ul, 1ul, 2ul, 3ul, 4ul, 5ul>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&&, std::_Index_tuple<0ul, 1ul, 2ul, 3ul, 4ul, 5ul>)
+398 923780
++3 284240
+cfi=(18)
+cfn=(100) std::tuple_element<5ul, std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> > >::type& std::get<5ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >(std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=71060 1314 
+* 2344980
+* 71060
+-1 355300
+cfn=(108)
+calls=71060 -55 
+* 4974200
+* 71060
++1 284240
+cfi=(18)
+cfn=(122) std::tuple_element<4ul, std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> > >::type& std::get<4ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >(std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=71060 1314 
+* 2344980
+* 71060
+-1 355300
+cfn=(130)
+calls=71060 -55 
+* 5045260
+* 71060
++1 284240
+cfi=(18)
+cfn=(142) std::tuple_element<3ul, std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> > >::type& std::get<3ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >(std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=71060 1314 
+* 2344980
+* 71060
+-1 355300
+cfn=(150)
+calls=71060 -55 
+* 5045260
+* 71060
++1 284240
+cfi=(18)
+cfn=(162) std::tuple_element<2ul, std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> > >::type& std::get<2ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >(std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=71060 1314 
+* 2344980
+* 71060
+-1 355300
+cfn=(170) std::enable_if<(1ul)<std::tuple_size<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::value, std::tuple_element<1ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> > >::type::type&& std::_Mu<std::_Placeholder<2>, false, true>::operator()<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >(std::_Placeholder<2> const volatile&, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&) const volatile
+calls=71060 -55 
+* 5045260
+* 71060
++1 284240
+cfi=(18)
+cfn=(182) std::tuple_element<1ul, std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> > >::type& std::get<1ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >(std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=71060 1314 
+* 2344980
+* 71060
+-1 355300
+cfn=(190) std::enable_if<(0ul)<std::tuple_size<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::value, std::tuple_element<0ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> > >::type::type&& std::_Mu<std::_Placeholder<1>, false, true>::operator()<std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >(std::_Placeholder<1> const volatile&, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&) const volatile
+calls=71060 -55 
+* 5045260
+* 71060
++1 284240
+cfi=(18)
+cfn=(202) std::tuple_element<0ul, std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> > >::type& std::get<0ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >(std::tuple<MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=71060 1314 
+* 2344980
+* 71060
+-1 355300
+cfn=(210) MomentSolver*& std::_Mu<MomentSolver*, false, false>::operator()<MomentSolver*&, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >(MomentSolver*&, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&) const volatile
+calls=71060 -37 
+* 1208020
+* 710600
+cfi=(7) /usr/include/c++/8.2.1/bits/invoke.h
+cfn=(22) std::__invoke_result<void (MomentSolver::*&)(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&), MomentSolver*&, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>::type std::__invoke<void (MomentSolver::*&)(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&), MomentSolver*&, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(void (MomentSolver::*&)(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&), MomentSolver*&, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+calls=71060 89 
+* 17201721850
+cfi=(7)
+cfn=(22)
+calls=1 95 
+* 779
+* 71060
++2 71060
++1 781660
+
+fn=(26) void std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>::operator()<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&, void>(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+480 1136960
++4 213180
+cfi=(17)
+cfn=(64) VectorSpace::Vector<double> const& std::forward<VectorSpace::Vector<double> const&>(std::remove_reference<VectorSpace::Vector<double> const&>::type&)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(64)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66) VectorSpace::Matrix<double> const& std::forward<VectorSpace::Matrix<double> const&>(std::remove_reference<VectorSpace::Matrix<double> const&>::type&)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(68) VectorSpace::Matrix<double>& std::forward<VectorSpace::Matrix<double>&>(std::remove_reference<VectorSpace::Matrix<double>&>::type&)
+calls=71060 74 
+* 426360
+* 568480
+cfi=(18)
+cfn=(76) std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> std::forward_as_tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+calls=71060 1475 
+* 18049240
+* 355300
+cfn=(24)
+calls=71060 -86 
+* 17249332037
+cfn=(24)
+calls=1 -81 
+* 792
++1 710600
+
+fn=(210)
+363 426360
++1 213180
+cfi=(17)
+cfn=(212) MomentSolver*& std::forward<MomentSolver*&>(std::remove_reference<MomentSolver*&>::type&)
+calls=71060 74 
+* 426360
+* 142120
+
+fn=(170)
+345 426360
++3 213180
+cfi=(17)
+cfn=(110)
+calls=71060 99 
+* 426360
+* 142120
+cfi=(18)
+cfn=(172) std::tuple_element<1ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::type&& std::get<1ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&&)
+calls=71060 1326 
+* 3695120
++1 142120
+
+fn=(190)
+345 426360
++3 213180
+cfi=(17)
+cfn=(110)
+calls=71060 99 
+* 426360
+* 142120
+cfi=(18)
+cfn=(192) std::tuple_element<0ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::type&& std::get<0ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&&)
+calls=71060 1326 
+* 3695120
++1 142120
+
+fl=(18)
+fn=(86) std::_Tuple_impl<3ul, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>::_Tuple_impl(VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+210 426360
++1 355300
+cfn=(88) std::_Tuple_impl<4ul, VectorSpace::Vector<double> const&>::_Tuple_impl(VectorSpace::Vector<double> const&)
+calls=71060 360 
+* 1634380
+* 426360
+cfn=(92) std::_Head_base<3ul, VectorSpace::Vector<double> const&, false>::_Head_base(VectorSpace::Vector<double> const&)
+calls=71060 -86 
+* 710600
+* 213180
+
+fn=(100)
+1314 284240
++1 213180
+cfn=(102) std::_Placeholder<5>& std::__get_helper<5ul, std::_Placeholder<5>>(std::_Tuple_impl<5ul, std::_Placeholder<5>>&)
+calls=71060 -12 
+* 1705440
+* 142120
+
+fn=(114) std::tuple_element<4ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::type& std::get<4ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+1314 284240
++1 213180
+cfn=(116) VectorSpace::Vector<double> const& std::__get_helper<4ul, VectorSpace::Vector<double> const&>(std::_Tuple_impl<4ul, VectorSpace::Vector<double> const&>&)
+calls=71060 -12 
+* 1776500
+* 142120
+
+fn=(132)
+1326 284240
++3 213180
+cfn=(134) std::tuple_element<3ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::type& std::get<3ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+calls=71060 -15 
+* 2487100
+* 142120
+cfi=(17)
+cfn=(64)
+calls=71060 74 
+* 426360
++1 142120
+
+fn=(174) std::tuple_element<1ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::type& std::get<1ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+1314 284240
++1 213180
+cfn=(176) VectorSpace::Matrix<double> const& std::__get_helper<1ul, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::_Tuple_impl<1ul, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+calls=71060 -12 
+* 1847560
+* 142120
+
+fn=(188) std::_Head_base<1ul, std::_Placeholder<1>, true>::_M_head(std::_Head_base<1ul, std::_Placeholder<1>, true>&)
+113 426378
+
+fn=(196) VectorSpace::Matrix<double>& std::__get_helper<0ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::_Tuple_impl<0ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+1303 284240
++1 213180
+cfn=(198) std::_Tuple_impl<0ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>::_M_head(std::_Tuple_impl<0ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+calls=71060 195 
+* 1208020
+* 142120
+
+fn=(934) std::_Tuple_impl<0ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_M_tail(std::_Tuple_impl<0ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+201 18
+
+fn=(950) std::_Tuple_impl<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_Tuple_impl(std::_Tuple_impl<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&&)
+223 15
++3 9
+cfn=(952) std::_Tuple_impl<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_M_tail(std::_Tuple_impl<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 -25 
+* 18
+* 6
+cfi=(17)
+cfn=(954) std::remove_reference<std::_Tuple_impl<4ul, std::_Placeholder<4>, std::_Placeholder<5> >&>::type&& std::move<std::_Tuple_impl<4ul, std::_Placeholder<4>, std::_Placeholder<5> >&>(std::_Tuple_impl<4ul, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 99 
+* 18
+* 3
++1 12
+cfn=(956) std::_Tuple_impl<4ul, std::_Placeholder<4>, std::_Placeholder<5> >::_Tuple_impl(std::_Tuple_impl<4ul, std::_Placeholder<4>, std::_Placeholder<5> >&&)
+calls=3 -4 
+* 402
+* 9
+cfn=(146) std::_Tuple_impl<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_M_head(std::_Tuple_impl<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 -32 
+* 45
+* 6
+cfi=(17)
+cfn=(972) std::_Placeholder<3>&& std::forward<std::_Placeholder<3> >(std::remove_reference<std::_Placeholder<3> >::type&)
+calls=3 74 
+* 18
+* 15
+cfn=(974) std::_Head_base<3ul, std::_Placeholder<3>, true>::_Head_base<std::_Placeholder<3> >(std::_Placeholder<3>&&)
+calls=3 86 
+* 51
+* 9
+
+fn=(952)
+201 18
+
+fn=(106) std::_Head_base<5ul, std::_Placeholder<5>, true>::_M_head(std::_Head_base<5ul, std::_Placeholder<5>, true>&)
+113 426378
+
+fn=(128) std::_Head_base<4ul, std::_Placeholder<4>, true>::_M_head(std::_Head_base<4ul, std::_Placeholder<4>, true>&)
+113 426378
+
+fn=(136) VectorSpace::Vector<double> const& std::__get_helper<3ul, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::_Tuple_impl<3ul, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+1303 284240
++1 213180
+cfn=(138) std::_Tuple_impl<3ul, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>::_M_head(std::_Tuple_impl<3ul, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+calls=71060 195 
+* 1208020
+* 142120
+
+fn=(152)
+1326 284240
++3 213180
+cfn=(154) std::tuple_element<2ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::type& std::get<2ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+calls=71060 -15 
+* 2487100
+* 142120
+cfi=(17)
+cfn=(66)
+calls=71060 74 
+* 426360
++1 142120
+
+fn=(182)
+1314 284240
++1 213180
+cfn=(184) std::_Placeholder<1>& std::__get_helper<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >(std::_Tuple_impl<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=71060 -12 
+* 1705440
+* 142120
+
+fn=(938) std::_Tuple_impl<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_Tuple_impl(std::_Tuple_impl<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&&)
+223 15
++3 9
+cfn=(940) std::_Tuple_impl<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_M_tail(std::_Tuple_impl<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 -25 
+* 18
+* 6
+cfi=(17)
+cfn=(942) std::remove_reference<std::_Tuple_impl<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&>::type&& std::move<std::_Tuple_impl<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&>(std::_Tuple_impl<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 99 
+* 18
+* 3
++1 12
+cfn=(944) std::_Tuple_impl<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_Tuple_impl(std::_Tuple_impl<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&&)
+calls=3 -4 
+* 870
+* 9
+cfn=(186) std::_Tuple_impl<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_M_head(std::_Tuple_impl<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 -32 
+* 45
+* 6
+cfi=(17)
+cfn=(980) std::_Placeholder<1>&& std::forward<std::_Placeholder<1> >(std::remove_reference<std::_Placeholder<1> >::type&)
+calls=3 74 
+* 18
+* 15
+cfn=(982) std::_Head_base<1ul, std::_Placeholder<1>, true>::_Head_base<std::_Placeholder<1> >(std::_Placeholder<1>&&)
+calls=3 86 
+* 51
+* 9
+
+fn=(966) std::_Head_base<5ul, std::_Placeholder<5>, true>::_Head_base<std::_Placeholder<5> >(std::_Placeholder<5>&&)
+86 15
++1 9
+cfi=(17)
+cfn=(964) std::_Placeholder<5>&& std::forward<std::_Placeholder<5> >(std::remove_reference<std::_Placeholder<5> >::type&)
+calls=3 -13 
+* 18
+* 9
+
+fn=(970) std::_Head_base<4ul, std::_Placeholder<4>, true>::_Head_base<std::_Placeholder<4> >(std::_Placeholder<4>&&)
+86 15
++1 9
+cfi=(17)
+cfn=(968) std::_Placeholder<4>&& std::forward<std::_Placeholder<4> >(std::remove_reference<std::_Placeholder<4> >::type&)
+calls=3 -13 
+* 18
+* 9
+
+fn=(974)
+86 15
++1 9
+cfi=(17)
+cfn=(972)
+calls=3 -13 
+* 18
+* 9
+
+fn=(978) std::_Head_base<2ul, std::_Placeholder<2>, true>::_Head_base<std::_Placeholder<2> >(std::_Placeholder<2>&&)
+86 15
++1 9
+cfi=(17)
+cfn=(976) std::_Placeholder<2>&& std::forward<std::_Placeholder<2> >(std::remove_reference<std::_Placeholder<2> >::type&)
+calls=3 -13 
+* 18
+* 9
+
+fn=(982)
+86 15
++1 9
+cfi=(17)
+cfn=(980)
+calls=3 -13 
+* 18
+* 9
+
+fn=(88)
+360 355300
++1 355300
+cfn=(90) std::_Head_base<4ul, VectorSpace::Vector<double> const&, false>::_Head_base(VectorSpace::Vector<double> const&)
+calls=71060 125 
+* 710600
+* 213180
+
+fn=(90)
+125 284240
++1 426360
+
+fn=(96) std::_Head_base<1ul, VectorSpace::Matrix<double> const&, false>::_Head_base(VectorSpace::Matrix<double> const&)
+125 284240
++1 426360
+
+fn=(144) std::_Placeholder<3>& std::__get_helper<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >(std::_Tuple_impl<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+1303 284240
++1 213180
+cfn=(146)
+calls=71060 195 
+* 1065900
+* 142120
+
+fn=(148) std::_Head_base<3ul, std::_Placeholder<3>, true>::_M_head(std::_Head_base<3ul, std::_Placeholder<3>, true>&)
+113 426378
+
+fn=(156) VectorSpace::Matrix<double> const& std::__get_helper<2ul, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::_Tuple_impl<2ul, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+1303 284240
++1 213180
+cfn=(158) std::_Tuple_impl<2ul, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>::_M_head(std::_Tuple_impl<2ul, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+calls=71060 195 
+* 1208020
+* 142120
+
+fn=(158)
+195 568480
+cfn=(160) std::_Head_base<2ul, VectorSpace::Matrix<double> const&, false>::_M_head(std::_Head_base<2ul, VectorSpace::Matrix<double> const&, false>&)
+calls=71060 -35 
+* 497420
+* 142120
+
+fn=(180) std::_Head_base<1ul, VectorSpace::Matrix<double> const&, false>::_M_head(std::_Head_base<1ul, VectorSpace::Matrix<double> const&, false>&)
+160 497420
+
+fn=(202)
+1314 284240
++1 213180
+cfn=(204) MomentSolver*& std::__get_helper<0ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >(std::_Tuple_impl<0ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=71060 -12 
+* 1705440
+* 142120
+
+fn=(956)
+223 15
++3 9
+cfn=(958) std::_Tuple_impl<4ul, std::_Placeholder<4>, std::_Placeholder<5> >::_M_tail(std::_Tuple_impl<4ul, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 -25 
+* 18
+* 6
+cfi=(17)
+cfn=(960) std::remove_reference<std::_Tuple_impl<5ul, std::_Placeholder<5> >&>::type&& std::move<std::_Tuple_impl<5ul, std::_Placeholder<5> >&>(std::_Tuple_impl<5ul, std::_Placeholder<5> >&)
+calls=3 99 
+* 18
+* 3
++1 12
+cfn=(962) std::_Tuple_impl<5ul, std::_Placeholder<5> >::_Tuple_impl(std::_Tuple_impl<5ul, std::_Placeholder<5> >&&)
+calls=3 371 
+* 168
+* 9
+cfn=(126) std::_Tuple_impl<4ul, std::_Placeholder<4>, std::_Placeholder<5> >::_M_head(std::_Tuple_impl<4ul, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 -32 
+* 45
+* 6
+cfi=(17)
+cfn=(968)
+calls=3 74 
+* 18
+* 15
+cfn=(970)
+calls=3 86 
+* 51
+* 9
+
+fn=(986) std::_Head_base<0ul, MomentSolver*, false>::_Head_base<MomentSolver*>(MomentSolver*&&)
+132 15
++1 9
+cfi=(17)
+cfn=(984) MomentSolver*&& std::forward<MomentSolver*>(std::remove_reference<MomentSolver*>::type&)
+calls=3 -59 
+* 18
+* 18
+
+fn=(78) std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>::tuple<void, true>(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+608 639540
++1 710600
+cfn=(80) std::_Tuple_impl<0ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>::_Tuple_impl(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+calls=71060 210 
+* 10943240
+* 213180
+
+fn=(80)
+210 639540
++1 568480
+cfn=(82) std::_Tuple_impl<1ul, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>::_Tuple_impl(VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+calls=71060 -1 
+* 8385080
+* 426360
+cfn=(98) std::_Head_base<0ul, VectorSpace::Matrix<double>&, false>::_Head_base(VectorSpace::Matrix<double>&)
+calls=71060 -86 
+* 710600
+* 213180
+
+fn=(124) std::_Placeholder<4>& std::__get_helper<4ul, std::_Placeholder<4>, std::_Placeholder<5> >(std::_Tuple_impl<4ul, std::_Placeholder<4>, std::_Placeholder<5> >&)
+1303 284240
++1 213180
+cfn=(126)
+calls=71060 195 
+* 1065900
+* 142120
+
+fn=(138)
+195 568480
+cfn=(140) std::_Head_base<3ul, VectorSpace::Vector<double> const&, false>::_M_head(std::_Head_base<3ul, VectorSpace::Vector<double> const&, false>&)
+calls=71060 -35 
+* 497420
+* 142120
+
+fn=(162)
+1314 284240
++1 213180
+cfn=(164) std::_Placeholder<2>& std::__get_helper<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >(std::_Tuple_impl<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=71060 -12 
+* 1705440
+* 142120
+
+fn=(206) std::_Tuple_impl<0ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_M_head(std::_Tuple_impl<0ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+195 497441
+cfn=(208) std::_Head_base<0ul, MomentSolver*, false>::_M_head(std::_Head_base<0ul, MomentSolver*, false>&)
+calls=71063 -35 
+* 426378
+* 142126
+
+fn=(940)
+201 18
+
+fn=(112)
+1326 284240
++3 213180
+cfn=(114)
+calls=71060 -15 
+* 2416040
+* 142120
+cfi=(17)
+cfn=(64)
+calls=71060 74 
+* 426360
++1 142120
+
+fn=(126)
+195 497441
+cfn=(128)
+calls=71063 -82 
+* 426378
+* 142126
+
+fn=(160)
+160 497420
+
+fn=(172)
+1326 284240
++3 213180
+cfn=(174)
+calls=71060 -15 
+* 2487100
+* 142120
+cfi=(17)
+cfn=(66)
+calls=71060 74 
+* 426360
++1 142120
+
+fn=(194) std::tuple_element<0ul, std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&> >::type& std::get<0ul, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::tuple<VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+1314 284240
++1 213180
+cfn=(196)
+calls=71060 -12 
+* 1847560
+* 142120
+
+fn=(208)
+160 426378
+
+fn=(962)
+371 15
++2 9
+cfn=(104) std::_Tuple_impl<5ul, std::_Placeholder<5> >::_M_head(std::_Tuple_impl<5ul, std::_Placeholder<5> >&)
+calls=3 -22 
+* 45
+* 6
+cfi=(17)
+cfn=(964)
+calls=3 74 
+* 18
+* 15
+cfn=(966)
+calls=3 86 
+* 51
+* 9
+
+fn=(82)
+210 568480
++1 426360
+cfn=(84) std::_Tuple_impl<2ul, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>::_Tuple_impl(VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+calls=71060 -1 
+* 6040100
+* 426360
+cfn=(96)
+calls=71060 -86 
+* 710600
+* 213180
+
+fn=(84)
+210 497420
++1 426360
+cfn=(86)
+calls=71060 -1 
+* 3766180
+* 426360
+cfn=(94) std::_Head_base<2ul, VectorSpace::Matrix<double> const&, false>::_Head_base(VectorSpace::Matrix<double> const&)
+calls=71060 -86 
+* 710600
+* 213180
+
+fn=(92)
+125 284240
++1 426360
+
+fn=(98)
+125 284240
++1 426360
+
+fn=(102)
+1303 284240
++1 213180
+cfn=(104)
+calls=71060 351 
+* 1065900
+* 142120
+
+fn=(116)
+1303 284240
++1 213180
+cfn=(118) std::_Tuple_impl<4ul, VectorSpace::Vector<double> const&>::_M_head(std::_Tuple_impl<4ul, VectorSpace::Vector<double> const&>&)
+calls=71060 351 
+* 1136960
+* 142120
+
+fn=(134)
+1314 284240
++1 213180
+cfn=(136)
+calls=71060 -12 
+* 1847560
+* 142120
+
+fn=(168) std::_Head_base<2ul, std::_Placeholder<2>, true>::_M_head(std::_Head_base<2ul, std::_Placeholder<2>, true>&)
+113 426378
+
+fn=(176)
+1303 284240
++1 213180
+cfn=(178) std::_Tuple_impl<1ul, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>::_M_head(std::_Tuple_impl<1ul, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>&)
+calls=71060 195 
+* 1208020
+* 142120
+
+fn=(198)
+195 568480
+cfn=(200) std::_Head_base<0ul, VectorSpace::Matrix<double>&, false>::_M_head(std::_Head_base<0ul, VectorSpace::Matrix<double>&, false>&)
+calls=71060 -35 
+* 497420
+* 142120
+
+fn=(118)
+351 497420
+cfn=(120) std::_Head_base<4ul, VectorSpace::Vector<double> const&, false>::_M_head(std::_Head_base<4ul, VectorSpace::Vector<double> const&, false>&)
+calls=71060 160 
+* 497420
+* 142120
+
+fn=(142)
+1314 284240
++1 213180
+cfn=(144)
+calls=71060 -12 
+* 1705440
+* 142120
+
+fn=(146)
+195 497441
+cfn=(148)
+calls=71063 -82 
+* 426378
+* 142126
+
+fn=(154)
+1314 284240
++1 213180
+cfn=(156)
+calls=71060 -12 
+* 1847560
+* 142120
+
+fn=(166) std::_Tuple_impl<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_M_head(std::_Tuple_impl<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+195 497441
+cfn=(168)
+calls=71063 -82 
+* 426378
+* 142126
+
+fn=(184)
+1303 284240
++1 213180
+cfn=(186)
+calls=71060 195 
+* 1065900
+* 142120
+
+fn=(946) std::_Tuple_impl<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_M_tail(std::_Tuple_impl<2ul, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+201 18
+
+fn=(104)
+351 497441
+cfn=(106)
+calls=71063 113 
+* 426378
+* 142126
+
+fn=(122)
+1314 284240
++1 213180
+cfn=(124)
+calls=71060 -12 
+* 1705440
+* 142120
+
+fn=(140)
+160 497420
+
+fn=(178)
+195 568480
+cfn=(180)
+calls=71060 -35 
+* 497420
+* 142120
+
+fn=(186)
+195 497441
+cfn=(188)
+calls=71063 -82 
+* 426378
+* 142126
+
+fn=(200)
+160 497420
+
+fn=(204)
+1303 284240
++1 213180
+cfn=(206)
+calls=71060 195 
+* 1065900
+* 142120
+
+fn=(944)
+223 15
++3 9
+cfn=(946)
+calls=3 -25 
+* 18
+* 6
+cfi=(17)
+cfn=(948) std::remove_reference<std::_Tuple_impl<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&>::type&& std::move<std::_Tuple_impl<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&>(std::_Tuple_impl<3ul, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 99 
+* 18
+* 3
++1 12
+cfn=(950)
+calls=3 -4 
+* 636
+* 9
+cfn=(166)
+calls=3 -32 
+* 45
+* 6
+cfi=(17)
+cfn=(976)
+calls=3 74 
+* 18
+* 15
+cfn=(978)
+calls=3 86 
+* 51
+* 9
+
+fn=(76)
+1475 923780
++1 213180
+cfi=(17)
+cfn=(64)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(64)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(68)
+calls=71060 74 
+* 426360
+* 568480
+cfn=(78)
+calls=71060 608 
+* 12506560
+* 568480
+
+fn=(94)
+125 284240
++1 426360
+
+fn=(120)
+160 497420
+
+fn=(164)
+1303 284240
++1 213180
+cfn=(166)
+calls=71060 195 
+* 1065900
+* 142120
+
+fn=(192)
+1326 284240
++3 213180
+cfn=(194)
+calls=71060 -15 
+* 2487100
+* 142120
+cfi=(17)
+cfn=(68)
+calls=71060 74 
+* 426360
++1 142120
+
+fn=(930)
+662 30
+cfn=(932) std::_Tuple_impl<0ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >::_Tuple_impl(std::_Tuple_impl<0ul, MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&&)
+calls=3 223 
+* 1353
+* 9
+
+fn=(932)
+223 18
++3 9
+cfn=(934)
+calls=3 -25 
+* 18
+* 6
+cfi=(17)
+cfn=(936) std::remove_reference<std::_Tuple_impl<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&>::type&& std::move<std::_Tuple_impl<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&>(std::_Tuple_impl<1ul, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5> >&)
+calls=3 99 
+* 18
+* 3
++1 12
+cfn=(938)
+calls=3 -4 
+* 1104
+* 12
+cfn=(206)
+calls=3 -32 
+* 45
+* 6
+cfi=(17)
+cfn=(984)
+calls=3 74 
+* 18
+* 9
+cfn=(986)
+calls=3 -95 
+* 60
+* 15
+
+fn=(958)
+201 18
+
+fl=(31) /usr/include/c++/8.2.1/ext/new_allocator.h
+fn=(348) __gnu_cxx::new_allocator<Cell*>::deallocate(Cell**, unsigned long)
+116 18
++9 9
+cob=(5)
+cfi=(3)
+cfn=(350) 0x00000000001157b8
+calls=3 0 
+* 1014
++1 6
+
+fn=(1016) __gnu_cxx::new_allocator<Cell*>::allocate(unsigned long, void const*)
+99 18
++2 9
+cfn=(1018) __gnu_cxx::new_allocator<Cell*>::max_size() const
+calls=3 +28 
+* 18
+* 12
++10 12
+cob=(5)
+cfi=(3)
+cfn=(922) 0x0000000000115770
+calls=3 0 
+* 915
+* 3
++1 6
+
+fn=(1002) __gnu_cxx::new_allocator<Cell*>::new_allocator(__gnu_cxx::new_allocator<Cell*> const&)
+81 42
+
+fn=(1018)
+129 9
++1 9
+
+fn=(364) __gnu_cxx::new_allocator<Cell*>::~new_allocator()
+86 36
+
+fl=(44)
+fn=(716) std::operator~(std::_Ios_Fmtflags)
+96 21
+
+fn=(722) std::operator|=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags)
+100 33
+cfn=(724) std::operator|(std::_Ios_Fmtflags, std::_Ios_Fmtflags)
+calls=3 -12 
+* 24
+* 18
+
+fn=(724)
+88 24
+
+fn=(712)
+1044 12
++1 15
+cfn=(714) std::ios_base::setf(std::_Ios_Fmtflags, std::_Ios_Fmtflags)
+calls=3 665 
+* 291
++1 3
++1 6
+
+fn=(718) std::operator&=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags)
+104 33
+cfn=(720) std::operator&(std::_Ios_Fmtflags, std::_Ios_Fmtflags)
+calls=3 -20 
+* 24
+* 18
+
+fn=(714)
+665 18
++2 9
++1 9
+cfn=(716)
+calls=3 96 
+* 21
+* 18
+cfn=(718)
+calls=3 104 
+* 75
++1 15
+cfn=(720)
+calls=3 84 
+* 24
+* 18
+cfn=(722)
+calls=3 100 
+* 75
++1 3
++1 6
+
+fn=(720)
+84 48
+
+fl=(30)
+fn=(346)
+461 18
++1 18
+cfi=(31)
+cfn=(348)
+calls=3 116 
+* 1047
+* 9
+
+fn=(998)
+504 15
++1 15
+cfi=(32)
+cfn=(1000)
+calls=3 133 
+* 60
+* 9
+
+fn=(1014)
+435 15
++1 18
+cfi=(31)
+cfn=(1016)
+calls=3 99 
+* 993
+* 6
+
+fl=(17)
+fn=(936)
+99 9
++1 9
+
+fn=(64)
+74 2984520
++1 2984520
+
+fn=(984)
+74 18
++1 18
+
+fn=(928)
+99 9
++1 9
+
+fn=(964)
+74 18
++1 18
+
+fn=(968)
+74 18
++1 18
+
+fn=(972)
+74 18
++1 18
+
+fn=(976)
+74 18
++1 18
+
+fn=(980)
+74 18
++1 18
+
+fn=(66)
+74 2984520
++1 2984520
+
+fn=(212)
+74 639540
++1 639540
+
+fn=(926)
+99 9
++1 9
+
+fn=(942)
+99 9
++1 9
+
+fn=(948)
+99 9
++1 9
+
+fn=(954)
+99 9
++1 9
+
+fn=(960)
+99 9
++1 9
+
+fn=(110)
+99 1065900
++1 1065900
+
+fn=(916) std::remove_reference<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>&>::type&& std::move<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>&>(std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>&)
+99 27
++1 27
+
+fn=(68)
+74 1492260
++1 1492260
+
+fn=(214) void (MomentSolver::*&std::forward<void (MomentSolver::*&)(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>(std::remove_reference<void (MomentSolver::*&)(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>::type&))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+74 213180
++1 213180
+
+fl=(10)
+fn=(330)
+8 33
++1 12
+cfi=(12)
+cfn=(988)
+calls=3 +23 
+* 21
+* 3
++1 18
+cfi=(12)
+cfn=(990)
+calls=3 +28 
+* 247842
++2 60
+cob=(9)
+cfi=(23)
+cfn=(314)
+calls=3 165 
+* 15429141967
+* 3
+-2 6
+cfi=(13)
+cfn=(332)
+calls=2 565 
+* 984
++43 12
+
+fn=(32) ExplicitEuler::Advance(std::function<void (VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> const&, std::vector<VectorSpace::Matrix<double>, std::allocator<VectorSpace::Matrix<double> > >&, std::vector<VectorSpace::Matrix<double>, std::allocator<VectorSpace::Matrix<double> > >&, std::vector<VectorSpace::Matrix<double>, std::allocator<VectorSpace::Matrix<double> > >&) [clone ._omp_fn.0]
+12 45
++1 12
+cob=(9)
+cfi=(23)
+cfn=(406)
+calls=3 238 
+* 24
+* 3
+* 6
+cob=(9)
+cfi=(23)
+cfn=(410)
+calls=3 245 
+* 12
+* 3
+* 54
++1 18
+cfi=(13)
+cfn=(302)
+calls=3 930 
+* 33
+* 143004
+cfi=(13)
+cfn=(302)
+calls=23834 930 
+* 262174
+* 47674
++1 119185
+cfi=(14)
+cfn=(304)
+calls=23837 +30 
+* 3861594
++1 71511
+cfi=(14)
+cfn=(308)
+calls=23837 +19 
+* 166859
+* 142368
+cfi=(11)
+cfn=(300) VectorSpace::Vector<unsigned int>::~Vector()
+calls=23837 +73 
+* 2550559
+* 95351
++26 118435
+cfi=(13)
+cfn=(60)
+calls=23687 930 
+* 260557
+* 47374
+cfi=(1)
+cfn=(222)
+calls=23687 203 
+* 165809
+* 142122
+cfi=(13)
+cfn=(60)
+calls=23687 930 
+* 260557
+* 47374
+cfi=(1)
+cfn=(220) VectorSpace::Matrix<double>::rows() const
+calls=23687 201 
+* 165809
+* 165809
+cfi=(1)
+cfn=(310)
+calls=23687 +22 
+* 12648858
++1 94748
+cfi=(11)
+cfn=(36) VectorSpace::Vector<unsigned int>::size() const
+calls=23687 238 
+* 165809
+* 213180
+cfi=(11)
+cfn=(36)
+calls=71060 238 
+* 497420
+* 378988
++8 142122
+cfi=(14)
+cfn=(294)
+calls=23687 -10 
+* 165809
+* 236870
+cfi=(22)
+cfn=(280)
+calls=23687 -20 
+* 41073258
+* 142122
+cfi=(13)
+cfn=(60)
+calls=23687 930 
+* 260557
+* 142122
+cfi=(1)
+cfn=(296) VectorSpace::Matrix<double>::operator-(VectorSpace::Matrix<double> const&) const
+calls=23687 +62 
+* 45052674
+* 142122
+cfi=(13)
+cfn=(60)
+calls=23687 930 
+* 260557
+* 118435
+cfi=(1)
+cfn=(298)
+calls=23687 +33 
+* 29182384
+* 71061
+cfi=(1)
+cfn=(8)
+calls=23687 +31 
+* 2416074
+* 71061
+cfi=(1)
+cfn=(8)
+calls=23687 +31 
+* 2416074
+-9 71061
+cfi=(1)
+cfn=(8)
+calls=23687 +40 
+* 2416074
+* 47374
++2 426360
+cfi=(12)
+cfn=(38)
+calls=71060 +10 
+* 1776500
+* 354796
+-1 142120
++5 423336
+cfi=(14)
+cfn=(44)
+calls=70556 +20 
+* 11430072
+* 423336
+cfi=(14)
+cfn=(58)
+calls=70556 +18 
+* 11430072
+* 352780
+cfi=(11)
+cfn=(42) VectorSpace::Vector<unsigned int>::operator[](unsigned int)
+calls=70556 +74 
+* 776116
+* 493892
+cfi=(13)
+cfn=(60)
+calls=70556 930 
+* 776116
+* 493892
+cfi=(13)
+cfn=(60)
+calls=70556 930 
+* 776116
+* 846672
+cfi=(9)
+cfn=(30) std::function<void (VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>::operator()(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&) const
+calls=70556 682 
+* 17165652713
+cfi=(9)
+cfn=(30)
+calls=1 687 
+* 820
+* 211668
+cfi=(11)
+cfn=(34)
+calls=70556 +41 
+* 7549492
+* 211668
+cfi=(11)
+cfn=(34)
+calls=70556 +41 
+* 7549492
+* 70556
+-3 3024
+cfi=(14)
+cfn=(44)
+calls=504 +23 
+* 81648
+* 3024
+cfi=(14)
+cfn=(58)
+calls=504 +21 
+* 81648
+* 2520
+cfi=(11)
+cfn=(42)
+calls=504 +77 
+* 5544
+* 3528
+cfi=(13)
+cfn=(60)
+calls=504 930 
+* 5544
+* 3024
+cfi=(11)
+cfn=(42)
+calls=504 +77 
+* 5544
+* 3528
+cfi=(13)
+cfn=(60)
+calls=504 930 
+* 5544
+* 6048
+cfi=(9)
+cfn=(30)
+calls=504 682 
+* 122620176
+* 1512
+cfi=(11)
+cfn=(34)
+calls=504 +44 
+* 53928
+* 1512
+cfi=(11)
+cfn=(34)
+calls=504 +44 
+* 53928
+* 504
+-1 496412
+cfi=(11)
+cfn=(42)
+calls=71060 +78 
+* 781660
+* 214188
+-27 1962
+cfi=(14)
+cfn=(312)
+calls=654 +32 
+* 4578
+* 2616
++4 1512
+cfi=(14)
+cfn=(312)
+calls=504 +28 
+* 3528
+* 2016
++1 3024
+cfi=(13)
+cfn=(60)
+calls=504 930 
+* 5544
+* 3528
+cfi=(13)
+cfn=(60)
+calls=504 930 
+* 5544
+* 1512
+cfi=(1)
+cfn=(298)
+calls=504 +62 
+* 2458008
++1 2520
+cfi=(11)
+cfn=(414)
+calls=504 +57 
+* 60480
++1 3528
+cfi=(13)
+cfn=(60)
+calls=504 930 
+* 5544
+* 60480
+cfi=(13)
+cfn=(60)
+calls=10080 930 
+* 110880
+* 21168
+cfi=(1)
+cfn=(222)
+calls=10584 203 
+* 74088
+* 42336
+-1 1512
+cfi=(11)
+cfn=(34)
+calls=504 +66 
+* 53928
+* 504
++2 30240
+cfi=(11)
+cfn=(418)
+calls=10080 240 
+* 372960
++1 60480
+cfi=(13)
+cfn=(60)
+calls=10080 930 
+* 110880
+* 60480
+cfi=(1)
+cfn=(4)
+calls=10080 +72 
+* 181440
+* 80640
+cfi=(13)
+cfn=(60)
+calls=10080 930 
+* 110880
+* 60480
+cfi=(1)
+cfn=(4)
+calls=10080 +72 
+* 181440
+* 80640
+cfi=(11)
+cfn=(272)
+calls=10080 +96 
+* 110880
+* 20160
++1 60480
+cfi=(13)
+cfn=(60)
+calls=10080 930 
+* 110880
+* 60480
+cfi=(1)
+cfn=(4)
+calls=10080 +71 
+* 181440
+* 80640
+cfi=(13)
+cfn=(60)
+calls=10080 930 
+* 110880
+* 60480
+cfi=(1)
+cfn=(4)
+calls=10080 +71 
+* 181440
+* 80640
+cfi=(11)
+cfn=(272)
+calls=10080 +95 
+* 110880
+* 20160
++1 50400
+cfi=(14)
+cfn=(1052)
+calls=10080 +23 
+* 1451520
++1 50400
+cfi=(22)
+cfn=(1054) double dot<double>(VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+calls=10080 +35 
+* 1360800
+* 20160
++1 60480
+cfi=(22)
+cfn=(274)
+calls=10080 +83 
+* 2540160
++1 50400
+cfi=(22)
+cfn=(488)
+calls=10080 +90 
+* 2489760
+* 60480
+cfi=(11)
+cfn=(284) VectorSpace::Vector<double>::operator+(VectorSpace::Vector<double> const&) const
+calls=10080 +95 
+* 2308320
+* 30240
+cfi=(11)
+cfn=(34)
+calls=10080 +58 
+* 1078560
++1 40320
+cfi=(11)
+cfn=(272)
+calls=10080 +90 
+* 110880
+* 60480
+cfi=(11)
+cfn=(272)
+calls=10080 +90 
+* 110880
+* 70560
+cfi=(11)
+cfn=(272)
+calls=10080 +90 
+* 110880
+* 60480
+cfi=(11)
+cfn=(272)
+calls=10080 +90 
+* 110880
+* 40320
++1 40320
+cfi=(11)
+cfn=(272)
+calls=10080 +89 
+* 110880
+* 60480
+cfi=(11)
+cfn=(272)
+calls=10080 +89 
+* 110880
+* 70560
+cfi=(11)
+cfn=(272)
+calls=10080 +89 
+* 110880
+* 60480
+cfi=(11)
+cfn=(272)
+calls=10080 +89 
+* 110880
+* 40320
++1 60480
+cfi=(13)
+cfn=(60)
+calls=10080 930 
+* 110880
+* 60480
+cfi=(1)
+cfn=(4)
+calls=10080 +64 
+* 181440
+* 20160
++1 40320
+cfi=(11)
+cfn=(272)
+calls=10080 +87 
+* 110880
+* 90720
+cfi=(13)
+cfn=(60)
+calls=10080 930 
+* 110880
+* 60480
+cfi=(1)
+cfn=(4)
+calls=10080 +63 
+* 181440
+* 20160
++1 40320
+cfi=(11)
+cfn=(272)
+calls=10080 +86 
+* 110880
+* 90720
+cfi=(13)
+cfn=(60)
+calls=10080 930 
+* 110880
+* 60480
+cfi=(1)
+cfn=(4)
+calls=10080 +62 
+* 181440
+* 20160
++1 60480
+cfi=(13)
+cfn=(60)
+calls=10080 930 
+* 110880
+* 60480
+cfi=(1)
+cfn=(4)
+calls=10080 +61 
+* 181440
+* 90720
+-6 30240
+cfi=(11)
+cfn=(34)
+calls=10080 +58 
+* 1078560
+-1 30240
+cfi=(11)
+cfn=(34)
+calls=10080 +59 
+* 1078560
+-2 30240
+cfi=(11)
+cfn=(34)
+calls=10080 +61 
+* 1078560
+-4 20160
+-6 900
+cfi=(13)
+cfn=(60)
+calls=150 930 
+* 1650
+* 1050
+cfi=(13)
+cfn=(60)
+calls=150 930 
+* 1650
+* 450
+cfi=(1)
+cfn=(298)
+calls=150 +66 
+* 184800
+* 150
++1 150
+-7 24
+
+fl=(1)
+fn=(224)
+53 84546644
++1 72468552
+cob=(2)
+cfi=(15)
+cfn=(52)
+calls=6039046 -23 
+* 368381806
+* 6039046
+* 18117138
++1 27203781
++1 48183973
++1 172966442
++1 428297844
+-1 65891976
+-1 16472994
++6 18117135
+
+fn=(282)
+175 32553072
++1 25319056
+cfi=(11)
+cfn=(270) VectorSpace::Vector<double>::Vector(unsigned int, bool)
+calls=3617008 71 
+* 546168208
++1 56316784
++1 200716656
++1 229390464
+cfn=(2)
+calls=38231744 -79 
+* 688171392
+* 267622208
+cfi=(11)
+cfn=(256)
+calls=38231744 -55 
+* 420549184
+* 305853952
+cfi=(11)
+cfn=(272)
+calls=38231744 -57 
+* 420549184
+* 114695232
+-1 76463488
+-1 19115872
++5 3617008
++1 21702048
+
+fn=(0)
+185 355295
++1 1776483
++1 7461232
++1 8527122
+cfn=(2)
+calls=1421187 -88 
+* 25581366
+* 11369496
+cfn=(4)
+calls=1421187 -90 
+* 25581366
+* 4263561
+-1 2842374
+-1 710594
++5 213180
+
+fn=(220)
+201 697762401
+
+fn=(310)
+64 1147666
++1 1059384
+cob=(2)
+cfi=(15)
+cfn=(52)
+calls=88282 -34 
+* 11024569
+* 88282
+* 264846
++1 5959896
++1 67738011
++1 198088332
+-1 30475128
+-1 2715102
++5 264846
+
+fn=(4)
+98 3797882118
+
+fn=(292)
+123 1191195
++1 397065
+cfn=(222)
+calls=132355 +79 
+* 926485
+* 926485
+cfn=(224)
+calls=132355 -71 
+* 111334985
++1 5147755
++1 23551395
++1 17943920
+cfn=(220)
+calls=4485980 +74 
+* 31401860
+* 158826000
+cfn=(220)
+calls=52942000 +74 
+* 370594000
+* 229711920
++1 317652000
+cfn=(2)
+calls=52942000 -28 
+* 952956000
+* 423536000
+cfn=(2)
+calls=52942000 -28 
+* 952956000
+* 476478000
+cfn=(4)
+calls=52942000 -30 
+* 952956000
+* 158826000
+-1 105884000
+-1 8971960
+-1 2242990
++7 132355
++1 794130
+
+fn=(222)
+203 102816532
+
+fn=(296)
+113 213183
++1 189496
+cfn=(224)
+calls=23687 -61 
+* 2321326
++1 592175
++1 2487135
++1 2842440
+cfn=(2)
+calls=473740 -17 
+* 8527320
+* 3789920
+cfn=(2)
+calls=473740 -17 
+* 8527320
+* 4737400
+cfn=(4)
+calls=473740 -19 
+* 8527320
+* 947480
+-1 947480
+-1 236870
++5 23687
++1 142122
+
+fn=(492)
+205 13196
++1 280415
++1 5608300
++1 7917600
+cfn=(4)
+calls=1319600 98 
+* 23752800
+* 2639200
+-1 2639200
+-1 131960
++5 9897
+
+fn=(2)
+100 3581209530
+
+fn=(8)
+82 73527948
+cob=(2)
+cfi=(4)
+cfn=(12)
+calls=6127329 -48 
+* 530536110
+* 6127329
+* 18381987
+
+fn=(298)
+84 453745
++1 362996
++6 4137845
++1 19341525
++1 22104600
+cfn=(2)
+calls=3684100 +7 
+* 66313800
+* 29472800
+cfn=(4)
+calls=3684100 +5 
+* 66313800
+* 7368200
+-1 7368200
+-1 1842050
++5 272247
+
+fl=(67)
+fn=(1044) __gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >::base() const
+848 18
++1 18
+
+fn=(1022)
+783 24
++1 42
+
+fn=(1042) Cell* const* std::__niter_base<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >(__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >)
+987 24
++1 18
+cfn=(1044)
+calls=6 848 
+* 36
+* 18
+
+fl=(20)
+fn=(218)
+52 923780
++1 213180
+cfi=(1)
+cfn=(220)
+calls=71060 201 
+* 497420
+* 71060
++1 213180
+cfi=(1)
+cfn=(222)
+calls=71060 203 
+* 497420
+* 71060
++1 426360
+cfi=(1)
+cfn=(224)
+calls=71060 -2 
+* 131034640
++1 4547792
++3 7105925
+cfi=(1)
+cfn=(2)
+calls=1421185 +41 
+* 25581330
+* 5684740
++1 7105925
+cfi=(1)
+cfn=(2)
+calls=1421185 +40 
+* 25581330
+* 5684740
++1 7105925
+cfi=(1)
+cfn=(2)
+calls=1421185 +39 
+* 25581330
+* 5684740
++1 14211850
+cfi=(1)
+cfn=(2)
+calls=1421185 +38 
+* 25581330
+* 9948295
+cfi=(1)
+cfn=(2)
+calls=1421185 +38 
+* 25581330
+* 9948295
+cob=(8)
+cfi=(21)
+cfn=(228)
+calls=1421185 -62 
+* 82428730
+* 1421185
+* 5684740
+cob=(8)
+cfi=(21)
+cfn=(228)
+calls=1421185 -62 
+* 82428730
+* 1421185
+* 9948295
++1 7105925
+cob=(8)
+cfi=(21)
+cfn=(252)
+calls=1421185 -63 
+* 11369480
+* 1421185
+* 2842370
++2 7105925
+cfi=(1)
+cfn=(2)
+calls=1421185 +35 
+* 25581330
+* 5684740
++1 7105925
+cfi=(1)
+cfn=(2)
+calls=1421185 +34 
+* 25581330
+* 5684740
++1 7105925
+cfi=(1)
+cfn=(2)
+calls=1421185 +33 
+* 25581330
+* 5684740
++1 14211850
+cfi=(1)
+cfn=(2)
+calls=1421185 +32 
+* 25581330
+* 9948295
+cfi=(1)
+cfn=(2)
+calls=1421185 +32 
+* 25581330
+* 9948295
+cob=(8)
+cfi=(21)
+cfn=(228)
+calls=1421185 -68 
+* 82428730
+* 1421185
+* 5684740
+cob=(8)
+cfi=(21)
+cfn=(228)
+calls=1421185 -68 
+* 82428730
+* 1421185
+* 9948295
++1 7105925
+cob=(8)
+cfi=(21)
+cfn=(252)
+calls=1421185 -69 
+* 11369480
+* 1421185
+* 2842370
++2 5684740
+cfi=(11)
+cfn=(256)
+calls=1421185 +53 
+* 15633035
+* 9948295
+cfi=(11)
+cfn=(256)
+calls=1421185 +53 
+* 15633035
+* 5684740
++1 5684740
+cfi=(11)
+cfn=(256)
+calls=1421185 +52 
+* 15633035
+* 9948295
+cfi=(11)
+cfn=(256)
+calls=1421185 +52 
+* 15633035
+* 5684740
++2 4263555
++1 4263555
++2 5684740
++2 5684740
++4 4263555
+cfi=(22)
+cfn=(258) double norm<double>(VectorSpace::Vector<double> const&)
+calls=1421185 +28 
+* 194702345
+* 11369480
+cfi=(22)
+cfn=(264) VectorSpace::Vector<double> column<double>(VectorSpace::Matrix<double> const&, unsigned int)
+calls=1421185 -67 
+* 55426215
+* 8527110
+cfi=(22)
+cfn=(264)
+calls=1421185 -67 
+* 55426215
+* 8527110
+cfi=(11)
+cfn=(268) VectorSpace::Vector<double>::operator-(VectorSpace::Vector<double> const&) const
+calls=1421185 +51 
+* 470412235
+* 14211850
+cfi=(22)
+cfn=(274)
+calls=1421185 +30 
+* 517311340
+* 8527110
+cfi=(11)
+cfn=(276) VectorSpace::Vector<double>::operator*(double const&) const
+calls=1421185 +91 
+* 447673275
+-1 8527110
+cfi=(22)
+cfn=(264)
+calls=1421185 -66 
+* 55426215
+* 8527110
+cfn=(278) Euler2D::F(VectorSpace::Vector<double> const&)
+calls=1421185 +7 
+* 1259169472
+* 8527104
+cfi=(22)
+cfn=(280)
+calls=1421184 -51 
+* 1121314176
+* 8527104
+cfi=(1)
+cfn=(282)
+calls=1421184 +93 
+* 1081521024
+* 8527104
+cfi=(22)
+cfn=(264)
+calls=1421184 -66 
+* 55426176
+* 8527104
+cfn=(278)
+calls=1421184 +7 
+* 1259169024
+* 8527104
+cfi=(22)
+cfn=(280)
+calls=1421184 -51 
+* 1121314176
+* 8527104
+cfi=(1)
+cfn=(282)
+calls=1421184 +93 
+* 1081521024
+* 8527104
+cfi=(11)
+cfn=(268)
+calls=1421184 +52 
+* 470411904
+* 8527104
+cfi=(11)
+cfn=(284)
+calls=1421184 +44 
+* 470411904
+* 18475392
+cfi=(22)
+cfn=(274)
+calls=1421184 +31 
+* 666535644
+* 8527104
+cfi=(22)
+cfn=(288) VectorSpace::Vector<double> column<double>(VectorSpace::Matrix<double>&, unsigned int)
+calls=1421184 -70 
+* 55426176
+* 7105920
+cfi=(11)
+cfn=(290)
+calls=1421184 +29 
+* 126485376
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +7 
+* 17054208
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +7 
+* 152066688
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +7 
+* 152066688
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +7 
+* 152066688
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +7 
+* 152066688
+* 4263552
+cfi=(1)
+cfn=(8)
+calls=1421184 * 
+* 144960768
+* 4263552
+cfi=(1)
+cfn=(8)
+calls=1421184 * 
+* 144960768
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +7 
+* 17054208
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +7 
+* 152066688
+* 4263552
+cfi=(1)
+cfn=(8)
+calls=1421184 * 
+* 144960768
+* 4263552
+cfi=(1)
+cfn=(8)
+calls=1421184 * 
+* 144960768
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +7 
+* 17054208
++1 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +6 
+* 152066688
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +6 
+* 152066688
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +6 
+* 187596288
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +6 
+* 17054208
+* 4263552
+cfi=(11)
+cfn=(34)
+calls=1421184 +6 
+* 17054208
+-27 2842368
++30 71059
++1 568472
+
+fn=(278)
+89 25581321
++1 11369476
+cfi=(11)
+cfn=(256)
+calls=2842369 +34 
+* 31266059
+* 11369476
++1 11369476
+cfi=(11)
+cfn=(256)
+calls=2842369 +33 
+* 31266059
+* 11369476
++1 11369476
+cfi=(11)
+cfn=(256)
+calls=2842369 +32 
+* 31266059
+* 11369476
++1 25581321
+cfi=(11)
+cfn=(256)
+calls=2842369 +31 
+* 31266059
+* 17054214
+cfi=(11)
+cfn=(256)
+calls=2842369 +31 
+* 31266059
+* 19896583
+cob=(8)
+cfi=(21)
+cfn=(228)
+calls=2842369 -93 
+* 164857402
+* 2842369
+* 11369476
+cob=(8)
+cfi=(21)
+cfn=(228)
+calls=2842369 -93 
+* 164857402
+* 2842369
+* 19896583
++1 8527107
+cfi=(11)
+cfn=(262) VectorSpace::Vector<double>::size() const
+calls=2842369 238 
+* 19896583
+* 17054214
+cfi=(1)
+cfn=(224)
+calls=2842369 -41 
+* 790178497
++2 11369472
+cfi=(11)
+cfn=(256)
+calls=2842368 +28 
+* 31266048
+* 19896576
+cfi=(1)
+cfn=(4)
+calls=2842368 +2 
+* 51162624
+* 5684736
++1 11369472
+cfi=(11)
+cfn=(256)
+calls=2842368 +27 
+* 31266048
+* 25581312
+cfi=(1)
+cfn=(4)
+calls=2842368 +1 
+* 51162624
+* 5684736
++1 11369472
+cfi=(11)
+cfn=(256)
+calls=2842368 +26 
+* 31266048
+* 22738944
+cfi=(1)
+cfn=(4)
+calls=2842368 * 
+* 51162624
+* 5684736
++1 11369472
+cfi=(11)
+cfn=(256)
+calls=2842368 +25 
+* 31266048
+* 25581312
+cfi=(1)
+cfn=(4)
+calls=2842368 -1 
+* 51162624
+* 5684736
++1 11369472
+cfi=(11)
+cfn=(256)
+calls=2842368 +24 
+* 31266048
+* 19896576
+cfi=(1)
+cfn=(4)
+calls=2842368 -2 
+* 51162624
+* 5684736
++1 11369472
+cfi=(11)
+cfn=(256)
+calls=2842368 +23 
+* 31266048
+* 22738944
+cfi=(1)
+cfn=(4)
+calls=2842368 -3 
+* 51162624
+* 5684736
++1 11369472
+cfi=(11)
+cfn=(256)
+calls=2842368 +22 
+* 31266048
+* 25581312
+cfi=(1)
+cfn=(4)
+calls=2842368 -4 
+* 51162624
+* 5684736
++1 11369472
+cfi=(11)
+cfn=(256)
+calls=2842368 +21 
+* 31266048
+* 25581312
+cfi=(1)
+cfn=(4)
+calls=2842368 -5 
+* 51162624
+* 5684736
++2 2842368
++1 17054208
+
+fl=(69)
+fn=(1038) Cell** std::__niter_base<Cell**>(Cell**)
+277 9
++1 9
+
+fn=(1032)
+446 21
++9 9
+cfi=(70) /usr/include/c++/8.2.1/bits/cpp_type_traits.h
+cfn=(1034) __gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > > std::__miter_base<__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > > >(__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >)
+calls=3 -36 
+* 18
+* 12
+cfi=(70)
+cfn=(1034)
+calls=3 -36 
+* 18
+* 18
+cfi=(70)
+cfn=(1036) Cell** std::__copy_move_a2<false, __gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, Cell**>(__gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, __gnu_cxx::__normal_iterator<Cell* const*, std::vector<Cell*, std::allocator<Cell*> > >, Cell**)
+calls=3 -35 
+* 245562
++2 12
+
+fn=(1048) Cell** std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<Cell*>(Cell* const*, Cell* const*, Cell**)
+357 18
++9 12
++1 6
++1 21
+cob=(5)
+cfi=(3)
+cfn=(1050) 0x0000000000115778
+calls=3 0 
+* 245244
++1 12
++1 6
+
+fn=(1046) Cell** std::__copy_move_a<false, Cell* const*, Cell**>(Cell* const*, Cell* const*, Cell**)
+375 18
++5 3
++6 18
+cfn=(1048)
+calls=3 -29 
+* 245319
++1 6
+
+fl=(22)
+fn=(280)
+31 29677620
++1 8903286
+cfi=(1)
+cfn=(222)
+calls=2967762 203 
+* 20774334
+* 11871048
+cfi=(1)
+cfn=(220)
+calls=2967762 201 
+* 20774334
+* 17806572
+cfi=(1)
+cfn=(224)
+calls=2967762 +21 
+* 290840676
++1 11871048
+cfi=(1)
+cfn=(222)
+calls=2967762 203 
+* 20774334
+* 23511933
+cfi=(1)
+cfn=(222)
+calls=7837311 203 
+* 54861177
+* 43220292
++1 31349244
+cfi=(1)
+cfn=(220)
+calls=7837311 201 
+* 54861177
+* 94047732
+cfi=(1)
+cfn=(220)
+calls=31349244 201 
+* 219444708
+* 156746220
++1 188095464
+cfi=(1)
+cfn=(2)
+calls=31349244 +65 
+* 564286392
+* 344841684
+cfi=(1)
+cfn=(4)
+calls=31349244 +63 
+* 564286392
+* 62698488
+-1 62698488
+-1 15674622
++5 2967762
++1 23742096
+
+fn=(488)
+121 107032
++1 40137
+cfi=(11)
+cfn=(262)
+calls=13379 238 
+* 93653
+* 80274
+cfi=(11)
+cfn=(270)
+calls=13379 -51 
+* 1244247
++1 53516
+cfi=(11)
+cfn=(262)
+calls=13379 238 
+* 93653
+* 258420
+cfi=(11)
+cfn=(262)
+calls=86140 238 
+* 602980
+* 398076
++1 430700
+cfi=(11)
+cfn=(256)
+calls=86140 * 
+* 947540
+* 775260
+cfi=(11)
+cfn=(272)
+calls=86140 -2 
+* 947540
+* 172280
+-1 172280
++3 13379
++1 80274
+
+fn=(274)
+113 25701732
++1 8567244
+cfi=(11)
+cfn=(262)
+calls=2855748 238 
+* 19990236
+* 17134488
+cfi=(11)
+cfn=(270)
+calls=2855748 -43 
+* 414809232
++1 11422992
+cfi=(11)
+cfn=(262)
+calls=2855748 238 
+* 19990236
+* 34366848
+cfi=(11)
+cfn=(262)
+calls=11455616 238 
+* 80189312
+* 57245456
++1 91644928
+cfi=(11)
+cfn=(256)
+calls=11455616 +8 
+* 126011776
+* 91644928
+cfi=(11)
+cfn=(272)
+calls=11455616 +6 
+* 126011776
+* 22911232
+-1 22911232
++3 2855748
++1 17134488
+
+fn=(260) double l2Norm<double>(VectorSpace::Vector<double> const&)
+102 5684740
++1 2842370
++1 5684740
+cfi=(11)
+cfn=(262)
+calls=1421185 238 
+* 9948295
+* 8527110
+cfi=(11)
+cfn=(262)
+calls=2842370 238 
+* 19896590
+* 17054220
++1 14211850
+cfi=(11)
+cfn=(256)
+calls=2842370 +19 
+* 31266070
+* 5684740
++1 28423700
+-2 5684740
++4 2842370
+cob=(8)
+cfi=(21)
+cfn=(252)
+calls=1421185 0 
+* 11369480
+* 1421185
+* 4263555
++1 2842370
+
+fn=(288)
+12 8527104
++1 19896576
+cfi=(11)
+cfn=(266) VectorSpace::Vector<double>::Vector(unsigned int, double*)
+calls=1421184 +74 
+* 22738944
++1 4263552
+
+fn=(568)
+150 26392
++1 9897
+cfi=(1)
+cfn=(220)
+calls=3299 +50 
+* 23093
+* 3299
++1 3299
++1 9897
+cfi=(1)
+cfn=(222)
+calls=3299 +50 
+* 23093
+* 3299
++1 9897
+cfi=(11)
+cfn=(262)
+calls=3299 +84 
+* 23093
+* 3299
++1 3299
++1 3299
++2 9897
++4 46186
+cob=(6) /usr/lib/libopenblas_haswellp-r0.3.3.so
+cfi=(41) ???
+cfn=(572) dposv_
+calls=3299 0 
+* 62496256
+* 3299
+* 3299
++2 9897
++4 16495
+
+fn=(1054)
+64 50400
++1 20160
++1 40320
+cfi=(11)
+cfn=(262)
+calls=10080 238 
+* 70560
+* 60480
+cfi=(11)
+cfn=(262)
+calls=20160 238 
+* 141120
+* 120960
++1 100800
+cfi=(11)
+cfn=(256)
+calls=20160 +57 
+* 221760
+* 141120
+cfi=(11)
+cfn=(256)
+calls=20160 +57 
+* 221760
+* 100800
+-1 40320
++3 10080
++1 20160
+
+fn=(258)
+111 9948295
+cfn=(260)
+calls=1421185 -9 
+* 177648125
+* 7105925
+
+fn=(264)
+16 34108434
++1 79586346
+cfi=(11)
+cfn=(266)
+calls=5684739 +70 
+* 90955824
++1 17054217
+
+fl=(70)
+fn=(1034)
+419 18
++1 18
+
+fn=(1036)
+420 24
+fi=(69)
++2 9
+cfn=(1038)
+calls=3 277 
+* 18
+* 12
+cfi=(67)
+cfn=(1042)
+calls=3 987 
+* 48
+* 12
+cfi=(67)
+cfn=(1042)
+calls=3 987 
+* 48
+* 12
+cfn=(1046)
+calls=3 -47 
+* 245364
++3 15
+fe=(70)
+
+fl=(7)
+fn=(20) void std::__invoke_impl<void, void (MomentSolver::*&)(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&), MomentSolver*&, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&>(std::__invoke_memfun_deref, void (MomentSolver::*&)(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&), MomentSolver*&, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+70 994840
++3 213180
+cfi=(17)
+cfn=(212)
+calls=71060 +1 
+* 426360
+* 923780
+cfi=(17)
+cfn=(64)
+calls=71060 +1 
+* 426360
+* 284240
+cfi=(17)
+cfn=(64)
+calls=71060 +1 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 +1 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 +1 
+* 426360
+* 284240
+cfi=(17)
+cfn=(68)
+calls=71060 +1 
+* 426360
+* 497420
+cfi=(2)
+cfn=(6)
+calls=71060 +28 
+* 17187580929
+cfi=(2)
+cfn=(6)
+calls=1 +30 
+* 760
+* 71060
++1 568480
+
+fn=(22)
+89 994840
++6 142120
+cfi=(17)
+cfn=(64)
+calls=71060 -21 
+* 426360
+* 284240
+cfi=(17)
+cfn=(64)
+calls=71060 -21 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 -21 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 -21 
+* 426360
+* 284240
+cfi=(17)
+cfn=(68)
+calls=71060 -21 
+* 426360
+* 284240
+cfi=(17)
+cfn=(212)
+calls=71060 -21 
+* 426360
+* 284240
+cfi=(17)
+cfn=(214)
+calls=71060 -21 
+* 426360
+* 639540
+cfn=(20)
+calls=71060 -25 
+* 17194544800
+cfn=(20)
+calls=1 -22 
+* 769
+* 71060
++1 71060
++1 568480
+
+fl=(32)
+fn=(1000)
+133 30
++1 30
+cfi=(31)
+cfn=(1002)
+calls=6 -53 
+* 42
+* 18
+
+fn=(362)
+139 42
+cfi=(31)
+cfn=(364)
+calls=6 -53 
+* 36
+* 18
+
+fl=(9)
+fn=(74) std::_Any_data::_M_access() const
+88 426360
+
+fn=(910)
+666 18
++2 9
+cfn=(912) std::_Function_base::_Function_base()
+calls=3 252 
+* 24
++4 9
+cfn=(914) bool std::_Function_base::_Base_manager<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> >::_M_not_empty_function<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> >(std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> const&)
+calls=3 239 
+* 18
+* 6
++2 9
+cfi=(17)
+cfn=(916)
+calls=3 99 
+* 18
+* 15
+cfn=(918) std::_Function_base::_Base_manager<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> >::_M_init_functor(std::_Any_data&, std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>&&)
+calls=3 219 
+* 1920
++1 9
++1 9
++2 18
+
+fn=(920) std::_Function_base::_Base_manager<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> >::_M_init_functor(std::_Any_data&, std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>&&, std::integral_constant<bool, false>)
+248 21
++1 9
+cfi=(17)
+cfn=(916)
+calls=3 99 
+* 18
+* 9
+cob=(5)
+cfi=(3)
+cfn=(922)
+calls=3 0 
+* 180
+* 12
+cfi=(8)
+cfn=(924)
+calls=3 472 
+* 1512
+* 9
+cfn=(376) std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>*& std::_Any_data::_M_access<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>*>()
+calls=3 92 
+* 45
+* 21
+
+fn=(368)
+370 21
+cfn=(370) std::_Function_base::~_Function_base()
+calls=3 254 
+* 495
+* 9
+
+fn=(62) std::_Function_base::_M_empty() const
+260 639540
+
+fn=(378) std::_Any_data::_M_access()
+87 36
+
+fn=(374) std::_Function_base::_Base_manager<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> >::_M_destroy(std::_Any_data&, std::integral_constant<bool, false>)
+186 12
++2 9
+cfn=(376)
+calls=3 -96 
+* 45
+* 12
+cob=(5)
+cfi=(3)
+cfn=(380) 0x0000000000115768
+calls=3 0 
+* 261
++1 9
+
+fn=(370)
+254 12
++2 12
++1 21
+cfn=(372) std::_Function_base::_Base_manager<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> >::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation)
+calls=3 -64 
+* 441
++1 9
+
+fn=(376)
+92 24
++1 18
+cfn=(378)
+calls=6 -6 
+* 36
+* 12
+
+fn=(912)
+252 24
+
+fn=(30)
+682 994840
++3 213180
+cfn=(62)
+calls=71060 260 
+* 639540
+* 142120
++2 355300
+cfi=(17)
+cfn=(64)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(64)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(68)
+calls=71060 74 
+* 426360
+* 568480
+cfn=(28) std::_Function_handler<void (VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&), std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> >::_M_invoke(std::_Any_data const&, VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)
+calls=71060 295 
+* 17281451138
+cfn=(28)
+calls=1 299 
+* 811
+* 71060
++1 568480
+
+fn=(70) std::_Function_base::_Base_manager<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)> >::_M_get_pointer(std::_Any_data const&)
+151 284240
++3 213180
+cfn=(72) std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>* const& std::_Any_data::_M_access<std::_Bind<void (MomentSolver::*(MomentSolver*, std::_Placeholder<1>, std::_Placeholder<2>, std::_Placeholder<3>, std::_Placeholder<4>, std::_Placeholder<5>))(VectorSpace::Matrix<double>&, VectorSpace::Matrix<double> const&, VectorSpace::Matrix<double> const&, VectorSpace::Vector<double> const&, VectorSpace::Vector<double> const&)>*>() const
+calls=71060 -57 
+* 1065900
+-1 142120
++3 71060
++1 142120
+
+fn=(372)
+193 30
++3 27
++16 9
+cfn=(374)
+calls=3 -26 
+* 348
++1 3
++2 3
++1 21
+
+fn=(914)
+239 9
++1 9
+
+fn=(918)
+219 24
++1 9
+cfi=(17)
+cfn=(916)
+calls=3 99 
+* 18
+* 15
+cfn=(920)
+calls=3 +28 
+* 1836
+* 18
+
+fn=(72)
+97 284240
++1 213180
+cfn=(74)
+calls=71060 -10 
+* 426360
+* 142120
+
+fn=(28)
+295 994840
++2 213180
+cfn=(70)
+calls=71060 151 
+* 1918620
+* 284240
+cfi=(17)
+cfn=(64)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(64)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(66)
+calls=71060 74 
+* 426360
+* 284240
+cfi=(17)
+cfn=(68)
+calls=71060 74 
+* 426360
+* 497420
+cfi=(8)
+cfn=(26)
+calls=71060 480 
+* 17273634547
+cfi=(8)
+cfn=(26)
+calls=1 485 
+* 802
++2 639540
+
+fl=(29)
+fn=(336)
+203 18
++3 15
+cfn=(338) void std::_Destroy<Cell**>(Cell**, Cell**)
+calls=3 -79 
+* 60
++1 9
+
+fn=(338)
+127 15
++10 15
+cfn=(340) void std::_Destroy_aux<true>::__destroy<Cell**>(Cell**, Cell**)
+calls=3 -20 
+* 21
++1 9
+
+fn=(340)
+117 21
+
+fl=(40)
+fn=(486)
+199 237629
+
+fn=(698)
+198 23093
+
+fl=(11)
+fn=(262)
+238 170936311
+
+fn=(270)
+71 146171436
++1 109628577
+cob=(2)
+cfi=(15)
+cfn=(52)
+calls=12180953 -41 
+* 892262801
+* 12180953
+* 36542859
++1 58035638
++1 195467706
++1 260590008
+-1 74454288
++4 36542859
+
+fn=(284)
+126 12881376
++1 10018848
+cfn=(270)
+calls=1431264 -56 
+* 215858784
++1 29975904
++1 108393024
+cfn=(272)
+calls=5704896 -7 
+* 62753856
+* 11409792
+-1 11409792
++3 1431264
++1 8587584
+
+fn=(306)
+95 262207
++1 214533
+cob=(2)
+cfi=(15)
+cfn=(52)
+calls=23837 -65 
+* 1454057
+* 23837
+* 71511
++1 429066
++1 858132
+-1 143022
++3 71511
+
+fn=(268)
+134 25581321
++1 19896583
+cfn=(270)
+calls=2842369 -64 
+* 429197719
++1 59689749
++1 216020044
+cfn=(272)
+calls=11369476 -15 
+* 125064236
+* 22738952
+-1 22738952
++3 2842369
++1 17054214
+
+fn=(42)
+122 1568864
+
+fn=(48)
+95 1674200
++1 1369800
+cob=(2)
+cfi=(15)
+cfn=(52)
+calls=152200 -65 
+* 9284200
+* 152200
+* 456600
++1 2130800
++1 3652800
+-1 608800
++3 456600
+
+fn=(276)
+174 12790665
++1 9948295
+cfn=(270)
+calls=1421185 71 
+* 214598935
++1 29844885
++1 85271100
+cfn=(272)
+calls=5684740 -55 
+* 62532140
+* 11369480
+-1 11369480
++3 1421185
++1 8527110
+
+fn=(300)
+89 95348
++1 119185
++1 190696
+cob=(2)
+cfi=(4)
+cfn=(12)
+calls=23837 -57 
+* 2049982
+* 23837
++2 71511
+
+fn=(418)
+240 136539
++1 3142845
++1 5101740
+-1 1457640
++3 136539
+
+fn=(36)
+238 663229
+
+fn=(266)
+87 113694768
+
+fn=(272)
+122 1166691152
+
+fn=(34)
+89 78145212
++1 97681515
++1 99443064
+cob=(2)
+cfi=(4)
+cfn=(12)
+calls=12430383 -57 
+* 1104542538
+* 12430383
++2 58608909
+
+fn=(290)
+111 7113350
++1 5690680
++5 29971174
++1 68573472
+-1 11428912
++3 4268010
+
+fn=(256)
+124 1083018849
+
+fn=(414)
+80 1069563
++1 875097
+cob=(2)
+cfi=(15)
+cfn=(52)
+calls=97233 -50 
+* 5931213
+* 97233
+* 291699
++1 6058038
++1 9580620
+-1 2737320
++3 291699
+
+ob=(6)
+fl=(41)
+fn=(600) 0x000000000023cac0
+0 4872623
+cfn=(662) 0x000000000023ca20
+calls=13196 0 
+0 435468
+0 42887
+
+fn=(686) dtrsm_kernel_LT
+0 488252
+cfn=(688) dgemm_kernel
+calls=13196 0 
+0 1669294
+0 2642499
+
+fn=(580) dpotrf_
+0 138558
+cfn=(582) blas_memory_alloc
+calls=3299 0 
+0 778564
+0 56083
+cfn=(592) dpotrf_U_parallel
+calls=3299 0 
+0 41267191
+0 9897
+cfn=(670) blas_memory_free
+calls=3299 0 
+0 6598
+0 3299
+
+fn=(632) 0x000000000023f510
+0 2850336
+
+fn=(678) dtrsm_
+0 742275
+cfn=(582)
+calls=6598 0 
+0 1557128
+0 164950
+cfn=(690) dtrsm_LNUN
+calls=3299 0 
+0 8600493
+cfn=(680) dtrsm_LTUN
+calls=3299 0 
+0 8425646
+0 13196
+cfn=(670)
+calls=6598 0 
+0 13196
+0 6598
+
+fn=(684) dgemm_oncopy
+0 897328
+
+fn=(598) ddot_k
+0 857740
+cfn=(600)
+calls=65980 0 
+0 5350978
+0 461860
+
+fn=(606) dgemv_t
+0 6726661
+cfn=(626) 0x000000000023f2f0
+calls=39588 0 
+0 1794656
+0 197940
+cfn=(626)
+calls=39588 0 
+0 1623108
+0 831348
+cfn=(632)
+calls=39588 0 
+0 2850336
+0 2790954
+cfn=(648) 0x000000000023f490
+calls=26392 0 
+0 1016092
+0 290312
+cfn=(640) 0x000000000023f3e0
+calls=26392 0 
+0 1438364
+0 5981087
+
+fn=(610) 0x000000000023dd40
+0 1583520
+
+fn=(690)
+0 306807
+cfn=(692) dtrsm_iutncopy
+calls=3299 0 
+0 2711778
+0 118764
+cfn=(684)
+calls=3299 0 
+0 448664
+0 42887
+cfn=(694) dtrsm_kernel_LN
+calls=3299 0 
+0 4869324
+0 102269
+
+fn=(608) dscal_k
+0 3005389
+cfn=(610)
+calls=39588 0 
+0 1583520
+0 158352
+
+fn=(688)
+0 3338588
+
+fn=(694)
+0 600418
+cfn=(688)
+calls=13196 0 
+0 1669294
+0 2599612
+
+fn=(596) dpotf2_U
+0 112166
+cfn=(598)
+calls=3299 0 
+0 148455
+0 689491
+cfn=(598)
+calls=62681 0 
+0 6522123
+0 1900224
+cfn=(606)
+calls=62681 0 
+0 25540858
+0 1002896
+cfn=(608)
+calls=62681 0 
+0 4747261
+0 313405
+
+fn=(662)
+0 435468
+
+fn=(594) dpotrf_U_single
+0 145156
+cfn=(596)
+calls=3299 0 
+0 40976879
+0 3299
+
+fn=(572)
+0 79176
+cob=(5)
+cfi=(3)
+cfn=(574) 0x0000000004911488
+calls=3299 0 
+0 52784
+0 125362
+cob=(5)
+cfi=(3)
+cfn=(578) 0x0000000004912278
+calls=3299 0 
+0 42263489
+0 49485
+cob=(5)
+cfi=(3)
+cfn=(672) 0x0000000004912808
+calls=3299 0 
+0 19919362
+0 6598
+
+fn=(576) lsame_
+0 98970
+
+fn=(680)
+0 247425
+cfn=(682) dtrsm_iunncopy
+calls=3299 0 
+0 2688685
+0 112166
+cfn=(684)
+calls=3299 0 
+0 448664
+0 32990
+cfn=(686)
+calls=3299 0 
+0 4800045
+0 95671
+
+fn=(682)
+0 2688685
+
+fn=(692)
+0 2711778
+
+fn=(582)
+0 128661
+cob=(7)
+cfi=(42)
+cfn=(584)
+calls=9897 0 
+0 287013
+0 29691
+cob=(7)
+cfi=(42)
+cfn=(586)
+calls=9897 0 
+0 237528
+0 39588
+cob=(7)
+cfi=(42)
+cfn=(584)
+calls=9897 0 
+0 287013
+0 49485
+cob=(7)
+cfi=(42)
+cfn=(586)
+calls=9897 0 
+0 237528
+0 49485
+cob=(7)
+cfi=(42)
+cfn=(590)
+calls=9897 0 
+0 178146
+0 29691
+cob=(7)
+cfi=(42)
+cfn=(584)
+calls=9897 0 
+0 287013
+0 39588
+cob=(7)
+cfi=(42)
+cfn=(586)
+calls=9897 0 
+0 237528
+0 217734
+
+fn=(592)
+0 138558
+cfn=(594)
+calls=3299 0 
+0 41125334
+0 3299
+
+fn=(626)
+0 3417764
+
+fn=(640)
+0 1438364
+
+fn=(648)
+0 1016092
+
+fn=(670)
+0 19794
+
+fn=(674) dpotrs_
+0 75877
+cob=(5)
+cfi=(3)
+cfn=(574)
+calls=3299 0 
+0 52784
+0 188043
+cfn=(678)
+calls=3299 0 
+0 9679266
+0 3299
+0 62681
+cfn=(678)
+calls=3299 0 
+0 9844216
+0 3299
+0 6598
+
+ob=(5)
+fl=(3)
+fn=(380)
+0 3
+cob=(2)
+cfi=(33)
+cfn=(382)
+calls=3 32 
+0 258
+
+fn=(796)
+0 12
+cob=(3)
+cfi=(6)
+cfn=(798)
+calls=6 0 
+0 90
+
+fn=(922)
+0 6
+cob=(2)
+cfi=(16)
+cfn=(54)
+calls=6 43 
+0 1089
+
+fn=(672)
+0 3299
+cob=(6)
+cfi=(41)
+cfn=(674)
+calls=3299 0 
+0 19916063
+
+fn=(820)
+0 12
+cob=(3)
+cfi=(6)
+cfn=(822)
+calls=6 0 
+0 120
+
+fn=(350)
+0 3
+cob=(2)
+cfi=(5)
+cfn=(14)
+calls=3 48 
+0 1011
+
+fn=(574)
+0 6598
+cob=(6)
+cfi=(41)
+cfn=(576)
+calls=6598 0 
+0 98970
+
+fn=(1050)
+0 3
+cob=(3)
+cfi=(6)
+cfn=(826)
+calls=3 0 
+0 245241
+
+fn=(578)
+0 3299
+cob=(6)
+cfi=(41)
+cfn=(580)
+calls=3299 0 
+0 42260190
+
+ob=(4)
+fl=(55)
+fn=(800)
+364 30
++1 6
++3 6
+-3 24
++3 12
++4 30
+-3 12
+
+fn=(792)
+288 6
++1 6
++69 6
+-69 12
++70 6
+
+ob=(9)
+fl=(24) /build/gcc/src/gcc/libgomp/team.c
+fn=(398) gomp_team_start
+301 66
++16 6
+-16 30
++16 12
++1 12
++1 6
++1 18
+-1 6
++1 6
++1 6
+-1 6
+-3 6
++4 6
++6 6
++4 6
+-4 42
++2 6
++1 6
++1 6
++1 12
++2 18
++6 6
+-5 6
++2 6
++2 6
++1 6
++1 6
++1 6
+-1 12
++1 12
++3 18
++1 12
++3 30
++3 18
+cfi=(28) /build/gcc/src/gcc/libgomp/task.c
+cfn=(400) gomp_init_task
+calls=6 67 
+* 108
++1 6
++3 6
+-3 6
++1 12
++2 6
+860 66
+
+fn=(318) gomp_team_end
+869 48
++2 12
++6 18
+cfi=(25) /build/gcc/src/gcc/libgomp/config/linux/bar.c
+cfn=(320) gomp_team_barrier_wait_final
+calls=6 132 
+* 264
++1 18
++14 12
+cfi=(27) /build/gcc/src/gcc/libgomp/work.c
+cfn=(326) gomp_fini_work_share
+calls=6 126 
+* 114
++2 6
+cfi=(28)
+cfn=(328) gomp_end_task
+calls=6 95 
+* 90
++1 18
++2 6
+-2 30
++2 6
++14 18
++14 12
++10 6
+220 6
+935 36
+220 6
+cob=(3)
+cfi=(6)
+cfn=(16)
+calls=6 0 
+* 840
+
+fn=(388) gomp_new_team
+161 48
+-17 18
++26 24
+cfi=(35) /build/gcc/src/gcc/libgomp/alloc.c
+cfn=(392) gomp_malloc
+calls=6 36 
+* 1371
+fi=(36) /build/gcc/src/gcc/libgomp/config/linux/bar.h
+58 6
+fe=(24)
+170 6
+fi=(36)
+59 6
++1 6
++1 6
+fi=(71) /build/gcc/src/gcc/libgomp/config/linux/mutex.h
+-18 6
+fe=(24)
+178 6
++7 6
+-4 6
++5 12
+-3 6
++2 6
++1 6
+cfi=(27)
+cfn=(396) gomp_init_work_share
+calls=6 -91 
+* 90
++3 6
++7 6
+-9 6
++2 6
++2 72
++4 12
+-7 6
++7 6
+fi=(72) /build/gcc/src/gcc/libgomp/config/linux/sem.h
+48 6
+fe=(24)
+195 6
+-3 6
++3 6
++1 6
++10 6
+fi=(73) /build/gcc/src/gcc/libgomp/priority_queue.h
+-57 6
++7 6
++1 6
+fe=(24)
++42 6
++2 6
++2 6
++3 36
+fi=(34) /build/gcc/src/gcc/libgomp/config/posix/pool.h
+39 6
++1 12
+fe=(24)
+147 6
++1 12
+
+fl=(28)
+fn=(328)
+95 24
++2 12
+fi=(74) /build/gcc/src/gcc/libgomp/libgomp.h
+777 18
+fe=(28)
+100 12
++1 24
+
+fn=(400)
+67 6
++10 6
+-1 6
++1 24
++2 6
+-2 6
++1 6
+fi=(73)
++71 6
++7 6
++1 6
+fe=(28)
+-72 6
++1 6
++1 6
++1 6
++1 6
+
+fl=(27)
+fn=(326)
+126 6
++2 24
++1 12
+cob=(3)
+cfi=(6)
+cfn=(16)
+calls=6 0 
+* 72
+
+fn=(396)
+95 30
+fi=(71)
+-52 6
+fe=(27)
++54 12
++19 6
+fi=(75) /build/gcc/src/gcc/libgomp/config/linux/ptrlock.h
+-72 6
+fe=(27)
++74 6
++1 24
+
+fl=(23)
+fn=(406)
+238 6
++1 12
++1 24
++1 6
+
+fn=(314)
+165 36
++1 6
+-1 12
++1 6
+-1 6
++1 6
+cfn=(386) gomp_resolve_num_threads
+calls=6 40 
+* 210
++1 6
+-1 6
++1 6
+cfi=(24)
+cfn=(388)
+calls=6 -6 
+* 1899
+* 36
+cfi=(24)
+cfn=(398)
+calls=6 301 
+* 642
++1 12
+cob=(1)
+cfi=(10)
+cfn=(32)
+calls=3 12 
+* 15429139895
+cob=(1)
+cfi=(2)
+cfn=(402)
+calls=3 57 
+* 10787262374
+cob=(1)
+cfi=(10)
+cfn=(32)
+calls=1 12 
+* 2078861791
++2 30
+-1 6
+cfn=(316) GOMP_parallel_end
+calls=6 -38 
+* 1662
+fi=(10)
+10 3
+cob=(1)
+cfi=(13)
+cfn=(332)
+calls=1 565 
+* 492
++43 6
+fe=(23)
+
+fn=(410)
+245 6
++1 12
++1 6
+
+fn=(386)
+40 36
+fi=(74)
+677 12
++2 24
+fe=(23)
+49 12
++2 18
++2 12
++4 18
++1 6
++8 12
++12 18
++42 42
+
+fn=(316)
+131 24
+fi=(74)
+677 12
++2 24
+fe=(23)
+133 12
++27 18
+-22 6
+cfi=(24)
+cfn=(318)
+calls=6 869 
+* 1566
+
+fl=(35)
+fn=(392)
+36 18
++1 6
+cob=(3)
+cfi=(6)
+cfn=(56)
+calls=6 -37 
+* 1323
++1 12
++3 12
+
+fl=(25)
+fn=(320)
+132 6
+fi=(36)
+-17 6
++1 6
++2 12
+fe=(25)
++17 6
+fi=(36)
+-16 6
+fe=(25)
++16 6
++1 6
+cfn=(322) gomp_team_barrier_wait_end
+calls=6 -54 
+* 210
+
+fn=(322)
+82 48
++3 12
++37 36
+-33 6
++2 6
+-2 6
++2 6
++1 6
++1 18
++7 6
+fi=(26) /build/gcc/src/gcc/libgomp/config/linux/x86/futex.h
+-39 12
+fe=(25)
++40 6
++1 6
+fi=(26)
+-41 24
++5 12
+fe=(25)
+
+totals: 28295545362
