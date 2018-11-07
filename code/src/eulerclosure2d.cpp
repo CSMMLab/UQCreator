@@ -79,7 +79,7 @@ void EulerClosure2D::DU( Matrix& y, const Vector& Lambda ) {
 }
 
 void EulerClosure2D::DS( Vector& ds, const Vector& u ) const {
-    double gamma = -_gamma;
+    double gamma = _gamma;
     double rho   = u[0];
     double rhoU  = u[1];
     double rhoV  = u[2];
