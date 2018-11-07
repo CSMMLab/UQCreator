@@ -17,6 +17,7 @@ class EulerClosure : public Closure
     virtual void U( Matrix& out, const Matrix& Lambda );
     virtual Matrix U( const Matrix& Lambda );
     virtual void DU( Matrix& y, const Vector& Lambda );
+    virtual void DS( Vector& ds, const Vector& u ) const;
 };
 
 #endif    // EULERCLOSURE_H

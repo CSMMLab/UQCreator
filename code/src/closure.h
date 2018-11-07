@@ -67,6 +67,8 @@ class Closure
      */
     virtual void DU( Matrix& y, const Vector& Lambda ) = 0;
 
+    virtual void DS( Vector& ds, const Vector& u ) const;
+
     const std::vector<Vector>& GetPhi() { return _phi; }
     const Vector& GetPhiTilde( int k ) { return _phiTildeVec[k]; }
     const Matrix& GetPhiTilde() { return _phiTilde; }

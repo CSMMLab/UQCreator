@@ -77,3 +77,18 @@ void EulerClosure2D::DU( Matrix& y, const Vector& Lambda ) {
                                2.0 * pow( v2, 2 ) * ( pow( v3, 2 ) + 2.0 * v4 * _gamma ) ) ) /
                 ( 4.0 * pow( v4, 4 ) );
 }
+
+void EulerClosure2D::DS( Vector& ds, const Vector& u ) const {
+    double gamma = -_gamma;
+    double rho   = u[0];
+    double rhoU  = u[1];
+    double rhoV  = u[2];
+    double rhoV2 = pow( rhoV, 2 );
+    double rhoU2 = pow( rhoU, 2 );
+    double rhoE  = u[3];
+    ds[0]        = ( rhoU2 + rhoV2 + gamma * ( 2 * rho * rhoE - rhoU2 - rhoV2 ) ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) -
+            std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
+    ds[1] = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
+    ds[2] = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
+    ds[3] = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
+}

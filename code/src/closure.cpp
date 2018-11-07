@@ -212,3 +212,5 @@ void Closure::SubstractVectorMatrixOnVector( Vector& b, const Matrix& A ) const 
         }
     }
 }
+
+void Closure::DS( Vector& ds, const Vector& u ) const {}

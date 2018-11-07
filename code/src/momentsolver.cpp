@@ -31,33 +31,15 @@ void MomentSolver::Solve() {
     SetupIC( u );
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints ) );
 
+    Vector ds( _nStates );
+    Vector u0( _nStates );
     for( unsigned j = 0; j < _nCells; ++j ) {
-        if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {
-            double gamma       = -_settings->GetGamma();
-            double rho         = u[j]( 0, 0 );
-            double rhoU        = u[j]( 1, 0 );
-            double rhoU2       = pow( rhoU, 2 );
-            double rhoE        = u[j]( 2, 0 );
-            _lambda[j]( 0, 0 ) = ( rhoU2 + gamma * ( 2 * rho * rhoE - rhoU2 ) ) / ( -2 * rho * rhoE + rhoU2 ) -
-                                 std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
-            _lambda[j]( 1, 0 ) = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 ) );
-            _lambda[j]( 2, 0 ) = -( rho / ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
-        }
-        else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
 
-            double gamma       = -_settings->GetGamma();
-            double rho         = u[j]( 0, 0 );
-            double rhoU        = u[j]( 1, 0 );
-            double rhoV        = u[j]( 2, 0 );
-            double rhoU2       = pow( rhoU, 2 );
-            double rhoV2       = pow( rhoV, 2 );
-            double rhoE        = u[j]( 3, 0 );
-            _lambda[j]( 0, 0 ) = ( rhoU2 + rhoV2 + gamma * ( 2 * rho * rhoE - rhoU2 - rhoV2 ) ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) -
-                                 std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
-            _lambda[j]( 1, 0 ) = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-            _lambda[j]( 2, 0 ) = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-            _lambda[j]( 3, 0 ) = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
-        }
+        for( unsigned l = 0; l < _nStates; ++l ) u0[l] = u[j]( l, 0 );
+
+        _closure->DS( ds, u0 );
+
+        for( unsigned l = 0; l < _nStates; ++l ) _lambda[j]( l, 0 ) = ds[l];
     }
 
 #pragma omp parallel for
@@ -102,26 +84,6 @@ void MomentSolver::Solve() {
         t += _dt;
         nSteps++;
     }
-
-    double maxRho = 0.0;
-    double maxMx  = 0.0;
-    double maxMy  = 0.0;
-    double maxE   = 0.0;
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        if( uNew[j]( 0, 0 ) > maxRho ) {
-            maxRho = uNew[j]( 0, 0 );
-        }
-        if( uNew[j]( 0, 0 ) > maxMx ) {
-            maxMx = uNew[j]( 1, 0 );
-        }
-        if( uNew[j]( 0, 0 ) > maxMy ) {
-            maxMy = uNew[j]( 2, 0 );
-        }
-        if( uNew[j]( 0, 0 ) > maxE ) {
-            maxE = uNew[j]( 3, 0 );
-        }
-    }
-    std::cout << "Max Rho = " << maxRho << ", Max Mx = " << maxMx << ", Max My = " << maxMy << ", Max maxE " << maxE << std::endl;
 
     _tEnd = t;
 
