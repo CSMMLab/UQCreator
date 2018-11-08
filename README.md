@@ -1,5 +1,5 @@
 # Dependencies
-- Compiler with C++14 support e.g. g++ >= v4.9
+- Compiler with C++17 support
 - cmake >= v3.5
 - LAPACK
 - vtk 
