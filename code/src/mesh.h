@@ -5,6 +5,7 @@
 #include <cpptoml.h>
 #include <iostream>
 #include <omp.h>
+#include <spdlog/spdlog.h>
 #include <string.h>
 
 #include "cell.h"
@@ -35,6 +36,7 @@ class Mesh
     std::vector<Cell*> _cells;
     std::vector<Node*> _nodes;
     std::string _outputFile;
+    std::shared_ptr<spdlog::logger> _log;
 
     std::vector<VectorU> _neighborIDs;
     std::vector<BoundaryType> _boundaryType;

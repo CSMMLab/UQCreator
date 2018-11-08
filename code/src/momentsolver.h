@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <omp.h>
+#include <spdlog/spdlog.h>
 
 #include "closure.h"
 #include "legendre.h"
@@ -24,6 +25,7 @@ class MomentSolver
     Problem* _problem;
     double _dt, _tEnd;
     unsigned _nCells, _nMoments, _nStates, _nQuadPoints;
+    std::shared_ptr<spdlog::logger> _log;
 
     void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
     void SetupIC( MatVec& out );

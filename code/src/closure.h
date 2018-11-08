@@ -1,6 +1,7 @@
 #ifndef CLOSURE_H
 #define CLOSURE_H
 
+#include <spdlog/spdlog.h>
 #include <vector>
 
 #include "legendre.h"
@@ -29,6 +30,7 @@ class Closure
     unsigned _nStates;
     void Hessian( Matrix& H, const Matrix& lambda );
     void Gradient( Vector& g, const Matrix& lambda, const Matrix& u );
+    std::shared_ptr<spdlog::logger> _log;
 
   public:
     /**

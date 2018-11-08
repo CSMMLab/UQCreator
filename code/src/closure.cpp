@@ -6,6 +6,7 @@
 
 Closure::Closure( Settings* settings )
     : _settings( settings ), _nMoments( _settings->GetNMoments() ), _nQuadPoints( _settings->GetNQuadPoints() ), _nStates( _settings->GetNStates() ) {
+    _log = spdlog::get( "event" );
     // initialize classes
     _basis = new Legendre( _nMoments );
     _quad  = new Legendre( _nQuadPoints );
@@ -46,6 +47,7 @@ Closure::~Closure() {
 }
 
 Closure* Closure::Create( Settings* settings ) {
+    auto log         = spdlog::get( "event" );
     auto closureType = settings->GetClosureType();
     if( closureType == ClosureType::C_BOUNDEDBARRIER ) {
         return new BoundedBarrier( settings );
@@ -60,7 +62,7 @@ Closure* Closure::Create( Settings* settings ) {
         return new EulerClosure2D( settings );
     }
     else {
-        std::cerr << "Invalid closure type" << std::endl;
+        log->error( "Invalid closure type" );
         exit( EXIT_FAILURE );
     }
 }
@@ -107,7 +109,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
                 return;
             }
             else if( ++refinementCounter > maxRefinements ) {
-                std::cerr << "[ERROR]: Newton needed too many refinement steps!" << std::endl;
+                _log->error( "[closure] Newton needed too many refinement steps!" );
                 exit( EXIT_FAILURE );
             }
         }
@@ -117,7 +119,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
             return;
         }
     }
-    std::cerr << "[Closure][ERROR]: Newton did not converge!" << std::endl;
+    _log->error( "[closure] Newton did not converge!" );
     exit( EXIT_FAILURE );
 }
 

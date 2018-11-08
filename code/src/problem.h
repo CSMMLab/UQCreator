@@ -3,6 +3,7 @@
 
 #include <cpptoml.h>
 #include <experimental/filesystem>
+#include <spdlog/spdlog.h>
 #include <string>
 
 #include "settings.h"
@@ -13,6 +14,7 @@ class Problem
   protected:
     Settings* _settings;
     unsigned _nStates;
+    std::shared_ptr<spdlog::logger> _log;
 
     Problem() {}
 

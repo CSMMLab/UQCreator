@@ -22,6 +22,3 @@ moments = 5
 quadPoints = 20
 maxIterations = 2000
 epsilon = 5e-5
-
-[plot]
-enabled = false

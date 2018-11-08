@@ -23,5 +23,6 @@ include_directories( ${LAPACK_INCLUDE_DIR} )
 find_package( VTK REQUIRED COMPONENTS vtkIOXML vtkFiltersCore )
 
 include_directories( ${CMAKE_SOURCE_DIR}/../ext/cpptoml/include )
+include_directories( ${CMAKE_SOURCE_DIR}/../ext/spdlog/include )
 
 target_link_libraries( ${CMAKE_PROJECT_NAME} ${LAPACK_LIBRARIES} ${VTK_LIBRARIES} -lstdc++fs)

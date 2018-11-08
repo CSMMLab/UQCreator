@@ -11,11 +11,12 @@ TimeSolver::TimeSolver( Settings* settings, Mesh* mesh ) : _settings( settings )
 TimeSolver::~TimeSolver() {}
 
 TimeSolver* TimeSolver::Create( Settings* settings, Mesh* mesh ) {
+    auto log = spdlog::get( "event" );
     if( settings->GetTimesteppingType() == TimesteppingType::T_EXPLICITEULER ) {
         return new ExplicitEuler( settings, mesh );
     }
     else {
-        std::cerr << "[Timesolver] Invalid timesolver type" << std::endl;
+        log->error( "[timesolver] Invalid timesolver type" );
         exit( EXIT_FAILURE );
     }
 }

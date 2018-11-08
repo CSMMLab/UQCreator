@@ -9,12 +9,12 @@ Mesh1D::Mesh1D( Settings* settings ) : Mesh( settings, 1 ) {
         _settings->SetNumCells( _numCells );
     }
     else {
-        std::cerr << "[Inputfile][mesh][(unsigned)numberOfCells] Not set!" << std::endl;
+        _log->error( "[mesh1d] 'numberOfCells' not set!" );
     }
     double a = table->get_as<double>( "a" ).value_or( 0.0 );
     double b = table->get_as<double>( "b" ).value_or( 0.0 );
     if( ( std::fabs( a ) <= std::numeric_limits<double>::epsilon() && std::fabs( b ) <= std::numeric_limits<double>::epsilon() ) || _numCells == 0 )
-        std::cerr << "[Mesh1D]: Invalid mesh parameters!" << std::endl;
+        _log->error( "[mesh1d] Invalid mesh parameters!" );
     else {
         this->CreateGrid( a, b );
     }

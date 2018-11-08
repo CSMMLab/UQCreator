@@ -7,7 +7,7 @@ Burgers::Burgers( Settings* settings ) : Problem( settings ) {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
         auto problem = file->get_table( "problem" );
     } catch( const cpptoml::parse_exception& e ) {
-        std::cerr << "Failed to parse " << _settings->GetInputFile() << ": " << e.what() << std::endl;
+        _log->error( "[burgers] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
 }

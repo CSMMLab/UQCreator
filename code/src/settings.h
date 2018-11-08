@@ -4,6 +4,7 @@
 #include <experimental/filesystem>
 #include <filesystem>
 #include <iostream>
+#include <spdlog/spdlog.h>
 
 #include "cpptoml.h"
 
@@ -15,11 +16,11 @@ enum TimesteppingType { T_EXPLICITEULER };
 class Settings
 {
   private:
-    std::experimental::filesystem::path _cwd;
-    std::experimental::filesystem::path _inputDir;
-    std::experimental::filesystem::path _inputFile;
-    std::experimental::filesystem::path _outputDir;
-    std::experimental::filesystem::path _outputFile;
+    std::filesystem::path _cwd;
+    std::filesystem::path _inputDir;
+    std::filesystem::path _inputFile;
+    std::filesystem::path _outputDir;
+    std::filesystem::path _outputFile;
 
     // requied settings
     unsigned _meshDimension;

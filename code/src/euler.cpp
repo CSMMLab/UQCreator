@@ -10,7 +10,7 @@ Euler::Euler( Settings* settings ) : Problem( settings ) {
         _gamma       = problem->get_as<double>( "gamma" ).value_or( 1.4 );
         _settings->SetGamma( _gamma );
     } catch( const cpptoml::parse_exception& e ) {
-        std::cerr << "Failed to parse " << _settings->GetInputFile() << ": " << e.what() << std::endl;
+        _log->error( "[euler] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
 }
@@ -67,7 +67,7 @@ Matrix Euler::F( const Vector& u ) {
 }
 
 Matrix Euler::F( const Matrix& u ) {
-    std::cerr << "Flux not implemented" << std::endl;
+    _log->error( "[euler] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
 

@@ -22,7 +22,3 @@ moments = 5
 quadPoints = 50
 maxIterations = 200
 epsilon = 5e-5
-
-[plot]
-steps = 10
-time = 0.01

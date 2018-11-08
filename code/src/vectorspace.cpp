@@ -1,4 +1,5 @@
 #include <iostream>
+#include <spdlog/spdlog.h>
 
 #include "matrix.cpp"
 
@@ -142,7 +143,8 @@ template <class T> inline void gesv( VectorSpace::Matrix<T>& A, VectorSpace::Vec
     dgesv_( &n, &nrhs, A._data, &lda, ipiv, b._data, &ldb, &info );
 
     if( info > 0 ) {
-        std::cerr << ( "Inversion of singular matrix failed" ) << std::endl;
+        auto log = spdlog::get( "event" );
+        log->error( "[gesv] Inversion of singular matrix failed" );
         exit( EXIT_FAILURE );
     }
 }
@@ -162,7 +164,8 @@ template <class T> inline void posv( VectorSpace::Matrix<T>& A, VectorSpace::Vec
     dposv_( &lu, &n, &nrhs, A._data, &lda, b._data, &ldb, &info );
 
     if( info > 0 ) {
-        std::cerr << ( "Inversion of singular matrix failed" ) << std::endl;
+        auto log = spdlog::get( "event" );
+        log->error( "[posv] Inversion of singular matrix failed" );
         exit( EXIT_FAILURE );
     }
 }

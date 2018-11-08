@@ -9,12 +9,12 @@ Mesh2D::Mesh2D( Settings* settings ) : Mesh( settings, 2 ) {
             _format = MeshFormat::SU2;
         }
         else {
-            std::cerr << "[Inputfile][mesh][(string)format] Unsupported mesh format!\nPlease set one of the following formats: SU2" << std::endl;
+            _log->error( "[mesh2d] Unsupported mesh format!\nPlease set one of the following formats: SU2" );
             exit( EXIT_FAILURE );
         }
     }
     else {
-        std::cerr << "[Inputfile][mesh][(string)format] Not set!\nPlease set one of the following formats: SU2" << std::endl;
+        _log->error( "[mesh2d] 'format' not set!\nPlease set one of the following formats: SU2" );
         exit( EXIT_FAILURE );
     }
 
@@ -24,7 +24,7 @@ Mesh2D::Mesh2D( Settings* settings ) : Mesh( settings, 2 ) {
             _SU2MeshFile = _settings->GetInputDir() + "/" + *SU2MeshFile;
         }
         else {
-            std::cerr << "[Inputfile][mesh][(string)SU2MeshFile] Not set!" << std::endl;
+            _log->error( "[mesh2d] 'SU2MeshFile' not set!" );
             exit( EXIT_FAILURE );
         }
         auto BCStrings = table->get_array_of<cpptoml::array>( "SU2BC" );
@@ -45,14 +45,14 @@ Mesh2D::Mesh2D( Settings* settings ) : Mesh( settings, 2 ) {
                     type = BoundaryType::PERIODIC;
                 }
                 else {
-                    std::cerr << "[Inputfile][mesh][SU2BC] Invalid boundary condition on boundary '" + ( *BCString )[0] + "'!" << std::endl;
+                    _log->error( "[mesh2d] Invalid boundary condition on boundary '" + ( *BCString )[0] + "'!" );
                     exit( EXIT_FAILURE );
                 }
                 _BCs.push_back( std::make_pair( ( *BCString )[0], type ) );
             }
         }
         else {
-            std::cerr << "[Inputfile][mesh][SU2BC] Not set!" << std::endl;
+            _log->error( "[mesh2d] 'SU2BC' Not set!" );
             exit( EXIT_FAILURE );
         }
         LoadSU2MeshFromFile( _SU2MeshFile );
@@ -174,7 +174,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                             nElementNodes = 3;
                         }
                         else {
-                            std::cerr << "Unsupported mesh type!" << std::endl;
+                            _log->error( "[mesh2d] Unsupported mesh type!" );
                             exit( EXIT_FAILURE );
                         }
                         for( unsigned d = 0; d < nElementNodes; ++d ) {
@@ -208,7 +208,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         }
     }
     else {
-        std::cerr << "File not found" << std::endl;
+        _log->error( "[mesh2d] File not found" );
     }
     ifs.close();
     DetermineNeighbors();
@@ -217,22 +217,28 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         _neighborIDs[j] = _cells[j]->GetNeighborIDs();
         if( _cells[j]->IsBoundaryCell() ) {
             if( _neighborIDs[j][0] != _numCells && _neighborIDs[j][1] != _numCells && _neighborIDs[j][2] != _numCells ) {
-                std::cerr << "Wrong boundary cell " << j << " detected" << std::endl;
-                std::cerr << "Neighbors are " << _neighborIDs[j][0] << " " << _neighborIDs[j][1] << " " << _neighborIDs[j][2] << std::endl;
-                std::cerr << "Points are " << _cells[j]->GetNodes()[0]->id << " " << _cells[j]->GetNodes()[1]->id << " "
-                          << _cells[j]->GetNodes()[2]->id << std::endl;
-                std::cerr << "Points A are " << _cells[_neighborIDs[j][0]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][0]]->GetNodes()[1]->id
-                          << " " << _cells[_neighborIDs[j][0]]->GetNodes()[2]->id << std::endl;
-                std::cerr << "Points B are " << _cells[_neighborIDs[j][1]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][1]]->GetNodes()[1]->id
-                          << " " << _cells[_neighborIDs[j][1]]->GetNodes()[2]->id << std::endl;
-                std::cerr << "Points C are " << _cells[_neighborIDs[j][2]]->GetNodes()[0]->id << " " << _cells[_neighborIDs[j][2]]->GetNodes()[1]->id
-                          << " " << _cells[_neighborIDs[j][2]]->GetNodes()[2]->id << std::endl;
+                _log->error( "[mesh2d] Wrong boundary cell {0} detected", j );
+                _log->error( "[mesh2d] Neighbors are {0} {1} {2}", _neighborIDs[j][0], _neighborIDs[j][1], _neighborIDs[j][2] );
+                _log->error(
+                    "[mesh2d] Points are {0} {1} {2}", _cells[j]->GetNodes()[0]->id, _cells[j]->GetNodes()[1]->id, _cells[j]->GetNodes()[2]->id );
+                _log->error( "[mesh2d] Points A are {0} {1} {2}",
+                             _cells[_neighborIDs[j][0]]->GetNodes()[0]->id,
+                             _cells[_neighborIDs[j][0]]->GetNodes()[1]->id,
+                             _cells[_neighborIDs[j][0]]->GetNodes()[2]->id );
+                _log->error( "[mesh2d] Points B are {0} {1} {2}",
+                             _cells[_neighborIDs[j][1]]->GetNodes()[0]->id,
+                             _cells[_neighborIDs[j][1]]->GetNodes()[1]->id,
+                             _cells[_neighborIDs[j][1]]->GetNodes()[2]->id );
+                _log->error( "[mesh2d] Points C are {0} {1} {2}",
+                             _cells[_neighborIDs[j][2]]->GetNodes()[0]->id,
+                             _cells[_neighborIDs[j][2]]->GetNodes()[1]->id,
+                             _cells[_neighborIDs[j][2]]->GetNodes()[2]->id );
                 exit( EXIT_FAILURE );
             }
 
             if( _cells[j]->GetNeighborIDs()[0] != _numCells && _cells[j]->GetNeighborIDs()[1] != _numCells &&
                 _cells[j]->GetNeighborIDs()[2] != _numCells ) {
-                std::cerr << "Wrong boundary cell " << j << " detected" << std::endl;
+                _log->error( "[mesh2d] Wrong boundary cell {0} detected", j );
                 exit( EXIT_FAILURE );
             }
         }
@@ -250,7 +256,7 @@ unsigned Mesh2D::BinarySearch( unsigned id, unsigned lBound, unsigned rBound ) {
         if( _nodes[mid]->id > id ) return BinarySearch( id, lBound, mid - 1 );
         return BinarySearch( id, mid + 1, rBound );
     }
-    std::cerr << "Binary search failed" << std::endl;
+    _log->error( "[mesh2d] Binary search failed" );
     exit( EXIT_FAILURE );
 }
 

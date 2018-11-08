@@ -3,6 +3,7 @@
 #include "mesh2d.h"
 
 Mesh::Mesh( Settings* settings, unsigned dimension ) : _settings( settings ), _dimension( dimension ), _nBoundaries( 2 ) {
+    _log        = spdlog::get( "event" );
     _outputFile = _settings->GetOutputFile();
 }
 
@@ -16,6 +17,7 @@ Mesh::~Mesh() {
 }
 
 Mesh* Mesh::Create( Settings* settings ) {
+    auto log     = spdlog::get( "event" );
     unsigned dim = settings->GetMeshDimension();
     if( dim == 1 ) {
         return new Mesh1D( settings );
@@ -24,7 +26,7 @@ Mesh* Mesh::Create( Settings* settings ) {
         return new Mesh2D( settings );
     }
     else {
-        std::cerr << "[Mesh] Unsupported mesh dimension: " + std::to_string( dim ) << std::endl;
+        log->error( "[mesh] Unsupported mesh dimension: {0}", std::to_string( dim ) );
     }
     return nullptr;
 }

@@ -5,6 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <omp.h>
+#include <spdlog/spdlog.h>
 
 #include "mesh.h"
 #include "settings.h"

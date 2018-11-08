@@ -1,6 +1,8 @@
 #include "settings.h"
 
 Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
+    auto log = spdlog::get( "event" );
+
     bool validConfig = true;
     try {
         _cwd      = std::filesystem::current_path();
@@ -11,6 +13,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
         // section general
         auto general           = file->get_table( "general" );
         auto problemTypeString = general->get_as<std::string>( "problem" );
+
         if( problemTypeString ) {
             if( problemTypeString->compare( "Burgers1D" ) == 0 ) {
                 _problemType = ProblemType::P_BURGERS_1D;
@@ -22,14 +25,12 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
                 _problemType = ProblemType::P_EULER_2D;
             }
             else {
-                std::cerr << "[Inputfile][general][(string)problem] Invalid type!\nPlease set one of the following types: Burgers, Euler, Euler2D"
-                          << std::endl;
+                log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers, Euler, Euler2D" );
                 validConfig = false;
             }
         }
         else {
-            std::cerr << "[Inputfile][general][(string)problem] Not set!\nPlease set one of the following types: Burgers, Euler, Euler2D"
-                      << std::endl;
+            log->error( "[inputfile] [general] 'problem' not set!\nPlease set one of the following types: Burgers, Euler, Euler2D" );
             validConfig = false;
         }
         auto outputDir = general->get_as<std::string>( "outputDir" );
@@ -37,7 +38,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             _outputDir = *outputDir;
         }
         else {
-            std::cerr << "[Inputfile][general][(string)outputDir] Not set!" << std::endl;
+            log->error( "[inputfile] [general] 'outputDir' not set!" );
             validConfig = false;
         }
 
@@ -48,7 +49,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             _meshDimension = *meshDimension;
         }
         else {
-            std::cerr << "[Inputfile][mesh][(unsigned)dimension] Not set!" << std::endl;
+            log->error( "[inputfile] [mesh] 'dimension' not set!" );
             validConfig = false;
         }
         auto outputFile = mesh->get_as<std::string>( "outputFile" );
@@ -56,7 +57,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             _outputFile = _inputDir.string() + "/" + _outputDir.string() + "/" + *outputFile;
         }
         else {
-            std::cerr << "[Inputfile][mesh][(string)outputFile] Not set!" << std::endl;
+            log->error( "[inputfile] [mesh] 'outputFile' not set!" );
             validConfig = false;
         }
 
@@ -68,13 +69,12 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
                 _timesteppingType = TimesteppingType::T_EXPLICITEULER;
             }
             else {
-                std::cerr << "[Inputfile][problem][(string)timestepping] Invalid type!\nPlease set one of the following types: explicitEuler"
-                          << std::endl;
+                log->error( "[inputfile] [problem] 'timestepping' is invalid!\nPlease set one of the following types: explicitEuler" );
                 validConfig = false;
             }
         }
         else {
-            std::cerr << "[Inputfile][problem][(string)timestepping] Not set!\nPlease set one of the following types: explicitEuler" << std::endl;
+            log->error( "[inputfile] [problem] 'timestepping' not set!\nPlease set one of the following types: explicitEuler" );
             validConfig = false;
         }
         auto CFL = problem->get_as<double>( "CFL" );
@@ -82,18 +82,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             _CFL = *CFL;
         }
         else {
-            std::cerr << "[Inputfile][problem][(double)CFL] Not set!" << std::endl;
-            validConfig = false;
-        }
-        auto limitertypeString = problem->get_as<std::string>( "limiter" ).value_or( "none" );
-        if( limitertypeString.compare( "minmod" ) == 0 ) {
-            _limiterType = LimiterType::L_MINMOD;
-        }
-        else if( limitertypeString.compare( "none" ) == 0 ) {
-            _limiterType = LimiterType::L_NONE;
-        }
-        else {
-            std::cerr << "[Inputfile][problem][(string)limiter] Invalid type!\nPlease set one of the following types: minmod" << std::endl;
+            log->error( "[inputfile] [problem] 'CFL' not set!" );
             validConfig = false;
         }
         auto tEnd = problem->get_as<double>( "tEnd" );
@@ -101,7 +90,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             _tEnd = *tEnd;
         }
         else {
-            std::cerr << "[Inputfile][problem][(double)tEnd] Not set!" << std::endl;
+            log->error( "[inputfile] [problem] 'tEnd' not set!" );
             validConfig = false;
         }
 
@@ -122,16 +111,14 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
                 _closureType = ClosureType::C_EULER_2D;
             }
             else {
-                std::cerr << "[Inputfile][moment_system][(string)closure] Invalid type!\nPlease set one of the following types: BoundedBarrier, "
-                             "StochasticGalerkin, Euler, Euler2D"
-                          << std::endl;
+                log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, "
+                            "StochasticGalerkin, Euler, Euler2D" );
                 validConfig = false;
             }
         }
         else {
-            std::cerr << "[Inputfile][moment_system][(string)closure] Not set!\n Please set one of the following types: BoundedBarrier, "
-                         "StochasticGalerkin, Euler, Euler2D"
-                      << std::endl;
+            log->error( "[inputfile] [moment_system] 'closure' not set!\n Please set one of the following types: BoundedBarrier, "
+                        "StochasticGalerkin, Euler, Euler2D" );
             validConfig = false;
         }
         auto nMoments = moment_system->get_as<unsigned>( "moments" );
@@ -139,7 +126,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             _nMoments = *nMoments;
         }
         else {
-            std::cerr << "[Inputfile][moment_system][(unsigned)moments] Not set!" << std::endl;
+            log->error( "[inputfile] [moment_system] 'moments' not set!" );
             validConfig = false;
         }
         auto nQuadPoints = moment_system->get_as<unsigned>( "quadPoints" );
@@ -147,19 +134,14 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             _nQuadPoints = *nQuadPoints;
         }
         else {
-            std::cerr << "[Inputfile][moment_system][(unsigned)quadPoints] Not set!" << std::endl;
+            log->error( "[inputfile] [moment_system] 'quadPoints' not set!" );
             validConfig = false;
         }
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
 
-        // section plot
-        auto plot         = file->get_table( "plot" );
-        _plotStepInterval = plot->get_as<unsigned>( "steps" ).value_or( 0 );
-        _plotTimeInterval = plot->get_as<double>( "time" ).value_or( -1.0 );
-
     } catch( const cpptoml::parse_exception& e ) {
-        std::cerr << "Failed to parse " << _inputFile << ": " << e.what() << std::endl;
+        log->error( "Failed to parse {0}: {1}", _inputFile.c_str(), e.what() );
         exit( EXIT_FAILURE );
     }
     if( !validConfig ) {

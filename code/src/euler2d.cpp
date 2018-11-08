@@ -10,7 +10,7 @@ Euler2D::Euler2D( Settings* settings ) : Problem( settings ) {
         _gamma       = problem->get_as<double>( "gamma" ).value_or( 1.4 );
         _settings->SetGamma( _gamma );
     } catch( const cpptoml::parse_exception& e ) {
-        std::cerr << "Failed to parse " << _settings->GetInputFile() << ": " << e.what() << std::endl;
+        _log->error( "[euler2d] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
 }
@@ -106,7 +106,7 @@ Matrix Euler2D::F( const Vector& u ) {
 }
 
 Matrix Euler2D::F( const Matrix& u ) {
-    std::cerr << "Flux not implemented" << std::endl;
+    _log->error( "[euler2d] Flux not implemented" );
     exit( EXIT_FAILURE );
     return 0.5 * pow( u, 2 );
 }

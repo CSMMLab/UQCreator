@@ -1,6 +1,7 @@
 ﻿#include "momentsolver.h"
 
 MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
+    _log         = spdlog::get( "event" );
     _nCells      = _settings->GetNumCells();
     _nMoments    = _settings->GetNMoments();
     _tEnd        = _settings->GetTEnd();
@@ -21,6 +22,8 @@ MomentSolver::~MomentSolver() {
 }
 
 void MomentSolver::Solve() {
+    auto log = spdlog::get( "event" );
+
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
     // create solution fields
@@ -54,7 +57,7 @@ void MomentSolver::Solve() {
         _closure->SolveClosure( _lambda[j], u[j] );
     }
 
-    std::cout << std::fixed << std::setprecision( 8 ) << std::setw( 10 ) << "t" << std::setw( 15 ) << "residual" << std::endl;
+    log->info( "{:10}   {:10}", "t", "residual" );
     // Begin time loop
     for( double t = 0.0; t < _tEnd; t += _dt ) {
         double residual = 0;
@@ -74,15 +77,14 @@ void MomentSolver::Solve() {
                 uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
                 u[j]  = 0.5 * uQ[j] * _closure->GetPhiTildeW();
             }
-            std::cout << std::fixed << std::setprecision( 8 ) << std::setw( 10 ) << t << std::setw( 15 ) << residual << std::endl;
+            log->info( "{:03.8f}   {:01.5e}", t, residual );
         }
 
         _time->Advance( numFluxPtr, uNew, u, uQ );
     }
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
-    std::cout << "\nFinished!\nRuntime: " << std::setprecision( 3 )
-              << std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 << "s" << std::endl;
+    log->info( "\nFinished!\nRuntime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
     Matrix meanAndVar( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     Vector tmp( _nStates, 0.0 );
@@ -209,6 +211,6 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         y[3]                  = kineticEnergyL + innerEnergyL;
         return y;
     }
-    std::cerr << "Reached end of IC. No initial condition set" << std::endl;
+    _log->error( "Reached end of IC. No initial condition set" );
     exit( EXIT_FAILURE );
 }

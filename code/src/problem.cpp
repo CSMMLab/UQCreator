@@ -1,13 +1,16 @@
-#include "problem.h"
+#include <spdlog/spdlog.h>
+
 #include "burgers.h"
 #include "euler.h"
 #include "euler2d.h"
+#include "problem.h"
 
-Problem::Problem( Settings* settings ) : _settings( settings ) {}
+Problem::Problem( Settings* settings ) : _settings( settings ) { _log = spdlog::get( "event" ); }
 
 Problem::~Problem() {}
 
 Problem* Problem::Create( Settings* settings ) {
+    auto log = spdlog::get( "event" );
     if( settings->GetProblemType() == ProblemType::P_BURGERS_1D ) {
         return new Burgers( settings );
     }
@@ -18,7 +21,7 @@ Problem* Problem::Create( Settings* settings ) {
         return new Euler2D( settings );
     }
     else {
-        std::cerr << "[Problem] Invalid problem type!" << std::endl;
+        log->error( "[Problem] Invalid problem type!" );
         exit( EXIT_FAILURE );
     }
 }
