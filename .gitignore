@@ -50,6 +50,9 @@ code/input/*
 # results 
 code/results/*
 
+# ext
+code/ext/*
+
 # tmp data
 .fuse_hidden*
 /.DS_Store
