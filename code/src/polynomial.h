@@ -2,6 +2,7 @@
 #define POLYNOMIAL_H
 
 #include <algorithm>
+#include <numeric>
 
 #include "typedefs.h"
 
