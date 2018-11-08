@@ -55,8 +55,6 @@ Matrix Euler::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Ve
     return y;
 }
 
-double Euler::ExactSolution( double t, double x, double xi ) { return 0.0; }
-
 Matrix Euler::F( const Vector& u ) {
     double rhoInv = 1.0 / u[0];
     double v      = u[1] * rhoInv;
@@ -71,7 +69,6 @@ Matrix Euler::F( const Vector& u ) {
 Matrix Euler::F( const Matrix& u ) {
     std::cerr << "Flux not implemented" << std::endl;
     exit( EXIT_FAILURE );
-    return 0.5 * pow( u, 2 );
 }
 
 double Euler::ComputeDt( Vector& u, double dx ) const {

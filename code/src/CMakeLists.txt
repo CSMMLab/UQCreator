@@ -1,10 +1,11 @@
 cmake_minimum_required( VERSION 3.5 )
 project( UQCreator )
 set( CMAKE_CXX_STANDARD 17 )
+
 set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -DNDEBUG" )
 set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -march=native -pg -no-pie" )
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall" )
-add_definitions( -D_GLIBCXX_PARALLEL )
+
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../bin/" )
 
 file(GLOB_RECURSE SRCS RELATIVE ${CMAKE_SOURCE_DIR} "*.cpp")

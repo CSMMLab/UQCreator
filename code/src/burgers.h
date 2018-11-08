@@ -23,9 +23,8 @@ class Burgers : public Problem
 
   public:
     Burgers( Settings* settings );
-    Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
+    inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );
-    virtual double ExactSolution( double t, double x, double xi );
     virtual double ComputeDt( Vector& u, double dx ) const;
 };
 

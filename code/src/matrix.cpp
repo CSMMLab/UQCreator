@@ -8,9 +8,9 @@ namespace VectorSpace {
 template <class T> class Matrix    // column major
 {
   private:
+    T* _data;
     unsigned _rows;
     unsigned _columns;
-    T* _data;
 
   public:
     Matrix();
