@@ -28,7 +28,7 @@ void MomentSolver::Solve() {
 
     // create solution fields
     MatVec u    = SetupIC();
-    MatVec uNew = MatVec( _nCells, Matrix( _nStates, _nMoments ) );
+    MatVec uNew = u;
     MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints ) );
     _lambda     = MatVec( _nCells + 1, Matrix( _nStates, _nMoments ) );
 
@@ -52,33 +52,19 @@ void MomentSolver::Solve() {
                                  std::placeholders::_4,
                                  std::placeholders::_5 );
 
-#pragma omp parallel for
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        _closure->SolveClosure( _lambda[j], u[j] );
-    }
-
     log->info( "{:10}   {:10}", "t", "residual" );
     // Begin time loop
     for( double t = 0.0; t < _tEnd; t += _dt ) {
         double residual = 0;
-        if( t == 0.0 ) {
-#pragma omp parallel for
-            for( unsigned j = 0; j < _nCells; ++j ) {
-                uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-                u[j]  = 0.5 * uQ[j] * _closure->GetPhiTildeW();
-            }
-        }
-        else {
 #pragma omp parallel for reduction( + : residual )
-            for( unsigned j = 0; j < _nCells; ++j ) {
-                _closure->SolveClosure( _lambda[j], uNew[j] );
-                residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            _closure->SolveClosure( _lambda[j], uNew[j] );
+            residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
 
-                uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-                u[j]  = 0.5 * uQ[j] * _closure->GetPhiTildeW();
-            }
-            log->info( "{:03.8f}   {:01.5e}", t, residual );
+            uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+            u[j]  = 0.5 * uQ[j] * _closure->GetPhiTildeW();
         }
+        log->info( "{:03.8f}   {:01.5e}", t, residual );
 
         _time->Advance( numFluxPtr, uNew, u, uQ );
     }
