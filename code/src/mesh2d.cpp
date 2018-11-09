@@ -283,7 +283,6 @@ void Mesh2D::AddNeighbor( Cell* c, Cell* neighbor, unsigned index0, unsigned ind
 }
 
 void Mesh2D::DetermineNeighbors() {
-#pragma omp parallel for
     for( unsigned i = 0; i < _numCells; ++i ) {
         Cell* ci = _cells[i];
         for( unsigned j = i + 1; j < _numCells; ++j ) {
