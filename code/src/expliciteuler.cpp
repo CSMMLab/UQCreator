@@ -8,8 +8,9 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
                              MatVec& uQ ) {
     auto numCells = _mesh->GetNumCells();
     auto cells    = _mesh->GetGrid();
+    Matrix ghostCell( _settings->GetNStates(), _settings->GetNQuadPoints() );
 
-#pragma omp parallel for
+#pragma omp parallel for private( ghostCell )
     for( unsigned j = 0; j < numCells; ++j ) {
         Cell* cell     = cells[j];
         auto neighbors = cell->GetNeighborIDs();
@@ -19,22 +20,22 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
                 continue;
             }
             else if( cell->GetBoundaryType() == BoundaryType::NOSLIP ) {
-                uQ[numCells] = uQ[j];
+                ghostCell = uQ[j];
                 Vector v( 2, 0.0 );
                 for( unsigned k = 0; k < uQ[numCells].columns(); ++k ) {
                     v.reset();
-                    v[0]                 = uQ[numCells]( 1, k ) / uQ[numCells]( 0, k );
-                    v[1]                 = uQ[numCells]( 2, k ) / uQ[numCells]( 0, k );
-                    Vector n             = cell->GetBoundaryUnitNormal();
-                    double vn            = dot( n, v );
-                    Vector Vn            = vn * n;
-                    Vector Vb            = -Vn + v;
-                    double velMagB       = Vb[0] * Vb[0] + Vb[1] * Vb[1];
-                    double velMag        = v[0] * v[0] + v[1] * v[1];
-                    double rho           = uQ[numCells]( 0, k );
-                    uQ[numCells]( 1, k ) = rho * ( Vb[0] );
-                    uQ[numCells]( 2, k ) = rho * ( Vb[1] );
-                    uQ[numCells]( 3, k ) += rho * 0.5 * ( velMagB - velMag );
+                    v[0]              = ghostCell( 1, k ) / ghostCell( 0, k );
+                    v[1]              = ghostCell( 2, k ) / ghostCell( 0, k );
+                    Vector n          = cell->GetBoundaryUnitNormal();
+                    double vn         = dot( n, v );
+                    Vector Vn         = vn * n;
+                    Vector Vb         = -Vn + v;
+                    double velMagB    = Vb[0] * Vb[0] + Vb[1] * Vb[1];
+                    double velMag     = v[0] * v[0] + v[1] * v[1];
+                    double rho        = ghostCell( 0, k );
+                    ghostCell( 1, k ) = rho * ( Vb[0] );
+                    ghostCell( 2, k ) = rho * ( Vb[1] );
+                    ghostCell( 3, k ) += rho * 0.5 * ( velMagB - velMag );
                 }
             }
         }
@@ -42,7 +43,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
         Matrix rhs( u[0].rows(), u[0].columns(), 0.0 );
         for( unsigned l = 0; l < neighbors.size(); ++l ) {
             if( _mesh->GetBoundaryType( j ) == BoundaryType::NOSLIP && neighbors[l] == numCells ) {
-                fluxFunc( rhs, uQ[neighbors[l]], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ) );
+                fluxFunc( rhs, ghostCell, ghostCell, cell->GetUnitNormal( l ), cell->GetNormal( l ) );
             }
             else {
                 fluxFunc( rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ) );
