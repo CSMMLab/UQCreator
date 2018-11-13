@@ -316,6 +316,23 @@ void Mesh2D::DetermineNeighbors() {
     }
 }
 
+std::vector<Vector> Mesh2D::Import() const {
+    auto reader = vtkXMLUnstructuredGridReaderSP::New();
+    reader->SetFileName( _settings->GetContinueFile().c_str() );
+    reader->Update();
+
+    std::vector<Vector> data( _numCells, Vector( _settings->GetNStates() ) );
+    auto grid     = reader->GetOutput();
+    auto cellData = grid->GetCellData();
+    for( unsigned i = 0; i < _numCells; ++i ) {
+        data[i][0] = cellData->GetArray( 0 )->GetTuple1( static_cast<int>( i ) );
+        data[i][1] = cellData->GetArray( 1 )->GetTuple3( static_cast<int>( i ) )[0];
+        data[i][2] = cellData->GetArray( 1 )->GetTuple3( static_cast<int>( i ) )[1];
+        data[i][3] = cellData->GetArray( 2 )->GetTuple1( static_cast<int>( i ) );
+    }
+    return data;
+}
+
 void Mesh2D::Export( const Matrix& results ) const {
     assert( results.rows() == _settings->GetNStates() * 2 );
     std::string vtkFile = _settings->GetOutputFile();

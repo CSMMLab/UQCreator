@@ -18,6 +18,7 @@
 #include <vtkQuad.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkXMLUnstructuredGridReader.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 
 using vtkPointsSP                    = vtkSmartPointer<vtkPoints>;
@@ -25,6 +26,7 @@ using vtkUnstructuredGridSP          = vtkSmartPointer<vtkUnstructuredGrid>;
 using vtkCellArraySP                 = vtkSmartPointer<vtkCellArray>;
 using vtkDoubleArraySP               = vtkSmartPointer<vtkDoubleArray>;
 using vtkXMLUnstructuredGridWriterSP = vtkSmartPointer<vtkXMLUnstructuredGridWriter>;
+using vtkXMLUnstructuredGridReaderSP = vtkSmartPointer<vtkXMLUnstructuredGridReader>;
 using vtkCellDataToPointDataSP       = vtkSmartPointer<vtkCellDataToPointData>;
 using vtkQuadSP                      = vtkSmartPointer<vtkQuad>;
 
@@ -38,6 +40,7 @@ class Mesh1D : public Mesh
     void CreateGrid( double a, double b );
 
   public:
+    virtual std::vector<Vector> Import() const;
     virtual void Export( const Matrix& results ) const;
 
     Mesh1D( Settings* settings );

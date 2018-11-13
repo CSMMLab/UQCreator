@@ -18,6 +18,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkTriangle.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkXMLUnstructuredGridReader.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 
 #include "mesh.h"
@@ -29,6 +30,7 @@ using vtkTriangleSP                  = vtkSmartPointer<vtkTriangle>;
 using vtkCellArraySP                 = vtkSmartPointer<vtkCellArray>;
 using vtkDoubleArraySP               = vtkSmartPointer<vtkDoubleArray>;
 using vtkXMLUnstructuredGridWriterSP = vtkSmartPointer<vtkXMLUnstructuredGridWriter>;
+using vtkXMLUnstructuredGridReaderSP = vtkSmartPointer<vtkXMLUnstructuredGridReader>;
 using vtkCellDataToPointDataSP       = vtkSmartPointer<vtkCellDataToPointData>;
 
 class Mesh2D : public Mesh
@@ -49,13 +51,15 @@ class Mesh2D : public Mesh
     void ExportToVTK( std::string vtkfile ) const;
     void AddNeighbor( Cell* c, Cell* neighbor, unsigned index0, unsigned index1 );
 
-    Mesh2D();
+    Mesh2D() = delete;
 
   public:
     Mesh2D( Settings* settings );
     virtual ~Mesh2D();
 
     virtual Vector GetNodePositionsX() const;
+
+    virtual std::vector<Vector> Import() const;
     virtual void Export( const Matrix& results ) const;
 };
 

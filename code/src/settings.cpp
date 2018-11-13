@@ -61,6 +61,11 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             validConfig = false;
         }
 
+        auto continueFile = mesh->get_as<std::string>( "continueFile" );
+        if( continueFile ) {
+            _continueFile = _inputDir.string() + "/" + *continueFile;
+        }
+
         // section problem
         auto problem                = file->get_table( "problem" );
         auto timesteppingTypeString = problem->get_as<std::string>( "timestepping" );
@@ -164,6 +169,8 @@ unsigned Settings::GetMeshDimension() const { return _meshDimension; }
 unsigned Settings::GetNumCells() const { return _numCells; }
 void Settings::SetNumCells( unsigned n ) { _numCells = n; }
 std::string Settings::GetOutputFile() const { return _outputFile; }
+bool Settings::HasContinueFile() const { return !_continueFile.empty(); }
+std::string Settings::GetContinueFile() const { return _continueFile; }
 
 // problem
 TimesteppingType Settings::GetTimesteppingType() const { return _timesteppingType; }

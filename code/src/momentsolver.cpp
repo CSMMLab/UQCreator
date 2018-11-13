@@ -27,7 +27,14 @@ void MomentSolver::Solve() {
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
     // create solution fields
-    MatVec u    = SetupIC();
+    MatVec u( _nCells, Matrix( _nStates, _nMoments ) );
+    if( _settings->HasContinueFile() ) {
+        auto ICs = _mesh->Import();
+        // TODO: _mesh->Import just imports mean val
+    }
+    else {
+        u = SetupIC();
+    }
     MatVec uNew = u;
     MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints ) );
     _lambda     = MatVec( _nCells + 1, Matrix( _nStates, _nMoments ) );
@@ -111,9 +118,9 @@ void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
 }
 
 MatVec MomentSolver::SetupIC() {
-    MatVec u( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
+    MatVec u( _nCells, Matrix( _nStates, _nMoments ) );
     Vector xi = _quad->GetNodes();
-    Matrix uIC( _nStates, _nQuadPoints, 0.0 );
+    Matrix uIC( _nStates, _nQuadPoints );
     Matrix phiTildeW = _closure->GetPhiTildeW();
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned k = 0; k < _nQuadPoints; ++k ) {
