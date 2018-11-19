@@ -8,6 +8,7 @@ format = "SU2"
 SU2MeshFile = "naca0012.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
 outputFile = "euler_naca0012"
+continueFile = "euler_naca0012.vtu"
 
 [problem]
 # available timesteppings: explicitEuler

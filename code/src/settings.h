@@ -16,11 +16,13 @@ enum TimesteppingType { T_EXPLICITEULER };
 class Settings
 {
   private:
+    // paths
     std::filesystem::path _cwd;
     std::filesystem::path _inputDir;
     std::filesystem::path _inputFile;
     std::filesystem::path _outputDir;
     std::filesystem::path _outputFile;
+    std::filesystem::path _continueFile;
 
     // requied settings
     unsigned _meshDimension;
@@ -62,6 +64,8 @@ class Settings
     unsigned GetNumCells() const;
     void SetNumCells( unsigned n );
     std::string GetOutputFile() const;
+    bool HasContinueFile() const;
+    std::string GetContinueFile() const;
 
     // problem
     TimesteppingType GetTimesteppingType() const;
