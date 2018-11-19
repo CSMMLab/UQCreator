@@ -8,18 +8,19 @@ format = "SU2"
 SU2MeshFile = "naca0012.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
 outputFile = "euler_naca0012"
-continueFile = "euler_naca0012.vtu"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
-CFL = 0.04
-tEnd = 0.0001
+# available distributions: Legendre, Hermite
+distribution = "Legendre"
+CFL = 0.042
+tEnd = 0.00001
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
 closure = "Euler2D"
 moments = 5
 quadPoints = 20
-maxIterations = 2000
+maxIterations = 1
 epsilon = 5e-5

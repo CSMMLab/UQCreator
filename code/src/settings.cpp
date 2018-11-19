@@ -82,6 +82,23 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             log->error( "[inputfile] [problem] 'timestepping' not set!\nPlease set one of the following types: explicitEuler" );
             validConfig = false;
         }
+        auto distribution = problem->get_as<std::string>( "distribution" );
+        if( distribution ) {
+            if( distribution->compare( "Legendre" ) == 0 ) {
+                _distributionType = DistributionType::D_LEGENDRE;
+            }
+            else if( distribution->compare( "Hermite" ) == 0 ) {
+                _distributionType = DistributionType::D_HERMITE;
+            }
+            else {
+                log->error( "[inputfile] [problem] 'distribution' is invalid!\nPlease set one of the following types: Legendre, Hermite" );
+                validConfig = false;
+            }
+        }
+        else {
+            log->error( "[inputfile] [problem] 'timestepping' not set!\nPlease set one of the following types: explicitEuler" );
+            validConfig = false;
+        }
         auto CFL = problem->get_as<double>( "CFL" );
         if( CFL ) {
             _CFL = *CFL;
@@ -178,6 +195,7 @@ double Settings::GetCFL() const { return _CFL; }
 double Settings::GetTEnd() const { return _tEnd; }
 double Settings::GetGamma() const { return _gamma; }
 void Settings::SetGamma( double gamma ) { _gamma = gamma; }
+DistributionType Settings::GetDistributionType() const { return _distributionType; }
 
 // moment_system
 ClosureType Settings::GetClosureType() const { return _closureType; }

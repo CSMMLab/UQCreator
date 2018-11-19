@@ -12,6 +12,7 @@ enum ProblemType { P_BURGERS_1D, P_EULER_1D, P_EULER_2D };
 enum ClosureType { C_BOUNDEDBARRIER, C_STOCHASTICGALERKIN, C_EULER_1D, C_EULER_2D };
 enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };
+enum DistributionType { D_LEGENDRE, D_HERMITE };
 
 class Settings
 {
@@ -40,6 +41,7 @@ class Settings
     ClosureType _closureType;
     ProblemType _problemType;
     TimesteppingType _timesteppingType;
+    DistributionType _distributionType;
 
     // mesh dependent settings
 
@@ -69,6 +71,7 @@ class Settings
 
     // problem
     TimesteppingType GetTimesteppingType() const;
+    DistributionType GetDistributionType() const;
     double GetCFL() const;
     double GetTEnd() const;
     double GetGamma() const;

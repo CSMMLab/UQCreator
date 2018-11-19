@@ -1,4 +1,6 @@
 #include "polynomial.h"
+#include "hermite.h"
+#include "legendre.h"
 
 Polynomial::Polynomial( unsigned degree ) : _degree( degree ) {}
 
@@ -11,4 +13,18 @@ void Polynomial::Sort() {
     std::transform( p.begin(), p.end(), sorted_weights.begin(), [&]( std::size_t i ) { return _weights[i]; } );
     _nodes   = sorted_nodes;
     _weights = sorted_weights;
+}
+
+Polynomial* Polynomial::Create( Settings* settings, unsigned order ) {
+    auto log = spdlog::get( "event" );
+    if( settings->GetDistributionType() == DistributionType::D_LEGENDRE ) {
+        return new Legendre( order );
+    }
+    else if( settings->GetDistributionType() == DistributionType::D_HERMITE ) {
+        return new Hermite( settings->GetNQuadPoints() );
+    }
+    else {
+        log->error( "[timesolver] Invalid timesolver type" );
+        exit( EXIT_FAILURE );
+    }
 }

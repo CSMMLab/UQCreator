@@ -8,7 +8,7 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
 
-    _quad    = new Legendre( _nQuadPoints );
+    _quad    = Polynomial::Create( _settings, _nQuadPoints );
     _closure = Closure::Create( _settings );
     _time    = TimeSolver::Create( _settings, _mesh );
 
@@ -67,7 +67,6 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             _closure->SolveClosure( _lambda[j], uNew[j] );
             residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
-
             uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
             u[j]  = uQ[j] * _closure->GetPhiTildeWf();
         }

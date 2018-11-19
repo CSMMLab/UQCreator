@@ -8,8 +8,8 @@ Closure::Closure( Settings* settings )
     : _settings( settings ), _nMoments( _settings->GetNMoments() ), _nQuadPoints( _settings->GetNQuadPoints() ), _nStates( _settings->GetNStates() ) {
     _log = spdlog::get( "event" );
     // initialize classes
-    _basis = new Legendre( _nMoments );
-    _quad  = new Legendre( _nQuadPoints );
+    _basis = Polynomial::Create( _settings, _nMoments );
+    _quad  = Polynomial::Create( _settings, _nQuadPoints );
     // calculate basis functions evaluated at the quadrature points
     _phi         = std::vector<Vector>( _nQuadPoints, Vector( _nMoments, 0.0 ) );
     _phiTilde    = Matrix( _nQuadPoints, _nMoments, 0.0 );

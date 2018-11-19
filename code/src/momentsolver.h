@@ -6,8 +6,8 @@
 #include <spdlog/spdlog.h>
 
 #include "closure.h"
-#include "legendre.h"
 #include "mesh.h"
+#include "polynomial.h"
 #include "problem.h"
 #include "settings.h"
 #include "timesolver.h"
@@ -17,7 +17,7 @@ class MomentSolver
 {
   private:
     Settings* _settings;
-    Legendre* _quad;
+    Polynomial* _quad;
     Closure* _closure;
     Mesh* _mesh;
     TimeSolver* _time;
