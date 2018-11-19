@@ -22,6 +22,7 @@ class Polynomial
     virtual double Evaluate( unsigned m, double x ) = 0;
     virtual const Vector& GetNodes()                = 0;
     virtual const Vector& GetWeights()              = 0;
+    virtual double fXi( const double xi ) const     = 0;
 };
 
 #endif    // POLYNOMIAL_H

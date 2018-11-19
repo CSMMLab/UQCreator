@@ -56,13 +56,13 @@ void MomentSolver::Solve() {
     // Begin time loop
     for( double t = 0.0; t < _tEnd; t += _dt ) {
         double residual = 0;
-#pragma omp parallel for reduction( + : residual )
+#pragma omp parallel for reduction( + : residual ) schedule( dynamic, 10 )
         for( unsigned j = 0; j < _nCells; ++j ) {
             _closure->SolveClosure( _lambda[j], uNew[j] );
             residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
 
             uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-            u[j]  = 0.5 * uQ[j] * _closure->GetPhiTildeW();
+            u[j]  = uQ[j] * _closure->GetPhiTildeWf();
         }
         log->info( "{:03.8f}   {:01.5e}", t, residual );
 
@@ -80,7 +80,7 @@ void MomentSolver::Solve() {
         for( unsigned k = 0; k < _nQuadPoints; ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
-                meanAndVar( i, j ) += 0.5 * w[k] * tmp[i];
+                meanAndVar( i, j ) += _quad->fXi( xiQuad[k] ) * w[k] * tmp[i];
             }
         }
 
@@ -88,7 +88,7 @@ void MomentSolver::Solve() {
         for( unsigned k = 0; k < _nQuadPoints; ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
-                meanAndVar( i + _nStates, j ) += 0.5 * w[k] * pow( tmp[i] - meanAndVar( i, j ), 2 );
+                meanAndVar( i + _nStates, j ) += _quad->fXi( xiQuad[k] ) * w[k] * pow( tmp[i] - meanAndVar( i, j ), 2 );
             }
         }
     }
@@ -97,7 +97,7 @@ void MomentSolver::Solve() {
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
-    out += 0.5 * _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeW();
+    out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
 }
 
 void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
@@ -106,7 +106,7 @@ void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
     for( unsigned j = 0; j < _nCells; ++j ) {
         _closure->EvaluateLambda( evalLambda, lambda[j] );
         _closure->U( U, evalLambda );
-        out[j] = 0.5 * U * _closure->GetPhiTildeW();
+        out[j] = U * _closure->GetPhiTildeWf();
     }
 }
 
@@ -114,12 +114,12 @@ MatVec MomentSolver::SetupIC() {
     MatVec u( _nCells, Matrix( _nStates, _nMoments, 0.0 ) );
     Vector xi = _quad->GetNodes();
     Matrix uIC( _nStates, _nQuadPoints, 0.0 );
-    Matrix phiTildeW = _closure->GetPhiTildeW();
+    Matrix phiTildeWf = _closure->GetPhiTildeWf();
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned k = 0; k < _nQuadPoints; ++k ) {
             column( uIC, k ) = IC( _mesh->GetCenterPos( j ), xi[k] );
         }
-        u[j] = 0.5 * uIC * phiTildeW;
+        u[j] = uIC * phiTildeWf;
     }
     return u;
 }

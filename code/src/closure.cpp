@@ -14,6 +14,7 @@ Closure::Closure( Settings* settings )
     _phi         = std::vector<Vector>( _nQuadPoints, Vector( _nMoments, 0.0 ) );
     _phiTilde    = Matrix( _nQuadPoints, _nMoments, 0.0 );
     _phiTildeW   = Matrix( _nQuadPoints, _nMoments, 0.0 );
+    _phiTildeWf  = Matrix( _nQuadPoints, _nMoments, 0.0 );
     _phiTildeVec = std::vector<Vector>( _nQuadPoints, Vector( _nMoments, 0.0 ) );
 
     Vector xi = _quad->GetNodes();
@@ -21,17 +22,18 @@ Closure::Closure( Settings* settings )
 
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         for( unsigned i = 0; i < _nMoments; ++i ) {
-            _phi[k][i]         = _basis->Evaluate( i, xi[k] );
-            _phiTilde( k, i )  = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
-            _phiTildeW( k, i ) = _phiTilde( k, i ) * w[k];
-            _phiTildeVec[k][i] = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
+            _phi[k][i]          = _basis->Evaluate( i, xi[k] );
+            _phiTilde( k, i )   = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
+            _phiTildeW( k, i )  = _phiTilde( k, i ) * w[k];
+            _phiTildeWf( k, i ) = _phiTildeW( k, i ) * _basis->fXi( xi[k] );    // multiplied by pdf
+            _phiTildeVec[k][i]  = _phi[k][i] * ( 2.0 * i + 1.0 );               // sqrt( 2.0 * i + 1.0 );
         }
     }
     _phiTildeTrans = trans( _phiTilde );
     // calculate partial matrix for Hessian calculation
     _hPartial = MatVec( _nQuadPoints, Matrix( _nMoments, _nMoments, 0.0 ) );
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
-        _hPartial[k] = outer( column( _phiTildeTrans, k ), column( _phiTildeTrans, k ) ) * w[k];
+        _hPartial[k] = outer( column( _phiTildeTrans, k ), column( _phiTildeTrans, k ) ) * w[k] * _basis->fXi( xi[k] );
     }
 
     _perm = new int[_nStates * _nMoments];
@@ -173,7 +175,7 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
         U( uKinetic, lambda * _phiTildeVec[k] );
         for( unsigned j = 0; j < _nMoments; ++j ) {
             for( unsigned l = 0; l < _nStates; ++l ) {
-                g[l * _nMoments + j] += 0.5 * uKinetic[l] * _phiTildeW( k, j );
+                g[l * _nMoments + j] += uKinetic[l] * _phiTildeWf( k, j );
             }
         }
     }
