@@ -85,8 +85,13 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     Vector dlambda = -g;
     Hessian( H, lambda );
     posv( H, g );
+    if( _settings->GetMaxIterations() == 1 ) {
+        AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda );
+        return;
+    }
     // gesv( H, g, _perm );
     Matrix lambdaNew( _nStates, _nMoments );
+    // std::cout << _settings->GetMaxIterations() << std::endl;
     AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
@@ -185,7 +190,7 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
 
 void Closure::Hessian( Matrix& H, const Matrix& lambda ) {
     H.reset();
-    Matrix dUdLambda( _nStates, _nStates, 0.0 );    // TODO: preallocate Matrix for Hessian computation -> problems omp
+    Matrix dUdLambda( _nStates, _nStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
 
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {    // TODO: reorder to avoid cache misses
         DU( dUdLambda, lambda * _phiTildeVec[k] );
