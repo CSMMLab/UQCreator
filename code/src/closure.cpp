@@ -184,16 +184,16 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
 }
 
 void Closure::Hessian( Matrix& H, const Matrix& lambda ) {
-    Matrix dLambdadU( _nStates, _nStates, 0.0 );
     H.reset();
+    Matrix dUdLambda( _nStates, _nStates, 0.0 );    // TODO: preallocate Matrix for Hessian computation -> problems omp
 
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {    // TODO: reorder to avoid cache misses
-        DU( dLambdadU, lambda * _phiTildeVec[k] );
+        DU( dUdLambda, lambda * _phiTildeVec[k] );
         for( unsigned l = 0; l < _nStates; ++l ) {
             for( unsigned m = 0; m < _nStates; ++m ) {
                 for( unsigned j = 0; j < _nMoments; ++j ) {
                     for( unsigned i = 0; i < _nMoments; ++i ) {
-                        H( m * _nMoments + j, l * _nMoments + i ) += 0.5 * _hPartial[k]( j, i ) * dLambdadU( l, m );
+                        H( m * _nMoments + j, l * _nMoments + i ) += _hPartial[k]( j, i ) * dUdLambda( l, m );
                     }
                 }
             }
