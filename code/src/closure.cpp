@@ -23,10 +23,10 @@ Closure::Closure( Settings* settings )
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         for( unsigned i = 0; i < _nMoments; ++i ) {
             _phi[k][i]          = _basis->Evaluate( i, xi[k] );
-            _phiTilde( k, i )   = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
+            _phiTilde( k, i )   = _phi[k][i] / _basis->L2NormSquare( i );    // sqrt( 2.0 * i + 1.0 );
             _phiTildeW( k, i )  = _phiTilde( k, i ) * w[k];
             _phiTildeWf( k, i ) = _phiTildeW( k, i ) * _basis->fXi( xi[k] );    // multiplied by pdf
-            _phiTildeVec[k][i]  = _phi[k][i] * ( 2.0 * i + 1.0 );               // sqrt( 2.0 * i + 1.0 );
+            _phiTildeVec[k][i]  = _phi[k][i] / _basis->L2NormSquare( i );       // sqrt( 2.0 * i + 1.0 );
         }
     }
     _phiTildeTrans = trans( _phiTilde );

@@ -11,8 +11,8 @@ void Legendre::Compute() {
     Matrix CM( _degree, _degree, 0.0 );
 
     for( unsigned i = 0; i < _degree - 1; ++i ) {
-        CM( i + 1, i ) = std::sqrt( 1 / ( 4 - 1 / std::pow( i + 1, 2 ) ) );
-        CM( i, i + 1 ) = std::sqrt( 1 / ( 4 - 1 / std::pow( i + 1, 2 ) ) );
+        CM( i + 1, i ) = std::sqrt( 1 / ( 4 - 1 / std::pow( static_cast<double>( i + 1 ), 2 ) ) );
+        CM( i, i + 1 ) = std::sqrt( 1 / ( 4 - 1 / std::pow( static_cast<double>( i + 1 ), 2 ) ) );
     }
 
     auto evSys = MathTools::ComputeEigenValTriDiagMatrix( CM );
@@ -34,3 +34,5 @@ const Vector& Legendre::GetNodes() { return _nodes; }
 const Vector& Legendre::GetWeights() { return _weights; }
 
 double Legendre::fXi( const double xi ) const { return 0.5; }
+
+double Legendre::L2NormSquare( unsigned i ) const { return 1.0 / ( 2.0 * i + 1.0 ); }
