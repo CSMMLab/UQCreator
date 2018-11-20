@@ -10,12 +10,14 @@ void Hermite::Compute() {
     assert( _degree > 0 );
 
     // construct companion matrix
-    Matrix CM( _degree, _degree, 0.0 );
+    Matrix CM( _degree, _degree );
 
     for( unsigned i = 0; i < _degree - 1; ++i ) {
-        CM( i + 1, i ) = std::sqrt( ( i + 1 ) / 2 );
-        CM( i, i + 1 ) = std::sqrt( ( i + 1 ) / 2 );
+        CM( i + 1, i ) = std::sqrt( static_cast<double>( i + 1 ) / 2.0 );
+        CM( i, i + 1 ) = std::sqrt( static_cast<double>( i + 1 ) / 2.0 );
     }
+
+    std::cout << CM << std::endl;
 
     auto evSys = MathTools::ComputeEigenValTriDiagMatrix( CM );
 

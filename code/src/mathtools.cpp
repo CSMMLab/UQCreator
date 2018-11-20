@@ -6,7 +6,7 @@ double MathTools::Pythag( const double a, const double b ) {
                          : ( absb == 0.0 ? 0.0 : absb * std::sqrt( 1.0 + std::pow( absa / absb, 2 ) ) ) );
 }
 
-std::pair<Vector, Matrix> MathTools::ComputeEigenValTriDiagMatrix( const Matrix mat ) {
+std::pair<Vector, Matrix> MathTools::ComputeEigenValTriDiagMatrix( const Matrix& mat ) {
     unsigned n = static_cast<unsigned>( mat.rows() );
 
     Vector d( n, 0.0 ), e( n, 0.0 );
