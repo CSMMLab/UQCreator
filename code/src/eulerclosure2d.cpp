@@ -60,21 +60,24 @@ void EulerClosure2D::DU( Matrix& y, const Vector& Lambda ) {
     double v4pow2Inv = 1.0 / v4pow2;
     double v3pow2    = pow( v3, 2 );
     double v2pow2    = pow( v2, 2 );
-    double expTerm =
-        pow( -exp( ( ( v2pow2 + v3pow2 - 2.0 * v4 * ( v1 + _gamma ) ) / ( 2.0 * v4 ) ) ) * v4, ( 1.0 / ( 1.0 + _gamma ) ) ) * 1.0 / ( 1.0 + _gamma );
-    double vTerm = v2pow2 + v3pow2 + 2.0 * v4 * _gamma;
+    // double expTerm =
+    //    pow( -exp( ( ( v2pow2 + v3pow2 - 2.0 * v4 * ( v1 + _gamma ) ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) ) * 1.0 / ( 1.0 + _gamma );
+
+    double expTerm = exp( 1.0 / ( 1.0 + _gamma ) * ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) *
+                     pow( -v4, 1.0 / ( 1.0 + _gamma ) ) / ( 1.0 + _gamma );
+    double vTerm = expTerm * ( v2pow2 + v3pow2 + 2.0 * v4 * _gamma ) / ( 2 * v4pow3 );
     y( 0, 0 )    = -( expTerm );
     y( 0, 1 )    = ( v2 * expTerm ) / ( v4 );
     y( 0, 2 )    = ( v3 * expTerm ) / ( v4 );
-    y( 0, 3 )    = -( ( ( v2pow2 + v3pow2 - 2.0 * v4 ) * expTerm ) / ( 2.0 * v4pow2 ) );
+    y( 0, 3 )    = -( 0.5 * ( ( v2pow2 + v3pow2 - 2.0 * v4 ) * expTerm ) * v4pow2Inv );
     y( 1, 0 )    = y( 0, 1 );
-    y( 1, 1 )    = -( ( expTerm * ( v2pow2 + v4 + v4 * _gamma ) ) / ( v4pow2 ) );
-    y( 1, 2 )    = -( ( v2 * v3 * expTerm ) / v4pow2 );
-    y( 1, 3 )    = ( v2 * expTerm * vTerm ) / ( 2 * v4pow3 );
+    y( 1, 1 )    = -( ( expTerm * ( v2pow2 + ( _gamma + 1.0 ) * v4 ) ) * v4pow2Inv );
+    y( 1, 2 )    = -( ( v2 * v3 * expTerm ) * v4pow2Inv );
+    y( 1, 3 )    = v2 * vTerm;
     y( 2, 0 )    = y( 0, 2 );
     y( 2, 1 )    = y( 1, 2 );
-    y( 2, 2 )    = -( ( expTerm * ( v3pow2 + v4 + v4 * _gamma ) ) / v4pow2 );
-    y( 2, 3 )    = ( v3 * expTerm * vTerm ) / ( 2.0 * v4pow3 );
+    y( 2, 2 )    = -( ( expTerm * ( v3pow2 + ( _gamma + 1.0 ) * v4 ) ) * v4pow2Inv );
+    y( 2, 3 )    = v3 * vTerm;
     y( 3, 0 )    = y( 0, 3 );
     y( 3, 1 )    = y( 1, 3 );
     y( 3, 2 )    = y( 2, 3 );
