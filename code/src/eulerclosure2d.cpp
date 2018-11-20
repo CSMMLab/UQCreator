@@ -51,15 +51,14 @@ Matrix EulerClosure2D::U( const Matrix& Lambda ) {
 }
 
 void EulerClosure2D::DU( Matrix& y, const Vector& Lambda ) {
-    double v1        = Lambda[0];
-    double v2        = Lambda[1];
-    double v3        = Lambda[2];
-    double v4        = Lambda[3];
-    double v4pow3    = pow( v4, 3 );
-    double v4pow2    = pow( v4, 2 );
-    double v4pow2Inv = 1.0 / v4pow2;
-    double v3pow2    = pow( v3, 2 );
-    double v2pow2    = pow( v2, 2 );
+    double v1     = Lambda[0];
+    double v2     = Lambda[1];
+    double v3     = Lambda[2];
+    double v4     = Lambda[3];
+    double v4pow3 = pow( v4, 3 );
+    double v4pow2 = pow( v4, 2 );
+    double v3pow2 = pow( v3, 2 );
+    double v2pow2 = pow( v2, 2 );
     double expTerm =
         pow( -exp( ( ( v2pow2 + v3pow2 - 2.0 * v4 * ( v1 + _gamma ) ) / ( 2.0 * v4 ) ) ) * v4, ( 1.0 / ( 1.0 + _gamma ) ) ) * 1.0 / ( 1.0 + _gamma );
     double vTerm = v2pow2 + v3pow2 + 2.0 * v4 * _gamma;

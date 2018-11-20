@@ -60,6 +60,17 @@ template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace
     return os;
 }
 
+template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace::FluxMatrix<T>& a ) {
+    for( unsigned i = 0; i < a.rows(); ++i ) {
+        os << "(\t";
+        for( unsigned j = 0; j < a.columns(); ++j ) {
+            os << a( i, j ) << "\t";
+        }
+        os << ")" << std::endl;
+    }
+    return os;
+}
+
 // VECTOR //////////////////////////////////////////////////////////////////////////
 
 template <class T> double dot( const VectorSpace::Vector<T>& a, const VectorSpace::Vector<T>& b ) {

@@ -12,6 +12,8 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_sinks.h"
 
+#include "typedefs.h"
+
 bool CheckInput( std::string& configFile, int argc, char* argv[] ) {
     std::string usage_help = "\n"
                              "Usage: " +
@@ -109,28 +111,36 @@ void PrintInit( std::string configFile ) {
 int main( int argc, char* argv[] ) {
     std::string configFile = "";
 
-    if( !CheckInput( configFile, argc, argv ) ) {
-        return EXIT_FAILURE;
-    }
+    VectorSpace::FluxMatrix<double> test( 3 );
+    test.set( -13, 0, 1 );
+    test.set( 42, 1, 2 );
+    std::cout << test( 1, 2 ) << std::endl;
+    // std::cout << test << std::endl;
 
-    initLogger( spdlog::level::info, spdlog::level::info, configFile );
-    auto log = spdlog::get( "event" );
+    /*
+        if( !CheckInput( configFile, argc, argv ) ) {
+            return EXIT_FAILURE;
+        }
 
-    PrintInit( configFile );
+        initLogger( spdlog::level::info, spdlog::level::info, configFile );
+        auto log = spdlog::get( "event" );
 
-    Settings* settings   = new Settings( configFile );
-    Mesh* mesh           = Mesh::Create( settings );
-    Problem* problem     = Problem::Create( settings );
-    MomentSolver* solver = new MomentSolver( settings, mesh, problem );
+        PrintInit( configFile );
 
-    solver->Solve();
+        Settings* settings   = new Settings( configFile );
+        Mesh* mesh           = Mesh::Create( settings );
+        Problem* problem     = Problem::Create( settings );
+        MomentSolver* solver = new MomentSolver( settings, mesh, problem );
 
-    log->info( "\nProcess exited normally." );
+        solver->Solve();
 
-    delete solver;
-    delete problem;
-    delete mesh;
-    delete settings;
+        log->info( "\nProcess exited normally." );
+
+        delete solver;
+        delete problem;
+        delete mesh;
+        delete settings;
+    */
 
     return EXIT_SUCCESS;
 }
