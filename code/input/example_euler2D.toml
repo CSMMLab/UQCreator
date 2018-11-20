@@ -22,5 +22,5 @@ tEnd = 0.1
 closure = "Euler2D"
 moments = 5
 quadPoints = 15
-maxIterations = 100
+maxIterations = 1
 epsilon = 5e-5

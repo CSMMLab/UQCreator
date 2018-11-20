@@ -203,6 +203,7 @@ unsigned Settings::GetNMoments() const { return _nMoments; }
 unsigned Settings::GetNQuadPoints() const { return _nQuadPoints; }
 LimiterType Settings::GetLimiterType() const { return _limiterType; }
 unsigned Settings::GetMaxIterations() const { return _maxIterations; }
+void Settings::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxIterations; }
 double Settings::GetEpsilon() const { return _epsilon; }
 
 // plot

@@ -83,6 +83,7 @@ class Settings
     unsigned GetNQuadPoints() const;
     LimiterType GetLimiterType() const;
     unsigned GetMaxIterations() const;
+    void SetMaxIterations( unsigned maxIterations );
     double GetEpsilon() const;
 
     // plot

@@ -17,8 +17,6 @@ void Hermite::Compute() {
         CM( i, i + 1 ) = std::sqrt( static_cast<double>( i + 1 ) / 2.0 );
     }
 
-    std::cout << CM << std::endl;
-
     auto evSys = MathTools::ComputeEigenValTriDiagMatrix( CM );
 
     for( unsigned i = 0; i < _degree; ++i ) {

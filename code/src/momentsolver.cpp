@@ -51,6 +51,13 @@ void MomentSolver::Solve() {
         }
     }
 
+    // Converge initial condition entropy variables for One Shot IPM
+    if( _settings->GetMaxIterations() == 1 ) {
+        _settings->SetMaxIterations( 1000 );
+        for( unsigned j = 0; j < _nCells; ++j ) _closure->SolveClosure( _lambda[j], uNew[j] );
+        _settings->SetMaxIterations( 1 );
+    }
+
     auto numFluxPtr = std::bind( &MomentSolver::numFlux,
                                  this,
                                  std::placeholders::_1,
