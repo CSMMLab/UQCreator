@@ -8,12 +8,13 @@ Closure::Closure( Settings* settings )
     : _settings( settings ), _nMoments( _settings->GetNMoments() ), _nQuadPoints( _settings->GetNQuadPoints() ), _nStates( _settings->GetNStates() ) {
     _log = spdlog::get( "event" );
     // initialize classes
-    _basis = new Legendre( _nMoments );
-    _quad  = new Legendre( _nQuadPoints );
+    _basis = Polynomial::Create( _settings, _nMoments );
+    _quad  = Polynomial::Create( _settings, _nQuadPoints );
     // calculate basis functions evaluated at the quadrature points
     _phi         = std::vector<Vector>( _nQuadPoints, Vector( _nMoments, 0.0 ) );
     _phiTilde    = Matrix( _nQuadPoints, _nMoments, 0.0 );
     _phiTildeW   = Matrix( _nQuadPoints, _nMoments, 0.0 );
+    _phiTildeWf  = Matrix( _nQuadPoints, _nMoments, 0.0 );
     _phiTildeVec = std::vector<Vector>( _nQuadPoints, Vector( _nMoments, 0.0 ) );
 
     Vector xi = _quad->GetNodes();
@@ -21,17 +22,18 @@ Closure::Closure( Settings* settings )
 
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         for( unsigned i = 0; i < _nMoments; ++i ) {
-            _phi[k][i]         = _basis->Evaluate( i, xi[k] );
-            _phiTilde( k, i )  = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
-            _phiTildeW( k, i ) = _phiTilde( k, i ) * w[k];
-            _phiTildeVec[k][i] = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
+            _phi[k][i]          = _basis->Evaluate( i, xi[k] );
+            _phiTilde( k, i )   = _phi[k][i] * ( 2.0 * i + 1.0 );    // sqrt( 2.0 * i + 1.0 );
+            _phiTildeW( k, i )  = _phiTilde( k, i ) * w[k];
+            _phiTildeWf( k, i ) = _phiTildeW( k, i ) * _basis->fXi( xi[k] );    // multiplied by pdf
+            _phiTildeVec[k][i]  = _phi[k][i] * ( 2.0 * i + 1.0 );               // sqrt( 2.0 * i + 1.0 );
         }
     }
     _phiTildeTrans = trans( _phiTilde );
     // calculate partial matrix for Hessian calculation
     _hPartial = MatVec( _nQuadPoints, Matrix( _nMoments, _nMoments, 0.0 ) );
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
-        _hPartial[k] = outer( column( _phiTildeTrans, k ), column( _phiTildeTrans, k ) ) * w[k];
+        _hPartial[k] = outer( column( _phiTildeTrans, k ), column( _phiTildeTrans, k ) ) * w[k] * _basis->fXi( xi[k] );
     }
 
     _perm = new int[_nStates * _nMoments];
@@ -83,8 +85,13 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     Vector dlambda = -g;
     Hessian( H, lambda );
     posv( H, g );
+    if( _settings->GetMaxIterations() == 1 ) {
+        AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda );
+        return;
+    }
     // gesv( H, g, _perm );
     Matrix lambdaNew( _nStates, _nMoments );
+    // std::cout << _settings->GetMaxIterations() << std::endl;
     AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
@@ -173,7 +180,7 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
         U( uKinetic, lambda * _phiTildeVec[k] );
         for( unsigned j = 0; j < _nMoments; ++j ) {
             for( unsigned l = 0; l < _nStates; ++l ) {
-                g[l * _nMoments + j] += 0.5 * uKinetic[l] * _phiTildeW( k, j );
+                g[l * _nMoments + j] += uKinetic[l] * _phiTildeWf( k, j );
             }
         }
     }
@@ -182,16 +189,16 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
 }
 
 void Closure::Hessian( Matrix& H, const Matrix& lambda ) {
-    Matrix dLambdadU( _nStates, _nStates, 0.0 );
     H.reset();
+    Matrix dUdLambda( _nStates, _nStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
 
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {    // TODO: reorder to avoid cache misses
-        DU( dLambdadU, lambda * _phiTildeVec[k] );
+        DU( dUdLambda, lambda * _phiTildeVec[k] );
         for( unsigned l = 0; l < _nStates; ++l ) {
             for( unsigned m = 0; m < _nStates; ++m ) {
                 for( unsigned j = 0; j < _nMoments; ++j ) {
                     for( unsigned i = 0; i < _nMoments; ++i ) {
-                        H( m * _nMoments + j, l * _nMoments + i ) += 0.5 * _hPartial[k]( j, i ) * dLambdadU( l, m );
+                        H( m * _nMoments + j, l * _nMoments + i ) += _hPartial[k]( j, i ) * dUdLambda( l, m );
                     }
                 }
             }

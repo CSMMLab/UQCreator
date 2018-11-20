@@ -79,7 +79,7 @@ Matrix Euler2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const 
         else if( lambdaMax <= 0 )
             column( y, k ) = F( column( v, k ) ) * n;
         else {
-            column( y, k ) = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( column( u, k ) ) * n - lambdaMin * F( column( v, k ) ) * n +
+            column( y, k ) = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( ( lambdaMax * F( column( u, k ) ) - lambdaMin * F( column( v, k ) ) ) * n +
                                                                      lambdaMax * lambdaMin * ( column( v, k ) - column( u, k ) ) * norm( n ) );
         }
     }

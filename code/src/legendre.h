@@ -18,6 +18,7 @@ class Legendre : public Polynomial
     virtual double Evaluate( unsigned m, double x );
     virtual const Vector& GetNodes();
     virtual const Vector& GetWeights();
+    virtual double fXi( const double xi ) const;
 };
 
 #endif

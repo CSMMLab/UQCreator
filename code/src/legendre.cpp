@@ -32,3 +32,5 @@ double Legendre::Evaluate( unsigned m, double x ) { return boost::math::legendre
 const Vector& Legendre::GetNodes() { return _nodes; }
 
 const Vector& Legendre::GetWeights() { return _weights; }
+
+double Legendre::fXi( const double xi ) const { return 0.5; }

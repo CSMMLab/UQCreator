@@ -33,3 +33,8 @@ double Hermite::Evaluate( unsigned m, double x ) { return boost::math::hermite( 
 const Vector& Hermite::GetNodes() { return _nodes; }
 
 const Vector& Hermite::GetWeights() { return _weights; }
+
+double Hermite::fXi( const double xi ) const {
+    double pi = 3.14159265359;
+    return ( 1.0 / sqrt( 2.0 * pi ) ) * exp( -0.5 * pow( xi, 2 ) );
+}
