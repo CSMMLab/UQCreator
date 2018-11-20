@@ -11,18 +11,15 @@
 class Closure
 {
   private:
-    int* _perm;
     Closure() = delete;
 
   protected:
     Settings* _settings;
     Polynomial* _basis;
     Polynomial* _quad;
-    std::vector<Vector> _phi;    // stores basis functions evaluated at quadrature points
-    Matrix _phiTilde;            // stores scaled basis functions evaluated at quadrature points
-    Matrix _phiTildeTrans;       // stores scaled basis functions evaluated at quadrature points
-    Matrix _phiTildeW;           // stores scaled basis functions evaluated at quadrature points times weight
-    Matrix _phiTildeWf;          // stores scaled basis functions evaluated at quadrature points times weight and pdf
+    Matrix _phiTilde;         // stores scaled basis functions evaluated at quadrature points
+    Matrix _phiTildeTrans;    // stores scaled basis functions evaluated at quadrature points
+    Matrix _phiTildeWf;       // stores scaled basis functions evaluated at quadrature points times weight and pdf
     std::vector<Vector> _phiTildeVec;
     MatVec _hPartial;    // stores partial matrices for Hessian computation
     double _alpha;
@@ -73,10 +70,8 @@ class Closure
 
     virtual void DS( Vector& ds, const Vector& u ) const;
 
-    const std::vector<Vector>& GetPhi() { return _phi; }
     const Vector& GetPhiTilde( int k ) { return _phiTildeVec[k]; }
     const Matrix& GetPhiTilde() { return _phiTilde; }
-    const Matrix& GetPhiTildeW() { return _phiTildeW; }
     const Matrix& GetPhiTildeWf() { return _phiTildeWf; }
     /**
      * Add matrix A and vector b and save result in a matrix

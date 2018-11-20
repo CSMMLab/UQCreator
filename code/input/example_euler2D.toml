@@ -13,9 +13,9 @@ outputFile = "euler_naca0012"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = "Hermite"
+distribution = "Legendre"
 CFL = 0.042
-tEnd = 0.1
+tEnd = 0.00001
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D

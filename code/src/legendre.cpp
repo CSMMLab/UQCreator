@@ -35,4 +35,4 @@ const Vector& Legendre::GetWeights() { return _weights; }
 
 double Legendre::fXi( const double xi ) const { return 0.5; }
 
-double Legendre::L2NormSquare( unsigned i ) const { return 1.0 / ( 2.0 * i + 1.0 ); }
+double Legendre::L2Norm( unsigned i ) const { return sqrt( 1.0 / ( 2.0 * i + 1.0 ) ); }

@@ -24,7 +24,7 @@ Polynomial* Polynomial::Create( Settings* settings, unsigned order ) {
         return new Hermite( settings->GetNQuadPoints() );
     }
     else {
-        log->error( "[timesolver] Invalid timesolver type" );
+        log->error( "[distribution] Invalid distribution type" );
         exit( EXIT_FAILURE );
     }
 }

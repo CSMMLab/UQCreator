@@ -11,9 +11,7 @@ Closure::Closure( Settings* settings )
     _basis = Polynomial::Create( _settings, _nMoments );
     _quad  = Polynomial::Create( _settings, _nQuadPoints );
     // calculate basis functions evaluated at the quadrature points
-    _phi         = std::vector<Vector>( _nQuadPoints, Vector( _nMoments, 0.0 ) );
     _phiTilde    = Matrix( _nQuadPoints, _nMoments, 0.0 );
-    _phiTildeW   = Matrix( _nQuadPoints, _nMoments, 0.0 );
     _phiTildeWf  = Matrix( _nQuadPoints, _nMoments, 0.0 );
     _phiTildeVec = std::vector<Vector>( _nQuadPoints, Vector( _nMoments, 0.0 ) );
 
@@ -22,11 +20,9 @@ Closure::Closure( Settings* settings )
 
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         for( unsigned i = 0; i < _nMoments; ++i ) {
-            _phi[k][i]          = _basis->Evaluate( i, xi[k] );
-            _phiTilde( k, i )   = _phi[k][i] / _basis->L2NormSquare( i );    // sqrt( 2.0 * i + 1.0 );
-            _phiTildeW( k, i )  = _phiTilde( k, i ) * w[k];
-            _phiTildeWf( k, i ) = _phiTildeW( k, i ) * _basis->fXi( xi[k] );    // multiplied by pdf
-            _phiTildeVec[k][i]  = _phi[k][i] / _basis->L2NormSquare( i );       // sqrt( 2.0 * i + 1.0 );
+            _phiTilde( k, i )   = _basis->Evaluate( i, xi[k] ) / _basis->L2Norm( i );    // sqrt( 2.0 * i + 1.0 );
+            _phiTildeWf( k, i ) = _phiTilde( k, i ) * w[k] * _basis->fXi( xi[k] );       // multiplied by pdf
+            _phiTildeVec[k][i]  = _basis->Evaluate( i, xi[k] ) / _basis->L2Norm( i );    // sqrt( 2.0 * i + 1.0 );
         }
     }
     _phiTildeTrans = trans( _phiTilde );
@@ -35,17 +31,11 @@ Closure::Closure( Settings* settings )
     for( unsigned k = 0; k < _nQuadPoints; ++k ) {
         _hPartial[k] = outer( column( _phiTildeTrans, k ), column( _phiTildeTrans, k ) ) * w[k] * _basis->fXi( xi[k] );
     }
-
-    _perm = new int[_nStates * _nMoments];
-    for( int i = 0; i < static_cast<int>( _nStates * _nMoments ); ++i ) {
-        _perm[i] = i;
-    }
 }
 
 Closure::~Closure() {
     delete _basis;
     delete _quad;
-    delete _perm;
 }
 
 Closure* Closure::Create( Settings* settings ) {
@@ -89,9 +79,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
         AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda );
         return;
     }
-    // gesv( H, g, _perm );
     Matrix lambdaNew( _nStates, _nMoments );
-    // std::cout << _settings->GetMaxIterations() << std::endl;
     AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
@@ -102,7 +90,6 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
             dlambda = -g;
             Hessian( H, lambda );
             posv( H, g );
-            // gesv( H, g, _perm );
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
             Gradient( dlambdaNew, lambdaNew, u );
         }

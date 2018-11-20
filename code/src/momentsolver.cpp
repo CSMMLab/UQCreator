@@ -8,7 +8,9 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
 
-    _quad    = Polynomial::Create( _settings, _nQuadPoints );
+    _quad = Polynomial::Create( _settings, _nQuadPoints );
+    // std::cout << _quad->GetNodes()[0] << std::endl;
+    // exit( EXIT_FAILURE );
     _closure = Closure::Create( _settings );
     _time    = TimeSolver::Create( _settings, _mesh );
 
@@ -142,7 +144,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
     if( _settings->GetProblemType() == ProblemType::P_BURGERS_1D ) {
         double a     = 0.5;
         double b     = 1.5;
-        double sigma = 0.2;
+        double sigma = 0.05;    // 0.2
         double uL    = 12.0;
         double uR    = 3.0;
         if( x[0] < a + sigma * xi ) {

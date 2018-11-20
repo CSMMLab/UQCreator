@@ -19,7 +19,7 @@ class Legendre : public Polynomial
     virtual const Vector& GetNodes();
     virtual const Vector& GetWeights();
     virtual double fXi( const double xi ) const;
-    virtual double L2NormSquare( unsigned i ) const;
+    virtual double L2Norm( unsigned i ) const;
 };
 
 #endif

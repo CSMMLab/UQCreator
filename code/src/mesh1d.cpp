@@ -1,5 +1,7 @@
 #include "mesh1d.h"
 
+#include <fstream>
+
 Mesh1D::Mesh1D( Settings* settings ) : Mesh( settings, 1 ) {
     auto file     = cpptoml::parse_file( _settings->GetInputFile() );
     auto table    = file->get_table( "mesh" );
@@ -196,6 +198,17 @@ void Mesh1D::Export( const Matrix& results ) const {
     writer->SetDataModeToAscii();
 
     writer->Write();
+
+    std::ofstream out( "../results/expectedvalue" );
+    for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
+        out << GetCenterPos( j )[0] << " " << results( 0, j ) << std::endl;
+    }
+    out.close();
+    std::ofstream outV( "../results/variance" );
+    for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
+        outV << GetCenterPos( j )[0] << " " << results( 1, j ) << std::endl;
+    }
+    outV.close();
 }
 
 Vector Mesh1D::GetNodePositionsX() const {
