@@ -303,6 +303,7 @@ void Mesh2D::DetermineNeighbors() {
                             indexJ1 = nj;
                             this->AddNeighbor( ci, cj, indexI0, indexI1 );
                             this->AddNeighbor( cj, ci, indexJ0, indexJ1 );
+                            _edges.push_back( std::make_pair( ci, cj ) );
                             goto cnt;
                         }
                     }

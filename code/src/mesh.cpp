@@ -39,6 +39,8 @@ std::vector<Cell*>& Mesh::GetGrid() { return _cells; }
 
 std::vector<Cell*> Mesh::GetGrid() const { return _cells; }
 
+std::vector<std::pair<Cell*, Cell*>> Mesh::GetEdges() const { return _edges; }
+
 double Mesh::GetArea( unsigned i ) const { return _cells[i]->GetArea(); }
 
 std::vector<Cell*> Mesh::GetNeighbors( unsigned i ) const { return _cells[i]->GetNeighbors(); }

@@ -35,6 +35,7 @@ class Mesh
     unsigned _nBoundaries;
     std::vector<Cell*> _cells;
     std::vector<Node*> _nodes;
+    std::vector<std::pair<Cell*, Cell*>> _edges;
     std::string _outputFile;
     std::shared_ptr<spdlog::logger> _log;
 
@@ -48,6 +49,7 @@ class Mesh
     unsigned GetDimension() const;
     std::vector<Cell*>& GetGrid();
     std::vector<Cell*> GetGrid() const;
+    std::vector<std::pair<Cell*, Cell*>> GetEdges() const;
     double GetArea( unsigned i ) const;
     Vector GetCenterPos( unsigned i ) const;
 
