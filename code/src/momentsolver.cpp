@@ -188,7 +188,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         return y;
     }
     else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
-        double sigma = 1.25;
+        double sigma = 0.5;
         double gamma = 1.4;
         double R     = 287.87;
         double T     = 273.15;
