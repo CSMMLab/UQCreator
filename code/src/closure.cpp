@@ -10,26 +10,62 @@ Closure::Closure( Settings* settings )
     // initialize classes
     _basis = Polynomial::Create( _settings, _nMoments );
     _quad  = Polynomial::Create( _settings, _nQuadPoints );
+
+    // compute ntotal number of moments and quad points
+    _numDimXi = _settings->GetNDimXi();
+    _nQTotal  = std::pow( _settings->GetNQuadPoints(), _numDimXi );
+    _nTotal   = std::pow( _settings->GetNMoments(), _numDimXi );
+
     // calculate basis functions evaluated at the quadrature points
-    _phiTilde    = Matrix( _nQuadPoints, _nMoments, 0.0 );
-    _phiTildeWf  = Matrix( _nQuadPoints, _nMoments, 0.0 );
-    _phiTildeVec = std::vector<Vector>( _nQuadPoints, Vector( _nMoments, 0.0 ) );
+    _phiTilde    = Matrix( _nQTotal, _nTotal, 1.0 );
+    _phiTildeWf  = Matrix( _nQTotal, _nTotal, 1.0 );
+    _phiTildeVec = std::vector<Vector>( _nQTotal, Vector( _nTotal, 0.0 ) );
+
+    // setup map from k total to individual indices
+    std::vector<std::vector<unsigned>> indices;
+    std::vector<std::vector<unsigned>> indicesQ;
+    indicesQ.resize( _nQTotal );
+    indices.resize( _nQTotal );
+    for( unsigned k = 0; k < _nQTotal; ++k ) {
+        indicesQ[k].resize( _numDimXi );
+        for( unsigned l = 0; l < _numDimXi; ++l ) {
+            indicesQ[k][l] =
+                unsigned( ( k - ( ( k - 1 ) % unsigned( std::pow( _nQuadPoints, l ) ) ) + 1 ) / unsigned( std::pow( _nQuadPoints, l ) ) ) %
+                    _nQuadPoints +
+                1;
+        }
+    }
+
+    for( unsigned i = 0; i < _nTotal; ++i ) {
+        indices[i].resize( _numDimXi );
+        for( unsigned l = 0; l < _numDimXi; ++l ) {
+            indices[i][l] =
+                unsigned( ( i - ( ( i - 1 ) % unsigned( std::pow( _nMoments, l ) ) ) + 1 ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments + 1;
+        }
+    }
 
     Vector xi = _quad->GetNodes();
     Vector w  = _quad->GetWeights();
 
-    for( unsigned k = 0; k < _nQuadPoints; ++k ) {
-        for( unsigned i = 0; i < _nMoments; ++i ) {
-            _phiTilde( k, i )   = _basis->Evaluate( i, xi[k] ) / _basis->L2Norm( i );    // sqrt( 2.0 * i + 1.0 );
-            _phiTildeWf( k, i ) = _phiTilde( k, i ) * w[k] * _basis->fXi( xi[k] );       // multiplied by pdf
-            _phiTildeVec[k][i]  = _basis->Evaluate( i, xi[k] ) / _basis->L2Norm( i );    // sqrt( 2.0 * i + 1.0 );
+    for( unsigned k = 0; k < _nQTotal; ++k ) {
+        for( unsigned i = 0; i < _nTotal; ++i ) {
+            for( unsigned l = 0; l < _numDimXi; ++l ) {
+                for( unsigned n = 0; n < _numDimXi; ++n ) {
+                    _phiTilde( k, i ) *=
+                        _basis->Evaluate( indices[i][n], xi[indicesQ[k][l]] ) / _basis->L2Norm( indices[i][n] );    // sqrt( 2.0 * i + 1.0 );
+                    _phiTildeWf( k, i ) *= _phiTilde( k, i ) * w[indicesQ[k][l]] * _basis->fXi( xi[indicesQ[k][l]] );
+                }
+            }
+            // multiplied by pdf
+            _phiTildeVec[k][i] = _phiTilde( k, i );    // sqrt( 2.0 * i + 1.0 );
         }
     }
-    _phiTildeTrans = trans( _phiTilde );
+    _phiTildeTrans       = trans( _phiTilde );
+    auto phiTildeWfTrans = trans( _phiTildeWf );
     // calculate partial matrix for Hessian calculation
-    _hPartial = MatVec( _nQuadPoints, Matrix( _nMoments, _nMoments, 0.0 ) );
-    for( unsigned k = 0; k < _nQuadPoints; ++k ) {
-        _hPartial[k] = outer( column( _phiTildeTrans, k ), column( _phiTildeTrans, k ) ) * w[k] * _basis->fXi( xi[k] );
+    _hPartial = MatVec( _nQTotal, Matrix( _nTotal, _nTotal, 0.0 ) );
+    for( unsigned k = 0; k < _nQTotal; ++k ) {
+        _hPartial[k] = outer( column( _phiTildeTrans, k ), column( phiTildeWfTrans, k ) );    // TODO
     }
 }
 
@@ -62,9 +98,9 @@ Closure* Closure::Create( Settings* settings ) {
 void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     int maxRefinements = 1000;
 
-    Matrix H( _nStates * _nMoments, _nStates * _nMoments, 0.0 );
-    Vector g( _nStates * _nMoments, 0.0 );
-    Vector dlambdaNew( _nStates * _nMoments, 0.0 );
+    Matrix H( _nStates * _nTotal, _nStates * _nTotal, 0.0 );
+    Vector g( _nStates * _nTotal, 0.0 );
+    Vector dlambdaNew( _nStates * _nTotal, 0.0 );
 
     // check if initial guess is good enough
     Gradient( g, lambda, u );
@@ -79,7 +115,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
         AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda );
         return;
     }
-    Matrix lambdaNew( _nStates, _nMoments );
+    Matrix lambdaNew( _nStates, _nTotal );
     AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
@@ -122,8 +158,8 @@ double Closure::CalcNorm( Vector& test ) {
     double tmp;
     for( unsigned l = 0; l < _nStates; ++l ) {
         tmp = 0.0;
-        for( unsigned i = 0; i < _nMoments; ++i ) {
-            tmp += pow( test[l * _nMoments + i], 2 );
+        for( unsigned i = 0; i < _nTotal; ++i ) {
+            tmp += pow( test[l * _nTotal + i], 2 );
         }
         out += sqrt( tmp );
     }
@@ -139,7 +175,7 @@ void Closure::EvaluateLambda( Matrix& out, const Matrix& lambda ) const { out = 
 Vector Closure::EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k ) {
     Vector out = Vector( _nStates, 0.0 );
     for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned i = 0; i < _nMoments; ++i ) {
+        for( unsigned i = 0; i < _nTotal; ++i ) {
             out[l] += lambda( l, i ) * _basis->Evaluate( i, xi[k] ) * ( 2.0 * i + 1.0 );
         }
     }
@@ -151,7 +187,7 @@ Matrix Closure::EvaluateLambda( const Matrix& lambda, const Vector& xi ) {
     Matrix out( _nStates, xi.size(), 0.0 );
     for( unsigned k = 0; k < xi.size(); ++k ) {
         for( unsigned l = 0; l < _nStates; ++l ) {
-            for( unsigned i = 0; i < _nMoments; ++i ) {
+            for( unsigned i = 0; i < _nTotal; ++i ) {
                 out( l, k ) += lambda( l, i ) * _basis->Evaluate( i, xi[k] ) * ( 2.0 * i + 1.0 );
             }
         }
@@ -163,11 +199,11 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
     Vector uKinetic( _nStates, 0.0 );
     g.reset();
 
-    for( unsigned k = 0; k < _nQuadPoints; ++k ) {
+    for( unsigned k = 0; k < _nQTotal; ++k ) {
         U( uKinetic, lambda * _phiTildeVec[k] );
-        for( unsigned j = 0; j < _nMoments; ++j ) {
+        for( unsigned j = 0; j < _nTotal; ++j ) {
             for( unsigned l = 0; l < _nStates; ++l ) {
-                g[l * _nMoments + j] += uKinetic[l] * _phiTildeWf( k, j );
+                g[l * _nTotal + j] += uKinetic[l] * _phiTildeWf( k, j );
             }
         }
     }
@@ -179,13 +215,13 @@ void Closure::Hessian( Matrix& H, const Matrix& lambda ) {
     H.reset();
     Matrix dUdLambda( _nStates, _nStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
 
-    for( unsigned k = 0; k < _nQuadPoints; ++k ) {    // TODO: reorder to avoid cache misses
+    for( unsigned k = 0; k < _nQTotal; ++k ) {    // TODO: reorder to avoid cache misses
         DU( dUdLambda, lambda * _phiTildeVec[k] );
         for( unsigned l = 0; l < _nStates; ++l ) {
             for( unsigned m = 0; m < _nStates; ++m ) {
-                for( unsigned j = 0; j < _nMoments; ++j ) {
-                    for( unsigned i = 0; i < _nMoments; ++i ) {
-                        H( m * _nMoments + j, l * _nMoments + i ) += _hPartial[k]( j, i ) * dUdLambda( l, m );
+                for( unsigned j = 0; j < _nTotal; ++j ) {
+                    for( unsigned i = 0; i < _nTotal; ++i ) {
+                        H( m * _nTotal + j, l * _nTotal + i ) += _hPartial[k]( j, i ) * dUdLambda( l, m );
                     }
                 }
             }
@@ -195,16 +231,16 @@ void Closure::Hessian( Matrix& H, const Matrix& lambda ) {
 
 void Closure::AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y ) const {
     for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned j = 0; j < _nMoments; ++j ) {
-            y( l, j ) = A( l, j ) + b[l * _nMoments + j];
+        for( unsigned j = 0; j < _nTotal; ++j ) {
+            y( l, j ) = A( l, j ) + b[l * _nTotal + j];
         }
     }
 }
 
 void Closure::SubstractVectorMatrixOnVector( Vector& b, const Matrix& A ) const {
     for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned j = 0; j < _nMoments; ++j ) {
-            b[l * _nMoments + j] = b[l * _nMoments + j] - A( l, j );
+        for( unsigned j = 0; j < _nTotal; ++j ) {
+            b[l * _nTotal + j] = b[l * _nTotal + j] - A( l, j );
         }
     }
 }

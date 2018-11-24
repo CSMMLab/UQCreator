@@ -7,6 +7,8 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _tEnd        = _settings->GetTEnd();
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
+    _nQTotal     = _settings->GetNQTotal();
+    _nTotal      = unsigned( std::pow( _nMoments, _settings->GetNDimXi() ) );
 
     _quad = Polynomial::Create( _settings, _nQuadPoints );
     // std::cout << _quad->GetNodes()[0] << std::endl;
@@ -38,7 +40,7 @@ void MomentSolver::Solve() {
         u = SetupIC();
     }
     MatVec uNew = u;
-    MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _nQuadPoints ) );
+    MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _nQTotal ) );
     _lambda     = MatVec( _nCells + 1, Matrix( _nStates, _nMoments ) );
 
     Vector ds( _nStates );
@@ -128,18 +130,26 @@ void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
 MatVec MomentSolver::SetupIC() {
     MatVec u( _nCells, Matrix( _nStates, _nMoments ) );
     Vector xi = _quad->GetNodes();
-    Matrix uIC( _nStates, _nQuadPoints );
+    Vector xiEta( _settings->GetNDimXi() );
+    Matrix uIC( _nStates, _nQTotal );
     Matrix phiTildeWf = _closure->GetPhiTildeWf();
     for( unsigned j = 0; j < _nCells; ++j ) {
-        for( unsigned k = 0; k < _nQuadPoints; ++k ) {
-            column( uIC, k ) = IC( _mesh->GetCenterPos( j ), xi[k] );
+        for( unsigned k = 0; k < _nQTotal; ++k ) {
+            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                unsigned index =
+                    unsigned( ( k - ( ( k - 1 ) % unsigned( std::pow( _nQuadPoints, l ) ) ) + 1 ) / unsigned( std::pow( _nQuadPoints, l ) ) ) %
+                        _nQuadPoints +
+                    1;
+                xiEta[l] = xi[index];
+            }
+            column( uIC, k ) = IC( _mesh->GetCenterPos( j ), xiEta );
         }
         u[j] = uIC * phiTildeWf;
     }
     return u;
 }
 
-Vector MomentSolver::IC( Vector x, double xi ) {
+Vector MomentSolver::IC( Vector x, Vector xi ) {
     Vector y( _nStates );
     if( _settings->GetProblemType() == ProblemType::P_BURGERS_1D ) {
         double a     = 0.5;
@@ -147,12 +157,12 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         double sigma = 0.05;    // 0.2
         double uL    = 12.0;
         double uR    = 3.0;
-        if( x[0] < a + sigma * xi ) {
+        if( x[0] < a + sigma * xi[0] ) {
             y[0] = uL;
             return y;
         }
-        else if( x[0] < b + sigma * xi ) {
-            y[0] = uL + ( uR - uL ) * ( a + sigma * xi - x[0] ) / ( a - b );
+        else if( x[0] < b + sigma * xi[0] ) {
+            y[0] = uL + ( uR - uL ) * ( a + sigma * xi[0] - x[0] ) / ( a - b );
             return y;
         }
         else {
@@ -171,7 +181,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         double pR   = 0.3;
         double uL   = 0.0;
         double uR   = 0.0;
-        if( x[0] < x0 + sigma * xi ) {
+        if( x[0] < x0 + sigma * xi[0] ) {
             y[0]                  = rhoL;
             y[1]                  = rhoL * uL;
             double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 );
@@ -198,7 +208,7 @@ Vector MomentSolver::IC( Vector x, double xi ) {
         double pi    = 3.14159265359;
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + sigma * xi ) * ( 2.0 * pi ) / 360.0;
+        double angle = ( 1.25 + sigma * xi[0] ) * ( 2.0 * pi ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 

@@ -1,6 +1,6 @@
 #include "settings.h"
 
-Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
+Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi( 1 ) {
     auto log = spdlog::get( "event" );
 
     bool validConfig = true;
@@ -161,6 +161,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
         }
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
+        _nQTotal       = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
 
     } catch( const cpptoml::parse_exception& e ) {
         log->error( "Failed to parse {0}: {1}", _inputFile.c_str(), e.what() );
@@ -193,6 +194,7 @@ std::string Settings::GetContinueFile() const { return _continueFile; }
 TimesteppingType Settings::GetTimesteppingType() const { return _timesteppingType; }
 double Settings::GetCFL() const { return _CFL; }
 double Settings::GetTEnd() const { return _tEnd; }
+unsigned Settings::GetNDimXi() const { return _numDimXi; }
 double Settings::GetGamma() const { return _gamma; }
 void Settings::SetGamma( double gamma ) { _gamma = gamma; }
 DistributionType Settings::GetDistributionType() const { return _distributionType; }
@@ -201,6 +203,7 @@ DistributionType Settings::GetDistributionType() const { return _distributionTyp
 ClosureType Settings::GetClosureType() const { return _closureType; }
 unsigned Settings::GetNMoments() const { return _nMoments; }
 unsigned Settings::GetNQuadPoints() const { return _nQuadPoints; }
+unsigned Settings::GetNQTotal() const { return _nQTotal; }
 LimiterType Settings::GetLimiterType() const { return _limiterType; }
 unsigned Settings::GetMaxIterations() const { return _maxIterations; }
 void Settings::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxIterations; }
