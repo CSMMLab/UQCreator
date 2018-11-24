@@ -25,23 +25,23 @@ Closure::Closure( Settings* settings )
     std::vector<std::vector<unsigned>> indices;
     std::vector<std::vector<unsigned>> indicesQ;
     indicesQ.resize( _nQTotal );
-    indices.resize( _nQTotal );
+    indices.resize( _nTotal );
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         indicesQ[k].resize( _numDimXi );
         for( unsigned l = 0; l < _numDimXi; ++l ) {
-            indicesQ[k][l] =
-                unsigned( ( k - ( ( k - 1 ) % unsigned( std::pow( _nQuadPoints, l ) ) ) + 1 ) / unsigned( std::pow( _nQuadPoints, l ) ) ) %
-                    _nQuadPoints +
-                1;
+            indicesQ[k][l] = unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
+            // std::cout << indicesQ[k][l] << " ";
         }
+        // std::cout << std::endl;
     }
 
     for( unsigned i = 0; i < _nTotal; ++i ) {
         indices[i].resize( _numDimXi );
         for( unsigned l = 0; l < _numDimXi; ++l ) {
-            indices[i][l] =
-                unsigned( ( i - ( ( i - 1 ) % unsigned( std::pow( _nMoments, l ) ) ) + 1 ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments + 1;
+            indices[i][l] = unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
+            // std::cout << indices[i][l] << " ";
         }
+        // std::cout << std::endl;
     }
 
     Vector xi = _quad->GetNodes();
@@ -50,20 +50,26 @@ Closure::Closure( Settings* settings )
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         for( unsigned i = 0; i < _nTotal; ++i ) {
             for( unsigned l = 0; l < _numDimXi; ++l ) {
-                for( unsigned n = 0; n < _numDimXi; ++n ) {
-                    _phiTilde( k, i ) *=
-                        _basis->Evaluate( indices[i][n], xi[indicesQ[k][l]] ) / _basis->L2Norm( indices[i][n] );    // sqrt( 2.0 * i + 1.0 );
-                    _phiTildeWf( k, i ) *= _phiTilde( k, i ) * w[indicesQ[k][l]] * _basis->fXi( xi[indicesQ[k][l]] );
-                }
+                // for( unsigned n = 0; n < _numDimXi; ++n ) {
+                _phiTilde( k, i ) *=
+                    _basis->Evaluate( indices[i][l], xi[indicesQ[k][l]] ) / _basis->L2Norm( indices[i][l] );    // sqrt( 2.0 * i + 1.0 );
+                _phiTildeWf( k, i ) *= _basis->Evaluate( indices[i][l], xi[indicesQ[k][l]] ) / _basis->L2Norm( indices[i][l] ) * w[indicesQ[k][l]] *
+                                       _basis->fXi( xi[indicesQ[k][l]] );
+                //}
             }
             // multiplied by pdf
             _phiTildeVec[k][i] = _phiTilde( k, i );    // sqrt( 2.0 * i + 1.0 );
         }
     }
+
+    // Test
+
+    // std::cout << _phiTilde << std::endl;
+    // exit( EXIT_FAILURE );
     _phiTildeTrans       = trans( _phiTilde );
     auto phiTildeWfTrans = trans( _phiTildeWf );
     // calculate partial matrix for Hessian calculation
-    _hPartial = MatVec( _nQTotal, Matrix( _nTotal, _nTotal, 0.0 ) );
+    _hPartial = MatVec( _nQTotal, Matrix( _nTotal, _nTotal ) );
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         _hPartial[k] = outer( column( _phiTildeTrans, k ), column( phiTildeWfTrans, k ) );    // TODO
     }
@@ -96,6 +102,7 @@ Closure* Closure::Create( Settings* settings ) {
 }
 
 void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
+    // std::cout << "SolveClosure started..." << std::endl;
     int maxRefinements = 1000;
 
     Matrix H( _nStates * _nTotal, _nStates * _nTotal, 0.0 );
@@ -107,10 +114,13 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     if( CalcNorm( g ) < _settings->GetEpsilon() ) {
         return;
     }
+    // std::cout << "before first Hessian inversion..." << std::endl;
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
+    // std::cout << g << std::endl;
     Hessian( H, lambda );
     posv( H, g );
+    // std::cout << "... done!" << std::endl;
     if( _settings->GetMaxIterations() == 1 ) {
         AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda );
         return;

@@ -24,7 +24,12 @@ class MomentSolver
     MatVec _lambda;
     Problem* _problem;
     double _dt, _tEnd;
-    unsigned _nCells, _nMoments, _nStates, _nQuadPoints, _nQTotal, _nTotal;
+    unsigned _nCells;         // number of spatial cells
+    unsigned _nMoments;       // number of moments in one uncertain dimension
+    unsigned _nStates;        // number of states of the original system
+    unsigned _nQuadPoints;    // number of moments in one uncertain dimension
+    unsigned _nQTotal;        // total number of quad points
+    unsigned _nTotal;         // total number of moments
     std::shared_ptr<spdlog::logger> _log;
 
     void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
