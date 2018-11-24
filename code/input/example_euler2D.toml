@@ -15,12 +15,12 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = "Legendre"
 CFL = 0.042
-tEnd = 0.00001
+tEnd = 0.1
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
 closure = "Euler2D"
-moments = 5
-quadPoints = 15
+moments = 4
+quadPoints = 8
 maxIterations = 1
 epsilon = 5e-5

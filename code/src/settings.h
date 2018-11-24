@@ -28,10 +28,12 @@ class Settings
     // requied settings
     unsigned _meshDimension;
     unsigned _nQuadPoints;
+    unsigned _nQTotal;
     unsigned _nMoments;
     unsigned _maxIterations;
     unsigned _nStates;
     unsigned _numCells;
+    unsigned _numDimXi;
     double _epsilon;
     double _CFL;
     double _tEnd;
@@ -73,6 +75,7 @@ class Settings
     TimesteppingType GetTimesteppingType() const;
     DistributionType GetDistributionType() const;
     double GetCFL() const;
+    unsigned GetNDimXi() const;
     double GetTEnd() const;
     double GetGamma() const;
     void SetGamma( double gamma );
@@ -81,6 +84,7 @@ class Settings
     ClosureType GetClosureType() const;
     unsigned GetNMoments() const;
     unsigned GetNQuadPoints() const;
+    unsigned GetNQTotal() const;
     LimiterType GetLimiterType() const;
     unsigned GetMaxIterations() const;
     void SetMaxIterations( unsigned maxIterations );

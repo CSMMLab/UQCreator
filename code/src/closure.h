@@ -26,6 +26,9 @@ class Closure
     unsigned _nMoments;
     unsigned _nQuadPoints;
     unsigned _nStates;
+    unsigned _numDimXi;
+    unsigned _nQTotal;
+    unsigned _nTotal;
     void Hessian( Matrix& H, const Matrix& lambda );
     void Gradient( Vector& g, const Matrix& lambda, const Matrix& u );
     std::shared_ptr<spdlog::logger> _log;
