@@ -102,12 +102,11 @@ Closure* Closure::Create( Settings* settings ) {
 }
 
 void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
-    // std::cout << "SolveClosure started..." << std::endl;
     int maxRefinements = 1000;
 
-    Matrix H( _nStates * _nTotal, _nStates * _nTotal, 0.0 );
-    Vector g( _nStates * _nTotal, 0.0 );
-    Vector dlambdaNew( _nStates * _nTotal, 0.0 );
+    Matrix H( _nStates * _nTotal, _nStates * _nTotal );
+    Vector g( _nStates * _nTotal );
+    Vector dlambdaNew( _nStates * _nTotal );
 
     // check if initial guess is good enough
     Gradient( g, lambda, u );
@@ -120,7 +119,6 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     // std::cout << g << std::endl;
     Hessian( H, lambda );
     posv( H, g );
-    // std::cout << "... done!" << std::endl;
     if( _settings->GetMaxIterations() == 1 ) {
         AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda );
         return;

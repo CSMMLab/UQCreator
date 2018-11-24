@@ -107,12 +107,14 @@ void MomentSolver::Solve() {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
-                ;
             }
         }
     }
 
     _mesh->Export( meanAndVar );
+    unsigned evalCell  = 0;    // 2404;
+    unsigned plotState = 0;
+    _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
@@ -222,14 +224,18 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
         return y;
     }
     else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
-        double sigma = 0.5;
-        double gamma = 1.4;
-        double R     = 287.87;
-        double T     = 273.15;
-        double p     = 101325.0;
-        double Ma    = 0.8;
-        double a     = sqrt( gamma * R * T );
-        double pi    = 3.14159265359;
+        double sigma  = 0.5;
+        double sigma1 = 0.2;
+        double gamma  = 1.4;
+        double R      = 287.87;
+        double T      = 273.15;
+        double p      = 101325.0;
+        double Ma     = 0.8;
+        if( xi.size() == 1 ) {
+            Ma = Ma - sigma1 + xi[1] * sigma1;
+        }
+        double a  = sqrt( gamma * R * T );
+        double pi = 3.14159265359;
 
         double uMax  = Ma * a;
         double angle = ( 1.25 + sigma * xi[0] ) * ( 2.0 * pi ) / 360.0;

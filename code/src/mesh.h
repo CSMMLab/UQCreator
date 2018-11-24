@@ -64,6 +64,7 @@ class Mesh
 
     virtual std::vector<Vector> Import() const         = 0;
     virtual void Export( const Matrix& results ) const = 0;
+    virtual void PlotInXi( const Matrix& u, unsigned state ) const;
 
     Mesh( Settings* settings, unsigned dimension );
     virtual ~Mesh();
