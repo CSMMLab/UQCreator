@@ -181,7 +181,7 @@ Matrix Closure::EvaluateLambda( const Matrix& lambda ) const { return lambda * _
 Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda ) const {
     Matrix out( _settings->GetNStates(), _settings->GetNqPE(), 0.0 );
     unsigned kStart = _settings->GetKStart();
-    unsigned kEnd   = _settings->GetKStart();
+    unsigned kEnd   = _settings->GetKEnd();
 
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned k = kStart; k <= kEnd; ++k ) {

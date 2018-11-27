@@ -83,22 +83,19 @@ void MomentSolver::Solve() {
         double residual = 0;
 #pragma omp parallel for reduction( + : residual ) schedule( dynamic, 10 )
         for( unsigned j = 0; j < _nCells; ++j ) {
-            // std::cout << "Solving closure for " << u[j] << std::endl;
             _closure->SolveClosure( _lambda[j], u[j] );
             uOld[j] = u[j];
         }
 
         for( unsigned j = 0; j < _nCells; ++j ) {
-            // uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
-            uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-            u[j]  = uQ[j] * _closure->GetPhiTildeWf();
-            // u[j].reset();
-            // VectorSpace::multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd() );
+            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
+            u[j].reset();
+            VectorSpace::multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd() );
         }
 
         _time->Advance( numFluxPtr, uNew, u, uQ );
 
-        // should work since std::vector and our matrix are contiguous (otherwise loop over cells)
+        // perform reduction to obtain full moments
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Allreduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nMoments ), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
             residual += std::fabs( u[j]( 0, 0 ) - uOld[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;

@@ -21,6 +21,6 @@ tEnd = 0.14
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
 closure = "BoundedBarrier"
 moments = 5
-quadPoints = 30
+quadPoints = 15
 maxIterations = 2000
 epsilon = 5e-5
