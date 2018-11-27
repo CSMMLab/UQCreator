@@ -1,10 +1,15 @@
 #include "settings.h"
 
-Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi( 2 ) {
+#include <mpi.h>
+
+Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi( 1 ) {
     auto log = spdlog::get( "event" );
 
     bool validConfig = true;
     try {
+        int ierr;
+        ierr      = MPI_Comm_rank( MPI_COMM_WORLD, &_mype );
+        ierr      = MPI_Comm_size( MPI_COMM_WORLD, &_npes );
         _cwd      = std::filesystem::current_path();
         _inputDir = std::experimental::filesystem::path( _inputFile.parent_path() );
 
@@ -154,6 +159,18 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
         auto nQuadPoints = moment_system->get_as<unsigned>( "quadPoints" );
         if( nQuadPoints ) {
             _nQuadPoints = *nQuadPoints;
+            _nQTotal     = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
+            // determine size of quad array on PE
+            int nQPE = int( ( int( _nQTotal ) - 1 ) / _npes ) + 1;
+            if( _mype == _npes - 1 ) {
+                nQPE = int( _nQTotal ) - _mype * nQPE;
+                if( nQPE < 0 ) {
+                    nQPE = 0;
+                }
+            }
+            _nQPE   = unsigned( nQPE );
+            _kStart = _mype * ( ( _nQTotal - 1 ) / _npes + 1.0 );
+            _kEnd   = _kStart + _nQPE - 1;
         }
         else {
             log->error( "[inputfile] [moment_system] 'quadPoints' not set!" );
@@ -161,7 +178,6 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
         }
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
-        _nQTotal       = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
 
     } catch( const cpptoml::parse_exception& e ) {
         log->error( "Failed to parse {0}: {1}", _inputFile.c_str(), e.what() );
@@ -212,3 +228,10 @@ double Settings::GetEpsilon() const { return _epsilon; }
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }
 double Settings::GetPlotTimeInterval() const { return _plotTimeInterval; }
+
+// MPI
+int Settings::GetMyPE() const { return _mype; }
+int Settings::GetNPEs() const { return _npes; }
+unsigned Settings::GetKStart() const { return _kStart; }
+unsigned Settings::GetKEnd() const { return _kEnd; }
+unsigned Settings::GetNqPE() const { return _nQPE; }

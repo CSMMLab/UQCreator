@@ -108,6 +108,8 @@ void PrintInit( std::string configFile ) {
 }
 
 int main( int argc, char* argv[] ) {
+    int ierr = MPI_Init( &argc, &argv );
+
     std::string configFile = "";
 
     if( !CheckInput( configFile, argc, argv ) ) {
@@ -132,6 +134,8 @@ int main( int argc, char* argv[] ) {
     delete problem;
     delete mesh;
     delete settings;
+
+    ierr = MPI_Finalize();
 
     return EXIT_SUCCESS;
 }

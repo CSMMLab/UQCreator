@@ -60,6 +60,7 @@ class Closure
     void EvaluateLambda( Matrix& out, const Matrix& lambda ) const;
     Vector EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k );
     Matrix EvaluateLambda( const Matrix& lambda, const Vector& xi );
+    Matrix EvaluateLambdaOnPE( const Matrix& lambda ) const;
     /**
      * calculate solution for kinetic entropy with given entropic variable
      */

@@ -37,6 +37,8 @@ template <class T> class Matrix    // column major
     void operator+=( const Matrix<T>& other );
     void operator-=( const Matrix<T>& other );
 
+    double* GetPointer() { return _data; }
+
     unsigned rows() const;
     unsigned columns() const;
     void reset();
@@ -46,12 +48,16 @@ template <class T> class Matrix    // column major
     friend Vector<T> column<>( const Matrix<T>& mat, unsigned i );
     friend void gesv<>( Matrix<T>& A, Vector<T>& b, int* ipiv );
     friend void posv<>( Matrix<T>& A, Vector<T>& b );
+
+    // multiplies PE part of A and x and saves result on b
+    friend void multOnPENoReset( const Matrix<T>& X, const Matrix<T>& A, Matrix<T>& B, unsigned kStart, unsigned kEnd );
 };
 
 template <class T> Matrix<T>::Matrix() : _data( nullptr ), _rows( 0 ), _columns( 0 ) {}
 
 template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skipZeroInit ) : _rows( rows ), _columns( columns ) {
-    _data = new T[_rows * _columns];
+    //_data = new T[_rows * _columns];
+    _data = (T*)malloc( _rows * _columns * sizeof( T ) );
     if( !skipZeroInit ) {
         for( unsigned j = 0; j < _columns; ++j ) {
             for( unsigned i = 0; i < _rows; ++i ) {
@@ -62,7 +68,8 @@ template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skip
 }
 
 template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) : _rows( rows ), _columns( columns ) {
-    _data = new T[_rows * _columns];
+    //_data = new T[_rows * _columns];
+    _data = (T*)malloc( _rows * _columns * sizeof( T ) );
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             _data[j * _rows + i] = init;
@@ -71,7 +78,8 @@ template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) 
 }
 
 template <class T> Matrix<T>::Matrix( const Matrix& other ) : _rows( other._rows ), _columns( other._columns ) {
-    _data = new T[_rows * _columns];
+    //_data = new T[_rows * _columns];
+    _data = (T*)malloc( _rows * _columns * sizeof( T ) );
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             _data[j * _rows + i] = other._data[j * _rows + i];
@@ -79,13 +87,16 @@ template <class T> Matrix<T>::Matrix( const Matrix& other ) : _rows( other._rows
     }
 }
 
-template <class T> Matrix<T>::~Matrix() { delete[] _data; }
+template <class T> Matrix<T>::~Matrix() {
+    free( _data );    // delete[] _data;
+}
 
 template <class T> void Matrix<T>::operator=( const Matrix<T>& other ) {
     if( _data == nullptr ) {
         _rows    = other._rows;
         _columns = other._columns;
-        _data    = new T[_rows * _columns];
+        //_data    = new T[_rows * _columns];
+        _data = (T*)malloc( _rows * _columns * sizeof( T ) );
     }
 
     for( unsigned j = 0; j < _columns; ++j ) {
@@ -234,6 +245,18 @@ template <class T> IdentityMatrix<T>::IdentityMatrix() : Matrix<T>() {}
 template <class T> IdentityMatrix<T>::IdentityMatrix( unsigned n ) : Matrix<T>( n, n, false ) {
     for( unsigned i = 0; i < n; ++i ) {
         ( *this )( i, i ) = 1;
+    }
+}
+
+template <class T>
+void multOnPENoReset( const VectorSpace::Matrix<T>& X, const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& B, unsigned kStart, unsigned kEnd ) {
+    // B.reset();
+    for( unsigned s = 0; s < B.rows(); ++s ) {
+        for( unsigned j = 0; j < B.columns(); ++j ) {
+            for( unsigned k = kStart; k <= kEnd; ++k ) {
+                B( s, j ) += X( s, k - kStart ) * A( k, j );    // TODO do not choose PhiTiledeTrans but PhiTiled s.t. A( j,k ) can be used
+            }
+        }
     }
 }
 

@@ -178,6 +178,21 @@ Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k ) { return lamb
 
 Matrix Closure::EvaluateLambda( const Matrix& lambda ) const { return lambda * _phiTildeTrans; }
 
+Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda ) const {
+    Matrix out( _settings->GetNStates(), _settings->GetNqPE(), 0.0 );
+    unsigned kStart = _settings->GetKStart();
+    unsigned kEnd   = _settings->GetKStart();
+
+    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        for( unsigned k = kStart; k <= kEnd; ++k ) {
+            for( unsigned i = 0; i < _settings->GetNMoments(); ++i ) {
+                out( s, k - kStart ) += lambda( s, i ) * _phiTildeTrans( i, k );
+            }
+        }
+    }
+    return out;
+}
+
 void Closure::EvaluateLambda( Matrix& out, const Matrix& lambda ) const { out = lambda * _phiTildeTrans; }
 
 Vector Closure::EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k ) {

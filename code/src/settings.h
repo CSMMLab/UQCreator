@@ -27,8 +27,16 @@ class Settings
 
     // requied settings
     unsigned _meshDimension;
-    unsigned _nQuadPoints;
-    unsigned _nQTotal;
+    unsigned _nQuadPoints;    // number of quadrature points in one dimension
+    unsigned _nQTotal;        // number of quadrature points in all dimensions
+
+    unsigned _nQPE;      // number of total quadrature points on PE
+    unsigned _kStart;    // start point in quadrature point array for PE
+    unsigned _kEnd;      // end point in quadrature point array for PE
+
+    int _mype;    // PE number
+    int _npes;    // number of all PEs
+
     unsigned _nMoments;
     unsigned _maxIterations;
     unsigned _nStates;
@@ -94,6 +102,13 @@ class Settings
     bool GetPlotEnabled() const;
     unsigned GetPlotStepInterval() const;
     double GetPlotTimeInterval() const;
+
+    // MPI
+    int GetMyPE() const;
+    int GetNPEs() const;
+    unsigned GetKStart() const;
+    unsigned GetKEnd() const;
+    unsigned GetNqPE() const;
 };
 
 #endif    // SETTINGS_H

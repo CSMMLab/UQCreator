@@ -1,5 +1,7 @@
 ﻿#include "momentsolver.h"
 
+#include <mpi.h>
+
 MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
     _log         = spdlog::get( "event" );
     _nCells      = _settings->GetNumCells();
@@ -40,11 +42,15 @@ void MomentSolver::Solve() {
         u = SetupIC();
     }
     MatVec uNew = u;
-    MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _nQTotal ) );
+    MatVec uOld = u;
+    MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
     _lambda     = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
 
     Vector ds( _nStates );
     Vector u0( _nStates );
+
+    std::cout << "PE " << _settings->GetMyPE() << ": kStart " << _settings->GetKStart() << ", kEnd " << _settings->GetKEnd() << std::endl;
+
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned l = 0; l < _nStates; ++l ) {
             u0[l] = u[j]( l, 0 );
@@ -58,7 +64,7 @@ void MomentSolver::Solve() {
     // Converge initial condition entropy variables for One Shot IPM
     if( _settings->GetMaxIterations() == 1 ) {
         _settings->SetMaxIterations( 1000 );
-        for( unsigned j = 0; j < _nCells; ++j ) _closure->SolveClosure( _lambda[j], uNew[j] );
+        for( unsigned j = 0; j < _nCells; ++j ) _closure->SolveClosure( _lambda[j], u[j] );
         _settings->SetMaxIterations( 1 );
     }
 
@@ -71,20 +77,35 @@ void MomentSolver::Solve() {
                                  std::placeholders::_5 );
 
     log->info( "{:10}   {:10}", "t", "residual" );
+
     // Begin time loop
     for( double t = 0.0; t < _tEnd; t += _dt ) {
         double residual = 0;
 #pragma omp parallel for reduction( + : residual ) schedule( dynamic, 10 )
         for( unsigned j = 0; j < _nCells; ++j ) {
-            _closure->SolveClosure( _lambda[j], uNew[j] );
-            residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
+            // std::cout << "Solving closure for " << u[j] << std::endl;
+            _closure->SolveClosure( _lambda[j], u[j] );
+            uOld[j] = u[j];
+        }
+
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            // uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
             uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
             u[j]  = uQ[j] * _closure->GetPhiTildeWf();
+            // u[j].reset();
+            // VectorSpace::multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd() );
         }
-        log->info( "{:03.8f}   {:01.5e}", t, residual );
 
         _time->Advance( numFluxPtr, uNew, u, uQ );
+
+        // should work since std::vector and our matrix are contiguous (otherwise loop over cells)
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            MPI_Allreduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nMoments ), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
+            residual += std::fabs( u[j]( 0, 0 ) - uOld[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
+        }
+        log->info( "{:03.8f}   {:01.5e}", t, residual );
     }
+    if( _settings->GetMyPE() != 0 ) return;
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     log->info( "\nFinished!\nRuntime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
@@ -118,7 +139,8 @@ void MomentSolver::Solve() {
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
-    out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
+    // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
+    VectorSpace::multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd() );
 }
 
 void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
@@ -148,6 +170,9 @@ MatVec MomentSolver::SetupIC() {
             column( uIC, k ) = IC( _mesh->GetCenterPos( j ), xiEta );
         }
         u[j] = uIC * phiTildeWf;
+        // u[j].reset();
+        // multOnPENoReset( uIC, phiTildeWf, u[j], _settings->GetKStart(), _settings->GetKEnd() );
+
         // std::cout << uIC << std::endl;
         // std::cout << "-------------" << std::endl;
         // std::cout << u[j] << std::endl;
