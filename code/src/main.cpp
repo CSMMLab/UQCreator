@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <mpi.h>
 #include <omp.h>
 
 #include "mesh.h"
