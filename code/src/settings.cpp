@@ -1,6 +1,6 @@
 #include "settings.h"
 
-Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi( 2 ) {
+Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi( 1 ) {
     auto log = spdlog::get( "event" );
 
     bool validConfig = true;
