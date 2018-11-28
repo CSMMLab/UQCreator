@@ -137,7 +137,7 @@ void MomentSolver::Solve() {
     }
 
     _mesh->Export( meanAndVar );
-    unsigned evalCell  = 2404;    // 2404;
+    unsigned evalCell  = 0;    // 2404;
     unsigned plotState = 0;
     _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );
 }
