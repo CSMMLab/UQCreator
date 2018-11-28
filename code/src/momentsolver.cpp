@@ -119,7 +119,7 @@ void MomentSolver::Solve() {
         // std::cout << "PE " << _settings->GetMyPE() << " Residual is " << residual << std::endl;
         MPI_Reduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
         // // MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
-        if( _settings->GetMyPE() == 0 ) log->info( "{:03.8f}   {:01.5e}", t, residual );
+        if( _settings->GetMyPE() == 0 ) log->info( "{:03.8f}   {:01.5e}", t, residualFull );
     }
     if( _settings->GetMyPE() != 0 ) return;
 
