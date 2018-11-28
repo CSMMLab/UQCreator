@@ -49,6 +49,8 @@ void MomentSolver::Solve() {
     Vector ds( _nStates );
     Vector u0( _nStates );
 
+    double residualFull;
+
     std::cout << "PE " << _settings->GetMyPE() << ": kStart " << _settings->GetKStart() << ", kEnd " << _settings->GetKEnd() << std::endl;
 
     for( unsigned j = 0; j < _nCells; ++j ) {
@@ -94,7 +96,6 @@ void MomentSolver::Solve() {
             int pe  = int( std::floor( j / _settings->GetNxPE() ) );
             MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, pe, MPI_COMM_WORLD );
         }
-        // exit( EXIT_FAILURE );
 
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
@@ -108,10 +109,16 @@ void MomentSolver::Solve() {
 
         // perform reduction to obtain full moments
         for( unsigned j = 0; j < _nCells; ++j ) {
-            MPI_Allreduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
+            int pe = int( std::floor( j / _settings->GetNxPE() ) );
+            MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, pe, MPI_COMM_WORLD );
             // u[j] = uNew[j];
+        }
+        for( unsigned j = _settings->GetJStart(); j <= _settings->GetJEnd(); ++j ) {
             residual += std::fabs( u[j]( 0, 0 ) - uOld[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
         }
+        // std::cout << "PE " << _settings->GetMyPE() << " Residual is " << residual << std::endl;
+        MPI_Reduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+        // // MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) log->info( "{:03.8f}   {:01.5e}", t, residual );
     }
     if( _settings->GetMyPE() != 0 ) return;
@@ -142,7 +149,7 @@ void MomentSolver::Solve() {
     }
 
     _mesh->Export( meanAndVar );
-    unsigned evalCell  = 2404;    // 2404;
+    unsigned evalCell  = 0;    // 2404;
     unsigned plotState = 0;
     _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );
 }
