@@ -2,7 +2,7 @@
 
 #include <mpi.h>
 
-Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi( 1 ) {
+Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi( 2 ) {
     auto log = spdlog::get( "event" );
 
     bool validConfig = true;
@@ -151,6 +151,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
         auto nMoments = moment_system->get_as<unsigned>( "moments" );
         if( nMoments ) {
             _nMoments = *nMoments;
+            _nTotal   = unsigned( std::pow( _nMoments, _numDimXi ) );
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
@@ -236,6 +237,7 @@ LimiterType Settings::GetLimiterType() const { return _limiterType; }
 unsigned Settings::GetMaxIterations() const { return _maxIterations; }
 void Settings::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxIterations; }
 double Settings::GetEpsilon() const { return _epsilon; }
+unsigned Settings::GetNTotal() const { return _nTotal; }
 
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }

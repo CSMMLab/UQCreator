@@ -97,6 +97,7 @@ class Settings
     // moment_system
     ClosureType GetClosureType() const;
     unsigned GetNMoments() const;
+    unsigned GetNTotal() const;
     unsigned GetNQuadPoints() const;
     unsigned GetNQTotal() const;
     LimiterType GetLimiterType() const;

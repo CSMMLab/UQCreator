@@ -2,7 +2,7 @@
 
 BoundedBarrier::BoundedBarrier( Settings* settings ) : Closure( settings ) {
     _alpha    = 1.0;
-    double du = 0.0;
+    double du = 0.1;
     // TODO: IC1, IC3 Test cases should not be hard coded
     if( _settings->GetNDimXi() == 2 ) {
         _uMinus = 1.0 - du;

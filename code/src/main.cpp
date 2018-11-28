@@ -128,7 +128,7 @@ int main( int argc, char* argv[] ) {
 
     solver->Solve();
 
-    log->info( "\nProcess exited normally." );
+    log->info( "\nProcess exited normally on PE {:03.8f} .", double( settings->GetMyPE() ) );
 
     delete solver;
     delete problem;

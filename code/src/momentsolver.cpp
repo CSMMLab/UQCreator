@@ -1,4 +1,4 @@
-﻿#include "momentsolver.h"
+#include "momentsolver.h"
 
 #include <mpi.h>
 
@@ -10,7 +10,7 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
     _nQTotal     = _settings->GetNQTotal();
-    _nTotal      = unsigned( std::pow( _nMoments, _settings->GetNDimXi() ) );
+    _nTotal      = _settings->GetNTotal();
 
     _quad = Polynomial::Create( _settings, _nQuadPoints );
     // std::cout << _quad->GetNodes()[0] << std::endl;
@@ -92,7 +92,7 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             uOld[j] = u[j];    // save old Moments for residual computation
             int pe  = int( std::floor( j / _settings->GetNxPE() ) );
-            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nMoments ), MPI_DOUBLE, pe, MPI_COMM_WORLD );
+            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, pe, MPI_COMM_WORLD );
         }
         // exit( EXIT_FAILURE );
 
@@ -100,16 +100,19 @@ void MomentSolver::Solve() {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
             u[j].reset();
             VectorSpace::multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd() );
+            // uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+            // u[j]  = uQ[j] * _closure->GetPhiTildeWf();
         }
 
         _time->Advance( numFluxPtr, uNew, u, uQ );
 
         // perform reduction to obtain full moments
         for( unsigned j = 0; j < _nCells; ++j ) {
-            MPI_Allreduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nMoments ), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
+            MPI_Allreduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
+            // u[j] = uNew[j];
             residual += std::fabs( u[j]( 0, 0 ) - uOld[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
         }
-        log->info( "{:03.8f}   {:01.5e}", t, residual );
+        if( _settings->GetMyPE() == 0 ) log->info( "{:03.8f}   {:01.5e}", t, residual );
     }
     if( _settings->GetMyPE() != 0 ) return;
 
@@ -139,7 +142,7 @@ void MomentSolver::Solve() {
     }
 
     _mesh->Export( meanAndVar );
-    unsigned evalCell  = 0;    // 2404;
+    unsigned evalCell  = 2404;    // 2404;
     unsigned plotState = 0;
     _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );
 }

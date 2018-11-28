@@ -185,7 +185,7 @@ Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda ) const {
 
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned k = kStart; k <= kEnd; ++k ) {
-            for( unsigned i = 0; i < _settings->GetNMoments(); ++i ) {
+            for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
                 out( s, k - kStart ) += lambda( s, i ) * _phiTildeTrans( i, k );
             }
         }
