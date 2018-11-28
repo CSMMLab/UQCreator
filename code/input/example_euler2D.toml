@@ -13,7 +13,7 @@ outputFile = "euler_naca0012"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = "Legendre"
+distribution = ["Legendre"]
 CFL = 0.042
 tEnd = 0.1
 

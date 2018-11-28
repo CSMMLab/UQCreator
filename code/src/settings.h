@@ -57,7 +57,7 @@ class Settings
     ClosureType _closureType;
     ProblemType _problemType;
     TimesteppingType _timesteppingType;
-    DistributionType _distributionType;
+    std::vector<DistributionType> _distributionType;
 
     // mesh dependent settings
 
@@ -87,7 +87,7 @@ class Settings
 
     // problem
     TimesteppingType GetTimesteppingType() const;
-    DistributionType GetDistributionType() const;
+    DistributionType GetDistributionType( unsigned l ) const;
     double GetCFL() const;
     unsigned GetNDimXi() const;
     double GetTEnd() const;

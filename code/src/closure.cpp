@@ -8,8 +8,12 @@ Closure::Closure( Settings* settings )
     : _settings( settings ), _nMoments( _settings->GetNMoments() ), _nQuadPoints( _settings->GetNQuadPoints() ), _nStates( _settings->GetNStates() ) {
     _log = spdlog::get( "event" );
     // initialize classes
-    _basis = Polynomial::Create( _settings, _nMoments );
-    _quad  = Polynomial::Create( _settings, _nQuadPoints );
+    _basis.resize( 2 );
+    _quad.resize( 2 );
+    _basis[0] = Polynomial::Create( _settings, _nMoments, DistributionType::D_LEGENDRE );
+    _basis[1] = Polynomial::Create( _settings, _nMoments, DistributionType::D_HERMITE );
+    _quad[0]  = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_LEGENDRE );
+    _quad[1]  = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_HERMITE );
 
     // compute ntotal number of moments and quad points
     _numDimXi = _settings->GetNDimXi();
@@ -44,17 +48,26 @@ Closure::Closure( Settings* settings )
         // std::cout << std::endl;
     }
 
-    Vector xi = _quad->GetNodes();
-    Vector w  = _quad->GetWeights();
+    std::vector<Vector> xi;
+    xi.resize( _quad.size() );
+    std::vector<Vector> w;
+    w.resize( _quad.size() );
+    for( unsigned l = 0; l < _quad.size(); ++l ) {
+        xi[l] = _quad[l]->GetNodes();
+        w[l]  = _quad[l]->GetWeights();
+    }
 
+    unsigned n;
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         for( unsigned i = 0; i < _nTotal; ++i ) {
             for( unsigned l = 0; l < _numDimXi; ++l ) {
+                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
                 // for( unsigned n = 0; n < _numDimXi; ++n ) {
                 _phiTilde( k, i ) *=
-                    _basis->Evaluate( indices[i][l], xi[indicesQ[k][l]] ) / _basis->L2Norm( indices[i][l] );    // sqrt( 2.0 * i + 1.0 );
-                _phiTildeWf( k, i ) *= _basis->Evaluate( indices[i][l], xi[indicesQ[k][l]] ) / _basis->L2Norm( indices[i][l] ) * w[indicesQ[k][l]] *
-                                       _basis->fXi( xi[indicesQ[k][l]] );
+                    _basis[n]->Evaluate( indices[i][l], xi[n][indicesQ[k][l]] ) / _basis[n]->L2Norm( indices[i][l] );    // sqrt( 2.0 * i + 1.0 );
+                _phiTildeWf( k, i ) *= _basis[n]->Evaluate( indices[i][l], xi[n][indicesQ[k][l]] ) / _basis[n]->L2Norm( indices[i][l] ) *
+                                       w[n][indicesQ[k][l]] * _basis[n]->fXi( xi[n][indicesQ[k][l]] );
                 //}
             }
             // multiplied by pdf
@@ -76,8 +89,10 @@ Closure::Closure( Settings* settings )
 }
 
 Closure::~Closure() {
-    delete _basis;
-    delete _quad;
+    for( unsigned l; l < _basis.size(); ++l ) {
+        delete _basis[l];
+        delete _quad[l];
+    }
 }
 
 Closure* Closure::Create( Settings* settings ) {
@@ -195,6 +210,7 @@ Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda ) const {
 
 void Closure::EvaluateLambda( Matrix& out, const Matrix& lambda ) const { out = lambda * _phiTildeTrans; }
 
+/*
 Vector Closure::EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k ) {
     Vector out = Vector( _nStates, 0.0 );
     for( unsigned l = 0; l < _nStates; ++l ) {
@@ -216,7 +232,7 @@ Matrix Closure::EvaluateLambda( const Matrix& lambda, const Vector& xi ) {
         }
     }
     return out;
-}
+}*/
 
 void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
     Vector uKinetic( _nStates, 0.0 );
@@ -269,3 +285,7 @@ void Closure::SubstractVectorMatrixOnVector( Vector& b, const Matrix& A ) const 
 }
 
 void Closure::DS( Vector& ds, const Vector& u ) const {}
+
+std::vector<Polynomial*> Closure::GetBasis() { return _basis; }
+
+std::vector<Polynomial*> Closure::GetQuadrature() { return _quad; }

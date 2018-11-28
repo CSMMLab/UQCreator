@@ -17,7 +17,6 @@ class MomentSolver
 {
   private:
     Settings* _settings;
-    Polynomial* _quad;
     Closure* _closure;
     Mesh* _mesh;
     TimeSolver* _time;

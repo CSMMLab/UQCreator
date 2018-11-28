@@ -13,7 +13,7 @@ outputFile = "euler_shock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = "Legendre"
+distribution = ["Legendre"]
 CFL = 5.0
 tEnd = 0.14
 

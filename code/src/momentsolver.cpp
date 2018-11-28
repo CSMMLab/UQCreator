@@ -12,9 +12,6 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _nQTotal     = _settings->GetNQTotal();
     _nTotal      = _settings->GetNTotal();
 
-    _quad = Polynomial::Create( _settings, _nQuadPoints );
-    // std::cout << _quad->GetNodes()[0] << std::endl;
-    // exit( EXIT_FAILURE );
     _closure = Closure::Create( _settings );
     _time    = TimeSolver::Create( _settings, _mesh );
 
@@ -22,7 +19,6 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
 }
 
 MomentSolver::~MomentSolver() {
-    delete _quad;
     delete _closure;
     delete _time;
 }
@@ -123,8 +119,6 @@ void MomentSolver::Solve() {
     Matrix meanAndVar( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     Matrix phiTildeWf = _closure->GetPhiTildeWf();
     Vector tmp( _nStates, 0.0 );
-    auto xiQuad = _quad->GetNodes();
-    Vector w    = _quad->GetWeights();
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned k = 0; k < _nQTotal; ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
@@ -143,7 +137,7 @@ void MomentSolver::Solve() {
     }
 
     _mesh->Export( meanAndVar );
-    unsigned evalCell  = 0;    // 2404;
+    unsigned evalCell  = 2404;    // 2404;
     unsigned plotState = 0;
     _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );
 }
@@ -165,16 +159,19 @@ void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
 
 MatVec MomentSolver::SetupIC() {
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
-    Vector xi = _quad->GetNodes();
+    std::vector<Polynomial*> quad = _closure->GetQuadrature();
     Vector xiEta( _settings->GetNDimXi() );
     Matrix uIC( _nStates, _nQTotal );
     Matrix phiTildeWf = _closure->GetPhiTildeWf();
+    unsigned n;
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned k = 0; k < _nQTotal; ++k ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
                 unsigned index =
                     unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
-                xiEta[l] = xi[index];
+                xiEta[l] = quad[n]->GetNodes()[index];
             }
             // std::cout << xiEta << std::endl;
             column( uIC, k ) = IC( _mesh->GetCenterPos( j ), xiEta );

@@ -2,7 +2,7 @@
 
 #include <mpi.h>
 
-Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi( 1 ) {
+Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
     auto log = spdlog::get( "event" );
 
     bool validConfig = true;
@@ -87,21 +87,27 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
             log->error( "[inputfile] [problem] 'timestepping' not set!\nPlease set one of the following types: explicitEuler" );
             validConfig = false;
         }
-        auto distribution = problem->get_as<std::string>( "distribution" );
+        auto distribution = problem->get_array_of<std::string>( "distribution" );
         if( distribution ) {
-            if( distribution->compare( "Legendre" ) == 0 ) {
-                _distributionType = DistributionType::D_LEGENDRE;
-            }
-            else if( distribution->compare( "Hermite" ) == 0 ) {
-                _distributionType = DistributionType::D_HERMITE;
-            }
-            else {
-                log->error( "[inputfile] [problem] 'distribution' is invalid!\nPlease set one of the following types: Legendre, Hermite" );
-                validConfig = false;
+            _numDimXi = unsigned( distribution->size() );
+            _distributionType.resize( _numDimXi );
+            unsigned l = 0;
+            for( const auto& dist : *distribution ) {
+                if( dist.compare( "Legendre" ) == 0 ) {
+                    _distributionType[l] = DistributionType::D_LEGENDRE;
+                }
+                else if( dist.compare( "Hermite" ) == 0 ) {
+                    _distributionType[l] = DistributionType::D_HERMITE;
+                }
+                else {
+                    log->error( "[inputfile] [problem] 'distribution' is invalid!\nPlease set one of the following types: Legendre, Hermite" );
+                    validConfig = false;
+                }
+                l++;
             }
         }
         else {
-            log->error( "[inputfile] [problem] 'timestepping' not set!\nPlease set one of the following types: explicitEuler" );
+            log->error( "[inputfile] [problem] 'distribution' not set!\nPlease set one of the following types: Legendre, Hermite" );
             validConfig = false;
         }
         auto CFL = problem->get_as<double>( "CFL" );
@@ -179,7 +185,6 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
         }
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
-
     } catch( const cpptoml::parse_exception& e ) {
         log->error( "Failed to parse {0}: {1}", _inputFile.c_str(), e.what() );
         exit( EXIT_FAILURE );
@@ -226,7 +231,7 @@ double Settings::GetTEnd() const { return _tEnd; }
 unsigned Settings::GetNDimXi() const { return _numDimXi; }
 double Settings::GetGamma() const { return _gamma; }
 void Settings::SetGamma( double gamma ) { _gamma = gamma; }
-DistributionType Settings::GetDistributionType() const { return _distributionType; }
+DistributionType Settings::GetDistributionType( unsigned l ) const { return _distributionType[l]; }
 
 // moment_system
 ClosureType Settings::GetClosureType() const { return _closureType; }

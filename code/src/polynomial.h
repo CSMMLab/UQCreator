@@ -20,7 +20,7 @@ class Polynomial
   public:
     Polynomial( unsigned degree );
     virtual ~Polynomial() {}
-    static Polynomial* Create( Settings* settings, unsigned order );
+    static Polynomial* Create( Settings* settings, unsigned order, DistributionType distributionType );
     virtual double Evaluate( unsigned m, double x ) = 0;
     virtual const Vector& GetNodes()                = 0;
     virtual const Vector& GetWeights()              = 0;
