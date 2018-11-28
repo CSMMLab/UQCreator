@@ -27,20 +27,26 @@ class Settings
 
     // requied settings
     unsigned _meshDimension;
+    unsigned _numCells;
+    unsigned _nXPE;      // number of spatial cells on PE
+    unsigned _jStart;    // start point in space array for PE
+    unsigned _jEnd;      // end point in space array for PE
+
     unsigned _nQuadPoints;    // number of quadrature points in one dimension
     unsigned _nQTotal;        // number of quadrature points in all dimensions
-
-    unsigned _nQPE;      // number of total quadrature points on PE
-    unsigned _kStart;    // start point in quadrature point array for PE
-    unsigned _kEnd;      // end point in quadrature point array for PE
+    unsigned _nQPE;           // number of total quadrature points on PE
+    unsigned _kStart;         // start point in quadrature point array for PE
+    unsigned _kEnd;           // end point in quadrature point array for PE
 
     int _mype;    // PE number
     int _npes;    // number of all PEs
 
-    unsigned _nMoments;
+    unsigned _nMoments;    // number of moments in one dimension
+    unsigned _nTotal;      // number of moments in all dimensions
+
     unsigned _maxIterations;
     unsigned _nStates;
-    unsigned _numCells;
+
     unsigned _numDimXi;
     double _epsilon;
     double _CFL;
@@ -109,6 +115,9 @@ class Settings
     unsigned GetKStart() const;
     unsigned GetKEnd() const;
     unsigned GetNqPE() const;
+    unsigned GetJStart() const;
+    unsigned GetJEnd() const;
+    unsigned GetNxPE() const;
 };
 
 #endif    // SETTINGS_H

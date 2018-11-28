@@ -14,12 +14,12 @@ outputFile = "burgers_shock"
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = "Legendre"
-CFL = 0.8
+CFL = 0.5
 tEnd = 0.14
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
-closure = "BoundedBarrier"
+closure = "StochasticGalerkin"
 moments = 5
 quadPoints = 15
 maxIterations = 2000

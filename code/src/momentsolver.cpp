@@ -81,11 +81,20 @@ void MomentSolver::Solve() {
     // Begin time loop
     for( double t = 0.0; t < _tEnd; t += _dt ) {
         double residual = 0;
+
 #pragma omp parallel for reduction( + : residual ) schedule( dynamic, 10 )
-        for( unsigned j = 0; j < _nCells; ++j ) {
+        for( unsigned j = _settings->GetJStart(); j <= _settings->GetJEnd(); ++j ) {
+            // for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
             _closure->SolveClosure( _lambda[j], u[j] );
-            uOld[j] = u[j];
         }
+
+        // MPI Broadcast lambdas to all PEs
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uOld[j] = u[j];    // save old Moments for residual computation
+            int pe  = int( std::floor( j / _settings->GetNxPE() ) );
+            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nMoments ), MPI_DOUBLE, pe, MPI_COMM_WORLD );
+        }
+        // exit( EXIT_FAILURE );
 
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
