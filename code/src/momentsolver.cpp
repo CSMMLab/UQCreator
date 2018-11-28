@@ -86,7 +86,6 @@ void MomentSolver::Solve() {
 
 #pragma omp parallel for reduction( + : residual ) schedule( dynamic, 10 )
         for( unsigned j = _settings->GetJStart(); j <= _settings->GetJEnd(); ++j ) {
-            // for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
             _closure->SolveClosure( _lambda[j], u[j] );
         }
 
@@ -101,8 +100,6 @@ void MomentSolver::Solve() {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
             u[j].reset();
             VectorSpace::multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd() );
-            // uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-            // u[j]  = uQ[j] * _closure->GetPhiTildeWf();
         }
 
         _time->Advance( numFluxPtr, uNew, u, uQ );
@@ -111,14 +108,11 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             int pe = int( std::floor( j / _settings->GetNxPE() ) );
             MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, pe, MPI_COMM_WORLD );
-            // u[j] = uNew[j];
         }
         for( unsigned j = _settings->GetJStart(); j <= _settings->GetJEnd(); ++j ) {
             residual += std::fabs( u[j]( 0, 0 ) - uOld[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
         }
-        // std::cout << "PE " << _settings->GetMyPE() << " Residual is " << residual << std::endl;
         MPI_Reduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
-        // // MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) log->info( "{:03.8f}   {:01.5e}", t, residualFull );
     }
     if( _settings->GetMyPE() != 0 ) return;
