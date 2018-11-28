@@ -4,7 +4,7 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 2000
+numberOfCells = 500
 a = 0
 b = 1
 outputFile = "euler_shock"
@@ -20,7 +20,7 @@ tEnd = 0.14
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
 closure = "Euler"
-moments = 15
+moments = 5
 quadPoints = 30
 maxIterations = 200
 epsilon = 5e-5

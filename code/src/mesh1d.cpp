@@ -206,7 +206,7 @@ void Mesh1D::Export( const Matrix& results ) const {
     out.close();
     std::ofstream outV( "../results/variance" );
     for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
-        outV << GetCenterPos( j )[0] << " " << results( 1, j ) << std::endl;
+        outV << GetCenterPos( j )[0] << " " << results( 0 + _settings->GetNStates(), j ) << std::endl;
     }
     outV.close();
 }
