@@ -47,6 +47,9 @@ void MomentSolver::Solve() {
 
     double residualFull;
 
+    std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
+    std::vector<int> PEforCell        = _settings->GetPEforCell();
+
     std::cout << "PE " << _settings->GetMyPE() << ": kStart " << _settings->GetKStart() << ", kEnd " << _settings->GetKEnd() << std::endl;
 
     for( unsigned j = 0; j < _nCells; ++j ) {
@@ -80,16 +83,16 @@ void MomentSolver::Solve() {
     for( double t = 0.0; t < _tEnd; t += _dt ) {
         double residual = 0;
 
-#pragma omp parallel for reduction( + : residual ) schedule( dynamic, 10 )
-        for( unsigned j = _settings->GetJStart(); j <= _settings->GetJEnd(); ++j ) {
-            _closure->SolveClosure( _lambda[j], u[j] );
+#pragma omp parallel for schedule( dynamic, 10 )
+        for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
+            // for( unsigned j = _settings->GetJStart(); j <= _settings->GetJEnd(); ++j ) {
+            _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]] );
         }
 
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             uOld[j] = u[j];    // save old Moments for residual computation
-            int pe  = int( std::floor( j / _settings->GetNxPE() ) );
-            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, pe, MPI_COMM_WORLD );
+            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
 
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -102,11 +105,10 @@ void MomentSolver::Solve() {
 
         // perform reduction to obtain full moments
         for( unsigned j = 0; j < _nCells; ++j ) {
-            int pe = int( std::floor( j / _settings->GetNxPE() ) );
-            MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, pe, MPI_COMM_WORLD );
+            MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
         }
-        for( unsigned j = _settings->GetJStart(); j <= _settings->GetJEnd(); ++j ) {
-            residual += std::fabs( u[j]( 0, 0 ) - uOld[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
+        for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
+            residual += std::fabs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] ) / _dt;
         }
         MPI_Reduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) log->info( "{:03.8f}   {:01.5e}", t, residualFull );

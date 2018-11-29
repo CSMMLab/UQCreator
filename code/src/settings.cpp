@@ -209,16 +209,30 @@ unsigned Settings::GetMeshDimension() const { return _meshDimension; }
 unsigned Settings::GetNumCells() const { return _numCells; }
 void Settings::SetNumCells( unsigned n ) {
     _numCells = n;
-    int nXPE  = int( ( int( _numCells ) - 1 ) / _npes ) + 1;
-    if( _mype == _npes - 1 ) {
-        nXPE = int( _numCells ) - _mype * nXPE;
-        if( nXPE < 0 ) {
-            nXPE = 0;
+    _PEforCell.clear();
+    _cellIndexPE.clear();
+    bool devideChunks = true;
+    int nChunks       = 1;
+    if( !devideChunks ) {
+        int nXPE = int( ( int( _numCells ) - 1 ) / _npes ) + 1;
+        if( _mype == _npes - 1 ) {
+            nXPE = int( _numCells ) - _mype * nXPE;
+            if( nXPE < 0 ) {
+                nXPE = 0;
+            }
+        }
+        _nXPE   = unsigned( nXPE );
+        _jStart = _mype * ( ( _numCells - 1 ) / _npes + 1.0 );
+        _jEnd   = _jStart + _nXPE - 1;
+        for( unsigned j = 0; j < _nXPE; ++j ) _cellIndexPE.push_back( _jStart + j );
+        for( unsigned j = 0; j < _numCells; ++j ) _PEforCell.push_back( int( std::floor( j / _nXPE ) ) );
+    }
+    else {
+        for( unsigned j = 0; j < _numCells; ++j ) {
+            _PEforCell.push_back( int( j ) % ( _npes ) );
+            if( _PEforCell[j] == _mype ) _cellIndexPE.push_back( j );
         }
     }
-    _nXPE   = unsigned( nXPE );
-    _jStart = _mype * ( ( _numCells - 1 ) / _npes + 1.0 );
-    _jEnd   = _jStart + _nXPE - 1;
 }
 std::string Settings::GetOutputFile() const { return _outputFile; }
 bool Settings::HasContinueFile() const { return !_continueFile.empty(); }
@@ -257,3 +271,5 @@ unsigned Settings::GetNqPE() const { return _nQPE; }
 unsigned Settings::GetJStart() const { return _jStart; }
 unsigned Settings::GetJEnd() const { return _jEnd; }
 unsigned Settings::GetNxPE() const { return _nXPE; }
+std::vector<unsigned> Settings::GetCellIndexPE() const { return _cellIndexPE; }
+std::vector<int> Settings::GetPEforCell() const { return _PEforCell; }

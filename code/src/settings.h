@@ -38,8 +38,10 @@ class Settings
     unsigned _kStart;         // start point in quadrature point array for PE
     unsigned _kEnd;           // end point in quadrature point array for PE
 
-    int _mype;    // PE number
-    int _npes;    // number of all PEs
+    int _mype;                             // PE number
+    int _npes;                             // number of all PEs
+    std::vector<unsigned> _cellIndexPE;    // vector of spatial cells for PE
+    std::vector<int> _PEforCell;
 
     unsigned _nMoments;    // number of moments in one dimension
     unsigned _nTotal;      // number of moments in all dimensions
@@ -119,6 +121,8 @@ class Settings
     unsigned GetJStart() const;
     unsigned GetJEnd() const;
     unsigned GetNxPE() const;
+    std::vector<unsigned> GetCellIndexPE() const;
+    std::vector<int> GetPEforCell() const;
 };
 
 #endif    // SETTINGS_H
