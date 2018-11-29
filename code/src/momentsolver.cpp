@@ -263,7 +263,7 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
         double T      = 273.15;
         double p      = 101325.0;
         double Ma     = 0.8;
-        if( xi.size() == 1 ) {
+        if( xi.size() == 2 ) {
             Ma = Ma - sigma1 + xi[1] * sigma1;
         }
         double a  = sqrt( gamma * R * T );
