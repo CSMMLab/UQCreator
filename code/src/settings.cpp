@@ -221,10 +221,9 @@ void Settings::SetNumCells( unsigned n ) {
                 nXPE = 0;
             }
         }
-        _nXPE   = unsigned( nXPE );
-        _jStart = _mype * ( ( _numCells - 1 ) / _npes + 1.0 );
-        _jEnd   = _jStart + _nXPE - 1;
-        for( unsigned j = 0; j < _nXPE; ++j ) _cellIndexPE.push_back( _jStart + j );
+        _nXPE           = unsigned( nXPE );
+        unsigned jStart = _mype * ( ( _numCells - 1 ) / _npes + 1.0 );
+        for( unsigned j = 0; j < _nXPE; ++j ) _cellIndexPE.push_back( jStart + j );
         for( unsigned j = 0; j < _numCells; ++j ) _PEforCell.push_back( int( std::floor( j / _nXPE ) ) );
     }
     else {
@@ -232,6 +231,7 @@ void Settings::SetNumCells( unsigned n ) {
             _PEforCell.push_back( int( j ) % ( _npes ) );
             if( _PEforCell[j] == _mype ) _cellIndexPE.push_back( j );
         }
+        _nXPE = unsigned( _cellIndexPE.size() );
     }
 }
 std::string Settings::GetOutputFile() const { return _outputFile; }
@@ -268,8 +268,6 @@ int Settings::GetNPEs() const { return _npes; }
 unsigned Settings::GetKStart() const { return _kStart; }
 unsigned Settings::GetKEnd() const { return _kEnd; }
 unsigned Settings::GetNqPE() const { return _nQPE; }
-unsigned Settings::GetJStart() const { return _jStart; }
-unsigned Settings::GetJEnd() const { return _jEnd; }
 unsigned Settings::GetNxPE() const { return _nXPE; }
 std::vector<unsigned> Settings::GetCellIndexPE() const { return _cellIndexPE; }
 std::vector<int> Settings::GetPEforCell() const { return _PEforCell; }

@@ -28,9 +28,7 @@ class Settings
     // requied settings
     unsigned _meshDimension;
     unsigned _numCells;
-    unsigned _nXPE;      // number of spatial cells on PE
-    unsigned _jStart;    // start point in space array for PE
-    unsigned _jEnd;      // end point in space array for PE
+    unsigned _nXPE;    // number of spatial cells on PE
 
     unsigned _nQuadPoints;    // number of quadrature points in one dimension
     unsigned _nQTotal;        // number of quadrature points in all dimensions
@@ -118,8 +116,6 @@ class Settings
     unsigned GetKStart() const;
     unsigned GetKEnd() const;
     unsigned GetNqPE() const;
-    unsigned GetJStart() const;
-    unsigned GetJEnd() const;
     unsigned GetNxPE() const;
     std::vector<unsigned> GetCellIndexPE() const;
     std::vector<int> GetPEforCell() const;

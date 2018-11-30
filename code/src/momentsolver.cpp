@@ -85,7 +85,6 @@ void MomentSolver::Solve() {
 
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
-            // for( unsigned j = _settings->GetJStart(); j <= _settings->GetJEnd(); ++j ) {
             _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]] );
         }
 
@@ -179,13 +178,6 @@ MatVec MomentSolver::SetupIC() {
             column( uIC, k ) = IC( _mesh->GetCenterPos( j ), xiEta );
         }
         u[j] = uIC * phiTildeWf;
-        // u[j].reset();
-        // multOnPENoReset( uIC, phiTildeWf, u[j], _settings->GetKStart(), _settings->GetKEnd() );
-
-        // std::cout << uIC << std::endl;
-        // std::cout << "-------------" << std::endl;
-        // std::cout << u[j] << std::endl;
-        // exit( EXIT_FAILURE );
     }
     return u;
 }
