@@ -78,7 +78,7 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
 
     auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() );
     fileSink->set_level( fileLogLvl );
-    fileSink->set_pattern( "%v" );
+    fileSink->set_pattern( "%H:%M:%S.%e | %v" );
 
     std::vector<spdlog::sink_ptr> sinks;
     sinks.push_back( terminalSink );
@@ -104,7 +104,9 @@ void PrintInit( std::string configFile ) {
             log->info( " {0}", line );
         }
     }
-    log->info( "==================================\n" );
+    // log->info( "==================================\n" );
+    log->info( "==================================" );
+    log->info( "" );
 }
 
 int main( int argc, char* argv[] ) {
@@ -119,9 +121,10 @@ int main( int argc, char* argv[] ) {
     initLogger( spdlog::level::info, spdlog::level::info, configFile );
     auto log = spdlog::get( "event" );
 
-    PrintInit( configFile );
+    // PrintInit( configFile );
 
-    Settings* settings   = new Settings( configFile );
+    Settings* settings = new Settings( configFile );
+    if( settings->GetMyPE() == 0 ) PrintInit( configFile );
     Mesh* mesh           = Mesh::Create( settings );
     Problem* problem     = Problem::Create( settings );
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );
