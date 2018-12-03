@@ -179,10 +179,10 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             _nQPE   = unsigned( nQPE );
             _kStart = _mype * ( ( _nQTotal - 1 ) / _npes + 1.0 );
             _kEnd   = _kStart + _nQPE - 1;*/
-            _kEnd   = unsigned( std::floor( ( _mype + 1 ) * ( _nQTotal / _npes ) ) );
-            _kStart = unsigned( std::ceil( _mype * ( _nQTotal / _npes ) ) );
-            if( unsigned( std::ceil( ( _mype + 1 ) * ( _nQTotal / _npes ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
-            _nQPE = _kEnd - _kStart - 1;
+            _kEnd   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotal / double( _npes ) ) ) );
+            _kStart = unsigned( std::ceil( double( _mype ) * ( double( _nQTotal ) / double( _npes ) ) ) );
+            if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotal ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
+            _nQPE = _kEnd - _kStart + 1;
         }
         else {
             log->error( "[inputfile] [moment_system] 'quadPoints' not set!" );
