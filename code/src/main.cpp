@@ -77,7 +77,7 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
 
     auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() );
     fileSink->set_level( fileLogLvl );
-    fileSink->set_pattern( "%H:%M:%S.%e | %v" );
+    fileSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
 
     std::vector<spdlog::sink_ptr> sinks;
     sinks.push_back( terminalSink );
@@ -126,7 +126,8 @@ int main( int argc, char* argv[] ) {
 
     solver->Solve();
 
-    log->info( "\nProcess exited normally." );
+    log->info( "" );
+    log->info( "Process exited normally." );
 
     delete solver;
     delete problem;

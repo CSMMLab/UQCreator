@@ -87,7 +87,10 @@ void MomentSolver::Solve() {
     }
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
-    log->info( "\nFinished!\nRuntime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
+    log->info( "" );
+    log->info( "Finished!");
+    log->info( "" );
+    log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
     Matrix meanAndVar( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     Matrix phiTildeWf = _closure->GetPhiTildeWf();
