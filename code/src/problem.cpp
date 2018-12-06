@@ -4,6 +4,7 @@
 #include "euler.h"
 #include "euler2d.h"
 #include "problem.h"
+#include "shallowwater.h"
 
 Problem::Problem( Settings* settings ) : _settings( settings ) { _log = spdlog::get( "event" ); }
 
@@ -20,6 +21,12 @@ Problem* Problem::Create( Settings* settings ) {
     else if( settings->GetProblemType() == ProblemType::P_EULER_2D ) {
         return new Euler2D( settings );
     }
+    else if( settings->GetProblemType() == ProblemType::P_SHALLOWWATER_1D ) {
+        return new ShallowWater( settings );
+    }
+    // else if( settings->GetProblemType() == ProblemType::P_SHALLOWWATER_2D ) {
+    //    return new ShallowWater2d( settings );
+    //}
     else {
         log->error( "[Problem] Invalid problem type!" );
         exit( EXIT_FAILURE );

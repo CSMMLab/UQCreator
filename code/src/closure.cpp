@@ -2,6 +2,8 @@
 #include "boundedbarrier.h"
 #include "eulerclosure.h"
 #include "eulerclosure2d.h"
+#include "shallowwaterclosure.h"
+#include "shallowwaterclosure2d.h"
 #include "stochasticgalerkin.h"
 
 Closure::Closure( Settings* settings )
@@ -110,8 +112,14 @@ Closure* Closure::Create( Settings* settings ) {
     else if( closureType == ClosureType::C_EULER_2D ) {
         return new EulerClosure2D( settings );
     }
+    else if( closureType == ClosureType::C_SHALLOWWATER_1D ) {
+        return new ShallowWaterClosure( settings );
+    }
+    else if( closureType == ClosureType::C_SHALLOWWATER_2D ) {
+        return new ShallowWaterClosure2D( settings );
+    }
     else {
-        log->error( "Invalid closure type" );
+        log->error( "[closure]: Invalid closure type" );
         exit( EXIT_FAILURE );
     }
 }

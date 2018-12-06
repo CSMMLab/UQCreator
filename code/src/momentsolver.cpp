@@ -222,6 +222,41 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
             return y;
         }
     }
+    if( _settings->GetProblemType() == ProblemType::P_SHALLOWWATER_1D ) {
+        if( xi.size() == 1 ) {
+            double a     = 0.6;
+            double b     = 10.5;
+            double sigma = 0.2;    // 0.2
+            double uL    = 12.0;
+            double uR    = 3.0;
+            y[1]         = 0.0;
+            if( x[0] < a + sigma * xi[0] ) {
+                y[0] = uL;
+                return y;
+            }
+            else {
+                y[0] = uR;
+                return y;
+            }
+        }
+        else if( xi.size() == 2 ) {
+            double x0     = 0.3;
+            double x1     = 0.6;
+            double sigma0 = 0.2;    // 0.2
+            double sigma1 = 0.1;
+            double uL     = 12.0;
+            double uM     = 6.0;
+            double uR     = 1.0;
+
+            if( x[0] < x0 )
+                y[0] = uL + sigma0 * xi[0];
+            else if( x[0] < x1 )
+                y[0] = uM + sigma1 * xi[1];
+            else
+                y[0] = uR;
+            return y;
+        }
+    }
     else if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {
         double x0    = 0.3;
         double sigma = 0.05;
@@ -251,20 +286,20 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
     }
     else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
         double sigma  = 0.5;
-        double sigma1 = 0.2;
+        double sigma1 = 0.01;
         double gamma  = 1.4;
         double R      = 287.87;
         double T      = 273.15;
         double p      = 101325.0;
         double Ma     = 0.8;
-        if( xi.size() == 2 ) {
-            Ma = Ma - sigma1 + xi[1] * sigma1;
-        }
+        // if( xi.size() == 2 ) {
+        Ma = Ma + xi[0] * sigma1;
+        //}
         double a  = sqrt( gamma * R * T );
         double pi = 3.14159265359;
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + sigma * xi[0] ) * ( 2.0 * pi ) / 360.0;
+        double angle = ( 1.25 + sigma * 0.0 ) * ( 2.0 * pi ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 

@@ -29,8 +29,15 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             else if( problemTypeString->compare( "Euler2D" ) == 0 ) {
                 _problemType = ProblemType::P_EULER_2D;
             }
+            else if( problemTypeString->compare( "ShallowWater1D" ) == 0 ) {
+                _problemType = ProblemType::P_SHALLOWWATER_1D;
+            }
+            else if( problemTypeString->compare( "ShallowWater2D" ) == 0 ) {
+                _problemType = ProblemType::P_SHALLOWWATER_2D;
+            }
             else {
-                log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers, Euler, Euler2D" );
+                log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers1D, Euler1D, "
+                            "Euler2D,ShallowWater1D,ShallowWater2D" );
                 validConfig = false;
             }
         }
@@ -143,6 +150,12 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             else if( closureTypeString->compare( "Euler2D" ) == 0 ) {
                 _closureType = ClosureType::C_EULER_2D;
             }
+            else if( closureTypeString->compare( "ShallowWater" ) == 0 ) {
+                _closureType = ClosureType::C_SHALLOWWATER_1D;
+            }
+            else if( closureTypeString->compare( "ShallowWater2D" ) == 0 ) {
+                _closureType = ClosureType::C_SHALLOWWATER_2D;
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, "
                             "StochasticGalerkin, Euler, Euler2D" );
@@ -218,7 +231,7 @@ void Settings::SetNumCells( unsigned n ) {
     _cellIndexPE.clear();
     bool devideChunks = true;
     int nChunks       = 1;
-    if( !devideChunks ) {
+    if( !devideChunks ) {    // TODO: Fix like quadrature
         int nXPE = int( ( int( _numCells ) - 1 ) / _npes ) + 1;
         if( _mype == _npes - 1 ) {
             nXPE = int( _numCells ) - _mype * nXPE;
