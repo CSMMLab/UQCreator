@@ -8,18 +8,15 @@ ShallowWaterClosure2D::ShallowWaterClosure2D( Settings* settings ) : Closure( se
 ShallowWaterClosure2D::~ShallowWaterClosure2D() {}
 
 void ShallowWaterClosure2D::U( Vector& out, const Vector& Lambda ) {
-    out[0] = ( 0.5 * ( 2 * Lambda[0] * Lambda[2] + pow( Lambda[1], 2 ) * Lambda[2] + pow( Lambda[2], 3 ) ) ) / ( _g * Lambda[2] );
-    out[1] = ( 0.5 * Lambda[1] * ( 2 * Lambda[0] * Lambda[2] + pow( Lambda[1], 2 ) * Lambda[2] + pow( Lambda[2], 3 ) ) ) / ( _g * Lambda[2] );
+    out[0] = ( 0.5 * ( 2 * Lambda[0] + pow( Lambda[1], 2 ) + pow( Lambda[2], 2 ) ) ) / ( _g );
+    out[1] = ( 0.5 * Lambda[1] * ( 2 * Lambda[0] + pow( Lambda[1], 2 ) + pow( Lambda[2], 2 ) ) ) / ( _g );
     out[2] = ( ( 0.5 * ( 2 * Lambda[0] * Lambda[2] + pow( Lambda[1], 2 ) * Lambda[2] + pow( Lambda[2], 3 ) ) ) / _g );
 }
 
 void ShallowWaterClosure2D::U( Matrix& out, const Matrix& Lambda ) {
     for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        out( 0, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) * Lambda( 2, k ) + pow( Lambda( 1, k ), 2 ) * Lambda( 2, k ) + pow( Lambda( 2, k ), 3 ) ) ) /
-                      ( _g * Lambda( 2, k ) );
-        out( 1, k ) = ( 0.5 * Lambda( 1, k ) *
-                        ( 2 * Lambda( 0, k ) * Lambda( 2, k ) + pow( Lambda( 1, k ), 2 ) * Lambda( 2, k ) + pow( Lambda( 2, k ), 3 ) ) ) /
-                      ( _g * Lambda( 2, k ) );
+        out( 0, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) + pow( Lambda( 1, k ), 2 ) + pow( Lambda( 2, k ), 2 ) ) ) / ( _g );
+        out( 1, k ) = ( 0.5 * Lambda( 1, k ) * ( 2 * Lambda( 0, k ) + pow( Lambda( 1, k ), 2 ) + pow( Lambda( 2, k ), 2 ) ) ) / ( _g );
         out( 2, k ) =
             ( ( 0.5 * ( 2 * Lambda( 0, k ) * Lambda( 2, k ) + pow( Lambda( 1, k ), 2 ) * Lambda( 2, k ) + pow( Lambda( 2, k ), 3 ) ) ) / _g );
     }
@@ -28,11 +25,8 @@ void ShallowWaterClosure2D::U( Matrix& out, const Matrix& Lambda ) {
 Matrix ShallowWaterClosure2D::U( const Matrix& Lambda ) {
     Matrix y( _nStates, Lambda.columns(), 0.0 );
     for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        y( 0, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) * Lambda( 2, k ) + pow( Lambda( 1, k ), 2 ) * Lambda( 2, k ) + pow( Lambda( 2, k ), 3 ) ) ) /
-                    ( _g * Lambda( 2, k ) );
-        y( 1, k ) = ( 0.5 * Lambda( 1, k ) *
-                      ( 2 * Lambda( 0, k ) * Lambda( 2, k ) + pow( Lambda( 1, k ), 2 ) * Lambda( 2, k ) + pow( Lambda( 2, k ), 3 ) ) ) /
-                    ( _g * Lambda( 2, k ) );
+        y( 0, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) + pow( Lambda( 1, k ), 2 ) + pow( Lambda( 2, k ), 2 ) ) ) / ( _g );
+        y( 1, k ) = ( 0.5 * Lambda( 1, k ) * ( 2 * Lambda( 0, k ) + pow( Lambda( 1, k ), 2 ) + pow( Lambda( 2, k ), 2 ) ) ) / ( _g );
         y( 2, k ) = ( ( 0.5 * ( 2 * Lambda( 0, k ) * Lambda( 2, k ) + pow( Lambda( 1, k ), 2 ) * Lambda( 2, k ) + pow( Lambda( 2, k ), 3 ) ) ) / _g );
     }
 
