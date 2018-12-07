@@ -1,4 +1,4 @@
-﻿#include "momentsolver.h"
+#include "momentsolver.h"
 
 MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
     _log         = spdlog::get( "event" );
