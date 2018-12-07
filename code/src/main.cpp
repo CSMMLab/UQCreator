@@ -124,10 +124,14 @@ int main( int argc, char* argv[] ) {
     // PrintInit( configFile );
 
     Settings* settings = new Settings( configFile );
+    std::cout << settings->GetNStates() << std::endl;
     if( settings->GetMyPE() == 0 ) PrintInit( configFile );
-    Mesh* mesh           = Mesh::Create( settings );
-    Problem* problem     = Problem::Create( settings );
+    Mesh* mesh = Mesh::Create( settings );
+    std::cout << settings->GetNStates() << std::endl;
+    Problem* problem = Problem::Create( settings );
+    std::cout << settings->GetNStates() << std::endl;
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );
+    std::cout << settings->GetNStates() << std::endl;
 
     solver->Solve();
 

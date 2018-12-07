@@ -1,6 +1,9 @@
 #include "shallowwaterclosure.h"
 
-ShallowWaterClosure::ShallowWaterClosure( Settings* settings ) : Closure( settings ), _g( 9.81 ) { _alpha = 0.1; }
+ShallowWaterClosure::ShallowWaterClosure( Settings* settings ) : Closure( settings ), _g( 9.81 ) {
+    _nStates = 2;
+    _alpha   = 0.1;
+}
 
 ShallowWaterClosure::~ShallowWaterClosure() {}
 
