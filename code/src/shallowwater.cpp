@@ -54,11 +54,18 @@ Vector ShallowWater::G( const Vector& u, const Vector& v, const Vector& nUnit, c
                    ( lambdaMax * F( u ) * n - lambdaMin * F( v ) * n + lambdaMax * lambdaMin * ( v - u ) * norm( n ) );
         }*/
 
+    double dtdx = _settings->GetCFL() / 12.0;
+
+    return 0.5 * ( F( u ) * n + F( v ) * n ) - ( 0.5 / dtdx ) * ( v - u );
+
     double aMinus = std::fmin( uU - cU, uV - cV );
     aMinus        = std::fmin( aMinus, 0.0 );
     double aPlus  = std::fmax( uU + cU, uV + cV );
     aPlus         = std::fmax( aPlus, 0.0 );
     return ( 1.0 / ( aPlus - aMinus ) ) * ( aPlus * F( u ) * n - aMinus * F( v ) * n + aPlus * aMinus * ( v - u ) * norm( n ) );
+
+    // U1(j) = (un1(j - 1) + un1(j + 1))/2 - 0.5 * c * (F1(j+1) - F1(j-1));
+    // U2(j) = (un2(j - 1) + un2(j + 1))/2 - 0.5 * c *(F2(j+1) - F2(j-1));
 }
 
 Matrix ShallowWater::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
