@@ -2,7 +2,7 @@
 
 ShallowWaterClosure2D::ShallowWaterClosure2D( Settings* settings ) : Closure( settings ), _g( 9.81 ) {
     _nStates = 3;
-    _alpha   = 0.1;
+    _alpha   = 1.0;
 }
 
 ShallowWaterClosure2D::~ShallowWaterClosure2D() {}
@@ -37,11 +37,11 @@ void ShallowWaterClosure2D::DU( Matrix& y, const Vector& Lambda ) {
     y( 0, 0 ) = 1.0 / _g;
     y( 0, 1 ) = Lambda[1] / _g;
     y( 0, 2 ) = Lambda[2] / _g;
-    y( 1, 0 ) = Lambda[1] / _g;
+    y( 1, 0 ) = y( 0, 1 );
     y( 1, 1 ) = ( Lambda[0] + 1.5 * pow( Lambda[1], 2 ) + 0.5 * pow( Lambda[2], 2 ) ) / _g;
     y( 1, 2 ) = ( Lambda[1] * Lambda[2] ) / _g;
-    y( 2, 0 ) = Lambda[2] / _g;
-    y( 2, 1 ) = ( Lambda[1] * Lambda[2] ) / _g;
+    y( 2, 0 ) = y( 0, 2 );
+    y( 2, 1 ) = y( 1, 2 );
     y( 2, 2 ) = ( 0.5 * ( 2.0 * Lambda[0] + pow( Lambda[1], 2 ) + 3.0 * pow( Lambda[2], 2 ) ) ) / _g;
 }
 

@@ -39,18 +39,26 @@ Vector ShallowWater::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     double uV = v[1] / v[0];
     double cU = sqrt( _g * u[0] );
     double cV = sqrt( _g * v[0] );
+    /*
+        double lambdaMin = uU - cU;
+        double lambdaMax = uV + cV;
+        // return F( ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( ( lambdaMax * v - lambdaMin * u ) + F( u ) * nUnit - F( v ) * nUnit ) ) * n;
 
-    double lambdaMin = uU - cU;
-    double lambdaMax = uV + cV;
+        if( lambdaMin >= 0 )
+            return F( u ) * n;
+        else if( lambdaMax <= 0 )
+            return F( v ) * n;
+        else {
+            return F( ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( ( lambdaMax * v - lambdaMin * u ) + F( u ) * nUnit - F( v ) * nUnit ) ) * n;
+            return ( 1.0 / ( lambdaMax - lambdaMin ) ) *
+                   ( lambdaMax * F( u ) * n - lambdaMin * F( v ) * n + lambdaMax * lambdaMin * ( v - u ) * norm( n ) );
+        }*/
 
-    if( lambdaMin >= 0 )
-        return F( u ) * n;
-    else if( lambdaMax <= 0 )
-        return F( v ) * n;
-    else {
-        return ( 1.0 / ( lambdaMax - lambdaMin ) ) *
-               ( lambdaMax * F( u ) * n - lambdaMin * F( v ) * n + lambdaMax * lambdaMin * ( v - u ) * norm( n ) );
-    }
+    double aMinus = std::fmin( uU - cU, uV - cV );
+    aMinus        = std::fmin( aMinus, 0.0 );
+    double aPlus  = std::fmax( uU + cU, uV + cV );
+    aPlus         = std::fmax( aPlus, 0.0 );
+    return ( 1.0 / ( aPlus - aMinus ) ) * ( aPlus * F( u ) * n - aMinus * F( v ) * n + aPlus * aMinus * ( v - u ) * norm( n ) );
 }
 
 Matrix ShallowWater::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {

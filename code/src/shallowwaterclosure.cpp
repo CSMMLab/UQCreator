@@ -2,7 +2,7 @@
 
 ShallowWaterClosure::ShallowWaterClosure( Settings* settings ) : Closure( settings ), _g( 9.81 ) {
     _nStates = 2;
-    _alpha   = 0.1;
+    _alpha   = 1.0;
 }
 
 ShallowWaterClosure::~ShallowWaterClosure() {}
@@ -22,7 +22,7 @@ void ShallowWaterClosure::U( Matrix& out, const Matrix& Lambda ) {
 Matrix ShallowWaterClosure::U( const Matrix& Lambda ) {
     Matrix y( _nStates, Lambda.columns(), 0.0 );
     for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        y( 0, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) + pow( Lambda( 1, k ), 2 ) ) ) / ( _g );
+        y( 0, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) + pow( Lambda( 1, k ), 2 ) ) ) / _g;
         y( 1, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) * Lambda( 1, k ) + pow( Lambda( 1, k ), 3 ) ) ) / _g;
     }
 
