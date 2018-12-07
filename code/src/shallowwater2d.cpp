@@ -1,0 +1,75 @@
+#include "shallowwater2d.h"
+
+ShallowWater2D::ShallowWater2D( Settings* settings ) : Problem( settings ) {
+    _nStates = 3;
+    settings->SetNStates( _nStates );
+    try {
+        auto file = cpptoml::parse_file( _settings->GetInputFile() );
+
+        auto problem = file->get_table( "problem" );
+        _g           = 9.81;
+    } catch( const cpptoml::parse_exception& e ) {
+        _log->error( "[ShallowWater2D] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
+        exit( EXIT_FAILURE );
+    }
+}
+
+ShallowWater2D::~ShallowWater2D() {}
+
+void ShallowWater2D::Solve() {}
+
+Vector ShallowWater2D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+    double uU = u[1] / u[0];
+    double vU = u[2] / u[0];
+    double uV = v[1] / v[0];
+    double vV = v[2] / v[0];
+    double cU = sqrt( _g * u[0] );
+    double cV = sqrt( _g * v[0] );
+
+    double uUProjected = nUnit[0] * uU + nUnit[1] * vU;
+    double uVProjected = nUnit[0] * uV + nUnit[1] * vV;
+
+    double lambdaMin = uUProjected - cU;
+    double lambdaMax = uVProjected + cV;
+
+    if( lambdaMin >= 0 )
+        return F( u ) * n;
+    else if( lambdaMax <= 0 )
+        return F( v ) * n;
+    else {
+        return ( 1.0 / ( lambdaMax - lambdaMin ) ) *
+               ( lambdaMax * F( u ) * n - lambdaMin * F( v ) * n + lambdaMax * lambdaMin * ( v - u ) * norm( n ) );
+    }
+}
+
+Matrix ShallowWater2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
+    unsigned nStates = static_cast<unsigned>( u.rows() );
+    unsigned Nq      = static_cast<unsigned>( u.columns() );
+    Matrix y( nStates, Nq );
+    for( unsigned k = 0; k < Nq; ++k ) {
+        column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
+    }
+    return y;
+}
+
+Matrix ShallowWater2D::F( const Vector& u ) {
+    Matrix flux( u.size(), 2 );
+    flux( 0, 0 ) = u[1];
+    flux( 1, 0 ) = pow( u[1], 2 ) / u[0] + 0.5 * _g * pow( u[0], 2 );
+    flux( 2, 0 ) = u[1] * u[2] / u[0];
+
+    flux( 0, 1 ) = u[2];
+    flux( 1, 1 ) = u[1] * u[2] / u[0];
+    flux( 2, 1 ) = pow( u[2], 2 ) / u[0] + 0.5 * _g * pow( u[0], 2 );
+    return flux;
+}
+
+Matrix ShallowWater2D::F( const Matrix& u ) {
+    _log->error( "[ShallowWater2D] Flux not implemented" );
+    exit( EXIT_FAILURE );
+}
+
+double ShallowWater2D::ComputeDt( Vector& u, double dx ) const {
+    _log->error( "[ShallowWater2D] ComputeDt not implemented" );
+    return 0.0;
+}

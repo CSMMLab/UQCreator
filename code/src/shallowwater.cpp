@@ -1,7 +1,7 @@
 #include "shallowwater.h"
 
 ShallowWater::ShallowWater( Settings* settings ) : Problem( settings ) {
-    _nStates = 3;
+    _nStates = 2;
     settings->SetNStates( _nStates );
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );

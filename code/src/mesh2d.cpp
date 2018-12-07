@@ -44,6 +44,9 @@ Mesh2D::Mesh2D( Settings* settings ) : Mesh( settings, 2 ) {
                 else if( ( *BCString )[1].compare( "periodic" ) == 0 ) {
                     type = BoundaryType::PERIODIC;
                 }
+                else if( ( *BCString )[1].compare( "swwall" ) == 0 ) {
+                    type = BoundaryType::SWWALL;
+                }
                 else {
                     _log->error( "[mesh2d] Invalid boundary condition on boundary '" + ( *BCString )[0] + "'!" );
                     exit( EXIT_FAILURE );

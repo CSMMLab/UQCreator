@@ -225,7 +225,6 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
     if( _settings->GetProblemType() == ProblemType::P_SHALLOWWATER_1D ) {
         if( xi.size() == 1 ) {
             double a     = 0.5;
-            double b     = 10.5;
             double sigma = 0.1;    // 0.2
             double uL    = 12.0;
             double uR    = 3.0;
@@ -255,6 +254,35 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
             else
                 y[0] = uR;
             return y;
+        }
+    }
+    if( _settings->GetProblemType() == ProblemType::P_SHALLOWWATER_2D ) {
+        double a      = 0.5;
+        double sigma  = 0.1;    // 0.2
+        double sigma1 = 0.05;
+        double uL     = 10.0;
+        double uR     = 5.0;
+        y[1]          = 0.0;
+        y[2]          = 0.0;
+        if( xi.size() == 1 ) {
+            if( x[0] < a ) {
+                y[0] = uL + sigma * xi[0];
+                return y;
+            }
+            else {
+                y[0] = uR;
+                return y;
+            }
+        }
+        else if( xi.size() == 2 ) {
+            if( x[0] < a ) {
+                y[0] = uL + sigma * xi[0];
+                return y;
+            }
+            else {
+                y[0] = uR + sigma1 * xi[1];
+                return y;
+            }
         }
     }
     else if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {

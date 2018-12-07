@@ -7,7 +7,7 @@
 
 #include "typedefs.h"
 
-enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE };
+enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE, SWWALL };
 
 struct Node {
     unsigned id;
