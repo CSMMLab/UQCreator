@@ -78,10 +78,15 @@ void MomentSolver::Solve() {
                                  std::placeholders::_5 );
 
     log->info( "{:10}   {:10}", "t", "residual" );
-
+    int counter = 0;
     // Begin time loop
     for( double t = 0.0; t < _tEnd; t += _dt ) {
         double residual = 0;
+        // counter++;
+        if( counter == 100 ) {
+            std::cout << _dt;
+            break;
+        }
 
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
@@ -224,10 +229,10 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
     }
     if( _settings->GetProblemType() == ProblemType::P_SHALLOWWATER_1D ) {
         if( xi.size() == 1 ) {
-            double a     = 0.5;
+            double a     = 500.0;
             double sigma = 0.0;    // 0.2
-            double uL    = 1.0;
-            double uR    = 0.5;
+            double uL    = 10.0;
+            double uR    = 2.0;
             y[1]         = 0.0;
             if( x[0] < a + sigma * xi[0] ) {
                 y[0] = uL;

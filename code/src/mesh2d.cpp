@@ -176,6 +176,9 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                         if( type == 5 ) {
                             nElementNodes = 3;
                         }
+                        else if( type == 9 ) {
+                            nElementNodes = 4;
+                        }
                         else {
                             _log->error( "[mesh2d] Unsupported mesh type!" );
                             exit( EXIT_FAILURE );
@@ -186,12 +189,14 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                         }
                         ss >> id;
                     }
-                    _cells.push_back( new Triangle( id, elementNodes ) );
+                    if( elementNodes.size() == 3 ) _cells.push_back( new Triangle( id, elementNodes ) );
+                    if( elementNodes.size() == 4 ) _cells.push_back( new Quadrangle( id, elementNodes ) );
                     _cells.back()->SetDefaultCellId( _numCells );
                 }
                 break;
             }
         }
+        std::cout << "Neighbors saved!" << std::endl;
         _boundaryType.resize( _numCells );
         assert( _cells.size() == _numCells );
         for( unsigned i = 0; i < _numCells; ++i ) {
@@ -220,6 +225,9 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
         _neighborIDs[j] = _cells[j]->GetNeighborIDs();
         if( _cells[j]->IsBoundaryCell() ) {
             if( _neighborIDs[j][0] != _numCells && _neighborIDs[j][1] != _numCells && _neighborIDs[j][2] != _numCells ) {
+                if( _neighborIDs[j].size() == 4 ) {
+                    if( _neighborIDs[j][3] == _numCells ) continue;
+                }
                 _log->error( "[mesh2d] Wrong boundary cell {0} detected", j );
                 _log->error( "[mesh2d] Neighbors are {0} {1} {2}", _neighborIDs[j][0], _neighborIDs[j][1], _neighborIDs[j][2] );
                 _log->error(
@@ -241,6 +249,9 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
 
             if( _cells[j]->GetNeighborIDs()[0] != _numCells && _cells[j]->GetNeighborIDs()[1] != _numCells &&
                 _cells[j]->GetNeighborIDs()[2] != _numCells ) {
+                if( _neighborIDs[j].size() == 4 ) {
+                    if( _neighborIDs[j][3] == _numCells ) continue;
+                }
                 _log->error( "[mesh2d] Wrong boundary cell {0} detected", j );
                 exit( EXIT_FAILURE );
             }
@@ -274,18 +285,35 @@ void Mesh2D::AddNeighbor( Cell* c, Cell* neighbor, unsigned index0, unsigned ind
         index0       = index1;
         index1       = tmp;
     }
-    if( index0 == 0 && index1 == 1 ) {
-        c->AddNeighbor( neighbor, 0 );
+    if( c->GetNeighbors().size() == 3 ) {
+        if( index0 == 0 && index1 == 1 ) {
+            c->AddNeighbor( neighbor, 0 );
+        }
+        else if( index0 == 1 && index1 == 2 ) {
+            c->AddNeighbor( neighbor, 1 );
+        }
+        else if( index0 == 0 && index1 == 2 ) {
+            c->AddNeighbor( neighbor, 2 );
+        }
     }
-    else if( index0 == 1 && index1 == 2 ) {
-        c->AddNeighbor( neighbor, 1 );
-    }
-    else if( index0 == 0 && index1 == 2 ) {
-        c->AddNeighbor( neighbor, 2 );
+    else if( c->GetNeighbors().size() == 4 ) {
+        if( index0 == 0 && index1 == 1 ) {
+            c->AddNeighbor( neighbor, 0 );
+        }
+        else if( index0 == 1 && index1 == 2 ) {
+            c->AddNeighbor( neighbor, 1 );
+        }
+        else if( index0 == 2 && index1 == 3 ) {
+            c->AddNeighbor( neighbor, 2 );
+        }
+        else if( index0 == 0 && index1 == 3 ) {
+            c->AddNeighbor( neighbor, 3 );
+        }
     }
 }
 
 void Mesh2D::DetermineNeighbors() {
+    std::cout << "Determine Neighbors" << std::endl;
     for( unsigned i = 0; i < _numCells; ++i ) {
         Cell* ci = _cells[i];
         for( unsigned j = i + 1; j < _numCells; ++j ) {
@@ -293,15 +321,15 @@ void Mesh2D::DetermineNeighbors() {
             unsigned indexI0 = 0, indexI1 = 0;
             unsigned indexJ0 = 0, indexJ1 = 0;
             unsigned matchCtr = 0;
-            for( unsigned ni = 0; ni < ci->GetNodeNum(); ++ni ) {
-                for( unsigned nj = 0; nj < cj->GetNodeNum(); ++nj ) {
-                    if( ci->GetNode( ni )->id == cj->GetNode( nj )->id ) {
+            for( unsigned ni = 0; ni < ci->GetNodeNum(); ++ni ) {             // loop over all points of cell i
+                for( unsigned nj = 0; nj < cj->GetNodeNum(); ++nj ) {         // loop over all points of cell j
+                    if( ci->GetNode( ni )->id == cj->GetNode( nj )->id ) {    // cell i and j share the same point
                         matchCtr++;
                         if( matchCtr == 1 ) {
                             indexI0 = ni;
                             indexJ0 = nj;
                         }
-                        else if( matchCtr == 2 ) {
+                        else if( matchCtr == 2 ) {    // cell i and j share two same points and are therefore neighbors
                             indexI1 = ni;
                             indexJ1 = nj;
                             this->AddNeighbor( ci, cj, indexI0, indexI1 );
@@ -353,11 +381,23 @@ void Mesh2D::Export( const Matrix& results ) const {
     }
     vtkCellArraySP cellArray = vtkCellArraySP::New();
     for( unsigned i = 0; i < _cells.size(); ++i ) {
-        auto tri = vtkTriangleSP::New();
-        for( unsigned j = 0; j < _cells[i]->GetNodeNum(); ++j ) {
-            tri->GetPointIds()->SetId( j, _cells[i]->GetNode( j )->id );
+        if( _cells[i]->GetNodeNum() == 3 ) {
+            auto tri = vtkTriangleSP::New();
+            for( unsigned j = 0; j < _cells[i]->GetNodeNum(); ++j ) {
+                tri->GetPointIds()->SetId( j, _cells[i]->GetNode( j )->id );
+            }
+            cellArray->InsertNextCell( tri );
         }
-        cellArray->InsertNextCell( tri );
+        if( _cells[i]->GetNodeNum() == 4 ) {
+            // auto quad                           = vtkSmartPointer<vtkPolyLine>::New();
+            // vtkSmartPointer<vtkCellArray> quad = vtkSmartPointer<vtkCellArray>::New();
+            // auto quad =
+            auto quad = vtkQuad::New();
+            for( unsigned j = 0; j < _cells[i]->GetNodeNum(); ++j ) {
+                quad->GetPointIds()->SetId( j, _cells[i]->GetNode( j )->id );
+            }
+            cellArray->InsertNextCell( quad );
+        }
     }
     grid->SetCells( VTK_TRIANGLE, cellArray );
 
