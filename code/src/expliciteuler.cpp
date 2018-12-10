@@ -38,11 +38,27 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
                     ghostCell( 3, k ) += rho * 0.5 * ( velMagB - velMag );
                 }
             }
+            else if( cell->GetBoundaryType() == BoundaryType::SWWALL ) {
+                ghostCell = uQ[j];
+                Vector v( 2, 0.0 );
+                for( unsigned k = 0; k < uQ[numCells].columns(); ++k ) {
+                    v[0]              = ghostCell( 1, k ) / ghostCell( 0, k );
+                    v[1]              = ghostCell( 2, k ) / ghostCell( 0, k );
+                    Vector n          = cell->GetBoundaryUnitNormal();
+                    double vn         = dot( n, v );
+                    Vector Vn         = vn * n;
+                    Vector Vb         = -Vn + v;
+                    double rho        = ghostCell( 0, k );
+                    ghostCell( 1, k ) = rho * ( Vb[0] );
+                    ghostCell( 2, k ) = rho * ( Vb[1] );
+                }
+            }
         }
 
         Matrix rhs( u[0].rows(), u[0].columns(), 0.0 );
         for( unsigned l = 0; l < neighbors.size(); ++l ) {
-            if( _mesh->GetBoundaryType( j ) == BoundaryType::NOSLIP && neighbors[l] == numCells ) {
+            if( ( _mesh->GetBoundaryType( j ) == BoundaryType::NOSLIP || _mesh->GetBoundaryType( j ) == BoundaryType::SWWALL ) &&
+                neighbors[l] == numCells ) {
                 fluxFunc( rhs, ghostCell, ghostCell, cell->GetUnitNormal( l ), cell->GetNormal( l ) );
             }
             else {

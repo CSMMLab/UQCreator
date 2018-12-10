@@ -15,8 +15,8 @@ class Closure
 
   protected:
     Settings* _settings;
-    Polynomial* _basis;
-    Polynomial* _quad;
+    std::vector<Polynomial*> _basis;
+    std::vector<Polynomial*> _quad;
     Matrix _phiTilde;         // stores scaled basis functions evaluated at quadrature points
     Matrix _phiTildeTrans;    // stores scaled basis functions evaluated at quadrature points
     Matrix _phiTildeWf;       // stores scaled basis functions evaluated at quadrature points times weight and pdf
@@ -60,6 +60,7 @@ class Closure
     void EvaluateLambda( Matrix& out, const Matrix& lambda ) const;
     Vector EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k );
     Matrix EvaluateLambda( const Matrix& lambda, const Vector& xi );
+    Matrix EvaluateLambdaOnPE( const Matrix& lambda ) const;
     /**
      * calculate solution for kinetic entropy with given entropic variable
      */
@@ -86,6 +87,9 @@ class Closure
     void SubstractVectorMatrixOnVector( Vector& b, const Matrix& A ) const;
 
     double CalcNorm( Vector& test );
+
+    std::vector<Polynomial*> GetBasis();
+    std::vector<Polynomial*> GetQuadrature();
 };
 
 #endif    // CLOSURE_H

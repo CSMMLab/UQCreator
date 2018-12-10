@@ -1,4 +1,5 @@
 #include "momentsolver.h"
+#include <mpi.h>
 
 MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
     _log         = spdlog::get( "event" );
@@ -8,11 +9,8 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
     _nQTotal     = _settings->GetNQTotal();
-    _nTotal      = unsigned( std::pow( _nMoments, _settings->GetNDimXi() ) );
+    _nTotal      = _settings->GetNTotal();
 
-    _quad = Polynomial::Create( _settings, _nQuadPoints );
-    // std::cout << _quad->GetNodes()[0] << std::endl;
-    // exit( EXIT_FAILURE );
     _closure = Closure::Create( _settings );
     _time    = TimeSolver::Create( _settings, _mesh );
 
@@ -20,7 +18,6 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
 }
 
 MomentSolver::~MomentSolver() {
-    delete _quad;
     delete _closure;
     delete _time;
 }
@@ -40,11 +37,20 @@ void MomentSolver::Solve() {
         u = SetupIC();
     }
     MatVec uNew = u;
-    MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _nQTotal ) );
+    MatVec uOld = u;
+    MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
     _lambda     = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
 
     Vector ds( _nStates );
     Vector u0( _nStates );
+
+    double residualFull;
+
+    std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
+    std::vector<int> PEforCell        = _settings->GetPEforCell();
+
+    std::cout << "PE " << _settings->GetMyPE() << ": kStart " << _settings->GetKStart() << ", kEnd " << _settings->GetKEnd() << std::endl;
+
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned l = 0; l < _nStates; ++l ) {
             u0[l] = u[j]( l, 0 );
@@ -58,7 +64,7 @@ void MomentSolver::Solve() {
     // Converge initial condition entropy variables for One Shot IPM
     if( _settings->GetMaxIterations() == 1 ) {
         _settings->SetMaxIterations( 1000 );
-        for( unsigned j = 0; j < _nCells; ++j ) _closure->SolveClosure( _lambda[j], uNew[j] );
+        for( unsigned j = 0; j < _nCells; ++j ) _closure->SolveClosure( _lambda[j], u[j] );
         _settings->SetMaxIterations( 1 );
     }
 
@@ -71,20 +77,46 @@ void MomentSolver::Solve() {
                                  std::placeholders::_5 );
 
     log->info( "{:10}   {:10}", "t", "residual" );
+    int counter = 0;
     // Begin time loop
     for( double t = 0.0; t < _tEnd; t += _dt ) {
         double residual = 0;
-#pragma omp parallel for reduction( + : residual ) schedule( dynamic, 10 )
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            _closure->SolveClosure( _lambda[j], uNew[j] );
-            residual += std::fabs( uNew[j]( 0, 0 ) - u[j]( 0, 0 ) ) * _mesh->GetArea( j ) / _dt;
-            uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-            u[j]  = uQ[j] * _closure->GetPhiTildeWf();
+        // counter++;
+        if( counter == 100 ) {
+            std::cout << _dt;
+            break;
         }
-        log->info( "{:03.8f}   {:01.5e}", t, residual );
+
+#pragma omp parallel for schedule( dynamic, 10 )
+        for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
+            _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]] );
+        }
+
+        // MPI Broadcast lambdas to all PEs
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uOld[j] = u[j];    // save old Moments for residual computation
+            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
+        }
+
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
+            u[j].reset();
+            VectorSpace::multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd() );
+        }
 
         _time->Advance( numFluxPtr, uNew, u, uQ );
+
+        // perform reduction to obtain full moments
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
+        }
+        for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
+            residual += std::fabs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] ) / _dt;
+        }
+        MPI_Reduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+        if( _settings->GetMyPE() == 0 ) log->info( "{:03.8f}   {:01.5e}", t, residualFull );
     }
+    if( _settings->GetMyPE() != 0 ) return;
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     log->info( "" );
@@ -95,8 +127,6 @@ void MomentSolver::Solve() {
     Matrix meanAndVar( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     Matrix phiTildeWf = _closure->GetPhiTildeWf();
     Vector tmp( _nStates, 0.0 );
-    auto xiQuad = _quad->GetNodes();
-    Vector w    = _quad->GetWeights();
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned k = 0; k < _nQTotal; ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
@@ -121,7 +151,8 @@ void MomentSolver::Solve() {
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
-    out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
+    // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
+    VectorSpace::multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd() );
 }
 
 void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
@@ -136,25 +167,24 @@ void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
 
 MatVec MomentSolver::SetupIC() {
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
-    Vector xi = _quad->GetNodes();
+    std::vector<Polynomial*> quad = _closure->GetQuadrature();
     Vector xiEta( _settings->GetNDimXi() );
     Matrix uIC( _nStates, _nQTotal );
     Matrix phiTildeWf = _closure->GetPhiTildeWf();
+    unsigned n;
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned k = 0; k < _nQTotal; ++k ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
                 unsigned index =
                     unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
-                xiEta[l] = xi[index];
+                xiEta[l] = quad[n]->GetNodes()[index];
             }
             // std::cout << xiEta << std::endl;
             column( uIC, k ) = IC( _mesh->GetCenterPos( j ), xiEta );
         }
         u[j] = uIC * phiTildeWf;
-        // std::cout << uIC << std::endl;
-        // std::cout << "-------------" << std::endl;
-        // std::cout << u[j] << std::endl;
-        // exit( EXIT_FAILURE );
     }
     return u;
 }
@@ -199,15 +229,78 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
             return y;
         }
     }
+    if( _settings->GetProblemType() == ProblemType::P_SHALLOWWATER_1D ) {
+        if( xi.size() == 1 ) {
+            double a     = 500.0;
+            double sigma = 0.0;    // 0.2
+            double uL    = 10.0;
+            double uR    = 2.0;
+            y[1]         = 0.0;
+            if( x[0] < a + sigma * xi[0] ) {
+                y[0] = uL;
+                return y;
+            }
+            else {
+                y[0] = uR;
+                return y;
+            }
+        }
+        else if( xi.size() == 2 ) {
+            double x0     = 0.3;
+            double x1     = 0.6;
+            double sigma0 = 0.2;    // 0.2
+            double sigma1 = 0.1;
+            double uL     = 12.0;
+            double uM     = 6.0;
+            double uR     = 1.0;
+
+            if( x[0] < x0 )
+                y[0] = uL + sigma0 * xi[0];
+            else if( x[0] < x1 )
+                y[0] = uM + sigma1 * xi[1];
+            else
+                y[0] = uR;
+            return y;
+        }
+    }
+    if( _settings->GetProblemType() == ProblemType::P_SHALLOWWATER_2D ) {
+        double a      = 0.5;
+        double sigma  = 0.5;    // 0.2
+        double sigma1 = 0.5;
+        double uL     = 10.0;    // 10.0;
+        double uR     = 5.0;
+        y[1]          = 0.0;
+        y[2]          = 0.0;
+        if( xi.size() == 1 ) {
+            if( x[0] < a ) {
+                y[0] = uL + sigma * xi[0];
+                return y;
+            }
+            else {
+                y[0] = uR;    // - sigma * xi[0];
+                return y;
+            }
+        }
+        else if( xi.size() == 2 ) {
+            if( x[0] < a ) {
+                y[0] = uL + sigma * xi[0];
+                return y;
+            }
+            else {
+                y[0] = uR + sigma1 * xi[1];
+                return y;
+            }
+        }
+    }
     else if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {
         double x0    = 0.3;
-        double sigma = 0.05;
+        double sigma = 0.0;
         double gamma = 1.4;
 
         double rhoL = 1.0;
-        double rhoR = 0.3;
+        double rhoR = 0.125;
         double pL   = 1.0;
-        double pR   = 0.3;
+        double pR   = 0.1;
         double uL   = 0.0;
         double uR   = 0.0;
         if( x[0] < x0 + sigma * xi[0] ) {
@@ -228,20 +321,20 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
     }
     else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
         double sigma  = 0.5;
-        double sigma1 = 0.2;
+        double sigma1 = 0.01;
         double gamma  = 1.4;
         double R      = 287.87;
         double T      = 273.15;
         double p      = 101325.0;
         double Ma     = 0.8;
-        if( xi.size() == 2 ) {
-            Ma = Ma - sigma1 + xi[1] * sigma1;
-        }
+        // if( xi.size() == 2 ) {
+        Ma = Ma + xi[0] * sigma1;
+        //}
         double a  = sqrt( gamma * R * T );
         double pi = 3.14159265359;
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + sigma * xi[0] ) * ( 2.0 * pi ) / 360.0;
+        double angle = ( 1.25 + sigma * 0.0 ) * ( 2.0 * pi ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 

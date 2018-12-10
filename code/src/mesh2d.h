@@ -15,6 +15,7 @@
 #include <vtkCellDataToPointData.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
+#include <vtkQuad.h>
 #include <vtkSmartPointer.h>
 #include <vtkTriangle.h>
 #include <vtkUnstructuredGrid.h>
@@ -22,6 +23,7 @@
 #include <vtkXMLUnstructuredGridWriter.h>
 
 #include "mesh.h"
+#include "quadrangle.h"
 #include "triangle.h"
 
 using vtkPointsSP                    = vtkSmartPointer<vtkPoints>;

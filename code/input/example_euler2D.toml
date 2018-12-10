@@ -13,14 +13,14 @@ outputFile = "euler_naca0012"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = "Legendre"
-CFL = 0.042
+distribution = ["Hermite"]
+CFL = 0.035
 tEnd = 0.1
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
 closure = "Euler2D"
-moments = 4
-quadPoints = 8
+moments = 5
+quadPoints = 10
 maxIterations = 1
 epsilon = 5e-5

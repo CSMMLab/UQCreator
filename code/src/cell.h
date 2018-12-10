@@ -7,7 +7,7 @@
 
 #include "typedefs.h"
 
-enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE };
+enum BoundaryType { NOSLIP, DIRICHLET, NEUMANN, PERIODIC, NONE, SWWALL };
 
 struct Node {
     unsigned id;
@@ -59,6 +59,7 @@ class Cell
     VectorU GetNeighborIDs();
     bool IsBoundaryCell();
     std::vector<Edge*> GetEdges();
+    unsigned GetNPoints() const;
     unsigned GetID();
     double GetArea();
     const Vector& GetCenter();

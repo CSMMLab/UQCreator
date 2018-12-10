@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <mpi.h>
 #include <omp.h>
 
 #include "mesh.h"
@@ -108,6 +109,8 @@ void PrintInit( std::string configFile ) {
 }
 
 int main( int argc, char* argv[] ) {
+    int ierr = MPI_Init( &argc, &argv );
+
     std::string configFile = "";
 
     if( !CheckInput( configFile, argc, argv ) ) {
@@ -117,9 +120,11 @@ int main( int argc, char* argv[] ) {
     initLogger( spdlog::level::info, spdlog::level::info, configFile );
     auto log = spdlog::get( "event" );
 
-    PrintInit( configFile );
+    // PrintInit( configFile );
 
-    Settings* settings   = new Settings( configFile );
+    Settings* settings = new Settings( configFile );
+    std::cout << settings->GetNStates() << std::endl;
+    if( settings->GetMyPE() == 0 ) PrintInit( configFile );
     Mesh* mesh           = Mesh::Create( settings );
     Problem* problem     = Problem::Create( settings );
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );
@@ -127,12 +132,14 @@ int main( int argc, char* argv[] ) {
     solver->Solve();
 
     log->info( "" );
-    log->info( "Process exited normally." );
+    log->info( "Process exited normally on PE {:03.8f} .", double( settings->GetMyPE() ) );
 
     delete solver;
     delete problem;
     delete mesh;
     delete settings;
+
+    ierr = MPI_Finalize();
 
     return EXIT_SUCCESS;
 }

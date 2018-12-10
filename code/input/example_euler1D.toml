@@ -13,7 +13,7 @@ outputFile = "euler_shock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = "Legendre"
+distribution = ["Legendre"]
 CFL = 5.0
 tEnd = 0.14
 
@@ -21,6 +21,6 @@ tEnd = 0.14
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
 closure = "Euler"
 moments = 5
-quadPoints = 20
+quadPoints = 30
 maxIterations = 200
 epsilon = 5e-5

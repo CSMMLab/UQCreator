@@ -8,8 +8,8 @@
 
 #include "cpptoml.h"
 
-enum ProblemType { P_BURGERS_1D, P_EULER_1D, P_EULER_2D };
-enum ClosureType { C_BOUNDEDBARRIER, C_STOCHASTICGALERKIN, C_EULER_1D, C_EULER_2D };
+enum ProblemType { P_BURGERS_1D, P_EULER_1D, P_EULER_2D, P_SHALLOWWATER_1D, P_SHALLOWWATER_2D };
+enum ClosureType { C_BOUNDEDBARRIER, C_STOCHASTICGALERKIN, C_EULER_1D, C_EULER_2D, C_SHALLOWWATER_1D, C_SHALLOWWATER_2D };
 enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };
 enum DistributionType { D_LEGENDRE, D_HERMITE };
@@ -27,12 +27,26 @@ class Settings
 
     // requied settings
     unsigned _meshDimension;
-    unsigned _nQuadPoints;
-    unsigned _nQTotal;
-    unsigned _nMoments;
+    unsigned _numCells;
+    unsigned _nXPE;    // number of spatial cells on PE
+
+    unsigned _nQuadPoints;    // number of quadrature points in one dimension
+    unsigned _nQTotal;        // number of quadrature points in all dimensions
+    unsigned _nQPE;           // number of total quadrature points on PE
+    unsigned _kStart;         // start point in quadrature point array for PE
+    unsigned _kEnd;           // end point in quadrature point array for PE
+
+    int _mype;                             // PE number
+    int _npes;                             // number of all PEs
+    std::vector<unsigned> _cellIndexPE;    // vector of spatial cells for PE
+    std::vector<int> _PEforCell;
+
+    unsigned _nMoments;    // number of moments in one dimension
+    unsigned _nTotal;      // number of moments in all dimensions
+
     unsigned _maxIterations;
     unsigned _nStates;
-    unsigned _numCells;
+
     unsigned _numDimXi;
     double _epsilon;
     double _CFL;
@@ -43,7 +57,7 @@ class Settings
     ClosureType _closureType;
     ProblemType _problemType;
     TimesteppingType _timesteppingType;
-    DistributionType _distributionType;
+    std::vector<DistributionType> _distributionType;
 
     // mesh dependent settings
 
@@ -73,7 +87,7 @@ class Settings
 
     // problem
     TimesteppingType GetTimesteppingType() const;
-    DistributionType GetDistributionType() const;
+    DistributionType GetDistributionType( unsigned l ) const;
     double GetCFL() const;
     unsigned GetNDimXi() const;
     double GetTEnd() const;
@@ -83,6 +97,7 @@ class Settings
     // moment_system
     ClosureType GetClosureType() const;
     unsigned GetNMoments() const;
+    unsigned GetNTotal() const;
     unsigned GetNQuadPoints() const;
     unsigned GetNQTotal() const;
     LimiterType GetLimiterType() const;
@@ -94,6 +109,16 @@ class Settings
     bool GetPlotEnabled() const;
     unsigned GetPlotStepInterval() const;
     double GetPlotTimeInterval() const;
+
+    // MPI
+    int GetMyPE() const;
+    int GetNPEs() const;
+    unsigned GetKStart() const;
+    unsigned GetKEnd() const;
+    unsigned GetNqPE() const;
+    unsigned GetNxPE() const;
+    std::vector<unsigned> GetCellIndexPE() const;
+    std::vector<int> GetPEforCell() const;
 };
 
 #endif    // SETTINGS_H

@@ -1,10 +1,15 @@
+#include <mpi.h>
+
 #include "settings.h"
 
-Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi( 1 ) {
+Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
     auto log = spdlog::get( "event" );
 
     bool validConfig = true;
     try {
+        int ierr;
+        ierr      = MPI_Comm_rank( MPI_COMM_WORLD, &_mype );
+        ierr      = MPI_Comm_size( MPI_COMM_WORLD, &_npes );
         _cwd      = std::filesystem::current_path();
         _inputDir = std::experimental::filesystem::path( _inputFile.parent_path() );
 
@@ -24,8 +29,15 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
             else if( problemTypeString->compare( "Euler2D" ) == 0 ) {
                 _problemType = ProblemType::P_EULER_2D;
             }
+            else if( problemTypeString->compare( "ShallowWater1D" ) == 0 ) {
+                _problemType = ProblemType::P_SHALLOWWATER_1D;
+            }
+            else if( problemTypeString->compare( "ShallowWater2D" ) == 0 ) {
+                _problemType = ProblemType::P_SHALLOWWATER_2D;
+            }
             else {
-                log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers, Euler, Euler2D" );
+                log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers1D, Euler1D, "
+                            "Euler2D,ShallowWater1D,ShallowWater2D" );
                 validConfig = false;
             }
         }
@@ -82,21 +94,27 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
             log->error( "[inputfile] [problem] 'timestepping' not set!\nPlease set one of the following types: explicitEuler" );
             validConfig = false;
         }
-        auto distribution = problem->get_as<std::string>( "distribution" );
+        auto distribution = problem->get_array_of<std::string>( "distribution" );
         if( distribution ) {
-            if( distribution->compare( "Legendre" ) == 0 ) {
-                _distributionType = DistributionType::D_LEGENDRE;
-            }
-            else if( distribution->compare( "Hermite" ) == 0 ) {
-                _distributionType = DistributionType::D_HERMITE;
-            }
-            else {
-                log->error( "[inputfile] [problem] 'distribution' is invalid!\nPlease set one of the following types: Legendre, Hermite" );
-                validConfig = false;
+            _numDimXi = unsigned( distribution->size() );
+            _distributionType.resize( _numDimXi );
+            unsigned l = 0;
+            for( const auto& dist : *distribution ) {
+                if( dist.compare( "Legendre" ) == 0 ) {
+                    _distributionType[l] = DistributionType::D_LEGENDRE;
+                }
+                else if( dist.compare( "Hermite" ) == 0 ) {
+                    _distributionType[l] = DistributionType::D_HERMITE;
+                }
+                else {
+                    log->error( "[inputfile] [problem] 'distribution' is invalid!\nPlease set one of the following types: Legendre, Hermite" );
+                    validConfig = false;
+                }
+                l++;
             }
         }
         else {
-            log->error( "[inputfile] [problem] 'timestepping' not set!\nPlease set one of the following types: explicitEuler" );
+            log->error( "[inputfile] [problem] 'distribution' not set!\nPlease set one of the following types: Legendre, Hermite" );
             validConfig = false;
         }
         auto CFL = problem->get_as<double>( "CFL" );
@@ -132,6 +150,12 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
             else if( closureTypeString->compare( "Euler2D" ) == 0 ) {
                 _closureType = ClosureType::C_EULER_2D;
             }
+            else if( closureTypeString->compare( "ShallowWater" ) == 0 ) {
+                _closureType = ClosureType::C_SHALLOWWATER_1D;
+            }
+            else if( closureTypeString->compare( "ShallowWater2D" ) == 0 ) {
+                _closureType = ClosureType::C_SHALLOWWATER_2D;
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, "
                             "StochasticGalerkin, Euler, Euler2D" );
@@ -146,6 +170,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
         auto nMoments = moment_system->get_as<unsigned>( "moments" );
         if( nMoments ) {
             _nMoments = *nMoments;
+            _nTotal   = unsigned( std::pow( _nMoments, _numDimXi ) );
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
@@ -154,6 +179,23 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
         auto nQuadPoints = moment_system->get_as<unsigned>( "quadPoints" );
         if( nQuadPoints ) {
             _nQuadPoints = *nQuadPoints;
+            _nQTotal     = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
+            /*
+            // determine size of quad array on PE
+            int nQPE = int( ( int( _nQTotal ) - 1 ) / _npes ) + 1;
+            if( _mype == _npes - 1 ) {
+                nQPE = int( _nQTotal ) - _mype * nQPE;
+                if( nQPE < 0 ) {
+                    nQPE = 0;
+                }
+            }
+            _nQPE   = unsigned( nQPE );
+            _kStart = _mype * ( ( _nQTotal - 1 ) / _npes + 1.0 );
+            _kEnd   = _kStart + _nQPE - 1;*/
+            _kEnd   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotal / double( _npes ) ) ) );
+            _kStart = unsigned( std::ceil( double( _mype ) * ( double( _nQTotal ) / double( _npes ) ) ) );
+            if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotal ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
+            _nQPE = _kEnd - _kStart + 1;
         }
         else {
             log->error( "[inputfile] [moment_system] 'quadPoints' not set!" );
@@ -161,8 +203,6 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _numDimXi
         }
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
-        _nQTotal       = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
-
     } catch( const cpptoml::parse_exception& e ) {
         log->error( "Failed to parse {0}: {1}", _inputFile.c_str(), e.what() );
         exit( EXIT_FAILURE );
@@ -185,7 +225,33 @@ std::string Settings::GetOutputDir() const { return _outputDir; }
 // mesh
 unsigned Settings::GetMeshDimension() const { return _meshDimension; }
 unsigned Settings::GetNumCells() const { return _numCells; }
-void Settings::SetNumCells( unsigned n ) { _numCells = n; }
+void Settings::SetNumCells( unsigned n ) {
+    _numCells = n;
+    _PEforCell.clear();
+    _cellIndexPE.clear();
+    bool devideChunks = true;
+    int nChunks       = 1;
+    if( !devideChunks ) {    // TODO: Fix like quadrature
+        int nXPE = int( ( int( _numCells ) - 1 ) / _npes ) + 1;
+        if( _mype == _npes - 1 ) {
+            nXPE = int( _numCells ) - _mype * nXPE;
+            if( nXPE < 0 ) {
+                nXPE = 0;
+            }
+        }
+        _nXPE           = unsigned( nXPE );
+        unsigned jStart = _mype * ( ( _numCells - 1 ) / _npes + 1.0 );
+        for( unsigned j = 0; j < _nXPE; ++j ) _cellIndexPE.push_back( jStart + j );
+        for( unsigned j = 0; j < _numCells; ++j ) _PEforCell.push_back( int( std::floor( j / _nXPE ) ) );
+    }
+    else {
+        for( unsigned j = 0; j < _numCells; ++j ) {
+            _PEforCell.push_back( int( j ) % ( _npes ) );
+            if( _PEforCell[j] == _mype ) _cellIndexPE.push_back( j );
+        }
+        _nXPE = unsigned( _cellIndexPE.size() );
+    }
+}
 std::string Settings::GetOutputFile() const { return _outputFile; }
 bool Settings::HasContinueFile() const { return !_continueFile.empty(); }
 std::string Settings::GetContinueFile() const { return _continueFile; }
@@ -197,7 +263,7 @@ double Settings::GetTEnd() const { return _tEnd; }
 unsigned Settings::GetNDimXi() const { return _numDimXi; }
 double Settings::GetGamma() const { return _gamma; }
 void Settings::SetGamma( double gamma ) { _gamma = gamma; }
-DistributionType Settings::GetDistributionType() const { return _distributionType; }
+DistributionType Settings::GetDistributionType( unsigned l ) const { return _distributionType[l]; }
 
 // moment_system
 ClosureType Settings::GetClosureType() const { return _closureType; }
@@ -208,7 +274,18 @@ LimiterType Settings::GetLimiterType() const { return _limiterType; }
 unsigned Settings::GetMaxIterations() const { return _maxIterations; }
 void Settings::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxIterations; }
 double Settings::GetEpsilon() const { return _epsilon; }
+unsigned Settings::GetNTotal() const { return _nTotal; }
 
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }
 double Settings::GetPlotTimeInterval() const { return _plotTimeInterval; }
+
+// MPI
+int Settings::GetMyPE() const { return _mype; }
+int Settings::GetNPEs() const { return _npes; }
+unsigned Settings::GetKStart() const { return _kStart; }
+unsigned Settings::GetKEnd() const { return _kEnd; }
+unsigned Settings::GetNqPE() const { return _nQPE; }
+unsigned Settings::GetNxPE() const { return _nXPE; }
+std::vector<unsigned> Settings::GetCellIndexPE() const { return _cellIndexPE; }
+std::vector<int> Settings::GetPEforCell() const { return _PEforCell; }

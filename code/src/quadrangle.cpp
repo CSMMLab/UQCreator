@@ -1,5 +1,7 @@
 #include "quadrangle.h"
 
+#include <cmath>
+
 Quadrangle::Quadrangle( unsigned id, std::vector<Node*> nodes ) : Cell( CELL_TYPE::QUADRILATERAL, id, nodes ) {
     unsigned boundaryNodeCtr = 0;
     for( const auto& n : _nodes ) {
@@ -13,14 +15,26 @@ Quadrangle::Quadrangle( unsigned id, std::vector<Node*> nodes ) : Cell( CELL_TYP
     else {
         _isBoundaryCell = false;
     }
-    Vector d1{_nodes[0]->coords[0] - _nodes[2]->coords[0], _nodes[1]->coords[1] - _nodes[3]->coords[1]};
-    Vector d2{_nodes[1]->coords[0] - _nodes[3]->coords[0], _nodes[1]->coords[1] - _nodes[3]->coords[1]};
-    double angle = std::acos( dot( d1, d2 ) / ( norm( d1 ) * norm( d2 ) ) );
+    Vector d1{_nodes[0]->coords[0] - _nodes[1]->coords[0], _nodes[0]->coords[1] - _nodes[1]->coords[1]};
+    Vector d2{_nodes[1]->coords[0] - _nodes[2]->coords[0], _nodes[1]->coords[1] - _nodes[2]->coords[1]};
+    Vector d3{_nodes[2]->coords[0] - _nodes[3]->coords[0], _nodes[2]->coords[1] - _nodes[3]->coords[1]};
+    Vector d4{_nodes[3]->coords[0] - _nodes[0]->coords[0], _nodes[3]->coords[1] - _nodes[0]->coords[1]};
 
-    _area = 0.5 * std::abs( dot( d1, d2 ) * std::sin( angle ) );
+    double a = sqrt( pow( d1[0], 2 ) + pow( d1[1], 2 ) );
+    double b = sqrt( pow( d2[0], 2 ) + pow( d2[1], 2 ) );
+    double c = sqrt( pow( d3[0], 2 ) + pow( d3[1], 2 ) );
+    double d = sqrt( pow( d4[0], 2 ) + pow( d4[1], 2 ) );
+    double T = 0.5 * ( a + b + c + d );
+
+    double alpha = acos( ( d4[0] * d1[0] + d4[1] * d1[1] ) / ( a * d ) );
+    double beta  = acos( ( d2[0] * d3[0] + d2[1] * d3[1] ) / ( b * c ) );
+
+    _area = sqrt( ( T - a ) * ( T - b ) * ( T - c ) * ( T - d ) - a * b * c * d * pow( cos( 0.5 * ( alpha + beta ) ), 2 ) );
 
     _center = Vector{( _nodes[0]->coords[0] + _nodes[1]->coords[0] + _nodes[2]->coords[0] + _nodes[3]->coords[0] ) / 4.0,
                      ( _nodes[0]->coords[1] + _nodes[1]->coords[1] + _nodes[2]->coords[1] + _nodes[3]->coords[1] ) / 4.0};
+    _neighbors.resize( 4 );
+    _neighborIDs.resize( 4 );
     SetupEdges();
 }
 
@@ -39,6 +53,14 @@ void Quadrangle::SetupEdges() {
 
         _edges[i] = new Edge{A, B, length, unitNormal, scaledNormal};
     }
+    Node* A           = _nodes[_N - 1];
+    Node* B           = _nodes[0];
+    double length     = std::sqrt( std::pow( A->coords[0] - B->coords[0], 2 ) + std::pow( A->coords[1] - B->coords[1], 2 ) );
+    Vector unitNormal = getOutwardNormal( A, B );
+    unitNormal /= norm( unitNormal );
+    Vector scaledNormal = length * unitNormal;
+
+    _edges[_N - 1] = new Edge{A, B, length, unitNormal, scaledNormal};
 }
 
 Vector Quadrangle::getOutwardNormal( Node* A, Node* B ) {

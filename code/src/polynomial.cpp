@@ -15,12 +15,12 @@ void Polynomial::Sort() {
     _weights = sorted_weights;
 }
 
-Polynomial* Polynomial::Create( Settings* settings, unsigned order ) {
+Polynomial* Polynomial::Create( Settings* settings, unsigned order, DistributionType distributionType ) {
     auto log = spdlog::get( "event" );
-    if( settings->GetDistributionType() == DistributionType::D_LEGENDRE ) {
+    if( distributionType == DistributionType::D_LEGENDRE ) {
         return new Legendre( order );
     }
-    else if( settings->GetDistributionType() == DistributionType::D_HERMITE ) {
+    else if( distributionType == DistributionType::D_HERMITE ) {
         return new Hermite( settings->GetNQuadPoints() );
     }
     else {
