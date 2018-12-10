@@ -72,3 +72,5 @@ void Cell::SetDefaultCellId( unsigned id ) {
         this->AddNeighborId( id, i );
     }
 }
+
+unsigned Cell::GetNPoints() const { return unsigned( _nodes.size() ); }

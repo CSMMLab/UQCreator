@@ -59,6 +59,7 @@ class Cell
     VectorU GetNeighborIDs();
     bool IsBoundaryCell();
     std::vector<Edge*> GetEdges();
+    unsigned GetNPoints() const;
     unsigned GetID();
     double GetArea();
     const Vector& GetCenter();

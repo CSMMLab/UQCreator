@@ -285,7 +285,7 @@ void Mesh2D::AddNeighbor( Cell* c, Cell* neighbor, unsigned index0, unsigned ind
         index0       = index1;
         index1       = tmp;
     }
-    if( c->GetNeighbors().size() == 3 ) {
+    if( c->GetNPoints() == 3 ) {
         if( index0 == 0 && index1 == 1 ) {
             c->AddNeighbor( neighbor, 0 );
         }
@@ -296,7 +296,7 @@ void Mesh2D::AddNeighbor( Cell* c, Cell* neighbor, unsigned index0, unsigned ind
             c->AddNeighbor( neighbor, 2 );
         }
     }
-    else if( c->GetNeighbors().size() == 4 ) {
+    else if( c->GetNPoints() == 4 ) {
         if( index0 == 0 && index1 == 1 ) {
             c->AddNeighbor( neighbor, 0 );
         }
@@ -313,7 +313,6 @@ void Mesh2D::AddNeighbor( Cell* c, Cell* neighbor, unsigned index0, unsigned ind
 }
 
 void Mesh2D::DetermineNeighbors() {
-    std::cout << "Determine Neighbors" << std::endl;
     for( unsigned i = 0; i < _numCells; ++i ) {
         Cell* ci = _cells[i];
         for( unsigned j = i + 1; j < _numCells; ++j ) {
