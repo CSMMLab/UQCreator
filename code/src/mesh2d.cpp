@@ -196,7 +196,6 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                 break;
             }
         }
-        std::cout << "Neighbors saved!" << std::endl;
         _boundaryType.resize( _numCells );
         assert( _cells.size() == _numCells );
         for( unsigned i = 0; i < _numCells; ++i ) {

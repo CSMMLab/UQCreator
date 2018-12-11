@@ -66,7 +66,7 @@ Vector ShallowWater::G( const Vector& q_l, const Vector& q_r, const Vector& nUni
     else if( lambdaMax <= 0 ) {
         return F( q_r ) * n;
     }
-    else if( lambdaMin <= 0 && lambdaMax >= 0 ) {
+    else {
         // return F( ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( ( lambdaMax * q_r - lambdaMin * q_l ) + F( q_l ) * nUnit - F( q_r ) * nUnit ) ) * n;
         return ( 1.0 / ( lambdaMax - lambdaMin ) ) *
                ( lambdaMax * F( q_l ) * n - lambdaMin * F( q_r ) * n + lambdaMax * lambdaMin * ( q_r - q_l ) * norm( n ) );
