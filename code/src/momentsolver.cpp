@@ -313,7 +313,38 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
         }
         return y;
     }
-    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D ) {
+    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D && true ) {    // pipe testcase
+        double sigma = 0.2;
+        double gamma = 1.4;
+        double R     = 287.87;
+        double T     = 273.15;
+        double p     = 101325.0;
+        double Ma    = 0.0;
+        double a     = sqrt( gamma * R * T );
+        double pi    = 3.14159265359;
+
+        double uMax  = Ma * a;
+        double angle = ( 1.25 + sigma * 0.0 ) * ( 2.0 * pi ) / 360.0;
+        double uF    = uMax * cos( angle );
+        double vF    = uMax * sin( angle );
+
+        double rhoFarfield = p / ( R * T );
+
+        y[0]                  = rhoFarfield;
+        y[1]                  = rhoFarfield * uF;
+        y[2]                  = rhoFarfield * vF;
+        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
+        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
+        y[3]                  = kineticEnergyL + innerEnergyL;
+        if( x[1] < 1.1 + sigma * xi[0] ) {
+            y[0] = 0.5 * rhoFarfield;
+            y[1] = rhoFarfield * uF;
+            y[2] = rhoFarfield * vF;
+            y[3] = 0.5 * ( kineticEnergyL + innerEnergyL );
+        }
+        return y;
+    }
+    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D && false ) {
         double sigma  = 0.5;
         double sigma1 = 0.01;
         double gamma  = 1.4;
