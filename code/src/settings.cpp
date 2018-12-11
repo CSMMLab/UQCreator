@@ -156,6 +156,9 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             else if( closureTypeString->compare( "ShallowWater2D" ) == 0 ) {
                 _closureType = ClosureType::C_SHALLOWWATER_2D;
             }
+            else if( closureTypeString->compare( "L2Filter" ) == 0 ) {
+                _closureType = ClosureType::C_L2FILTER;
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, "
                             "StochasticGalerkin, Euler, Euler2D" );

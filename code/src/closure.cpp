@@ -2,6 +2,7 @@
 #include "boundedbarrier.h"
 #include "eulerclosure.h"
 #include "eulerclosure2d.h"
+#include "l2filter.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
 #include "stochasticgalerkin.h"
@@ -117,6 +118,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_SHALLOWWATER_2D ) {
         return new ShallowWaterClosure2D( settings );
+    }
+    else if( closureType == ClosureType::C_L2FILTER ) {
+        return new L2Filter( settings );
     }
     else {
         log->error( "[closure]: Invalid closure type" );
