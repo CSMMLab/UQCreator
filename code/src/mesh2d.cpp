@@ -303,7 +303,9 @@ void Mesh2D::DetermineNeighbors() {
                             indexJ1 = nj;
                             this->AddNeighbor( ci, cj, indexI0, indexI1 );
                             this->AddNeighbor( cj, ci, indexJ0, indexJ1 );
-                            _edges.push_back( std::make_pair( ci, cj ) );
+                            if( ci->GetBoundaryType() != BoundaryType::DIRICHLET && cj->GetBoundaryType() != BoundaryType::DIRICHLET ) {
+                                _edges.push_back( std::make_pair( ci, cj ) );
+                            }
                             goto cnt;
                         }
                     }
@@ -312,6 +314,9 @@ void Mesh2D::DetermineNeighbors() {
         cnt:;
         }
         if( _cells[i]->IsBoundaryCell() ) {
+            if( _cells[i]->GetBoundaryType() != BoundaryType::DIRICHLET ) {
+                _edges.push_back( std::make_pair( _cells[i], nullptr ) );
+            }
             _cells[i]->UpdateBoundaryNormal();
         }
     }

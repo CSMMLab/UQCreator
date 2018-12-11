@@ -111,36 +111,28 @@ void PrintInit( std::string configFile ) {
 int main( int argc, char* argv[] ) {
     std::string configFile = "";
 
-    VectorSpace::FluxMatrix<double> test( 3 );
-    test.set( -13, 0, 1 );
-    test.set( 42, 1, 2 );
-    std::cout << test( 1, 2 ) << std::endl;
-    // std::cout << test << std::endl;
+    if( !CheckInput( configFile, argc, argv ) ) {
+        return EXIT_FAILURE;
+    }
 
-    /*
-        if( !CheckInput( configFile, argc, argv ) ) {
-            return EXIT_FAILURE;
-        }
+    initLogger( spdlog::level::info, spdlog::level::info, configFile );
+    auto log = spdlog::get( "event" );
 
-        initLogger( spdlog::level::info, spdlog::level::info, configFile );
-        auto log = spdlog::get( "event" );
+    PrintInit( configFile );
 
-        PrintInit( configFile );
+    Settings* settings   = new Settings( configFile );
+    Mesh* mesh           = Mesh::Create( settings );
+    Problem* problem     = Problem::Create( settings );
+    MomentSolver* solver = new MomentSolver( settings, mesh, problem );
 
-        Settings* settings   = new Settings( configFile );
-        Mesh* mesh           = Mesh::Create( settings );
-        Problem* problem     = Problem::Create( settings );
-        MomentSolver* solver = new MomentSolver( settings, mesh, problem );
+    solver->Solve();
 
-        solver->Solve();
+    log->info( "\nProcess exited normally." );
 
-        log->info( "\nProcess exited normally." );
-
-        delete solver;
-        delete problem;
-        delete mesh;
-        delete settings;
-    */
+    delete solver;
+    delete problem;
+    delete mesh;
+    delete settings;
 
     return EXIT_SUCCESS;
 }

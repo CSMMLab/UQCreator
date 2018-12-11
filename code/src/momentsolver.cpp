@@ -51,8 +51,13 @@ void MomentSolver::Solve() {
         }
     }
 
-    auto numFluxPtr =
-        std::bind( &MomentSolver::numFlux, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 );
+    auto numFluxPtr = std::bind( &MomentSolver::numFlux,
+                                 this,
+                                 std::placeholders::_1,
+                                 std::placeholders::_2,
+                                 std::placeholders::_3,
+                                 std::placeholders::_4,
+                                 std::placeholders::_5 );
 
     log->info( "{:10}   {:10}", "t", "residual" );
     // Begin time loop
@@ -97,8 +102,8 @@ void MomentSolver::Solve() {
     _mesh->Export( meanAndVar );
 }
 
-Matrix MomentSolver::numFlux( const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
-    return _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
+void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
+    out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
 }
 
 void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {

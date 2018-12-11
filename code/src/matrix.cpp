@@ -243,7 +243,7 @@ template <class T> IdentityMatrix<T>::IdentityMatrix( unsigned n ) : Matrix<T>( 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-template <class T> class FluxMatrix    // sparse, symmetric (upper = -lower), zero diagonal
+template <class T> class SparseMatrix
 {
   private:
     unsigned _dim;
@@ -254,13 +254,13 @@ template <class T> class FluxMatrix    // sparse, symmetric (upper = -lower), ze
     void insert( T val, unsigned index, unsigned i, unsigned j );
     void remove( unsigned index, unsigned j );
 
-    FluxMatrix() = delete;
+    SparseMatrix() = delete;
 
   public:
-    FluxMatrix( unsigned n );
-    FluxMatrix( const FluxMatrix& other );
-    ~FluxMatrix();
-    void operator=( const FluxMatrix<T>& other );
+    SparseMatrix( unsigned n );
+    SparseMatrix( const SparseMatrix& other );
+    ~SparseMatrix();
+    void operator=( const SparseMatrix<T>& other );
 
     T operator()( unsigned i, unsigned j ) const;
     void set( T value, unsigned i, unsigned j );
@@ -270,18 +270,18 @@ template <class T> class FluxMatrix    // sparse, symmetric (upper = -lower), ze
     unsigned nnz() const;
 };
 
-template <class T> FluxMatrix<T>::FluxMatrix( unsigned dim ) : _dim( dim ), _data( nullptr ), _colInd( nullptr ) {
+template <class T> SparseMatrix<T>::SparseMatrix( unsigned dim ) : _dim( dim ), _data( nullptr ), _colInd( nullptr ) {
     this->_rowPtr = new std::vector<unsigned>( _dim + 1, 0 );
 }
 
-template <class T> FluxMatrix<T>::FluxMatrix( const FluxMatrix& other ) {
+template <class T> SparseMatrix<T>::SparseMatrix( const SparseMatrix& other ) {
     _dim    = other._dim;
     _data   = other._data;
     _colInd = other.columnID;
     _rowPtr = other.rowID;
 }
 
-template <class T> FluxMatrix<T>::~FluxMatrix() {
+template <class T> SparseMatrix<T>::~SparseMatrix() {
     if( _data != nullptr ) {
         delete _data;
         delete _colInd;
@@ -289,7 +289,7 @@ template <class T> FluxMatrix<T>::~FluxMatrix() {
     }
 }
 
-template <class T> void FluxMatrix<T>::set( T value, unsigned i, unsigned j ) {
+template <class T> void SparseMatrix<T>::set( T value, unsigned i, unsigned j ) {
     unsigned index   = ( *_rowPtr )[i];
     unsigned currCol = 0;
     for( ; index < ( *_rowPtr )[i + 1]; ++index ) {
@@ -300,12 +300,7 @@ template <class T> void FluxMatrix<T>::set( T value, unsigned i, unsigned j ) {
     }
     if( currCol != j ) {
         if( value != T() ) {
-            if( j > i ) {
-                this->insert( value, index, i, j );
-            }
-            else if( i > j ) {
-                this->insert( -value, index, j, i );
-            }
+            this->insert( value, index, i, j );
         }
     }
     else if( value == T() ) {
@@ -316,36 +311,19 @@ template <class T> void FluxMatrix<T>::set( T value, unsigned i, unsigned j ) {
     }
 }
 
-template <class T> T FluxMatrix<T>::operator()( unsigned i, unsigned j ) const {
-    unsigned row, column;
-    if( j > i ) {
-        row    = i;
-        column = j;
-    }
-    else if( i > j ) {
-        row    = j;
-        column = i;
-    }
-    else {
-        return T();
-    }
-    for( unsigned pos = ( *_rowPtr )[row]; pos < ( *_rowPtr )[row + 1]; ++pos ) {
-        if( ( *_colInd )[pos] == column ) {
-            if( i > j )
-                return ( *_data )[pos];
-            else if( j > i )
-                return -( *_data )[pos];
-            else
-                return T();
+template <class T> T SparseMatrix<T>::operator()( unsigned i, unsigned j ) const {
+    for( unsigned pos = ( *_rowPtr )[i]; pos < ( *_rowPtr )[i + 1]; ++pos ) {
+        if( ( *_colInd )[pos] == j ) {
+            return ( *_data )[pos];
         }
-        else if( ( *_colInd )[pos] > column ) {
+        else if( ( *_colInd )[pos] > j ) {
             break;
         }
     }
     return T();
 }
 
-template <typename T> void FluxMatrix<T>::insert( T value, unsigned index, unsigned i, unsigned j ) {
+template <typename T> void SparseMatrix<T>::insert( T value, unsigned index, unsigned i, unsigned j ) {
     if( _data == nullptr ) {
         _data   = new std::vector<T>( 1, value );
         _colInd = new std::vector<unsigned>( 1, j );
@@ -360,7 +338,7 @@ template <typename T> void FluxMatrix<T>::insert( T value, unsigned index, unsig
     }
 }
 
-template <typename T> void FluxMatrix<T>::remove( unsigned index, unsigned j ) {
+template <typename T> void SparseMatrix<T>::remove( unsigned index, unsigned j ) {
     _data->erase( _data->begin() + index );
     _colInd->erase( _colInd->begin() + index );
 
@@ -369,10 +347,10 @@ template <typename T> void FluxMatrix<T>::remove( unsigned index, unsigned j ) {
     }
 }
 
-template <class T> unsigned FluxMatrix<T>::rows() const { return _dim; }
+template <class T> unsigned SparseMatrix<T>::rows() const { return _dim; }
 
-template <class T> unsigned FluxMatrix<T>::columns() const { return _dim; }
+template <class T> unsigned SparseMatrix<T>::columns() const { return _dim; }
 
-template <class T> unsigned FluxMatrix<T>::nnz() const { return _data->size() * 2; }
+template <class T> unsigned SparseMatrix<T>::nnz() const { return _data->size() * 2; }
 
 }    // namespace VectorSpace

@@ -60,7 +60,7 @@ template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace
     return os;
 }
 
-template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace::FluxMatrix<T>& a ) {
+template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace::SparseMatrix<T>& a ) {
     for( unsigned i = 0; i < a.rows(); ++i ) {
         os << "(\t";
         for( unsigned j = 0; j < a.columns(); ++j ) {
