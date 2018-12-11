@@ -109,7 +109,7 @@ void PrintInit( std::string configFile ) {
 }
 
 int main( int argc, char* argv[] ) {
-    int ierr = MPI_Init( &argc, &argv );
+    MPI_Init( &argc, &argv );
 
     std::string configFile = "";
 
@@ -123,7 +123,6 @@ int main( int argc, char* argv[] ) {
     // PrintInit( configFile );
 
     Settings* settings = new Settings( configFile );
-    std::cout << settings->GetNStates() << std::endl;
     if( settings->GetMyPE() == 0 ) PrintInit( configFile );
     Mesh* mesh           = Mesh::Create( settings );
     Problem* problem     = Problem::Create( settings );
@@ -139,7 +138,7 @@ int main( int argc, char* argv[] ) {
     delete mesh;
     delete settings;
 
-    ierr = MPI_Finalize();
+    MPI_Finalize();
 
     return EXIT_SUCCESS;
 }

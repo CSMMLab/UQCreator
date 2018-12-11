@@ -49,7 +49,7 @@ void MomentSolver::Solve() {
     std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
     std::vector<int> PEforCell        = _settings->GetPEforCell();
 
-    std::cout << "PE " << _settings->GetMyPE() << ": kStart " << _settings->GetKStart() << ", kEnd " << _settings->GetKEnd() << std::endl;
+    log->info( "PE {0}: kStart {1}, kEnd {2}", _settings->GetMyPE(), _settings->GetKStart(), _settings->GetKEnd() );
 
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned l = 0; l < _nStates; ++l ) {
@@ -77,15 +77,9 @@ void MomentSolver::Solve() {
                                  std::placeholders::_5 );
 
     log->info( "{:10}   {:10}", "t", "residual" );
-    int counter = 0;
     // Begin time loop
     for( double t = 0.0; t < _tEnd; t += _dt ) {
         double residual = 0;
-        // counter++;
-        if( counter == 100 ) {
-            std::cout << _dt;
-            break;
-        }
 
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
@@ -101,7 +95,7 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
             u[j].reset();
-            VectorSpace::multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd() );
+            multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd() );
         }
 
         _time->Advance( numFluxPtr, uNew, u, uQ );
@@ -120,7 +114,7 @@ void MomentSolver::Solve() {
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     log->info( "" );
-    log->info( "Finished!");
+    log->info( "Finished!" );
     log->info( "" );
     log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
@@ -152,7 +146,7 @@ void MomentSolver::Solve() {
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
     // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
-    VectorSpace::multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd() );
+    multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd() );
 }
 
 void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {

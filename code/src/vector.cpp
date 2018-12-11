@@ -35,6 +35,8 @@ template <class T> class Vector
 
     T& operator[]( unsigned i );
     const T& operator[]( unsigned i ) const;
+    T& operator[]( int i );
+    const T& operator[]( int i ) const;
 
     Vector operator+( const Vector& other ) const;
     Vector operator-( const Vector& other ) const;
@@ -69,8 +71,7 @@ template <class T> class Vector
 template <class T> Vector<T>::Vector() : _data( nullptr ), _N( 0 ), _ref( false ) {}
 
 template <class T> Vector<T>::Vector( unsigned n, bool skipZeroInit ) : _N( n ), _ref( false ) {
-    //_data = new T[_N];
-    _data = (T*)malloc( _N * sizeof( T ) );
+    _data = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     if( !skipZeroInit ) {
         for( unsigned i = 0; i < _N; ++i ) {
             _data[i] = 0.0;
@@ -79,8 +80,7 @@ template <class T> Vector<T>::Vector( unsigned n, bool skipZeroInit ) : _N( n ),
 }
 
 template <class T> Vector<T>::Vector( unsigned n, T init ) : _N( n ), _ref( false ) {
-    //_data = new T[_N];
-    _data = (T*)malloc( _N * sizeof( T ) );
+    _data = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     for( unsigned i = 0; i < _N; ++i ) {
         _data[i] = init;
     }
@@ -90,22 +90,19 @@ template <class T> Vector<T>::Vector( unsigned n, T* ptr ) : _N( n ), _ref( true
 
 template <class T> Vector<T>::~Vector() {
     if( !_ref ) {
-        // sdelete[] _data;
         free( _data );
     }
 }
 
 template <class T> Vector<T>::Vector( const Vector& other ) : _N( other._N ), _ref( false ) {
-    //_data = new T[_N];
-    _data = (T*)malloc( _N * sizeof( T ) );
+    _data = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     for( unsigned i = 0; i < _N; ++i ) {
         _data[i] = other._data[i];
     }
 }
 
 template <class T> Vector<T>::Vector( std::initializer_list<T> initList ) : _N( initList.size() ), _ref( false ) {
-    //_data        = new T[_N];
-    _data        = (T*)malloc( _N * sizeof( T ) );
+    _data        = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     auto listPtr = initList.begin();
     for( unsigned i = 0; i < _N; ++i ) {
         _data[i] = *listPtr;
@@ -118,7 +115,7 @@ template <class T> void Vector<T>::operator=( const Vector& other ) {
         _N   = other._N;
         _ref = false;
         //_data = new T[_N];
-        _data = (T*)malloc( _N * sizeof( T ) );
+        _data = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     }
     for( unsigned i = 0; i < _N; ++i ) {
         this->_data[i] = other._data[i];
@@ -128,6 +125,10 @@ template <class T> void Vector<T>::operator=( const Vector& other ) {
 template <class T> T& Vector<T>::operator[]( unsigned i ) { return _data[i]; }
 
 template <class T> const T& Vector<T>::operator[]( unsigned i ) const { return _data[i]; }
+
+template <class T> T& Vector<T>::operator[]( int i ) { return _data[i]; }
+
+template <class T> const T& Vector<T>::operator[]( int i ) const { return _data[i]; }
 
 template <class T> Vector<T> Vector<T>::operator+( const Vector& other ) const {
     Vector<T> res( _N );
@@ -252,7 +253,7 @@ template <class T> void Vector<T>::reset() {
 template <class T> void Vector<T>::resize( unsigned newSize ) {
     if( _data != nullptr ) {
         // T* _newData = new T[newSize];
-        T* _newData = (T*)malloc( newSize * sizeof( T ) );
+        T* _newData = static_cast<T*>( malloc( newSize * sizeof( T ) ) );
         for( unsigned i = 0; i < std::min( _N, newSize ); ++i ) {
             _newData[i] = _data[i];
         }
@@ -264,7 +265,7 @@ template <class T> void Vector<T>::resize( unsigned newSize ) {
     else {
         _N = newSize;
         //_data = new T[newSize];
-        _data = (T*)malloc( newSize * sizeof( T ) );
+        _data = static_cast<T*>( malloc( newSize * sizeof( T ) ) );
     }
 }
 

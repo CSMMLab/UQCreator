@@ -7,9 +7,8 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
 
     bool validConfig = true;
     try {
-        int ierr;
-        ierr      = MPI_Comm_rank( MPI_COMM_WORLD, &_mype );
-        ierr      = MPI_Comm_size( MPI_COMM_WORLD, &_npes );
+        MPI_Comm_rank( MPI_COMM_WORLD, &_mype );
+        MPI_Comm_size( MPI_COMM_WORLD, &_npes );
         _cwd      = std::filesystem::current_path();
         _inputDir = std::experimental::filesystem::path( _inputFile.parent_path() );
 
@@ -233,7 +232,7 @@ void Settings::SetNumCells( unsigned n ) {
     _PEforCell.clear();
     _cellIndexPE.clear();
     bool devideChunks = true;
-    int nChunks       = 1;
+    // int nChunks       = 1;
     if( !devideChunks ) {    // TODO: Fix like quadrature
         int nXPE = int( ( int( _numCells ) - 1 ) / _npes ) + 1;
         if( _mype == _npes - 1 ) {
@@ -243,7 +242,7 @@ void Settings::SetNumCells( unsigned n ) {
             }
         }
         _nXPE           = unsigned( nXPE );
-        unsigned jStart = _mype * ( ( _numCells - 1 ) / _npes + 1.0 );
+        unsigned jStart = static_cast<unsigned>( _mype * ( ( static_cast<int>( _numCells ) - 1 ) / _npes + 1.0 ) );
         for( unsigned j = 0; j < _nXPE; ++j ) _cellIndexPE.push_back( jStart + j );
         for( unsigned j = 0; j < _numCells; ++j ) _PEforCell.push_back( int( std::floor( j / _nXPE ) ) );
     }

@@ -7,7 +7,7 @@ double MathTools::Pythag( const double a, const double b ) {
 }
 
 std::pair<Vector, Matrix> MathTools::ComputeEigenValTriDiagMatrix( const Matrix& mat ) {
-    unsigned n = static_cast<unsigned>( mat.rows() );
+    unsigned n = mat.rows();
 
     Vector d( n, 0.0 ), e( n, 0.0 );
     Matrix z( n, n, 0.0 );
@@ -22,12 +22,12 @@ std::pair<Vector, Matrix> MathTools::ComputeEigenValTriDiagMatrix( const Matrix&
     double s, r, p, g, f, dd, c, b;
     s = r = p = g = f = dd = c = b = 0.0;
     const double eps               = std::numeric_limits<double>::epsilon();
-    for( i = 1; i < n; i++ ) e[i - 1] = e[i];
+    for( i = 1; i < static_cast<int>( n ); i++ ) e[i - 1] = e[i];
     e[n - 1] = 0.0;
-    for( l = 0; l < n; l++ ) {
+    for( l = 0; l < static_cast<int>( n ); l++ ) {
         iter = 0;
         do {
-            for( m = l; m < n - 1; m++ ) {
+            for( m = l; m < static_cast<int>( n ) - 1; m++ ) {
                 dd = std::fabs( d[m] ) + std::fabs( d[m + 1] );
                 if( std::fabs( e[m] ) <= eps * dd ) break;
             }
@@ -53,10 +53,12 @@ std::pair<Vector, Matrix> MathTools::ComputeEigenValTriDiagMatrix( const Matrix&
                     r        = ( d[i] - g ) * s + 2.0 * c * b;
                     d[i + 1] = g + ( p = s * r );
                     g        = c * r - b;
-                    for( k = 0; k < n; k++ ) {
-                        f             = z( k, i + 1 );
-                        z( k, i + 1 ) = s * z( k, i ) + c * f;
-                        z( k, i )     = c * z( k, i ) - s * f;
+                    for( k = 0; k < static_cast<int>( n ); k++ ) {
+                        f = z( static_cast<unsigned>( k ), static_cast<unsigned>( i ) + 1 );
+                        z( static_cast<unsigned>( k ), static_cast<unsigned>( i ) + 1 ) =
+                            s * z( static_cast<unsigned>( k ), static_cast<unsigned>( i ) ) + c * f;
+                        z( static_cast<unsigned>( k ), static_cast<unsigned>( i ) ) =
+                            c * z( static_cast<unsigned>( k ), static_cast<unsigned>( i ) ) - s * f;
                     }
                 }
                 if( r == 0.0 && i >= l ) continue;

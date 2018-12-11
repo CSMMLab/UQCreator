@@ -5,12 +5,12 @@
 Polynomial::Polynomial( unsigned degree ) : _degree( degree ) {}
 
 void Polynomial::Sort() {
-    std::vector<std::size_t> p( _nodes.size() );
+    std::vector<unsigned> p( _nodes.size() );
     std::iota( p.begin(), p.end(), 0 );
-    std::sort( p.begin(), p.end(), [&]( std::size_t i, std::size_t j ) { return _nodes[i] < _nodes[j]; } );
-    Vector sorted_nodes( p.size() ), sorted_weights( p.size() );
-    std::transform( p.begin(), p.end(), sorted_nodes.begin(), [&]( std::size_t i ) { return _nodes[i]; } );
-    std::transform( p.begin(), p.end(), sorted_weights.begin(), [&]( std::size_t i ) { return _weights[i]; } );
+    std::sort( p.begin(), p.end(), [&]( unsigned i, unsigned j ) { return _nodes[i] < _nodes[j]; } );
+    Vector sorted_nodes( static_cast<unsigned>( p.size() ) ), sorted_weights( static_cast<unsigned>( p.size() ) );
+    std::transform( p.begin(), p.end(), sorted_nodes.begin(), [&]( unsigned i ) { return _nodes[i]; } );
+    std::transform( p.begin(), p.end(), sorted_weights.begin(), [&]( unsigned i ) { return _weights[i]; } );
     _nodes   = sorted_nodes;
     _weights = sorted_weights;
 }
