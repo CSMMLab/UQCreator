@@ -39,16 +39,46 @@ Vector ShallowWater::G( const Vector& q_l, const Vector& q_r, const Vector& nUni
     double sMax1     = std::fmax( s1, s2 );
     double sMax2     = std::fmax( s3, s4 );
     double lambdaMax = std::fmax( sMax1, sMax2 );
+    Vector s( 2 );
+    s[0] = lambdaMin;
+    s[1] = lambdaMax;
 
-    Vector q_hat( 2 );
-    q_hat[0] = ( q_r[1] - q_l[1] - lambdaMax * q_r[0] + lambdaMin * q_l[0] ) / ( lambdaMin - lambdaMax );
-    q_hat[1] = ( pow( q_r[1], 2 ) / q_r[0] + 0.5 * _g * pow( q_r[0], 2 ) - ( pow( q_l[1], 2 ) / q_l[0] + 0.5 * _g * pow( q_l[0], 2 ) ) -
-                 lambdaMax * q_r[1] + lambdaMin * q_l[1] ) /
-               ( lambdaMin - lambdaMax );
+    // lambdaMin = u_l - lambdaMin;
+    // lambdaMax = u_r + lambdaMax;
+    // std::cout << lambdaMin << " " << lambdaMax << std::endl;
+    /*
+            Vector q_hat( 2 );
+            q_hat[0] = ( q_r[1] - q_l[1] - lambdaMax * q_r[0] + lambdaMin * q_l[0] ) / ( lambdaMin - lambdaMax );
+            q_hat[1] = ( pow( q_r[1], 2 ) / q_r[0] + 0.5 * _g * pow( q_r[0], 2 ) - ( pow( q_l[1], 2 ) / q_l[0] + 0.5 * _g * pow( q_l[0], 2 ) ) -
+                         lambdaMax * q_r[1] + lambdaMin * q_l[1] ) /
+                       ( lambdaMin - lambdaMax );
+            unsigned num_waves = 2;
+            unsigned num_eqn   = 2;
+            Matrix wave( num_eqn, num_waves );
+            wave( 0, 0 ) = q_hat[0] - q_l[0];
+            wave( 0, 1 ) = q_r[0] - q_hat[0];
+            wave( 1, 0 ) = q_hat[1] - q_l[1];
+            wave( 1, 1 ) = q_r[1] - q_hat[1];
+            Vector wave1 = q_hat - q_l;
+            Vector wave2 = q_r - q_hat;
 
-    Vector wave( 2 );
-    Vector wave1 = q_hat - q_l;
-    Vector wave2 = q_r - q_hat;
+            Matrix amdq( num_eqn, 1, 0.0 );
+            Matrix apdq( num_eqn, 1, 0.0 );
+
+            // Compute variations
+            Vector s_index( num_eqn, 0.0 );
+            for( unsigned m = 0; m < num_eqn; ++m ) {
+                for( unsigned mw = 0; mw < num_waves; ++mw ) {
+                    s_index[0] = s[mw];
+                    amdq( m, 0 ) += fmin( s_index[0], s_index[1] ) * wave( m, mw );
+                    apdq( m, 0 ) += fmax( s_index[0], s_index[1] ) * wave( m, mw );
+                }
+            }
+
+            return ( apdq + amdq ) * n;*/
+
+    // q [m, LL:UL] -= dtdx [LL:UL] * apdq [m, LL - 1:UL - 1];
+    // q [m, LL - 1:UL - 1] -= dtdx [LL - 1:UL - 1] * amdq [m, LL - 1:UL - 1]
 
     // return F( q_r + lambdaMin * wave1 ) * n;
 
@@ -59,6 +89,9 @@ Vector ShallowWater::G( const Vector& q_l, const Vector& q_r, const Vector& nUni
     // pow( u[1], 2 ) / u[0] + 0.5 * _g* pow( u[0], 2 );
 
     // return F( q_hat ) * n;
+
+    lambdaMin = u_l - c_l;
+    lambdaMax = u_r + c_r;
 
     if( lambdaMin >= 0 ) {
         return F( q_l ) * n;

@@ -40,27 +40,6 @@ Vector ShallowWater2D::G( const Vector& u, const Vector& v, const Vector& nUnit,
         return ( 1.0 / ( lambdaMax - lambdaMin ) ) *
                ( lambdaMax * F( u ) * n - lambdaMin * F( v ) * n + lambdaMax * lambdaMin * ( v - u ) * norm( n ) );
     }
-    /*
-    double hAvg  = 0.5 * ( u[0] + v[0] );
-    double h2Avg = 0.5 * ( pow( u[0], 2 ) + pow( v[0], 2 ) );
-    double huAvg = 0.5 * ( u[1] + v[1] );
-    double hvAvg = 0.5 * ( u[2] + v[2] );
-    double uU    = u[1] / u[0];
-    double vU    = v[1] / v[0];
-    double uV    = u[2] / u[0];
-    double vV    = v[2] / v[0];
-    double uAvg  = 0.5 * ( uU + vU );
-    double vAvg  = 0.5 * ( uV + vV );
-
-        Matrix y( 3, 2 );
-
-        y( 0, 0 ) = huAvg;
-        y( 1, 0 ) = huAvg * uAvg + _g * hAvg - 0.5 * _g * h2Avg;
-        y( 2, 0 ) = huAvg * vAvg;
-        y( 0, 1 ) = hvAvg;
-        y( 1, 1 ) = hvAvg * uAvg;
-        y( 2, 1 ) = hvAvg * vAvg + _g * hAvg - 0.5 * _g * h2Avg;
-        return y * n;*/
 }
 
 Matrix ShallowWater2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {

@@ -313,7 +313,7 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
         }
         return y;
     }
-    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D && true ) {    // pipe testcase
+    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D && false ) {    // pipe testcase
         double sigma = 0.2;
         double gamma = 1.4;
         double R     = 287.87;
@@ -352,14 +352,14 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
         double T      = 273.15;
         double p      = 101325.0;
         double Ma     = 0.8;
-        // if( xi.size() == 2 ) {
-        Ma = Ma + xi[0] * sigma1;
-        //}
+        if( xi.size() == 2 ) {
+            Ma = Ma + xi[1] * sigma1;
+        }
         double a  = sqrt( gamma * R * T );
         double pi = 3.14159265359;
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + sigma * 0.0 ) * ( 2.0 * pi ) / 360.0;
+        double angle = ( 1.25 + sigma * xi[0] ) * ( 2.0 * pi ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 
