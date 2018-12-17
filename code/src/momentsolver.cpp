@@ -138,7 +138,11 @@ void MomentSolver::Solve() {
         }
     }
 
-    _mesh->Export( meanAndVar );
+    if( _settings->GetProblemType() == P_SHALLOWWATER_2D )
+        _mesh->ExportShallowWater( meanAndVar );
+    else
+        _mesh->Export( meanAndVar );
+
     unsigned evalCell  = 0;    // 2404;
     unsigned plotState = 0;
     _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );

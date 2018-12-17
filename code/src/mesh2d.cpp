@@ -467,6 +467,114 @@ void Mesh2D::Export( const Matrix& results ) const {
     writer->Write();
 }
 
+void Mesh2D::ExportShallowWater( const Matrix& results ) const {
+    assert( results.rows() == _settings->GetNStates() * 2 );
+    std::string vtkFile = _settings->GetOutputFile();
+    auto writer         = vtkXMLUnstructuredGridWriterSP::New();
+    if( vtkFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "vtu" ) {
+        vtkFile.append( "." );
+        vtkFile.append( writer->GetDefaultFileExtension() );
+    }
+    writer->SetFileName( vtkFile.c_str() );
+    auto grid = vtkUnstructuredGridSP::New();
+    auto pts  = vtkPointsSP::New();
+    pts->SetNumberOfPoints( static_cast<int>( _nodes.size() ) );
+
+    // average hight over cells
+    Vector hightAtNodes( unsigned( _nodes.size() ), 0.0 );    // heights at nodes
+    Vector edgesAtNodes( unsigned( _nodes.size() ), 0.0 );    // number of cells that share node
+    double maxHight = 0.0;
+    for( unsigned j = 0; j < _cells.size(); ++j ) {
+        for( unsigned l = 0; l < _cells[j]->GetNodes().size(); ++l ) {
+            unsigned id = _cells[j]->GetNodes()[l]->id;
+            if( results( 0, j ) > maxHight ) maxHight = results( 0, j );
+            hightAtNodes[id] += results( 0, j );
+            edgesAtNodes[id] += 1.0;
+        }
+    }
+
+    // average over number of nodes and divide by maxhight s.t. highest point is 1
+    for( unsigned j = 0; j < _nodes.size(); ++j ) {
+        hightAtNodes[j] = hightAtNodes[j] / ( edgesAtNodes[j] * maxHight );
+    }
+
+    for( const auto& node : _nodes ) {
+        pts->SetPoint( node->id, node->coords[0], node->coords[1], hightAtNodes[node->id] );
+    }
+    vtkCellArraySP cellArray = vtkCellArraySP::New();
+    for( unsigned i = 0; i < _cells.size(); ++i ) {
+        if( _cells[i]->GetNodeNum() == 3 ) {
+            auto tri = vtkTriangleSP::New();
+            for( unsigned j = 0; j < _cells[i]->GetNodeNum(); ++j ) {
+                tri->GetPointIds()->SetId( j, _cells[i]->GetNode( j )->id );
+            }
+            cellArray->InsertNextCell( tri );
+        }
+        if( _cells[i]->GetNodeNum() == 4 ) {
+            auto quad = vtkQuad::New();
+            for( unsigned j = 0; j < _cells[i]->GetNodeNum(); ++j ) {
+                quad->GetPointIds()->SetId( j, _cells[i]->GetNode( j )->id );
+            }
+            cellArray->InsertNextCell( quad );
+        }
+    }
+    grid->SetCells( VTK_TRIANGLE, cellArray );
+
+    // add data
+    auto cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "E(h)" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 0, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "E(hU)" );
+    cellData->SetNumberOfComponents( 3 );
+    cellData->SetComponentName( 0, "x" );
+    cellData->SetComponentName( 1, "y" );
+    cellData->SetComponentName( 2, "z" );
+    cellData->SetNumberOfTuples( _numCells );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->SetTuple3( i, results( 1, i ), results( 2, i ), 0.0 );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "Var(h)" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 3, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "Var(hU)" );
+    cellData->SetNumberOfComponents( 3 );
+    cellData->SetComponentName( 0, "x" );
+    cellData->SetComponentName( 1, "y" );
+    cellData->SetComponentName( 2, "z" );
+    cellData->SetNumberOfTuples( _numCells );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->SetTuple3( i, results( 4, i ), results( 5, i ), 0.0 );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    grid->SetPoints( pts );
+    grid->Squeeze();
+
+    auto converter = vtkCellDataToPointDataSP::New();
+    converter->AddInputDataObject( grid );
+    converter->PassCellDataOn();
+    converter->Update();
+
+    auto conv_grid = converter->GetOutput();
+
+    writer->SetInputData( conv_grid );
+    writer->SetDataModeToAscii();
+
+    writer->Write();
+}
+
 Vector Mesh2D::GetNodePositionsX() const {
     Vector x( _numCells, 0.0 );
     for( unsigned i = 0; i < _numCells; ++i ) {

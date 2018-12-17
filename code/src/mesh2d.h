@@ -63,6 +63,7 @@ class Mesh2D : public Mesh
 
     virtual std::vector<Vector> Import() const;
     virtual void Export( const Matrix& results ) const;
+    virtual void ExportShallowWater( const Matrix& results ) const;
 };
 
 #endif    // MESH2D_H
