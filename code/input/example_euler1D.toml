@@ -18,7 +18,7 @@ CFL = 5.0
 tEnd = 0.14
 
 [moment_system]
-# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
+# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
 closure = "Euler"
 moments = 5
 quadPoints = 30

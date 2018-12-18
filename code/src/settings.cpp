@@ -158,15 +158,18 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
             else if( closureTypeString->compare( "L2Filter" ) == 0 ) {
                 _closureType = ClosureType::C_L2FILTER;
             }
+            else if( closureTypeString->compare( "LassoFilter" ) == 0 ) {
+                _closureType = ClosureType::C_LASSOFILTER;
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, "
-                            "StochasticGalerkin, Euler, Euler2D" );
+                            "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
                 validConfig = false;
             }
         }
         else {
             log->error( "[inputfile] [moment_system] 'closure' not set!\n Please set one of the following types: BoundedBarrier, "
-                        "StochasticGalerkin, Euler, Euler2D" );
+                        "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
             validConfig = false;
         }
         auto nMoments = moment_system->get_as<unsigned>( "moments" );

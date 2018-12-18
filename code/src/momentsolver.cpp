@@ -264,7 +264,7 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
     }
     if( _settings->GetProblemType() == ProblemType::P_SHALLOWWATER_2D ) {
         double a      = 0.5;
-        double sigma  = 0.5;    // 0.2
+        double sigma  = 1.0;    // 0.5
         double sigma1 = 0.5;
         double uL     = 10.0;    // 10.0;
         double uR     = 5.0;

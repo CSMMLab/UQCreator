@@ -1,18 +1,19 @@
-#ifndef L2FILTER_H
-#define L2FILTER_H
+#ifndef LASSOFILTER_H
+#define LASSOFILTER_H
 
 #include "closure.h"
 
-class L2Filter : public Closure
+class LassoFilter : public Closure
 {
   private:
-    L2Filter() = delete;
+    LassoFilter() = delete;
     double _lambda;
-    Vector _filterFunction;
+    Vector _filterParam;
+    Vector _l1Norms;
 
   public:
-    L2Filter( Settings* settings );
-    virtual ~L2Filter();
+    LassoFilter( Settings* settings );
+    virtual ~LassoFilter();
 
     virtual void U( Vector& out, const Vector& Lambda );
     virtual void U( Matrix& out, const Matrix& Lambda );
@@ -21,4 +22,4 @@ class L2Filter : public Closure
     virtual void SolveClosure( Matrix& lambda, const Matrix& u );
 };
 
-#endif    // L2FILTER_H
+#endif // LASSOFILTER_H
