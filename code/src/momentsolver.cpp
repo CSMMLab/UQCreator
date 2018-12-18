@@ -318,7 +318,7 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
         }
         return y;
     }
-    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D && false ) {    // pipe testcase
+    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D && true ) {    // pipe testcase
         double sigma = 0.2;
         double gamma = 1.4;
         double R     = 287.87;
@@ -341,25 +341,26 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
         double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
         double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
         y[3]                  = kineticEnergyL + innerEnergyL;
-        /*
-        if( x[1] < 1.1 + sigma * xi[0]  ) {
+
+        if( x[1] < 1.1 + sigma * xi[0] ) {
             y[0] = 0.5 * rhoFarfield;
             y[1] = rhoFarfield * uF;
             y[2] = rhoFarfield * vF;
             y[3] = 0.5 * ( kineticEnergyL + innerEnergyL );
-        }*/
-        if( x[1] < 1.1 + sigma && x[1] < 1.1 - sigma ) {
-            y[0] = 0;
         }
-        if( x[1] < 1.1 + sigma && x[1] > 1.1 - sigma ) {
-            y[0] = 1;
-        }
-        if( x[1] > 1.1 + sigma && x[1] > 1.1 - sigma ) {
-            y[0] = 2;
-        }
+        /*
+         if( x[1] < 1.1 + sigma && x[1] < 1.1 - sigma ) {
+             y[0] = 0;
+         }
+         if( x[1] < 1.1 + sigma && x[1] > 1.1 - sigma ) {
+             y[0] = 1;
+         }
+         if( x[1] > 1.1 + sigma && x[1] > 1.1 - sigma ) {
+             y[0] = 2;
+         }*/
         return y;
     }
-    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D && true ) {
+    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D && false ) {
         double sigma  = 0.5;
         double sigma1 = 0.01;
         double gamma  = 1.4;

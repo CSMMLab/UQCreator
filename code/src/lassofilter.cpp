@@ -12,14 +12,12 @@ LassoFilter::LassoFilter( Settings* settings ) : Closure( settings ) {
         }
     }
 
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                unsigned index = unsigned( ( i - i % unsigned( std::pow( nMoments, l ) ) ) / unsigned( std::pow( nMoments, l ) ) ) % nMoments;
-                _filterParam[i] *= index * ( index + 1 );
-            }
+    for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+        for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+            // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+            // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+            unsigned index = unsigned( ( i - i % unsigned( std::pow( nMoments, l ) ) ) / unsigned( std::pow( nMoments, l ) ) ) % nMoments;
+            _filterParam[i] *= index * ( index + 1 );
         }
     }
 }
