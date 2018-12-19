@@ -11,7 +11,7 @@
 Closure::Closure( Settings* settings )
     : _settings( settings ), _nMoments( _settings->GetNMoments() ), _nQuadPoints( _settings->GetNQuadPoints() ), _nStates( _settings->GetNStates() ) {
     _log = spdlog::get( "event" );
-    // initialize classes
+    // initialize classes: Basis Functions and Quadrature rules are defined for Legendre and Hermite
     _basis.resize( 2 );
     _quad.resize( 2 );
     _basis[0] = Polynomial::Create( _settings, _nMoments, DistributionType::D_LEGENDRE );
@@ -29,7 +29,7 @@ Closure::Closure( Settings* settings )
     _phiTildeWf  = Matrix( _nQTotal, _nTotal, 1.0 );
     _phiTildeVec = std::vector<Vector>( _nQTotal, Vector( _nTotal, 0.0 ) );
 
-    // setup map from k total to individual indices
+    // setup map from k and i total to individual indices
     std::vector<std::vector<unsigned>> indices;
     std::vector<std::vector<unsigned>> indicesQ;
     indicesQ.resize( _nQTotal );
@@ -38,18 +38,14 @@ Closure::Closure( Settings* settings )
         indicesQ[k].resize( _numDimXi );
         for( unsigned l = 0; l < _numDimXi; ++l ) {
             indicesQ[k][l] = unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
-            // std::cout << indicesQ[k][l] << " ";
         }
-        // std::cout << std::endl;
     }
 
     for( unsigned i = 0; i < _nTotal; ++i ) {
         indices[i].resize( _numDimXi );
         for( unsigned l = 0; l < _numDimXi; ++l ) {
             indices[i][l] = unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
-            // std::cout << indices[i][l] << " ";
         }
-        // std::cout << std::endl;
     }
 
     std::vector<Vector> xi;
@@ -61,25 +57,24 @@ Closure::Closure( Settings* settings )
         w[l]  = _quad[l]->GetWeights();
     }
 
+    std::cout << "w = " << w[1] << std::endl;
+    std::cout << "xi = " << xi[1] << std::endl;
+
     unsigned n;
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         for( unsigned i = 0; i < _nTotal; ++i ) {
             for( unsigned l = 0; l < _numDimXi; ++l ) {
                 if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                 if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                // for( unsigned n = 0; n < _numDimXi; ++n ) {
                 _phiTilde( k, i ) *=
                     _basis[n]->Evaluate( indices[i][l], xi[n][indicesQ[k][l]] ) / _basis[n]->L2Norm( indices[i][l] );    // sqrt( 2.0 * i + 1.0 );
                 _phiTildeWf( k, i ) *= _basis[n]->Evaluate( indices[i][l], xi[n][indicesQ[k][l]] ) / _basis[n]->L2Norm( indices[i][l] ) *
                                        w[n][indicesQ[k][l]] * _basis[n]->fXi( xi[n][indicesQ[k][l]] );
-                //}
             }
             // multiplied by pdf
             _phiTildeVec[k][i] = _phiTilde( k, i );    // sqrt( 2.0 * i + 1.0 );
         }
     }
-
-    // Test
 
     // std::cout << _phiTilde << std::endl;
     // exit( EXIT_FAILURE );
@@ -90,6 +85,17 @@ Closure::Closure( Settings* settings )
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         _hPartial[k] = outer( column( _phiTildeTrans, k ), column( phiTildeWfTrans, k ) );    // TODO
     }
+
+    // Test
+    Matrix testQuad( _nTotal, _nTotal, 0.0 );
+    for( unsigned i = 0; i < _nTotal; ++i ) {
+        for( unsigned j = 0; j < _nTotal; ++j ) {
+            for( unsigned k = 0; k < _nQTotal; ++k ) {
+                testQuad( i, j ) += _phiTilde( k, i ) * _phiTildeWf( k, j );
+            }
+        }
+    }
+    std::cout << testQuad << std::endl;
 }
 
 Closure::~Closure() {

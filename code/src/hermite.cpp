@@ -36,6 +36,8 @@ double Hermite::fXi( const double xi ) const {
     return 1.0 / sqrt( PI );    // * exp( -0.5 * pow( xi, 2 ) );
 }
 
-double Hermite::L2Norm( unsigned i ) const { return factorial( i ) * sqrt( PI ) * pow( 2, i ); }
+double Hermite::L2Norm( unsigned i ) const { return sqrt( factorial( i ) * pow( 2, i ) ); }
+
+// double Hermite::L2Norm( unsigned i ) const { return 1.0; }
 
 unsigned Hermite::factorial( unsigned n ) const { return ( n == 1 || n == 0 ) ? 1 : factorial( n - 1 ) * n; }

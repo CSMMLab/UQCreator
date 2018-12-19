@@ -193,7 +193,7 @@ Vector MomentSolver::IC( Vector x, Vector xi ) {
         if( xi.size() == 1 ) {
             double a     = 0.5;
             double b     = 1.5;
-            double sigma = 0.2;    // 0.2
+            double sigma = 0.1;    // 0.2
             double uL    = 12.0;
             double uR    = 3.0;
             if( x[0] < a + sigma * xi[0] ) {
