@@ -7,7 +7,10 @@
 #include "shallowwater.h"
 #include "shallowwater2d.h"
 
-Problem::Problem( Settings* settings ) : _settings( settings ) { _log = spdlog::get( "event" ); }
+Problem::Problem( Settings* settings ) : _settings( settings ) {
+    _log = spdlog::get( "event" );
+    _settings->SetExactSolution( false );
+}
 
 Problem::~Problem() {}
 
@@ -32,4 +35,9 @@ Problem* Problem::Create( Settings* settings ) {
         log->error( "[Problem] Invalid problem type!" );
         exit( EXIT_FAILURE );
     }
+}
+
+Vector Problem::ExactSolution( double t, const Vector& x, const Vector& xi ) const {
+    _log->error( "[Problem]: No exact solution specified" );
+    exit( EXIT_FAILURE );
 }

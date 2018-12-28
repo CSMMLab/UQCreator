@@ -5,9 +5,10 @@
 
 class ShallowWater2D : public Problem
 {
-private:
-    double _g;
-public:
+  private:
+    double _g;    // gravitational constant
+
+  public:
     ShallowWater2D( Settings* settings );
     virtual ~ShallowWater2D();
     virtual void Solve();
@@ -16,6 +17,7 @@ public:
     Matrix F( const Vector& u );
     Matrix F( const Matrix& u );
     virtual double ComputeDt( Vector& u, double dx ) const;
+    virtual Vector IC( const Vector& x, const Vector& xi );
 };
 
-#endif // SHALLOWWATER2D_H
+#endif    // SHALLOWWATER2D_H

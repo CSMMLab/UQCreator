@@ -9,6 +9,12 @@
 class Burgers : public Problem
 {
   private:
+    // parameters for initial condition
+    double _uL;
+    double _uR;
+    double _x0;
+    double _x1;
+
     Vector _u;
     Vector _x;
     double _dx;
@@ -17,7 +23,6 @@ class Burgers : public Problem
     unsigned _nTimeSteps;
     Vector F( double u );
     Matrix F( const Matrix& u );
-    double IC( double x, double uL, double uR );
 
     Burgers() {}
 
@@ -26,6 +31,8 @@ class Burgers : public Problem
     inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );
     virtual double ComputeDt( Vector& u, double dx ) const;
+    virtual Vector IC( const Vector& x, const Vector& xi );
+    Vector ExactSolution( double t, const Vector& x, const Vector& xi ) const;
 };
 
 #endif    // BURGERS_H

@@ -3,6 +3,12 @@
 Burgers::Burgers( Settings* settings ) : Problem( settings ) {
     _nStates = 1;
     _settings->SetNStates( _nStates );
+
+    // for the one dimensional case an exact solution is specified
+    if( _settings->GetNDimXi() == 1 ) {
+        _settings->SetExactSolution( true );
+    }
+
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
         auto problem = file->get_table( "problem" );
@@ -39,18 +45,72 @@ Vector Burgers::F( double u ) {
 
 Matrix Burgers::F( const Matrix& u ) { return 0.5 * pow( u, 2 ); }
 
-double Burgers::IC( double x, double uL, double uR ) {
-    double a = 0.5;
-    double b = 1.5;
-    if( x < a ) {
-        return uL;
+Vector Burgers::IC( const Vector& x, const Vector& xi ) {
+    Vector y( _nStates );
+    _sigma = Vector( xi.size() );
+    if( xi.size() == 1 ) {
+
+        _sigma[0] = 0.1;    // 0.2
+        _x0       = 0.5;
+        _x1       = 1.5;
+        _uL       = 12.0;
+        _uR       = 3.0;
+        if( x[0] < _x0 + _sigma[0] * xi[0] ) {
+            y[0] = _uL;
+            return y;
+        }
+        else if( x[0] < _x1 + _sigma[0] * xi[0] ) {
+            y[0] = _uL + ( _uR - _uL ) * ( _x0 + _sigma[0] * xi[0] - x[0] ) / ( _x0 - _x1 );
+            return y;
+        }
+        else {
+            y[0] = _uR;
+            return y;
+        }
     }
-    else if( x > a && x < b ) {
-        return uR + ( uL - uR ) * ( b - x ) / ( b - a );
+    else if( xi.size() == 2 ) {
+        _x0           = 0.3;
+        _x1           = 0.6;
+        double sigma0 = 0.2;    // 0.2
+        double sigma1 = 0.1;
+        _uL           = 12.0;
+        double uM     = 6.0;
+        _uR           = 1.0;
+
+        if( x[0] < _x0 )
+            y[0] = _uL + sigma0 * xi[0];
+        else if( x[0] < _x1 )
+            y[0] = uM + sigma1 * xi[1];
+        else
+            y[0] = _uR;
+        return y;
+    }
+    _log->error( "Reached end of IC. No initial condition set" );
+    exit( EXIT_FAILURE );
+}
+
+Vector Burgers::ExactSolution( double t, const Vector& x, const Vector& xi ) const {
+    double x0, x1;
+    Vector y( _nStates );
+    if( t >= ( _x1 - _x0 ) / ( _uL - _uR ) ) {
+        double tS            = ( _x1 - _x0 ) / ( _uL - _uR );
+        double x0BeforeShock = _x0 + _sigma[0] * xi[0] + tS * _uL;
+        // double x1BeforeShock = _x1 + _sigma[0] * xi[0] + tS * _uR;
+        x0 = x0BeforeShock + ( t - tS ) * ( _uL + _uR ) * 0.5;
+        x1 = x0 - 1.0;
     }
     else {
-        return uR;
+        x0 = _x0 + _sigma[0] * xi[0] + t * _uL;
+        x1 = _x1 + _sigma[0] * xi[0] + t * _uR;
     }
+
+    if( x[0] < x0 )
+        y[0] = _uL;
+    else if( x[0] < x1 )
+        y[0] = _uL + ( _uR - _uL ) * ( x[0] - x0 ) / ( x1 - x0 );
+    else
+        y[0] = _uR;
+    return y;
 }
 
 double Burgers::ComputeDt( Vector& u, double dx ) const { return dx * _settings->GetCFL() / u[0]; }

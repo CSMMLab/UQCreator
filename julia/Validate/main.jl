@@ -29,13 +29,13 @@ a = 0;
 b = 3;
 x = linspace(a,b,Nx);
 sigmaRand = 1.0;
-sigma = 0.1;
+sigma = 0.0;
 uL = 12.0;
 uR = 3.0;
 mu = 0;
 NSamples = 1000;
 tmp = zeros(Nx);
-t = 0.1;
+t = 0.12;
 
 xi = 1
 IC1Exact(t,x[2],xi,sigma,uL,uR)

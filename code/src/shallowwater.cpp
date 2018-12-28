@@ -70,3 +70,43 @@ double ShallowWater::ComputeDt( Vector& u, double dx ) const {
     _log->error( "[ShallowWater] ComputeDt not implemented" );
     return 0.0;
 }
+
+Vector ShallowWater::IC( const Vector& x, const Vector& xi ) {
+    Vector y( _nStates );
+    _sigma = Vector( xi.size() );
+    if( xi.size() == 1 ) {
+        _sigma[0]   = 0.0;
+        double a    = 1000.0;
+        double uL   = 10.0;
+        double hLhR = 0.05;
+        double uR   = uL * hLhR;
+        y[1]        = 0.0;
+        if( x[0] < a + _sigma[0] * xi[0] ) {
+            y[0] = uL;
+            return y;
+        }
+        else {
+            y[0] = uR;
+            return y;
+        }
+    }
+    else if( xi.size() == 2 ) {
+        _sigma[0] = 0.2;
+        _sigma[1] = 0.1;
+        double x0 = 0.3;
+        double x1 = 0.6;
+        double uL = 12.0;
+        double uM = 6.0;
+        double uR = 1.0;
+
+        if( x[0] < x0 )
+            y[0] = uL + _sigma[0] * xi[0];
+        else if( x[0] < x1 )
+            y[0] = uM + _sigma[1] * xi[1];
+        else
+            y[0] = uR;
+        return y;
+    }
+    _log->error( "Reached end of IC. No initial condition set" );
+    exit( EXIT_FAILURE );
+}

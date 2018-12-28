@@ -2,7 +2,7 @@
 
 #include "settings.h"
 
-Settings::Settings( std::string inputFile ) : _inputFile( inputFile ) {
+Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExactSolution( false ) {
     auto log = spdlog::get( "event" );
 
     bool validConfig = true;
@@ -269,6 +269,8 @@ unsigned Settings::GetNDimXi() const { return _numDimXi; }
 double Settings::GetGamma() const { return _gamma; }
 void Settings::SetGamma( double gamma ) { _gamma = gamma; }
 DistributionType Settings::GetDistributionType( unsigned l ) const { return _distributionType[l]; }
+void Settings::SetExactSolution( bool hasExactSolution ) { _hasExactSolution = hasExactSolution; }
+bool Settings::HasExactSolution() const { return _hasExactSolution; }
 
 // moment_system
 ClosureType Settings::GetClosureType() const { return _closureType; }

@@ -63,6 +63,7 @@ void MomentSolver::Solve() {
 
     // Converge initial condition entropy variables for One Shot IPM
     if( _settings->GetMaxIterations() == 1 ) {
+        // TODO: Recalculate moments here
         _settings->SetMaxIterations( 1000 );
         for( unsigned j = 0; j < _nCells; ++j ) _closure->SolveClosure( _lambda[j], u[j] );
         _settings->SetMaxIterations( 1 );
@@ -78,7 +79,8 @@ void MomentSolver::Solve() {
 
     log->info( "{:10}   {:10}", "t", "residual" );
     // Begin time loop
-    for( double t = 0.0; t < _tEnd; t += _dt ) {
+    double t;
+    for( t = 0.0; t < _tEnd; t += _dt ) {
         double residual = 0;
 
 #pragma omp parallel for schedule( dynamic, 10 )
@@ -118,10 +120,17 @@ void MomentSolver::Solve() {
     log->info( "" );
     log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
-    Matrix meanAndVar( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+    Matrix meanAndVar;
+    if( _settings->HasExactSolution() ) {
+        meanAndVar = Matrix( 4 * _nStates, _mesh->GetNumCells(), 0.0 );
+    }
+    else {
+        meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+    }
     Matrix phiTildeWf = _closure->GetPhiTildeWf();
     Vector tmp( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
+        // expected value
         for( unsigned k = 0; k < _nQTotal; ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
@@ -129,11 +138,35 @@ void MomentSolver::Solve() {
             }
         }
 
-        // var
+        // variance
         for( unsigned k = 0; k < _nQTotal; ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
+            }
+        }
+        if( _settings->HasExactSolution() ) {
+            Vector xiEta( _settings->GetNDimXi() );
+            std::vector<Polynomial*> quad = _closure->GetQuadrature();
+            unsigned n;
+
+            for( unsigned k = 0; k < _nQTotal; ++k ) {
+                for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                    if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                    if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                    unsigned index =
+                        unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
+                    xiEta[l] = quad[n]->GetNodes()[index];
+                }
+                tmp = _problem->ExactSolution( t, _mesh->GetCenterPos( j ), xiEta );
+                // expected value exact
+                for( unsigned i = 0; i < _nStates; ++i ) {
+                    meanAndVar( 2 * _nStates + i, j ) += tmp[i] * phiTildeWf( k, 0 );
+                }
+                // variance exact
+                for( unsigned i = 0; i < _nStates; ++i ) {
+                    meanAndVar( 3 * _nStates + i, j ) += pow( tmp[i] - meanAndVar( 2 * _nStates + i, j ), 2 ) * phiTildeWf( k, 0 );
+                }
             }
         }
     }
@@ -143,7 +176,7 @@ void MomentSolver::Solve() {
     else
         _mesh->Export( meanAndVar );
 
-    unsigned evalCell  = 0;    // 2404;
+    unsigned evalCell  = 300;    // 2404;
     unsigned plotState = 0;
     _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );
 }
@@ -179,216 +212,11 @@ MatVec MomentSolver::SetupIC() {
                     unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
                 xiEta[l] = quad[n]->GetNodes()[index];
             }
-            // std::cout << xiEta << std::endl;
-            column( uIC, k ) = IC( _mesh->GetCenterPos( j ), xiEta );
+
+            column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );
         }
+
         u[j] = uIC * phiTildeWf;
     }
     return u;
-}
-
-Vector MomentSolver::IC( Vector x, Vector xi ) {
-    Vector y( _nStates );
-    if( _settings->GetProblemType() == ProblemType::P_BURGERS_1D ) {
-        if( xi.size() == 1 ) {
-            double a     = 0.5;
-            double b     = 1.5;
-            double sigma = 0.1;    // 0.2
-            double uL    = 12.0;
-            double uR    = 3.0;
-            if( x[0] < a + sigma * xi[0] ) {
-                y[0] = uL;
-                return y;
-            }
-            else if( x[0] < b + sigma * xi[0] ) {
-                y[0] = uL + ( uR - uL ) * ( a + sigma * xi[0] - x[0] ) / ( a - b );
-                return y;
-            }
-            else {
-                y[0] = uR;
-                return y;
-            }
-        }
-        else if( xi.size() == 2 ) {
-            double x0     = 0.3;
-            double x1     = 0.6;
-            double sigma0 = 0.2;    // 0.2
-            double sigma1 = 0.1;
-            double uL     = 12.0;
-            double uM     = 6.0;
-            double uR     = 1.0;
-
-            if( x[0] < x0 )
-                y[0] = uL + sigma0 * xi[0];
-            else if( x[0] < x1 )
-                y[0] = uM + sigma1 * xi[1];
-            else
-                y[0] = uR;
-            return y;
-        }
-    }
-    if( _settings->GetProblemType() == ProblemType::P_SHALLOWWATER_1D ) {
-        if( xi.size() == 1 ) {
-            double a     = 1000.0;
-            double sigma = 0.0;    // 0.2
-            double uL    = 10.0;
-            double hLhR  = 0.05;
-            double uR    = uL * hLhR;
-            y[1]         = 0.0;
-            if( x[0] < a + sigma * xi[0] ) {
-                y[0] = uL;
-                return y;
-            }
-            else {
-                y[0] = uR;
-                return y;
-            }
-        }
-        else if( xi.size() == 2 ) {
-            double x0     = 0.3;
-            double x1     = 0.6;
-            double sigma0 = 0.2;    // 0.2
-            double sigma1 = 0.1;
-            double uL     = 12.0;
-            double uM     = 6.0;
-            double uR     = 1.0;
-
-            if( x[0] < x0 )
-                y[0] = uL + sigma0 * xi[0];
-            else if( x[0] < x1 )
-                y[0] = uM + sigma1 * xi[1];
-            else
-                y[0] = uR;
-            return y;
-        }
-    }
-    if( _settings->GetProblemType() == ProblemType::P_SHALLOWWATER_2D ) {
-        double a      = 0.5;
-        double sigma  = 1.0;    // 0.5
-        double sigma1 = 0.5;
-        double uL     = 10.0;    // 10.0;
-        double uR     = 5.0;
-        y[1]          = 0.0;
-        y[2]          = 0.0;
-        if( xi.size() == 1 ) {
-            if( x[0] < a ) {
-                y[0] = uL + sigma * xi[0];
-                return y;
-            }
-            else {
-                y[0] = uR;    // - sigma * xi[0];
-                return y;
-            }
-        }
-        else if( xi.size() == 2 ) {
-            if( x[0] < a ) {
-                y[0] = uL + sigma * xi[0];
-                return y;
-            }
-            else {
-                y[0] = uR + sigma1 * xi[1];
-                return y;
-            }
-        }
-    }
-    else if( _settings->GetProblemType() == ProblemType::P_EULER_1D ) {
-        double x0    = 0.3;
-        double sigma = 0.0;
-        double gamma = 1.4;
-
-        double rhoL = 1.0;
-        double rhoR = 0.125;
-        double pL   = 1.0;
-        double pR   = 0.1;
-        double uL   = 0.0;
-        double uR   = 0.0;
-        if( x[0] < x0 + sigma * xi[0] ) {
-            y[0]                  = rhoL;
-            y[1]                  = rhoL * uL;
-            double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 );
-            double innerEnergyL   = ( pL / ( rhoL * ( gamma - 1 ) ) ) * rhoL;
-            y[2]                  = kineticEnergyL + innerEnergyL;
-        }
-        else {
-            y[0]                  = rhoR;
-            y[1]                  = rhoR * uR;
-            double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 );
-            double innerEnergyR   = ( pR / ( rhoR * ( gamma - 1 ) ) ) * rhoR;
-            y[2]                  = kineticEnergyR + innerEnergyR;
-        }
-        return y;
-    }
-    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D && true ) {    // pipe testcase
-        double sigma = 0.2;
-        double gamma = 1.4;
-        double R     = 287.87;
-        double T     = 273.15;
-        double p     = 101325.0;
-        double Ma    = 0.0;
-        double a     = sqrt( gamma * R * T );
-        double pi    = 3.14159265359;
-
-        double uMax  = Ma * a;
-        double angle = ( 1.25 + sigma * 0.0 ) * ( 2.0 * pi ) / 360.0;
-        double uF    = uMax * cos( angle );
-        double vF    = uMax * sin( angle );
-
-        double rhoFarfield = p / ( R * T );
-
-        y[0]                  = rhoFarfield;
-        y[1]                  = rhoFarfield * uF;
-        y[2]                  = rhoFarfield * vF;
-        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
-        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-        y[3]                  = kineticEnergyL + innerEnergyL;
-
-        if( x[1] < 1.1 + sigma * xi[0] ) {
-            y[0] = 0.5 * rhoFarfield;
-            y[1] = rhoFarfield * uF;
-            y[2] = rhoFarfield * vF;
-            y[3] = 0.5 * ( kineticEnergyL + innerEnergyL );
-        }
-        /*
-         if( x[1] < 1.1 + sigma && x[1] < 1.1 - sigma ) {
-             y[0] = 0;
-         }
-         if( x[1] < 1.1 + sigma && x[1] > 1.1 - sigma ) {
-             y[0] = 1;
-         }
-         if( x[1] > 1.1 + sigma && x[1] > 1.1 - sigma ) {
-             y[0] = 2;
-         }*/
-        return y;
-    }
-    else if( _settings->GetProblemType() == ProblemType::P_EULER_2D && false ) {
-        double sigma  = 0.5;
-        double sigma1 = 0.01;
-        double gamma  = 1.4;
-        double R      = 287.87;
-        double T      = 273.15;
-        double p      = 101325.0;
-        double Ma     = 0.8;
-        if( xi.size() == 2 ) {
-            Ma = Ma + xi[1] * sigma1;
-        }
-        double a  = sqrt( gamma * R * T );
-        double pi = 3.14159265359;
-
-        double uMax  = Ma * a;
-        double angle = ( 1.25 + sigma * xi[0] ) * ( 2.0 * pi ) / 360.0;
-        double uF    = uMax * cos( angle );
-        double vF    = uMax * sin( angle );
-
-        double rhoFarfield = p / ( R * T );
-
-        y[0]                  = rhoFarfield;
-        y[1]                  = rhoFarfield * uF;
-        y[2]                  = rhoFarfield * vF;
-        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
-        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-        y[3]                  = kineticEnergyL + innerEnergyL;
-        return y;
-    }
-    _log->error( "Reached end of IC. No initial condition set" );
-    exit( EXIT_FAILURE );
 }

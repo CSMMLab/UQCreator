@@ -17,6 +17,7 @@ class ShallowWater : public Problem
     Matrix F( const Vector& u );
     Matrix F( const Matrix& u );
     virtual double ComputeDt( Vector& u, double dx ) const;
+    virtual Vector IC( const Vector& x, const Vector& xi );
 };
 
 #endif    // SHALLOWWATER_H

@@ -57,9 +57,6 @@ Closure::Closure( Settings* settings )
         w[l]  = _quad[l]->GetWeights();
     }
 
-    std::cout << "w = " << w[1] << std::endl;
-    std::cout << "xi = " << xi[1] << std::endl;
-
     unsigned n;
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         for( unsigned i = 0; i < _nTotal; ++i ) {
@@ -76,8 +73,6 @@ Closure::Closure( Settings* settings )
         }
     }
 
-    // std::cout << _phiTilde << std::endl;
-    // exit( EXIT_FAILURE );
     _phiTildeTrans       = trans( _phiTilde );
     auto phiTildeWfTrans = trans( _phiTildeWf );
     // calculate partial matrix for Hessian calculation
@@ -85,17 +80,17 @@ Closure::Closure( Settings* settings )
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         _hPartial[k] = outer( column( _phiTildeTrans, k ), column( phiTildeWfTrans, k ) );    // TODO
     }
-
-    // Test
-    Matrix testQuad( _nTotal, _nTotal, 0.0 );
-    for( unsigned i = 0; i < _nTotal; ++i ) {
-        for( unsigned j = 0; j < _nTotal; ++j ) {
-            for( unsigned k = 0; k < _nQTotal; ++k ) {
-                testQuad( i, j ) += _phiTilde( k, i ) * _phiTildeWf( k, j );
+    /*
+        // Test if polynomials are orthonormal
+        Matrix testQuad( _nTotal, _nTotal, 0.0 );
+        for( unsigned i = 0; i < _nTotal; ++i ) {
+            for( unsigned j = 0; j < _nTotal; ++j ) {
+                for( unsigned k = 0; k < _nQTotal; ++k ) {
+                    testQuad( i, j ) += _phiTilde( k, i ) * _phiTildeWf( k, j );
+                }
             }
         }
-    }
-    std::cout << testQuad << std::endl;
+        std::cout << testQuad << std::endl;*/
 }
 
 Closure::~Closure() {

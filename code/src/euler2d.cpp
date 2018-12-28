@@ -131,3 +131,80 @@ double Euler2D::ComputeDt( Vector& u, double dx ) const {
     else
         return dt4;
 }
+
+Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
+    Vector y( _nStates );
+    _sigma            = Vector( xi.size() );
+    bool pipeTestCase = false;
+    if( pipeTestCase ) {    // pipe testcase
+        _sigma[0]    = 0.2;
+        double gamma = 1.4;
+        double R     = 287.87;
+        double T     = 273.15;
+        double p     = 101325.0;
+        double Ma    = 0.0;
+        double a     = sqrt( gamma * R * T );
+        double pi    = 3.14159265359;
+
+        double uMax  = Ma * a;
+        double angle = ( 1.25 + _sigma[0] * 0.0 ) * ( 2.0 * pi ) / 360.0;
+        double uF    = uMax * cos( angle );
+        double vF    = uMax * sin( angle );
+
+        double rhoFarfield = p / ( R * T );
+
+        y[0]                  = rhoFarfield;
+        y[1]                  = rhoFarfield * uF;
+        y[2]                  = rhoFarfield * vF;
+        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
+        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
+        y[3]                  = kineticEnergyL + innerEnergyL;
+
+        if( x[1] < 1.1 + _sigma[0] * xi[0] ) {
+            y[0] = 0.5 * rhoFarfield;
+            y[1] = rhoFarfield * uF;
+            y[2] = rhoFarfield * vF;
+            y[3] = 0.5 * ( kineticEnergyL + innerEnergyL );
+        }
+        /*
+         if( x[1] < 1.1 + sigma && x[1] < 1.1 - sigma ) {
+             y[0] = 0;
+         }
+         if( x[1] < 1.1 + sigma && x[1] > 1.1 - sigma ) {
+             y[0] = 1;
+         }
+         if( x[1] > 1.1 + sigma && x[1] > 1.1 - sigma ) {
+             y[0] = 2;
+         }*/
+        return y;
+    }
+    else {
+        _sigma[0]    = 0.5;
+        _sigma[1]    = 0.01;
+        double gamma = 1.4;
+        double R     = 287.87;
+        double T     = 273.15;
+        double p     = 101325.0;
+        double Ma    = 0.8;
+        if( xi.size() == 2 ) {
+            Ma = Ma + xi[1] * _sigma[1];
+        }
+        double a  = sqrt( gamma * R * T );
+        double pi = 3.14159265359;
+
+        double uMax  = Ma * a;
+        double angle = ( 1.25 + _sigma[0] * xi[0] ) * ( 2.0 * pi ) / 360.0;
+        double uF    = uMax * cos( angle );
+        double vF    = uMax * sin( angle );
+
+        double rhoFarfield = p / ( R * T );
+
+        y[0]                  = rhoFarfield;
+        y[1]                  = rhoFarfield * uF;
+        y[2]                  = rhoFarfield * vF;
+        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
+        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
+        y[3]                  = kineticEnergyL + innerEnergyL;
+        return y;
+    }
+}

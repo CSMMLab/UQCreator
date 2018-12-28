@@ -88,7 +88,7 @@ std::vector<Vector> Mesh1D::Import() const {
 }
 
 void Mesh1D::Export( const Matrix& results ) const {
-    assert( results.rows() == _settings->GetNStates() * 2 );
+    assert( results.rows() >= _settings->GetNStates() * 2 );
     double height       = ( _nodes[_numCells]->coords[0] - _nodes[0]->coords[0] ) / 10;
     std::string vtkFile = _settings->GetOutputFile();
     auto writer         = vtkXMLUnstructuredGridWriterSP::New();
@@ -201,7 +201,9 @@ void Mesh1D::Export( const Matrix& results ) const {
 
     std::ofstream out( "../results/expectedvalue" );
     for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
-        out << GetCenterPos( j )[0] << " " << results( 0, j ) << std::endl;
+        out << GetCenterPos( j )[0] << " " << results( 0, j );
+        if( _settings->HasExactSolution() ) out << " " << results( 2 * _settings->GetNStates(), j );
+        out << std::endl;
     }
     out.close();
     std::ofstream outV( "../results/variance" );

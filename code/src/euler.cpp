@@ -84,3 +84,33 @@ double Euler::ComputeDt( Vector& u, double dx ) const {
     else
         return dt2;
 }
+
+Vector Euler::IC( const Vector& x, const Vector& xi ) {
+    double x0    = 0.3;
+    double gamma = 1.4;
+
+    double rhoL = 1.0;
+    double rhoR = 0.125;
+    double pL   = 1.0;
+    double pR   = 0.1;
+    double uL   = 0.0;
+    double uR   = 0.0;
+    Vector y( _nStates );
+    _sigma    = Vector( xi.size() );
+    _sigma[0] = 0.0;
+    if( x[0] < x0 + _sigma[0] * xi[0] ) {
+        y[0]                  = rhoL;
+        y[1]                  = rhoL * uL;
+        double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 );
+        double innerEnergyL   = ( pL / ( rhoL * ( gamma - 1 ) ) ) * rhoL;
+        y[2]                  = kineticEnergyL + innerEnergyL;
+    }
+    else {
+        y[0]                  = rhoR;
+        y[1]                  = rhoR * uR;
+        double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 );
+        double innerEnergyR   = ( pR / ( rhoR * ( gamma - 1 ) ) ) * rhoR;
+        y[2]                  = kineticEnergyR + innerEnergyR;
+    }
+    return y;
+}

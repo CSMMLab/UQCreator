@@ -47,6 +47,8 @@ class Settings
     unsigned _maxIterations;
     unsigned _nStates;
 
+    bool _hasExactSolution;    // indicates if exact solution is implemented in Problem
+
     unsigned _numDimXi;
     double _epsilon;
     double _CFL;
@@ -93,6 +95,8 @@ class Settings
     double GetTEnd() const;
     double GetGamma() const;
     void SetGamma( double gamma );
+    void SetExactSolution( bool hasExactSolution );
+    bool HasExactSolution() const;
 
     // moment_system
     ClosureType GetClosureType() const;
