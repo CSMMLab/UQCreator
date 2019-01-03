@@ -69,8 +69,8 @@ we can rewrite the moment iteration as
 For steady problems, we assume that the IPM scheme converges to a fix point, i.e. we must have that $\rho (\bm{\tilde c}_{\bm{u}})<1$. The main idea of \textit{One-Shot IPM} is to not fully converge the dual iteration, since the moment vectors are not yet converged to the exact steady solution. So if we successively perform one update of the moment iteration and one update of the dual iteration, we obtain 
 \begin{subequations}\label{eq:oneshotIPM}
 \begin{align}
-&\bm{\lambda}_{j}^{n} =  \bm{d}(\bm{u}_j^{n},\bm{\lambda}_j^{n-1}) \enskip \text{ for all j} \label{eq:oneshotIPMdual}\\
-&\bm{u}_j^{n+1} =  \bm{c}\left(\bm{\lambda}_{j-1}^n,\bm{\lambda}_{j}^n,\bm{\lambda}_{j+1}^n\right)\label{eq:oneshotIPMmoment}.
+&\bm{u}_j^{n+1} =  \bm{c}\left(\bm{\lambda}_{j-1}^n,\bm{\lambda}_{j}^n,\bm{\lambda}_{j+1}^n\right)\label{eq:oneshotIPMmoment}\\
+&\bm{\lambda}_{j}^{n+1} =  \bm{d}(\bm{u}_j^{n+1},\bm{\lambda}_j^{n}). \label{eq:oneshotIPMdual}
 \end{align}
 \end{subequations}
 \textcolor{blue}{[first moments, the duals?]}
@@ -114,12 +114,38 @@ Note that on the left-hand-side we have the inverse of a matrix and on the right
 \begin{align*}
 \partial_{\bm{u}} \bm{\lambda}(\bm{u}) = \langle u'(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle.
 \end{align*}
+Now we begin to derive the spectrum of the \textit{One-Shot IPM} iteration \eqref{eq:oneshotIPM}. To obtain a single iteration function, we plug the moment iteration step \eqref{eq:oneshotIPMmoment} into the dual iteration \eqref{eq:oneshotIPMdual} to obtain
+\begin{align*}
+\bm{\lambda}_j^{n+1} =  \bm{d}\left( \bm{c}\left(\bm{\lambda}_{j-1}^n,\bm{\lambda}_{j}^n,\bm{\lambda}_{j+1}^n\right),\bm{\lambda}_j^n \right)
+\end{align*}
+The 
+\qed
+\end{proof}
+
+
+
+
+
+
+
+We can first update the dual and then the moment vector:
+\begin{subequations}\label{eq:oneshotIPMvv}
+\begin{align}
+&\bm{\lambda}_{j}^{n} =  \bm{d}(\bm{u}_j^{n},\bm{\lambda}_j^{n-1}) \enskip \text{ for all j} \label{eq:oneshotIPMdualvv}\\
+&\bm{u}_j^{n+1} =  \bm{c}\left(\bm{\lambda}_{j-1}^n,\bm{\lambda}_{j}^n,\bm{\lambda}_{j+1}^n\right)\label{eq:oneshotIPMmomentvv}.
+\end{align}
+\end{subequations}
+In the following, we prove convergence of this scheme:
+\begin{theorem}
+The \textit{One-Shot IPM} scheme \eqref{eq:oneshotIPM} converges with the same rate as the moment iteration \eqref{eq:momentIteration} if the preconditioner $\bm{B} = \langle u'(\bm{\varphi}^T\bm{\lambda}_j^{n-1})\bm{\varphi}\bm{\varphi}^T\rangle$ is used.
+\end{theorem}
+\begin{proof}
 Now we begin to derive the spectrum of the \textit{One-Shot IPM} iteration \eqref{eq:oneshotIPM}. To obtain a single iteration function, we plug the dual iteration step \eqref{eq:oneshotIPMdual} into the moment iteration \eqref{eq:oneshotIPMmoment} to obtain
 \begin{align*}
 \bm{u}_j^{n+1} =  \bm{c}\left(\bm{d}(\bm{u}_{j-1}^{n},\bm{\lambda}_{j-1}^{n-1}),\bm{d}(\bm{u}_{j}^{n},\bm{\lambda}_{j}^{n-1}),\bm{d}(\bm{u}_{j+1}^{n},\bm{\lambda}_{j+1}^{n-1})\right)
 \end{align*}
+The 
 \end{proof}
-
 \end{document}
 
 
