@@ -39,7 +39,7 @@
 \begin{document}
 
 \section*{Proof One-Shot IPM}
-For classical IPM, the iteation scheme for the momen vectors is
+For classical IPM, the iteration scheme for the moment vectors is
 \begin{align}\label{eq:momentIteration}
 \bm{u}_j^{n+1} = \bm{c}\left(\bm{\lambda}(\bm{u}_{j-1}^n),\bm{\lambda}(\bm{u}_{j}^n),\bm{\lambda}(\bm{u}_{j+1}^n)\right),
 \end{align}
@@ -93,7 +93,7 @@ where we define $\bm{\tilde c}_{j}:=\bm{\tilde c}\left(\bm{u}_{j-1}^n,\bm{u}_{j}
 \begin{align}\label{eq:cTildeDer}
 \partial_{\bm{u}_{\ell}}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{\lambda}(\bm{u}_{j-1})}{\partial \bm{u}},\enskip\partial_{\bm{u}_c}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_c}\frac{\partial \bm{\lambda}(\bm{u}_j)}{\partial \bm{u}},\enskip\partial_{\bm{u}_r}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_r}\frac{\partial \bm{\lambda}(\bm{u}_{j+1})}{\partial \bm{u}}.
 \end{align}
-We now wish to understand the structure of the terms $\partial_{\bm{u}} \bm{\lambda}(\bm{u})$. For this, we note that the exact dual state fulfills
+We first wish to understand the structure of the terms $\partial_{\bm{u}} \bm{\lambda}(\bm{u})$. For this, we note that the exact dual state fulfills
 \begin{align}\label{eq:ulambda}
 \bm{u} = \langle u(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\rangle =: \bm{h}(\bm{\lambda}),
 \end{align}
@@ -103,17 +103,17 @@ which is why we have the mapping $\bm{u}:\mathbb{R}^{N+1}\to\mathbb{R}^{N+1}$, $
 \end{align}
 Now we differentiate both sides w.r.t. $\bm{\lambda}$ to get
 \begin{align*}
-\bm{I}_{d} = \frac{\partial \bm{h}^{-1}(\bm{u}(\bm{\lambda}))}{\partial \bm{u}}\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}
+\bm{I}_{d} = \frac{\partial \bm{h}^{-1}(\bm{u}(\bm{\lambda}))}{\partial \bm{u}}\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}.
 \end{align*}
-We multiply with the matrix inverse of $\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}$ and rewrite $\bm{h}^{-1}(\bm{u}(\bm{\lambda}))$ as $\bm{\lambda}(\bm{u})$ to get
+We multiply with the matrix inverse of $\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}$ to get
 \begin{align*}
-\left(\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}\right)^{-1} = \bm{h}^{-1}(\bm{u}(\bm{\lambda})).
+\left(\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}\right)^{-1} = \frac{\partial \bm{h}^{-1}(\bm{u}(\bm{\lambda}))}{\partial \bm{u}}.
 \end{align*}
 Note that on the left-hand-side we have the inverse of a matrix and on the right-hand-side, we have the inverse of a multi-dimensional function. By rewriting $\bm{h}^{-1}(\bm{u}(\bm{\lambda}))$ as $\bm{\lambda}(\bm{u})$ and simply computing the term $\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}$ by differentiating \eqref{eq:ulambda} w.r.t. $\bm{\lambda}$, one obtains
 \begin{align}\label{eq:dudlambdaex}
-\partial_{\bm{u}} \bm{\lambda}(\bm{u}) = \langle u'(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle.
+\partial_{\bm{u}} \bm{\lambda}(\bm{u}) = \langle u'(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}.
 \end{align}
-Now we begin to derive the spectrum of the \textit{One-Shot IPM} iteration \eqref{eq:oneshotIPM}. Note that this iteration is not really a fix point iteration, since it uses the time updated dual variables in \eqref{eq:oneshotIPMmoment}. To obtain a fix point iteration, we plug the dual iteration step \eqref{eq:oneshotIPMdual} into the moment iteration \eqref{eq:oneshotIPMmoment} to obtain
+Now we begin to derive the spectrum of the \textit{One-Shot IPM} iteration \eqref{eq:oneshotIPM}. Note that in its current form this iteration is not really a fix point iteration, since it uses the time updated dual variables in \eqref{eq:oneshotIPMmoment}. To obtain a fix point iteration, we plug the dual iteration step \eqref{eq:oneshotIPMdual} into the moment iteration \eqref{eq:oneshotIPMmoment} to obtain
 \begin{align*}
 &\bm{\lambda}_j^{n+1} = \bm{d}(\bm{\lambda}_j^{n},\bm{u}_j^{n}) \enskip \text{ for all j} \\
 &\bm{u}_j^{n+1} =  \bm{c}\left(\bm{d}(\bm{\lambda}_{j-1}^{n},\bm{u}_{j-1}^{n}),\bm{d}(\bm{\lambda}_{j}^{n},\bm{u}_{j}^{n}),\bm{d}(\bm{\lambda}_{j+1}^{n},\bm{u}_{j+1}^{n})\right)
