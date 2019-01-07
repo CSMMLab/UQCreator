@@ -16,6 +16,7 @@
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
 
 \usepackage{amssymb}
 
@@ -25,8 +26,7 @@
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 \newenvironment{example}[1][Example]{\begin{trivlist}
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
-\newenvironment{remark}[1][Remark]{\begin{trivlist}
-\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
 
 \usepackage{bm}
 \usepackage{color}
@@ -38,7 +38,7 @@
 
 \begin{document}
 
-\section*{Proof One-Shot IPM}
+\section*{One-Shot IPM}
 For classical IPM, the iteration scheme for the moment vectors is
 \begin{align}\label{eq:momentIteration}
 \bm{u}_j^{n+1} = \bm{c}\left(\bm{\lambda}(\bm{u}_{j-1}^n),\bm{\lambda}(\bm{u}_{j}^n),\bm{\lambda}(\bm{u}_{j+1}^n)\right),
@@ -62,7 +62,7 @@ To simplify notation, we leave out the dependency on $\bm{\lambda}$ when writing
 \bm{\tilde c}\left(\bm{u}_{\ell}^n,\bm{u}_{c}^n,\bm{u}_{r}^n\right):=\bm{c}\left(\bm{\lambda}(\bm{u}_{\ell}^n),\bm{\lambda}(\bm{u}_{c}^n),\bm{\lambda}(\bm{u}_{r}^n)\right)
 \end{align*}
 we can rewrite the moment iteration as
-\begin{align}
+\begin{align}\label{eq:shortIPMIt}
 \bm{u}_j^{n+1} = \bm{\tilde c}\left(\bm{u}_{j-1}^n,\bm{u}_{j}^n,\bm{u}_{j+1}^n\right).
 \end{align}
 
@@ -73,12 +73,12 @@ For steady problems, we assume that the IPM scheme converges to a fix point, i.e
 &\bm{u}_j^{n+1} =  \bm{c}\left(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_{j}^{n+1},\bm{\lambda}_{j+1}^{n+1}\right)\label{eq:oneshotIPMmoment}.
 \end{align}
 \end{subequations}
-In the following, we prove convergence of this scheme:
-\begin{theorem}
-The \textit{One-Shot IPM} scheme \eqref{eq:oneshotIPM} converges with the same rate as the moment iteration \eqref{eq:momentIteration} if the preconditioner $\bm{B} = \langle u'(\bm{\varphi}^T\bm{\lambda}_j^{n})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}$ is used.
+In the following, we study convergence of this scheme. For this we take an approach commonly chosen to prove the local convergence properties of Newton's method: In Theorem \ref{th:Contractive}, we show that the iteration function is contractive at its fix point and conclude in Theorem \ref{th:localConvergence} that this yields local convergence.
+\begin{theorem}\label{th:Contractive}
+Assume that the classical IPM iteration \eqref{eq:shortIPMIt} is contractive at its fix point $\bm{u}^*$. Then the Jacobi matrix $\bm{J}$ of the One-Shot IPM iteration \eqref{eq:oneshotIPM} has a spectral radius $\rho(\bm{J})<1$ at the fix point $(\bm{\lambda}^*,\bm{u}^*)$ if the preconditioner $\bm{B} = \langle u'(\bm{\varphi}^T\bm{\lambda}_j^{n})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}$, i.e. the Hessian of the dual problem is used.
 \end{theorem}
 \begin{proof}
-We first point out that since we assume convergence of the classical IPM scheme, we have $\rho (\bm{\tilde c}_{\bm{u}})<1$ with $\bm{\tilde c}_{\bm{u}}\in\mathbb{R}^{(N+1)\cdot N_x\times (N+1)\cdot N_x}$ defined by
+We first point out that since we assume that the classical IPM scheme is contractive at its fix point, we have $\rho (\bm{\tilde c}_{\bm{u}}(\bm{u}^*))<1$ with $\bm{\tilde c}_{\bm{u}}\in\mathbb{R}^{(N+1)\cdot N_x\times (N+1)\cdot N_x}$ defined by
 \begin{align*}
 \bm{\tilde c}_{\bm{u}} = 
 \begin{pmatrix} 
@@ -89,9 +89,9 @@ We first point out that since we assume convergence of the classical IPM scheme,
     0 &\cdots &  0 & \partial_{\bm{u}_{\ell}}\bm{\tilde c}_{N_x} & \partial_{\bm{u}_c}\bm{\tilde c}_{N_x}
     \end{pmatrix},
 \end{align*}
-where we define $\bm{\tilde c}_{j}:=\bm{\tilde c}\left(\bm{u}_{j-1}^n,\bm{u}_{j}^n,\bm{u}_{j+1}^n\right)$ for all $j$. Now we have for each term inside the matrix $\bm{\tilde c}_{\bm{u}}$
+where we define $\bm{\tilde c}_{j}:=\bm{\tilde c}\left(\bm{u}_{j-1}^*,\bm{u}_{j}^*,\bm{u}_{j+1}^*\right)$ for all $j$. Now we have for each term inside the matrix $\bm{\tilde c}_{\bm{u}}$
 \begin{align}\label{eq:cTildeDer}
-\partial_{\bm{u}_{\ell}}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{\lambda}(\bm{u}_{j-1})}{\partial \bm{u}},\enskip\partial_{\bm{u}_c}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_c}\frac{\partial \bm{\lambda}(\bm{u}_j)}{\partial \bm{u}},\enskip\partial_{\bm{u}_r}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_r}\frac{\partial \bm{\lambda}(\bm{u}_{j+1})}{\partial \bm{u}}.
+\partial_{\bm{u}_{\ell}}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{\lambda}(\bm{u}_{j-1}^*)}{\partial \bm{u}},\enskip\partial_{\bm{u}_c}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_c}\frac{\partial \bm{\lambda}(\bm{u}_j^*)}{\partial \bm{u}},\enskip\partial_{\bm{u}_r}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_r}\frac{\partial \bm{\lambda}(\bm{u}_{j+1}^*)}{\partial \bm{u}}.
 \end{align}
 We first wish to understand the structure of the terms $\partial_{\bm{u}} \bm{\lambda}(\bm{u})$. For this, we note that the exact dual state fulfills
 \begin{align}\label{eq:ulambda}
@@ -119,18 +119,19 @@ Now we begin to derive the spectrum of the \textit{One-Shot IPM} iteration \eqre
 &\bm{u}_j^{n+1} =  \bm{c}\left(\bm{d}(\bm{\lambda}_{j-1}^{n},\bm{u}_{j-1}^{n}),\bm{d}(\bm{\lambda}_{j}^{n},\bm{u}_{j}^{n}),\bm{d}(\bm{\lambda}_{j+1}^{n},\bm{u}_{j+1}^{n})\right)
 \end{align*}
 The Jacobian $\bm{J}\in\mathbb{R}^{2(N+1)\cdot N_x \times 2(N+1)\cdot N_x}$ has the form
-\begin{align*}
+\begin{align}\label{eq:Jacobian}
 \bm{J} = 
 \begin{pmatrix}
  \partial_{\bm{\lambda}} \bm{d} & \partial_{\bm{u}} \bm{d}  \\
 \partial_{\bm{\lambda}} \bm{c} & \partial_{\bm{u}} \bm{c}
 \end{pmatrix},
-\end{align*}
-where each block has entries for all spatial cells. We start by looking at $\partial_{\bm{\lambda}} \bm{d}$. For columns $(j-1)\cdot(N+1)$ to $j\cdot(N+1)$, we have
+\end{align}
+where each block has entries for all spatial cells. We start by looking at $\partial_{\bm{\lambda}} \bm{d}$. For the columns belonging to cell $j$, we have
 \begin{align*}
-\partial_{\bm{\lambda}} \bm{d}(\bm{\lambda}_j^n,\bm{u}_j^n) = \bm{I}_d - \bm{B} \cdot \langle u'(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle.
+\partial_{\bm{\lambda}} \bm{d}(\bm{\lambda}_j^n,\bm{u}_j^n) &= \bm{I}_d - \bm{B} \cdot \langle u'(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle - \partial_{\bm{\lambda}}\bm{B} \cdot \left( \langle u(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi} \rangle - \bm{u}\right) \\
+&=- \partial_{\bm{\lambda}}\bm{B} \cdot \left( \langle u(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi} \rangle - \bm{u}\right),
 \end{align*}
-Recall the choice $\bm{B} = \langle u'(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-1}$, meaning that $\partial_{\bm{\lambda}} \bm{d} = \bm{0}$. For the block $\partial_{\bm{u}} \bm{d}$, we get 
+where we used $\bm{B} = \langle u'(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-1}$. Recall that at the fix point $(\bm{\lambda}^*,\bm{u}^*)$, we have $\langle u(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi} \rangle = \bm{u}$, hence one obtains $\partial_{\bm{\lambda}} \bm{d}=\bm{0}$. For the block $\partial_{\bm{u}} \bm{d}$, we get 
 \begin{align*}
 \partial_{\bm{u}} \bm{d}(\bm{\lambda}_j^n,\bm{u}_j^n) = \bm{B},
 \end{align*}
@@ -138,11 +139,33 @@ hence $\partial_{\bm{u}} \bm{d}$ is a block diagonal matrix. Let us now look at 
 \begin{align*}
 \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{u}_{j-1}^{n})}{\partial \bm{\lambda}} = \bm{0},
 \end{align*}
-since we already showed that by the choice of $\bm{B}$ the term $\partial_{\bm{\lambda}} \bm{d}$ is zero. We can show the same result for all spatial cells and all inputs of $\bm{c}$ analogously, hence $\partial_{\bm{\lambda}} \bm{c} = 0$. For the last block, we have that 
+since we already showed that by the choice of $\bm{B}$ the term $\partial_{\bm{\lambda}} \bm{d}$ is zero. We can show the same result for all spatial cells and all inputs of $\bm{c}$ analogously, hence $\partial_{\bm{\lambda}} \bm{c} = \bm{0}$. For the last block, we have that 
 \begin{align*}
 \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{u}_{j-1}^{n})}{\partial \bm{u}} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \bm{B} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \langle u'(\bm{\varphi}^T\bm{\lambda}_{j-1}^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-1} = \partial_{\bm{u}_{\ell}}\bm{\tilde c}_j
 \end{align*}
-by the choice of $\bm{B}$ as well as \eqref{eq:cTildeDer} and \eqref{eq:dudlambdaex}. Hence, we have that $\partial_{\bm{u}} \bm{c} = \bm{\tilde c}_{\bm{u}}$, which only has eigenvalues between $-1$ and $1$ by the assumption that the classical IPM converges. Since $\bm{J}$ is an upper triangluar block matrix, the eigenvalues are given by $\lambda\left(\partial_{\bm{\lambda}} \bm{d}\right) = 0$ and $\lambda\left(\partial_{\bm{u}} \bm{c}\right)\in(-1,1)$, hence the One-Shot IPM converges.\qed
+by the choice of $\bm{B}$ as well as \eqref{eq:cTildeDer} and \eqref{eq:dudlambdaex}. Hence, we have that $\partial_{\bm{u}} \bm{c} = \bm{\tilde c}_{\bm{u}}$, which only has eigenvalues between $-1$ and $1$ by the assumption that the classical IPM iteration is contractive. Since $\bm{J}$ is an upper triangluar block matrix, the eigenvalues are given by $\lambda\left(\partial_{\bm{\lambda}} \bm{d}\right) = 0$ and $\lambda\left(\partial_{\bm{u}} \bm{c}\right)\in(-1,1)$, hence the One-Shot IPM is contractive around its fix point.\qed
 \end{proof}
+\begin{theorem}\label{th:localConvergence}
+With the assumptions from Theorem \ref{th:Contractive}, the One-Shot IPM converges locally, i.e. there exists a $\delta>0$ s.t. for all starting points $(\bm{\lambda}^0,\bm{u}^0)\in B_{\delta}(\bm{\lambda}^*,\bm{u}^*)$ we have
+\begin{align*}
+\Vert (\bm{\lambda}^n,\bm{u}^n) - (\bm{\lambda}^*,\bm{u}^*)\Vert \rightarrow 0 \qquad \text{ for } n \rightarrow \infty.
+\end{align*}
+\end{theorem}
+\begin{proof}
+By Theorem \ref{th:Contractive}, the One-Shot scheme is contractive at its fix point. Since we assumed convergence of the classical IPM scheme, we can conclude that all entries in the Jacobian $\bm{J}$ are continuous functions. Furthermore, the determinant of $\bm{\tilde{J}}:=\bm{J}-\lambda \bm{I}_d$ is a polynomial of continuous functions, since
+\begin{align*}
+\text{det}(\bm{\tilde J}) = \sum_{\sigma} \text{sgn}(\sigma)\prod_{i = 1}^{2 N_x (N+1)} \tilde J_{\sigma(i),i}.
+\end{align*}
+Since the roots of a polynomial vary continuously with its coefficients, the eigenvalues of $\bm{J}$ are continuous w.r.t $(\bm{\lambda},\bm{u})$. Hence there exists an open ball with radius $\delta$ around the fix point in which the eigenvalues remain in the interval $(-1,1)$.\qed
+\end{proof}
+\begin{remark}
+Theorem \ref{th:localConvergence} gives some insights in how to set up the One-Shot IPM iteration: If we look at the Jacobian \eqref{eq:Jacobian} at an arbitrary point, we obtain
+
+Let us assume that the classical IPM scheme converges globally.
+
+\begin{itemize}
+\item Choose a moment vector $\bm{u}^0$ and compute the corresponding exact dual variables $\bm{\lambda}^0:=\bm{\lambda}(\bm{u}^0)$ as starting vector. In this case, the term $\partial_{\lambda}\bm{d}$ is equal to zero for the starting conditions.
+\end{itemize}
+\end{remark}
 
 \end{document}
