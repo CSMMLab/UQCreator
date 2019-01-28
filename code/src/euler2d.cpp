@@ -179,7 +179,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         return y;
     }
     else {
-        _sigma[0]    = 0.5;
+        _sigma[0]    = 1.25;
         _sigma[1]    = 0.01;
         double gamma = 1.4;
         double R     = 287.87;

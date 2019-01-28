@@ -1,0 +1,171 @@
+\documentclass[10pt, a4paper, titlepage, bibliography=totocnumbered]{article}
+
+\renewcommand*\rmdefault{ppl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}                 % Anpassung f\"ur deutsche Sprache
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage{algorithm,algorithmic}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+
+\usepackage{amssymb}
+
+\newenvironment{proof}[1][Proof]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{definition}[1][Definition]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{example}[1][Example]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+
+\usepackage{bm}
+\usepackage{color}
+
+\newcommand{\qed}{\hfill \ensuremath{\Box}}
+
+\usepackage{geometry}
+%\geometry{verbose,a4paper,tmargin=10mm,bmargin=15mm,lmargin=12mm,rmargin=12mm}
+
+\begin{document}
+
+\section*{One-Shot IPM}
+For classical IPM, the iteration scheme for the moment vectors is
+\begin{align}\label{eq:momentIteration}
+\bm{u}_j^{n+1} = \bm{c}\left(\bm{\lambda}(\bm{u}_{j-1}^n),\bm{\lambda}(\bm{u}_{j}^n),\bm{\lambda}(\bm{u}_{j+1}^n)\right),
+\end{align}
+where $\bm{c}:\mathbb{R}^{N+1}\times\mathbb{R}^{N+1}\times\mathbb{R}^{N+1}\to\mathbb{R}^{N+1}$ is given by
+\begin{align*}
+\bm{c}\left(\bm{\lambda}_{\ell},\bm{\lambda}_c,\bm{\lambda}_r\right):= \langle u(\bm{\lambda}_c^T\bm{\varphi})\bm{\varphi}\rangle - \frac{\Delta t}{\Delta x}\left(\langle g(u(\bm{\lambda}_c^T\bm{\varphi}),u(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}\rangle-\langle g(u(\bm{\lambda}_{\ell}^T\bm{\varphi}),u(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}\rangle\right).
+\end{align*}
+The map from the moment vector to the dual variables is given by the exact fix point of $\bm{d}:\mathbb{R}^{N+1}\times\mathbb{R}^{N+1}\to\mathbb{R}^{N+1}$,
+\begin{align*}
+\bm{d}(\bm{\lambda},\bm{u}):= \bm{\lambda}-\bm{B}\cdot \left(\langle u(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\rangle)-\bm{u}\right),
+\end{align*}
+where $\bm{B}$ is a preconditioner, which is used in the numerical scheme to ensure convergence of the fix point iteration (which we call dual iteration in the following)
+\begin{align}\label{eq:dualIteration}
+\bm{\lambda}_j^{m+1} = \bm{d}(\bm{\lambda}_j^m,\bm{u}_j^{n}).
+\end{align}
+Note that here, $\bm{u}_j^{n}$ is a fixed parameter. By letting the dual iteration converge, i.e. $m\rightarrow\infty$, we obtain $\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^m,\bm{u}_j^{n}) =:\bm{\lambda}_j^{n} \equiv \bm\lambda(\bm{u}_j^{n})$, which are called the dual variables of $\bm{u}_j^{n}$. Hence, the numerical scheme for IPM converges the dual iteration \eqref{eq:dualIteration} to compute the mapping from the moment vectors to their dual variables and then performs one iteration of \eqref{eq:momentIteration} to obtain the time update of the moment vector. Note that this can become extremely expensive, since in each iteration of the moment vectors, we fully converge the dual iteration for all spatial cells.
+
+To simplify notation, we leave out the dependency on $\bm{\lambda}$ when writing the moment scheme in the following: Hence with 
+\begin{align*}
+\bm{\tilde c}\left(\bm{u}_{\ell}^n,\bm{u}_{c}^n,\bm{u}_{r}^n\right):=\bm{c}\left(\bm{\lambda}(\bm{u}_{\ell}^n),\bm{\lambda}(\bm{u}_{c}^n),\bm{\lambda}(\bm{u}_{r}^n)\right)
+\end{align*}
+we can rewrite the moment iteration as
+\begin{align}\label{eq:shortIPMIt}
+\bm{u}_j^{n+1} = \bm{\tilde c}\left(\bm{u}_{j-1}^n,\bm{u}_{j}^n,\bm{u}_{j+1}^n\right).
+\end{align}
+
+For steady problems, we assume that the IPM scheme converges to a fix point, i.e. we must have that $\rho (\bm{\tilde c}_{\bm{u}})<1$. The main idea of \textit{One-Shot IPM} is to not fully converge the dual iteration, since the moment vectors are not yet converged to the exact steady solution. So if we successively perform one update of the moment iteration and one update of the dual iteration, we obtain 
+\begin{subequations}\label{eq:oneshotIPM}
+\begin{align}
+&\bm{\lambda}_{j}^{n+1} =  \bm{d}(\bm{\lambda}_j^{n},\bm{u}_j^{n}) \enskip \text{ for all j} \label{eq:oneshotIPMdual}\\
+&\bm{u}_j^{n+1} =  \bm{c}\left(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_{j}^{n+1},\bm{\lambda}_{j+1}^{n+1}\right)\label{eq:oneshotIPMmoment}.
+\end{align}
+\end{subequations}
+In the following, we study convergence of this scheme. For this we take an approach commonly chosen to prove the local convergence properties of Newton's method: In Theorem \ref{th:Contractive}, we show that the iteration function is contractive at its fix point and conclude in Theorem \ref{th:localConvergence} that this yields local convergence.
+\begin{theorem}\label{th:Contractive}
+Assume that the classical IPM iteration \eqref{eq:shortIPMIt} is contractive at its fix point $\bm{u}^*$. Then the Jacobi matrix $\bm{J}$ of the One-Shot IPM iteration \eqref{eq:oneshotIPM} has a spectral radius $\rho(\bm{J})<1$ at the fix point $(\bm{\lambda}^*,\bm{u}^*)$ if the preconditioner $\bm{B} = \langle u'(\bm{\varphi}^T\bm{\lambda}_j^{n})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}$, i.e. the Hessian of the dual problem is used.
+\end{theorem}
+\begin{proof}
+We first point out that since we assume that the classical IPM scheme is contractive at its fix point, we have $\rho (\bm{\tilde c}_{\bm{u}}(\bm{u}^*))<1$ with $\bm{\tilde c}_{\bm{u}}\in\mathbb{R}^{(N+1)\cdot N_x\times (N+1)\cdot N_x}$ defined by
+\begin{align*}
+\bm{\tilde c}_{\bm{u}} = 
+\begin{pmatrix} 
+    \partial_{\bm{u}_c}\bm{\tilde c}_{1} & \partial_{\bm{u}_r}\bm{\tilde c}_{1}& 0 & 0 & \dots \\
+    \partial_{\bm{u}_{\ell}}\bm{\tilde c}_{2} & \partial_{\bm{u}_c}\bm{\tilde c}_{2} & \partial_{\bm{u}_r}\bm{\tilde c}_{2}& 0 & \dots \\
+    0 & \partial_{\bm{u}_{\ell}}\bm{\tilde c}_{3} & \partial_{\bm{u}_c}\bm{\tilde c}_{3} & \partial_{\bm{u}_r}\bm{\tilde c}_{3}\\
+    \vdots & & & \ddots & \\
+    0 &\cdots &  0 & \partial_{\bm{u}_{\ell}}\bm{\tilde c}_{N_x} & \partial_{\bm{u}_c}\bm{\tilde c}_{N_x}
+    \end{pmatrix},
+\end{align*}
+where we define $\bm{\tilde c}_{j}:=\bm{\tilde c}\left(\bm{u}_{j-1}^*,\bm{u}_{j}^*,\bm{u}_{j+1}^*\right)$ for all $j$. Now we have for each term inside the matrix $\bm{\tilde c}_{\bm{u}}$
+\begin{align}\label{eq:cTildeDer}
+\partial_{\bm{u}_{\ell}}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{\lambda}(\bm{u}_{j-1}^*)}{\partial \bm{u}},\enskip\partial_{\bm{u}_c}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_c}\frac{\partial \bm{\lambda}(\bm{u}_j^*)}{\partial \bm{u}},\enskip\partial_{\bm{u}_r}\bm{\tilde c}_{j} = \frac{\partial \bm{c}_j}{\partial \bm{\lambda}_r}\frac{\partial \bm{\lambda}(\bm{u}_{j+1}^*)}{\partial \bm{u}}.
+\end{align}
+We first wish to understand the structure of the terms $\partial_{\bm{u}} \bm{\lambda}(\bm{u})$. For this, we note that the exact dual state fulfills
+\begin{align}\label{eq:ulambda}
+\bm{u} = \langle u(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\rangle =: \bm{h}(\bm{\lambda}),
+\end{align}
+which is why we have the mapping $\bm{u}:\mathbb{R}^{N+1}\to\mathbb{R}^{N+1}$, $\bm{u}(\bm{\lambda}) = \bm{h}(\bm{\lambda})$. Since the solution of the dual problem for a given moment vector is unique, this mapping is bijective and therefore we have an inverse function
+\begin{align}\label{eq:lambdau}
+\bm{\lambda} = \bm{h}^{-1}(\bm{u}(\bm{\lambda}))
+\end{align}
+Now we differentiate both sides w.r.t. $\bm{\lambda}$ to get
+\begin{align*}
+\bm{I}_{d} = \frac{\partial \bm{h}^{-1}(\bm{u}(\bm{\lambda}))}{\partial \bm{u}}\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}.
+\end{align*}
+We multiply with the matrix inverse of $\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}$ to get
+\begin{align*}
+\left(\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}\right)^{-1} = \frac{\partial \bm{h}^{-1}(\bm{u}(\bm{\lambda}))}{\partial \bm{u}}.
+\end{align*}
+Note that on the left-hand-side we have the inverse of a matrix and on the right-hand-side, we have the inverse of a multi-dimensional function. By rewriting $\bm{h}^{-1}(\bm{u}(\bm{\lambda}))$ as $\bm{\lambda}(\bm{u})$ and simply computing the term $\frac{\partial \bm{u}(\bm{\lambda})}{\partial \bm{\lambda}}$ by differentiating \eqref{eq:ulambda} w.r.t. $\bm{\lambda}$, one obtains
+\begin{align}\label{eq:dudlambdaex}
+\partial_{\bm{u}} \bm{\lambda}(\bm{u}) = \langle u'(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}.
+\end{align}
+Now we begin to derive the spectrum of the \textit{One-Shot IPM} iteration \eqref{eq:oneshotIPM}. Note that in its current form this iteration is not really a fix point iteration, since it uses the time updated dual variables in \eqref{eq:oneshotIPMmoment}. To obtain a fix point iteration, we plug the dual iteration step \eqref{eq:oneshotIPMdual} into the moment iteration \eqref{eq:oneshotIPMmoment} to obtain
+\begin{align*}
+&\bm{\lambda}_j^{n+1} = \bm{d}(\bm{\lambda}_j^{n},\bm{u}_j^{n}) \enskip \text{ for all j} \\
+&\bm{u}_j^{n+1} =  \bm{c}\left(\bm{d}(\bm{\lambda}_{j-1}^{n},\bm{u}_{j-1}^{n}),\bm{d}(\bm{\lambda}_{j}^{n},\bm{u}_{j}^{n}),\bm{d}(\bm{\lambda}_{j+1}^{n},\bm{u}_{j+1}^{n})\right)
+\end{align*}
+The Jacobian $\bm{J}\in\mathbb{R}^{2(N+1)\cdot N_x \times 2(N+1)\cdot N_x}$ has the form
+\begin{align}\label{eq:Jacobian}
+\bm{J} = 
+\begin{pmatrix}
+ \partial_{\bm{\lambda}} \bm{d} & \partial_{\bm{u}} \bm{d}  \\
+\partial_{\bm{\lambda}} \bm{c} & \partial_{\bm{u}} \bm{c}
+\end{pmatrix},
+\end{align}
+where each block has entries for all spatial cells. We start by looking at $\partial_{\bm{\lambda}} \bm{d}$. For the columns belonging to cell $j$, we have
+\begin{align*}
+\partial_{\bm{\lambda}} \bm{d}(\bm{\lambda}_j^n,\bm{u}_j^n) &= \bm{I}_d - \bm{B} \cdot \langle u'(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle - \partial_{\bm{\lambda}}\bm{B} \cdot \left( \langle u(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi} \rangle - \bm{u}\right) \\
+&=- \partial_{\bm{\lambda}}\bm{B} \cdot \left( \langle u(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi} \rangle - \bm{u}\right),
+\end{align*}
+where we used $\bm{B} = \langle u'(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-1}$. Recall that at the fix point $(\bm{\lambda}^*,\bm{u}^*)$, we have $\langle u(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi} \rangle = \bm{u}$, hence one obtains $\partial_{\bm{\lambda}} \bm{d}=\bm{0}$. For the block $\partial_{\bm{u}} \bm{d}$, we get 
+\begin{align*}
+\partial_{\bm{u}} \bm{d}(\bm{\lambda}_j^n,\bm{u}_j^n) = \bm{B},
+\end{align*}
+hence $\partial_{\bm{u}} \bm{d}$ is a block diagonal matrix. Let us now look at $\partial_{\bm{\lambda}} \bm{c}$ at a fixed spatial cell $j$:
+\begin{align*}
+\frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{u}_{j-1}^{n})}{\partial \bm{\lambda}} = \bm{0},
+\end{align*}
+since we already showed that by the choice of $\bm{B}$ the term $\partial_{\bm{\lambda}} \bm{d}$ is zero. We can show the same result for all spatial cells and all inputs of $\bm{c}$ analogously, hence $\partial_{\bm{\lambda}} \bm{c} = \bm{0}$. For the last block, we have that 
+\begin{align*}
+\frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{u}_{j-1}^{n})}{\partial \bm{u}} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \bm{B} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \langle u'(\bm{\varphi}^T\bm{\lambda}_{j-1}^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-1} = \partial_{\bm{u}_{\ell}}\bm{\tilde c}_j
+\end{align*}
+by the choice of $\bm{B}$ as well as \eqref{eq:cTildeDer} and \eqref{eq:dudlambdaex}. Hence, we have that $\partial_{\bm{u}} \bm{c} = \bm{\tilde c}_{\bm{u}}$, which only has eigenvalues between $-1$ and $1$ by the assumption that the classical IPM iteration is contractive. Since $\bm{J}$ is an upper triangluar block matrix, the eigenvalues are given by $\lambda\left(\partial_{\bm{\lambda}} \bm{d}\right) = 0$ and $\lambda\left(\partial_{\bm{u}} \bm{c}\right)\in(-1,1)$, hence the One-Shot IPM is contractive around its fix point.\qed
+\end{proof}
+\begin{theorem}\label{th:localConvergence}
+With the assumptions from Theorem \ref{th:Contractive}, the One-Shot IPM converges locally, i.e. there exists a $\delta>0$ s.t. for all starting points $(\bm{\lambda}^0,\bm{u}^0)\in B_{\delta}(\bm{\lambda}^*,\bm{u}^*)$ we have
+\begin{align*}
+\Vert (\bm{\lambda}^n,\bm{u}^n) - (\bm{\lambda}^*,\bm{u}^*)\Vert \rightarrow 0 \qquad \text{ for } n \rightarrow \infty.
+\end{align*}
+\end{theorem}
+\begin{proof}
+By Theorem \ref{th:Contractive}, the One-Shot scheme is contractive at its fix point. Since we assumed convergence of the classical IPM scheme, we can conclude that all entries in the Jacobian $\bm{J}$ are continuous functions. Furthermore, the determinant of $\bm{\tilde{J}}:=\bm{J}-\lambda \bm{I}_d$ is a polynomial of continuous functions, since
+\begin{align*}
+\text{det}(\bm{\tilde J}) = \sum_{\sigma} \text{sgn}(\sigma)\prod_{i = 1}^{2 N_x (N+1)} \tilde J_{\sigma(i),i}.
+\end{align*}
+Since the roots of a polynomial vary continuously with its coefficients, the eigenvalues of $\bm{J}$ are continuous w.r.t $(\bm{\lambda},\bm{u})$. Hence there exists an open ball with radius $\delta$ around the fix point in which the eigenvalues remain in the interval $(-1,1)$.\qed
+\end{proof}
+\begin{remark}
+Theorem \ref{th:localConvergence} gives some insights in how to set up the One-Shot IPM iteration: If we look at the Jacobian \eqref{eq:Jacobian} at an arbitrary point, we obtain
+
+Let us assume that the classical IPM scheme converges globally.
+
+\begin{itemize}
+\item Choose a moment vector $\bm{u}^0$ and compute the corresponding exact dual variables $\bm{\lambda}^0:=\bm{\lambda}(\bm{u}^0)$ as starting vector. In this case, the term $\partial_{\lambda}\bm{d}$ is equal to zero for the starting conditions.
+\end{itemize}
+\end{remark}
+
+\end{document}

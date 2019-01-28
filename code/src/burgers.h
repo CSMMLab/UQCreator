@@ -15,12 +15,6 @@ class Burgers : public Problem
     double _x0;
     double _x1;
 
-    Vector _u;
-    Vector _x;
-    double _dx;
-    double _dt;
-    unsigned _nCells;
-    unsigned _nTimeSteps;
     Vector F( double u );
     Matrix F( const Matrix& u );
 

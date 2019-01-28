@@ -19,15 +19,10 @@ Closure::Closure( Settings* settings )
     _quad[0]  = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_LEGENDRE );
     _quad[1]  = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_HERMITE );
 
-    // compute ntotal number of moments and quad points
+    // compute total number of moments and quad points
     _numDimXi = _settings->GetNDimXi();
     _nQTotal  = std::pow( _settings->GetNQuadPoints(), _numDimXi );
     _nTotal   = std::pow( _settings->GetNMoments(), _numDimXi );
-
-    // calculate basis functions evaluated at the quadrature points
-    _phiTilde    = Matrix( _nQTotal, _nTotal, 1.0 );
-    _phiTildeWf  = Matrix( _nQTotal, _nTotal, 1.0 );
-    _phiTildeVec = std::vector<Vector>( _nQTotal, Vector( _nTotal, 0.0 ) );
 
     // setup map from k and i total to individual indices
     std::vector<std::vector<unsigned>> indices;
@@ -56,6 +51,11 @@ Closure::Closure( Settings* settings )
         xi[l] = _quad[l]->GetNodes();
         w[l]  = _quad[l]->GetWeights();
     }
+
+    // compute basis functions evaluated at the quadrature points
+    _phiTilde    = Matrix( _nQTotal, _nTotal, 1.0 );
+    _phiTildeWf  = Matrix( _nQTotal, _nTotal, 1.0 );
+    _phiTildeVec = std::vector<Vector>( _nQTotal, Vector( _nTotal, 0.0 ) );
 
     unsigned n;
     for( unsigned k = 0; k < _nQTotal; ++k ) {
@@ -226,30 +226,6 @@ Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda ) const {
 }
 
 void Closure::EvaluateLambda( Matrix& out, const Matrix& lambda ) const { out = lambda * _phiTildeTrans; }
-
-/*
-Vector Closure::EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k ) {
-    Vector out = Vector( _nStates, 0.0 );
-    for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned i = 0; i < _nTotal; ++i ) {
-            out[l] += lambda( l, i ) * _basis->Evaluate( i, xi[k] ) * ( 2.0 * i + 1.0 );
-        }
-    }
-    return out;
-}
-
-// TODO
-Matrix Closure::EvaluateLambda( const Matrix& lambda, const Vector& xi ) {
-    Matrix out( _nStates, xi.size(), 0.0 );
-    for( unsigned k = 0; k < xi.size(); ++k ) {
-        for( unsigned l = 0; l < _nStates; ++l ) {
-            for( unsigned i = 0; i < _nTotal; ++i ) {
-                out( l, k ) += lambda( l, i ) * _basis->Evaluate( i, xi[k] ) * ( 2.0 * i + 1.0 );
-            }
-        }
-    }
-    return out;
-}*/
 
 void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
     Vector uKinetic( _nStates, 0.0 );
