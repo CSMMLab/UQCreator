@@ -72,9 +72,14 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             validConfig = false;
         }
 
-        auto continueFile = mesh->get_as<std::string>( "continueFile" );
-        if( continueFile ) {
-            _continueFile = _inputDir.string() + "/" + *continueFile;
+        auto icFile = mesh->get_as<std::string>( "icFile" );
+        if( icFile ) {
+            _icFile = _inputDir.string() + "/" + *icFile;
+        }
+
+        auto restartFile = mesh->get_as<std::string>( "restartFile" );
+        if( restartFile ) {
+            _restartFile = _inputDir.string() + "/" + *restartFile;
         }
 
         // section problem
@@ -258,8 +263,10 @@ void Settings::SetNumCells( unsigned n ) {
     }
 }
 std::string Settings::GetOutputFile() const { return _outputFile; }
-bool Settings::HasContinueFile() const { return !_continueFile.empty(); }
-std::string Settings::GetContinueFile() const { return _continueFile; }
+bool Settings::HasICFile() const { return !_icFile.empty(); }
+std::string Settings::GetICFile() const { return _icFile; }
+bool Settings::HasRestartFile() const { return !_restartFile.empty(); }
+std::string Settings::GetRestartFile() const { return _restartFile; }
 
 // problem
 TimesteppingType Settings::GetTimesteppingType() const { return _timesteppingType; }

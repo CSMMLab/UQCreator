@@ -23,7 +23,8 @@ class Settings
     std::filesystem::path _inputFile;
     std::filesystem::path _outputDir;
     std::filesystem::path _outputFile;
-    std::filesystem::path _continueFile;
+    std::filesystem::path _icFile;
+    std::filesystem::path _restartFile;
 
     // requied settings
     unsigned _meshDimension;
@@ -84,8 +85,10 @@ class Settings
     unsigned GetNumCells() const;
     void SetNumCells( unsigned n );
     std::string GetOutputFile() const;
-    bool HasContinueFile() const;
-    std::string GetContinueFile() const;
+    bool HasICFile() const;
+    std::string GetICFile() const;
+    bool HasRestartFile() const;
+    std::string GetRestartFile() const;
 
     // problem
     TimesteppingType GetTimesteppingType() const;

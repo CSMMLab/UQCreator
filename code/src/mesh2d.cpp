@@ -347,7 +347,7 @@ void Mesh2D::DetermineNeighbors() {
 
 std::vector<Vector> Mesh2D::Import() const {
     auto reader = vtkXMLUnstructuredGridReaderSP::New();
-    reader->SetFileName( _settings->GetContinueFile().c_str() );
+    reader->SetFileName( _settings->GetICFile().c_str() );
     reader->Update();
 
     std::vector<Vector> data( _numCells, Vector( _settings->GetNStates() ) );

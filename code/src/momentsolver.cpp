@@ -29,9 +29,8 @@ void MomentSolver::Solve() {
 
     // create solution fields
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
-    if( _settings->HasContinueFile() ) {
-        auto ICs = _mesh->Import();
-        // TODO: _mesh->Import just imports mean val
+    if( _settings->HasRestartFile() ) {
+        u = this->Import();
     }
     else {
         u = SetupIC();
@@ -84,7 +83,7 @@ void MomentSolver::Solve() {
         double residual = 0;
 
 #pragma omp parallel for schedule( dynamic, 10 )
-        for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
+        for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
             _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]] );
         }
 
@@ -176,6 +175,8 @@ void MomentSolver::Solve() {
     else
         _mesh->Export( meanAndVar );
 
+    this->Export( u );
+
     unsigned evalCell  = 300;    // 2404;
     unsigned plotState = 0;
     _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );
@@ -202,6 +203,10 @@ MatVec MomentSolver::SetupIC() {
     Vector xiEta( _settings->GetNDimXi() );
     Matrix uIC( _nStates, _nQTotal );
     Matrix phiTildeWf = _closure->GetPhiTildeWf();
+    std::vector<Vector> IC;
+    if( _settings->HasICFile() ) {
+        IC = _mesh->Import();
+    }
     unsigned n;
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned k = 0; k < _nQTotal; ++k ) {
@@ -213,10 +218,47 @@ MatVec MomentSolver::SetupIC() {
                 xiEta[l] = quad[n]->GetNodes()[index];
             }
 
-            column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );
+            if( _settings->HasICFile() ) {
+                IC               = _mesh->Import();
+                column( uIC, k ) = _problem->LoadIC( _mesh->GetCenterPos( j ), xiEta );
+            }
+            else {
+                column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );
+            }
         }
 
         u[j] = uIC * phiTildeWf;
+    }
+    return u;
+}
+
+void MomentSolver::Export( const MatVec& u ) const {
+    auto writer = std::ofstream( "moments.csv" );
+    for( unsigned i = 0; i < _nCells; ++i ) {
+        for( unsigned j = 0; j < _nStates; ++j ) {
+            for( unsigned k = 0; k < _nTotal - 1; ++k ) {
+                writer << u[i]( j, k ) << ",";
+            }
+            writer << u[i]( j, _nTotal - 1 ) << std::endl;
+        }
+    }
+}
+
+MatVec MomentSolver::Import() const {
+    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
+    auto file = std::ifstream( _settings->GetRestartFile() );
+
+    std::string line;
+    for( unsigned i = 0; i < _nCells; ++i ) {
+        std::getline( file, line );
+        std::stringstream lineStream( line );
+        std::string cell;
+        for( unsigned j = 0; j < _nStates; ++j ) {
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                std::getline( lineStream, cell, ',' );
+                u[i]( j, k ) = std::stod( cell );
+            }
+        }
     }
     return u;
 }

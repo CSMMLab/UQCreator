@@ -208,3 +208,5 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         return y;
     }
 }
+
+Vector Euler2D::LoadIC( const Vector& x, const Vector& xi ) {}

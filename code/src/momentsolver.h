@@ -2,6 +2,7 @@
 #define MOMENTSOLVER_H
 
 #include <chrono>
+#include <fstream>
 #include <omp.h>
 #include <spdlog/spdlog.h>
 
@@ -37,6 +38,8 @@ class MomentSolver
     void CalculateMoments( MatVec& out, const MatVec& lambda );
     Vector EvalLambda( const Vector& lambda, const Vector& xi );
     void Plot( double time, unsigned nSteps );
+    void Export( const MatVec& u ) const;
+    MatVec Import() const;
 
   public:
     MomentSolver( Settings* settings, Mesh* mesh, Problem* problem );
