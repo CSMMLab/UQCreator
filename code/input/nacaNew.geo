@@ -1,11 +1,21 @@
+//lcC = 2.0; // resolution farfield
+//lc1=0.05; // resolution inner rectangle
+//lcAirfoil=0.01; // resolution naca
+//lcRear = 0.5*lcAirfoil;
+//lcRearInner = lcRear;
+//lcFront = 0.2*lcAirfoil;
+//lcFrontInner = 2*lcFront;
+//lcMidInnerT = 1.5*lcAirfoil;
+
 lcC = 2.0; // resolution farfield
-lc1=0.05; // resolution inner rectangle
-lcAirfoil=0.01; // resolution naca
-lcRear = 0.5*lcAirfoil;
-lcRearInner = lcRear;
-lcFront = 0.2*lcAirfoil;
-lcFrontInner = 2*lcFront;
-lcMidInnerT = 1.5*lcAirfoil;
+lc1=0.03; // resolution inner rectangle
+lcAirfoil=0.008; // resolution naca
+lcAirfoilFine =0.005; // resolution naca front and rear 
+lcRear = lcAirfoilFine;
+lcRearInner = lcAirfoil; // lc1
+lcFront = lcAirfoilFine;
+lcFrontInner = lcAirfoil;
+lcMidInnerT = lcAirfoil;
 
 // inner rectangle points
 xLeft = -0.05; xRight = 1.05; xMid = (0.28*xLeft+0.72*xRight);
