@@ -220,8 +220,7 @@ MatVec MomentSolver::SetupIC() {
             }
 
             if( _settings->HasICFile() ) {
-                IC               = _mesh->Import();
-                column( uIC, k ) = _problem->LoadIC( _mesh->GetCenterPos( j ), xiEta );
+                column( uIC, k ) = _problem->LoadIC( IC[j], xiEta );
             }
             else {
                 column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );

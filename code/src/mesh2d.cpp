@@ -348,24 +348,21 @@ void Mesh2D::DetermineNeighbors() {
 std::vector<Vector> Mesh2D::Import() const {
     auto reader = vtkUnstructuredGridReaderSP::New();
     reader->SetFileName( _settings->GetICFile().c_str() );
+    reader->ReadAllScalarsOn();
+    reader->ReadAllVectorsOn();
     reader->Update();
 
     std::vector<Vector> data( _numCells, Vector( _settings->GetNStates() ) );
 
     auto converter = vtkPointDataToCellDataSP::New();
     converter->AddInputDataObject( reader->GetOutput() );
-    converter->PassPointDataOff();
+    converter->PassPointDataOn();
     converter->Update();
 
     auto grid     = converter->GetOutput();
     auto cellData = grid->GetCellData();
 
-    // auto density = converter->GetOutput()->GetCellData()->GetScalars( "Density" );
-    // auto density = converter->GetOutput()->GetCellData()->GetScalars( "Density" );
-    // auto energy  = reader->GetOutput()->GetPointData()->GetArray( "Momentum" );
-    // auto energy = reader->GetOutput()->GetPointData()->GetArray( "Energy" );
-    // std::cout << density->GetSize() << std::endl;
-
+    std::cout << grid->GetPointData()->GetNumberOfArrays() << std::endl;
     std::cout << cellData->GetArray( 0 )->GetName() << std::endl;
     std::cout << cellData->GetArray( 1 )->GetName() << std::endl;
     std::cout << cellData->GetNumberOfArrays() << std::endl << std::endl;
@@ -374,9 +371,8 @@ std::vector<Vector> Mesh2D::Import() const {
         data[i][0] = cellData->GetArray( "Density" )->GetTuple1( static_cast<int>( i ) );
         data[i][1] = cellData->GetArray( "Momentum" )->GetTuple3( static_cast<int>( i ) )[0];
         data[i][2] = cellData->GetArray( "Momentum" )->GetTuple3( static_cast<int>( i ) )[1];
-        // data[i][3] = cellData->GetArray( 1 )->GetTuple1( static_cast<int>( i ) );
+        data[i][3] = cellData->GetArray( "Energy" )->GetTuple1( static_cast<int>( i ) );
     }
-
     return data;
 }
 
