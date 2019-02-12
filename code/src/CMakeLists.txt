@@ -23,7 +23,7 @@ include_directories( ${MPI_INCLUDE_PATH} )
 find_package( LAPACK REQUIRED )
 include_directories( ${LAPACK_INCLUDE_DIR} )
 
-find_package( VTK REQUIRED COMPONENTS vtkIOXML vtkFiltersCore )
+find_package( VTK REQUIRED COMPONENTS vtkIOGeometry vtkFiltersCore )
 
 include_directories( ${CMAKE_SOURCE_DIR}/../ext/cpptoml/include )
 include_directories( ${CMAKE_SOURCE_DIR}/../ext/spdlog/include )

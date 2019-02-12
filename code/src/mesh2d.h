@@ -15,25 +15,27 @@
 #include <vtkCellDataToPointData.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
+#include <vtkPointDataToCellData.h>
 #include <vtkQuad.h>
 #include <vtkSmartPointer.h>
 #include <vtkTriangle.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkXMLUnstructuredGridReader.h>
-#include <vtkXMLUnstructuredGridWriter.h>
+#include <vtkUnstructuredGridReader.h>
+#include <vtkUnstructuredGridWriter.h>
 
 #include "mesh.h"
 #include "quadrangle.h"
 #include "triangle.h"
 
-using vtkPointsSP                    = vtkSmartPointer<vtkPoints>;
-using vtkUnstructuredGridSP          = vtkSmartPointer<vtkUnstructuredGrid>;
-using vtkTriangleSP                  = vtkSmartPointer<vtkTriangle>;
-using vtkCellArraySP                 = vtkSmartPointer<vtkCellArray>;
-using vtkDoubleArraySP               = vtkSmartPointer<vtkDoubleArray>;
-using vtkXMLUnstructuredGridWriterSP = vtkSmartPointer<vtkXMLUnstructuredGridWriter>;
-using vtkXMLUnstructuredGridReaderSP = vtkSmartPointer<vtkXMLUnstructuredGridReader>;
-using vtkCellDataToPointDataSP       = vtkSmartPointer<vtkCellDataToPointData>;
+using vtkPointsSP                 = vtkSmartPointer<vtkPoints>;
+using vtkUnstructuredGridSP       = vtkSmartPointer<vtkUnstructuredGrid>;
+using vtkTriangleSP               = vtkSmartPointer<vtkTriangle>;
+using vtkCellArraySP              = vtkSmartPointer<vtkCellArray>;
+using vtkDoubleArraySP            = vtkSmartPointer<vtkDoubleArray>;
+using vtkUnstructuredGridWriterSP = vtkSmartPointer<vtkUnstructuredGridWriter>;
+using vtkUnstructuredGridReaderSP = vtkSmartPointer<vtkUnstructuredGridReader>;
+using vtkCellDataToPointDataSP    = vtkSmartPointer<vtkCellDataToPointData>;
+using vtkPointDataToCellDataSP    = vtkSmartPointer<vtkPointDataToCellData>;
 
 class Mesh2D : public Mesh
 {

@@ -77,11 +77,6 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             _icFile = _inputDir.string() + "/" + *icFile;
         }
 
-        auto restartFile = mesh->get_as<std::string>( "restartFile" );
-        if( restartFile ) {
-            _restartFile = _inputDir.string() + "/" + *restartFile;
-        }
-
         // section problem
         auto problem                = file->get_table( "problem" );
         auto timesteppingTypeString = problem->get_as<std::string>( "timestepping" );
@@ -211,8 +206,13 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             log->error( "[inputfile] [moment_system] 'quadPoints' not set!" );
             validConfig = false;
         }
-        _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
-        _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
+        _maxIterations   = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
+        _epsilon         = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
+        auto restartFile = moment_system->get_as<std::string>( "restartFile" );
+        if( restartFile ) {
+            _restartFile = _inputDir.string() + "/" + *restartFile;
+        }
+
     } catch( const cpptoml::parse_exception& e ) {
         log->error( "Failed to parse {0}: {1}", _inputFile.c_str(), e.what() );
         exit( EXIT_FAILURE );

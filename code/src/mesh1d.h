@@ -18,17 +18,17 @@
 #include <vtkQuad.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkXMLUnstructuredGridReader.h>
-#include <vtkXMLUnstructuredGridWriter.h>
+#include <vtkUnstructuredGridReader.h>
+#include <vtkUnstructuredGridWriter.h>
 
-using vtkPointsSP                    = vtkSmartPointer<vtkPoints>;
-using vtkUnstructuredGridSP          = vtkSmartPointer<vtkUnstructuredGrid>;
-using vtkCellArraySP                 = vtkSmartPointer<vtkCellArray>;
-using vtkDoubleArraySP               = vtkSmartPointer<vtkDoubleArray>;
-using vtkXMLUnstructuredGridWriterSP = vtkSmartPointer<vtkXMLUnstructuredGridWriter>;
-using vtkXMLUnstructuredGridReaderSP = vtkSmartPointer<vtkXMLUnstructuredGridReader>;
-using vtkCellDataToPointDataSP       = vtkSmartPointer<vtkCellDataToPointData>;
-using vtkQuadSP                      = vtkSmartPointer<vtkQuad>;
+using vtkPointsSP                 = vtkSmartPointer<vtkPoints>;
+using vtkUnstructuredGridSP       = vtkSmartPointer<vtkUnstructuredGrid>;
+using vtkCellArraySP              = vtkSmartPointer<vtkCellArray>;
+using vtkDoubleArraySP            = vtkSmartPointer<vtkDoubleArray>;
+using vtkUnstructuredGridWriterSP = vtkSmartPointer<vtkUnstructuredGridWriter>;
+using vtkUnstructuredGridReaderSP = vtkSmartPointer<vtkUnstructuredGridReader>;
+using vtkCellDataToPointDataSP    = vtkSmartPointer<vtkCellDataToPointData>;
+using vtkQuadSP                   = vtkSmartPointer<vtkQuad>;
 
 class Mesh1D : public Mesh
 {

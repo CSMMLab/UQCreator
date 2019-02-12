@@ -144,10 +144,9 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         double p     = 101325.0;
         double Ma    = 0.0;
         double a     = sqrt( gamma * R * T );
-        double pi    = 3.14159265359;
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + _sigma[0] * 0.0 ) * ( 2.0 * pi ) / 360.0;
+        double angle = ( 1.25 + _sigma[0] * 0.0 ) * ( 2.0 * M_PI ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 
@@ -189,11 +188,10 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         if( xi.size() == 2 ) {
             Ma = Ma + xi[1] * _sigma[1];
         }
-        double a  = sqrt( gamma * R * T );
-        double pi = 3.14159265359;
+        double a = sqrt( gamma * R * T );
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + _sigma[0] * xi[0] ) * ( 2.0 * pi ) / 360.0;
+        double angle = ( 1.25 + _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 
@@ -209,4 +207,29 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     }
 }
 
-Vector Euler2D::LoadIC( const Vector& x, const Vector& xi ) {}
+Vector Euler2D::LoadIC( const Vector& x, const Vector& xi ) {
+    Vector y( _nStates );
+
+    _sigma    = Vector( xi.size() );
+    _sigma[0] = 1.25;
+    _sigma[1] = 0.01;
+
+    double rhoFarfield = x[0];
+    double u           = x[1] / rhoFarfield;
+    double v           = x[2] / rhoFarfield;
+    double uMax        = std::sqrt( u * u + v * v );
+    double angle       = ( 1.25 + _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
+    double uF          = uMax * cos( angle );
+    double vF          = uMax * sin( angle );
+
+    double gamma = 1.4;
+    double p     = 101325.0;
+
+    y[0]                  = rhoFarfield;
+    y[1]                  = rhoFarfield * uF;
+    y[2]                  = rhoFarfield * vF;
+    double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
+    double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
+    y[3]                  = kineticEnergyL + innerEnergyL;
+    return y;
+}

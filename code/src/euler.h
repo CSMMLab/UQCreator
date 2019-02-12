@@ -18,6 +18,7 @@ class Euler : public Problem
     Matrix F( const Matrix& u );
     virtual double ComputeDt( Vector& u, double dx ) const;
     virtual Vector IC( const Vector& x, const Vector& xi );
+    virtual Vector LoadIC( const Vector& x, const Vector& xi );
 };
 
 #endif    // EULER_H

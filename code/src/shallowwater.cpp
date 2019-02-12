@@ -110,3 +110,8 @@ Vector ShallowWater::IC( const Vector& x, const Vector& xi ) {
     _log->error( "Reached end of IC. No initial condition set" );
     exit( EXIT_FAILURE );
 }
+
+Vector ShallowWater::LoadIC( const Vector& x, const Vector& xi ) {
+    _log->error( "[ShallowWater: LoadIC not implemented]" );
+    exit( EXIT_FAILURE );
+}

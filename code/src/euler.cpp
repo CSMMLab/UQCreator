@@ -10,7 +10,7 @@ Euler::Euler( Settings* settings ) : Problem( settings ) {
         _gamma       = problem->get_as<double>( "gamma" ).value_or( 1.4 );
         _settings->SetGamma( _gamma );
     } catch( const cpptoml::parse_exception& e ) {
-        _log->error( "[euler] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
+        _log->error( "[Euler] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
 }
@@ -113,4 +113,9 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
         y[2]                  = kineticEnergyR + innerEnergyR;
     }
     return y;
+}
+
+Vector Euler::LoadIC( const Vector& x, const Vector& xi ) {
+    _log->error( "[Euler: LoadIC not implemented]" );
+    exit( EXIT_FAILURE );
 }

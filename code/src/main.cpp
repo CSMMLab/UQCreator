@@ -87,6 +87,13 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
     auto event_logger = std::make_shared<spdlog::logger>( "event", begin( sinks ), end( sinks ) );
     spdlog::register_logger( event_logger );
     spdlog::flush_every( std::chrono::seconds( 5 ) );
+
+    auto momentFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_moments" );
+    momentFileSink->set_level( spdlog::level::info );
+    momentFileSink->set_pattern( "%v" );
+
+    auto moment_logger = std::make_shared<spdlog::logger>( "moments", momentFileSink );
+    spdlog::register_logger( moment_logger );
 }
 
 void PrintInit( std::string configFile ) {

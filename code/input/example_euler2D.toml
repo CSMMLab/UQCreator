@@ -7,7 +7,8 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "naca0012.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "euler_naca0012StochasticGalerkin"
+outputFile = "euler_naca0012"
+icFile = "../../su2/SU2RefSol.vtk"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -15,7 +16,7 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = ["Legendre"]
 CFL = 0.042
-tEnd = 0.3
+tEnd = 0.00003
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
@@ -24,3 +25,4 @@ moments = 5
 quadPoints = 10
 maxIterations = 1
 epsilon = 5e-5
+#restartFile = "../results/logs/2019-02-12_10:31:59_moments"

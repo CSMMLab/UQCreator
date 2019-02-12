@@ -5,6 +5,7 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _log         = spdlog::get( "event" );
     _nCells      = _settings->GetNumCells();
     _nMoments    = _settings->GetNMoments();
+    _tStart      = 0.0;
     _tEnd        = _settings->GetTEnd();
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
@@ -79,7 +80,7 @@ void MomentSolver::Solve() {
     log->info( "{:10}   {:10}", "t", "residual" );
     // Begin time loop
     double t;
-    for( t = 0.0; t < _tEnd; t += _dt ) {
+    for( t = _tStart; t < _tEnd; t += _dt ) {
         double residual = 0;
 
 #pragma omp parallel for schedule( dynamic, 10 )
@@ -233,22 +234,28 @@ MatVec MomentSolver::SetupIC() {
 }
 
 void MomentSolver::Export( const MatVec& u ) const {
-    auto writer = std::ofstream( "moments.csv" );
+    std::shared_ptr<spdlog::logger> writer = spdlog::get( "moments" );
+    writer->info( "{0}", _tEnd );
     for( unsigned i = 0; i < _nCells; ++i ) {
+        std::stringstream line;
         for( unsigned j = 0; j < _nStates; ++j ) {
+
             for( unsigned k = 0; k < _nTotal - 1; ++k ) {
-                writer << u[i]( j, k ) << ",";
+                line << u[i]( j, k ) << ",";
             }
-            writer << u[i]( j, _nTotal - 1 ) << std::endl;
         }
+        line << u[i]( _nStates - 1, _nTotal - 1 );
+        writer->info( line.str() );
     }
+    writer->flush();
 }
 
-MatVec MomentSolver::Import() const {
+MatVec MomentSolver::Import() {
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     auto file = std::ifstream( _settings->GetRestartFile() );
-
     std::string line;
+    std::getline( file, line );
+    _tStart = std::stod( line );
     for( unsigned i = 0; i < _nCells; ++i ) {
         std::getline( file, line );
         std::stringstream lineStream( line );
@@ -260,5 +267,6 @@ MatVec MomentSolver::Import() const {
             }
         }
     }
+    file.close();
     return u;
 }

@@ -23,7 +23,7 @@ class MomentSolver
     TimeSolver* _time;
     MatVec _lambda;
     Problem* _problem;
-    double _dt, _tEnd;
+    double _dt, _tStart, _tEnd;
     unsigned _nCells;         // number of spatial cells
     unsigned _nMoments;       // number of moments in one uncertain dimension
     unsigned _nStates;        // number of states of the original system
@@ -39,7 +39,7 @@ class MomentSolver
     Vector EvalLambda( const Vector& lambda, const Vector& xi );
     void Plot( double time, unsigned nSteps );
     void Export( const MatVec& u ) const;
-    MatVec Import() const;
+    MatVec Import();
 
   public:
     MomentSolver( Settings* settings, Mesh* mesh, Problem* problem );

@@ -67,7 +67,7 @@ void Mesh1D::CreateGrid( double a, double b ) {
 }
 
 std::vector<Vector> Mesh1D::Import() const {
-    auto reader = vtkXMLUnstructuredGridReaderSP::New();
+    auto reader = vtkUnstructuredGridReaderSP::New();
     reader->SetFileName( _settings->GetICFile().c_str() );
     reader->Update();
 
@@ -91,10 +91,9 @@ void Mesh1D::Export( const Matrix& results ) const {
     assert( results.rows() >= _settings->GetNStates() * 2 );
     double height       = ( _nodes[_numCells]->coords[0] - _nodes[0]->coords[0] ) / 10;
     std::string vtkFile = _settings->GetOutputFile();
-    auto writer         = vtkXMLUnstructuredGridWriterSP::New();
-    if( vtkFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "vtu" ) {
-        vtkFile.append( "." );
-        vtkFile.append( writer->GetDefaultFileExtension() );
+    auto writer         = vtkUnstructuredGridWriterSP::New();
+    if( vtkFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "vtk" ) {
+        vtkFile.append( ".vtk" );
     }
     writer->SetFileName( vtkFile.c_str() );
     auto grid = vtkUnstructuredGridSP::New();
@@ -195,7 +194,6 @@ void Mesh1D::Export( const Matrix& results ) const {
     auto conv_grid = converter->GetOutput();
 
     writer->SetInputData( conv_grid );
-    writer->SetDataModeToAscii();
 
     writer->Write();
 
