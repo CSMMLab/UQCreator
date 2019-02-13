@@ -113,7 +113,7 @@ Vector Burgers::ExactSolution( double t, const Vector& x, const Vector& xi ) con
     return y;
 }
 
-double Burgers::ComputeDt( Vector& u, double dx ) const { return dx * _settings->GetCFL() / u[0]; }
+double Burgers::ComputeDt( const Matrix& u, double dx ) const { return dx * _settings->GetCFL() / u( 0, 0 ); }
 
 Vector Burgers::LoadIC( const Vector& x, const Vector& xi ) {
     _log->error( "[Burgers: LoadIC not implemented]" );

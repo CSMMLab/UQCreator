@@ -16,7 +16,7 @@ class Euler : public Problem
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );
     Matrix F( const Vector& u );
     Matrix F( const Matrix& u );
-    virtual double ComputeDt( Vector& u, double dx ) const;
+    virtual double ComputeDt( const Matrix& u, double dx ) const;
     virtual Vector IC( const Vector& x, const Vector& xi );
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
 };

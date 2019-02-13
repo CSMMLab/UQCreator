@@ -106,11 +106,21 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
         }
+        double dtCheck = 1e10;
+        double dtCurrent;
         for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
             residual += std::fabs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] ) / _dt;
+            // compute new dt
+            dtCurrent = _problem->ComputeDt( u[cellIndexPE[j]], _mesh->GetMinEdge( cellIndexPE[j] ) / _mesh->GetArea( cellIndexPE[j] ) );
+            if( dtCurrent < dtCheck ) dtCheck = dtCurrent;
         }
+        double dtMin = -1.0;
+        MPI_Reduce( &dtCheck, &dtMin, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
         MPI_Reduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
-        if( _settings->GetMyPE() == 0 ) log->info( "{:03.8f}   {:01.5e}", t, residualFull );
+        if( _settings->GetMyPE() == 0 ) {
+            log->info( "{:03.8f}   {:01.5e}", t, residualFull );
+            std::cout << "dtMin = " << dtMin << ", dt = " << _dt << std::endl;
+        }
     }
     if( _settings->GetMyPE() != 0 ) return;
 

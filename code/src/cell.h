@@ -43,6 +43,7 @@ class Cell
     double _area;
     Vector _center;
     Vector _boundaryNormal;
+    double _minEdge;    // saves edge with minimal length for CFL computation
 
     virtual void SetupEdges() = 0;
 
@@ -62,6 +63,7 @@ class Cell
     unsigned GetNPoints() const;
     unsigned GetID();
     double GetArea();
+    double GetMinEdge() const;
     const Vector& GetCenter();
     void SetBoundaryType( BoundaryType type );
     BoundaryType GetBoundaryType() const;

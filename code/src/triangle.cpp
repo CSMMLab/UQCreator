@@ -30,6 +30,7 @@ Triangle::~Triangle() {}
 void Triangle::SetupEdges() {
     Vector mid{( _nodes[0]->coords[0] + _nodes[1]->coords[0] + _nodes[2]->coords[0] ) / 3,
                ( _nodes[0]->coords[1] + _nodes[1]->coords[1] + _nodes[2]->coords[1] ) / 3};
+    _minEdge = 1e10;
     for( unsigned i = 0; i < _N - 1; ++i ) {
         Node* A           = _nodes[i];
         Node* B           = _nodes[i + 1];
@@ -39,6 +40,7 @@ void Triangle::SetupEdges() {
         Vector scaledNormal = length * unitNormal;
 
         _edges[i] = new Edge{A, B, length, unitNormal, scaledNormal};
+        if( _minEdge > length ) _minEdge = length;
     }
     Node* A           = _nodes[_N - 1];
     Node* B           = _nodes[0];
@@ -48,6 +50,7 @@ void Triangle::SetupEdges() {
     Vector scaledNormal = length * unitNormal;
 
     _edges[_N - 1] = new Edge{A, B, length, unitNormal, scaledNormal};
+    if( _minEdge > length ) _minEdge = length;
 }
 
 Vector Triangle::getOutwardNormal( Node* A, Node* B ) {

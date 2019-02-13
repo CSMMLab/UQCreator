@@ -24,7 +24,7 @@ class Burgers : public Problem
     Burgers( Settings* settings );
     inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );
-    virtual double ComputeDt( Vector& u, double dx ) const;
+    virtual double ComputeDt( const Matrix& u, double dx ) const;
     virtual Vector IC( const Vector& x, const Vector& xi );
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
     Vector ExactSolution( double t, const Vector& x, const Vector& xi ) const;

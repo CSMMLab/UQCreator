@@ -41,6 +41,8 @@ std::vector<Cell*> Mesh::GetGrid() const { return _cells; }
 
 double Mesh::GetArea( unsigned i ) const { return _cells[i]->GetArea(); }
 
+double Mesh::GetMinEdge( unsigned i ) const { return _cells[i]->GetMinEdge(); }
+
 std::vector<Cell*> Mesh::GetNeighbors( unsigned i ) const { return _cells[i]->GetNeighbors(); }
 
 Vector Mesh::GetNormals( unsigned i, unsigned l ) const { return _cells[i]->GetEdges()[l]->scaledNormal; }

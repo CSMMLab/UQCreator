@@ -71,10 +71,10 @@ Matrix Euler::F( const Matrix& u ) {
     exit( EXIT_FAILURE );
 }
 
-double Euler::ComputeDt( Vector& u, double dx ) const {
-    double rhoInv = 1.0 / u[0];
-    double v      = u[1] * rhoInv;
-    double p      = ( _gamma - 1.0 ) * ( u[2] - 0.5 * u[0] * pow( v, 2 ) );
+double Euler::ComputeDt( const Matrix& u, double dx ) const {
+    double rhoInv = 1.0 / u( 0, 0 );
+    double v      = u( 1, 0 ) * rhoInv;
+    double p      = ( _gamma - 1.0 ) * ( u( 2, 0 ) - 0.5 * u( 0, 0 ) * pow( v, 2 ) );
     double a      = sqrt( _gamma * p * rhoInv );
 
     double dt1 = dx * _settings->GetCFL() * ( v - a );

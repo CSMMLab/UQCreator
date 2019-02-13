@@ -111,25 +111,22 @@ Matrix Euler2D::F( const Matrix& u ) {
     return 0.5 * pow( u, 2 );
 }
 
-double Euler2D::ComputeDt( Vector& u, double dx ) const {
-    double rhoInv = 1.0 / u[0];
-    double uU     = u[1] * rhoInv;
-    double vU     = u[2] * rhoInv;
-    double p      = ( _gamma - 1.0 ) * ( u[3] - 0.5 * u[0] * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
+double Euler2D::ComputeDt( const Matrix& u, double dx ) const {
+    double rhoInv = 1.0 / u( 0, 0 );
+    double uU     = u( 1, 0 ) * rhoInv;
+    double vU     = u( 2, 0 ) * rhoInv;
+    double p      = ( _gamma - 1.0 ) * ( u( 3, 0 ) - 0.5 * u( 0, 0 ) * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
     double a      = sqrt( _gamma * p * rhoInv );
 
-    double dt1 = dx * _settings->GetCFL() * ( uU - a );
-    double dt2 = dx * _settings->GetCFL() * ( uU + a );
-    double dt3 = dx * _settings->GetCFL() * ( vU - a );
-    double dt4 = dx * _settings->GetCFL() * ( vU + a );
-    if( dt1 < dt2 && dt1 < dt3 && dt1 < dt4 )
-        return dt1;
-    else if( dt2 < dt1 && dt2 < dt3 && dt2 < dt4 )
-        return dt2;
-    else if( dt3 < dt1 && dt3 < dt2 && dt3 < dt4 )
-        return dt3;
-    else
-        return dt4;
+    double cfl = _settings->GetCFL();
+    cfl        = 1.0;
+
+    double dt1 = std::fabs( cfl / ( dx * ( uU - a ) ) );
+    double dt2 = std::fabs( cfl / ( dx * ( uU + a ) ) );
+    double dt3 = std::fabs( cfl / ( dx * ( vU - a ) ) );
+    double dt4 = std::fabs( cfl / ( dx * ( vU + a ) ) );
+
+    return std::min( std::min( dt1, dt2 ), std::min( dt3, dt4 ) );
 }
 
 Vector Euler2D::IC( const Vector& x, const Vector& xi ) {

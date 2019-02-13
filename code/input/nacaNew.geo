@@ -10,9 +10,9 @@
 lcC = 2.0; // resolution farfield
 lc1=0.03; // resolution inner rectangle
 lcAirfoil=0.008; // resolution naca
-lcAirfoilFine =0.005; // resolution naca front and rear 
+lcAirfoilFine =lcAirfoil; // resolution naca front and rear 
 lcRear = lcAirfoilFine;
-lcRearInner = lcAirfoil; // lc1
+lcRearInner = lc1; // lcAirfoil
 lcFront = lcAirfoilFine;
 lcFrontInner = lcAirfoil;
 lcMidInnerT = lcAirfoil;

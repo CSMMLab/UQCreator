@@ -66,7 +66,7 @@ Matrix ShallowWater::F( const Matrix& u ) {
     exit( EXIT_FAILURE );
 }
 
-double ShallowWater::ComputeDt( Vector& u, double dx ) const {
+double ShallowWater::ComputeDt( const Matrix& u, double dx ) const {
     _log->error( "[ShallowWater] ComputeDt not implemented" );
     return 0.0;
 }

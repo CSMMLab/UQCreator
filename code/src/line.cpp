@@ -13,8 +13,9 @@ Line::Line( unsigned id, std::vector<Node*> nodes ) : Cell( CELL_TYPE::LINE, id,
     else {
         _isBoundaryCell = false;
     }
-    _area   = std::fabs( _nodes[1]->coords[0] - _nodes[0]->coords[0] );
-    _center = Vector{( _nodes[0]->coords[0] + _nodes[0]->coords[0] ) / 2};
+    _area    = std::fabs( _nodes[1]->coords[0] - _nodes[0]->coords[0] );
+    _center  = Vector{( _nodes[0]->coords[0] + _nodes[0]->coords[0] ) / 2};
+    _minEdge = 1.0;
 
     SetupEdges();
     _neighbors.resize( 2 );

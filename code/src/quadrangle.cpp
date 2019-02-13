@@ -43,6 +43,7 @@ Quadrangle::~Quadrangle() {}
 void Quadrangle::SetupEdges() {
     Vector mid{( _nodes[0]->coords[0] + _nodes[1]->coords[0] + _nodes[2]->coords[0] + _nodes[3]->coords[0] ) / 4.0,
                ( _nodes[0]->coords[1] + _nodes[1]->coords[1] + _nodes[2]->coords[1] + _nodes[3]->coords[1] ) / 4.0};
+    _minEdge = 1e10;
     for( unsigned i = 0; i < _N - 1; ++i ) {
         Node* A           = _nodes[i];
         Node* B           = _nodes[i + 1];
@@ -52,6 +53,7 @@ void Quadrangle::SetupEdges() {
         Vector scaledNormal = length * unitNormal;
 
         _edges[i] = new Edge{A, B, length, unitNormal, scaledNormal};
+        if( _minEdge > length ) _minEdge = length;
     }
     Node* A           = _nodes[_N - 1];
     Node* B           = _nodes[0];
@@ -61,6 +63,7 @@ void Quadrangle::SetupEdges() {
     Vector scaledNormal = length * unitNormal;
 
     _edges[_N - 1] = new Edge{A, B, length, unitNormal, scaledNormal};
+    if( _minEdge > length ) _minEdge = length;
 }
 
 Vector Quadrangle::getOutwardNormal( Node* A, Node* B ) {
