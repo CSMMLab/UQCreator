@@ -37,6 +37,8 @@ Problem* Problem::Create( Settings* settings ) {
     }
 }
 
+double Problem::ComputeDt( const Matrix& u, double dx ) const { return _settings->GetDT(); }
+
 Vector Problem::ExactSolution( double t, const Vector& x, const Vector& xi ) const {
     _log->error( "[Problem]: No exact solution specified" );
     exit( EXIT_FAILURE );

@@ -42,6 +42,8 @@ double Cell::GetArea() { return _area; }
 
 double Cell::GetMinEdge() const { return _minEdge; }
 
+double Cell::GetMaxEdge() const { return _maxEdge; }
+
 const Vector& Cell::GetCenter() { return _center; }
 
 VectorU Cell::GetNeighborIDs() { return _neighborIDs; }

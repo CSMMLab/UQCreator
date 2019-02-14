@@ -5,7 +5,8 @@ ExplicitEuler::ExplicitEuler( Settings* settings, Mesh* mesh ) : TimeSolver( set
 void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
                              MatVec& uNew,
                              MatVec& u,
-                             MatVec& uQ ) {
+                             MatVec& uQ,
+                             double dt ) {
     auto numCells = _mesh->GetNumCells();
     auto cells    = _mesh->GetGrid();
     Matrix ghostCell( _settings->GetNStates(), _settings->GetNQuadPoints() );
@@ -65,6 +66,6 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
                 fluxFunc( rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ) );
             }
         }
-        uNew[j] = u[j] - ( _dt / cell->GetArea() ) * rhs;
+        uNew[j] = u[j] - ( dt / cell->GetArea() ) * rhs;
     }
 }

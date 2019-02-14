@@ -272,6 +272,8 @@ std::string Settings::GetRestartFile() const { return _restartFile; }
 TimesteppingType Settings::GetTimesteppingType() const { return _timesteppingType; }
 double Settings::GetCFL() const { return _CFL; }
 double Settings::GetTEnd() const { return _tEnd; }
+double Settings::GetDT() const { return _dt; }
+void Settings::SetDT( double dt ) { _dt = dt; }
 unsigned Settings::GetNDimXi() const { return _numDimXi; }
 double Settings::GetGamma() const { return _gamma; }
 void Settings::SetGamma( double gamma ) { _gamma = gamma; }

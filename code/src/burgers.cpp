@@ -113,7 +113,15 @@ Vector Burgers::ExactSolution( double t, const Vector& x, const Vector& xi ) con
     return y;
 }
 
-double Burgers::ComputeDt( const Matrix& u, double dx ) const { return dx * _settings->GetCFL() / u( 0, 0 ); }
+double Burgers::ComputeDt( const Matrix& u, double dx ) const {
+    double dtMinTotal = 1e10;
+    double cfl        = _settings->GetCFL();
+
+    for( unsigned k = 0; k < u.columns(); ++k ) {
+        dtMinTotal = std::min( cfl * dx / ( std::fabs( u( 0, k ) ) ), dtMinTotal );
+    }
+    return dtMinTotal;
+}
 
 Vector Burgers::LoadIC( const Vector& x, const Vector& xi ) {
     _log->error( "[Burgers: LoadIC not implemented]" );

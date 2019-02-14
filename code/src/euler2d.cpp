@@ -112,21 +112,25 @@ Matrix Euler2D::F( const Matrix& u ) {
 }
 
 double Euler2D::ComputeDt( const Matrix& u, double dx ) const {
-    double rhoInv = 1.0 / u( 0, 0 );
-    double uU     = u( 1, 0 ) * rhoInv;
-    double vU     = u( 2, 0 ) * rhoInv;
-    double p      = ( _gamma - 1.0 ) * ( u( 3, 0 ) - 0.5 * u( 0, 0 ) * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
-    double a      = sqrt( _gamma * p * rhoInv );
+    double dtMinTotal = 1e10;
+    double dtMin;
+    double rhoInv, uU, vU, p, a, cfl;
 
-    double cfl = _settings->GetCFL();
-    cfl        = 1.0;
+    cfl = _settings->GetCFL();
 
-    double dt1 = std::fabs( cfl / ( dx * ( uU - a ) ) );
-    double dt2 = std::fabs( cfl / ( dx * ( uU + a ) ) );
-    double dt3 = std::fabs( cfl / ( dx * ( vU - a ) ) );
-    double dt4 = std::fabs( cfl / ( dx * ( vU + a ) ) );
+    for( unsigned k = 0; k < u.columns(); ++k ) {
+        rhoInv = 1.0 / u( 0, k );
+        uU     = u( 1, k ) * rhoInv;
+        vU     = u( 2, k ) * rhoInv;
+        p      = ( _gamma - 1.0 ) * ( u( 3, k ) - 0.5 * u( 0, k ) * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
+        a      = sqrt( _gamma * p * rhoInv );
 
-    return std::min( std::min( dt1, dt2 ), std::min( dt3, dt4 ) );
+        dtMin      = ( cfl / dx ) * std::min( std::min( std::fabs( 1.0 / ( vU - a ) ), std::fabs( 1.0 / ( vU + a ) ) ),
+                                         std::min( std::fabs( 1.0 / ( uU + a ) ), std::fabs( 1.0 / ( uU - a ) ) ) );
+        dtMinTotal = std::min( dtMin, dtMinTotal );
+    }
+
+    return dtMinTotal;
 }
 
 Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
