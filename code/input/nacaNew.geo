@@ -264,8 +264,5 @@ Curve Loop(3) = {102, 103, 100, 101};
 Plane Surface(2) = {1, 3};
 
 // Define BCs
-Physical Curve("airfoil") = {1001, 1003};
+Physical Curve("airfoil") = {1003, 1001, 1002};
 Physical Curve("farfield") = {103, 100, 102, 101};
-
-
-
