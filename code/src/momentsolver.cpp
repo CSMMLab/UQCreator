@@ -249,11 +249,10 @@ void MomentSolver::Export( const MatVec& u ) const {
         std::stringstream line;
         for( unsigned j = 0; j < _nStates; ++j ) {
 
-            for( unsigned k = 0; k < _nTotal - 1; ++k ) {
+            for( unsigned k = 0; k < _nTotal; ++k ) {
                 line << u[i]( j, k ) << ",";
             }
         }
-        line << u[i]( _nStates - 1, _nTotal - 1 );
         writer->info( line.str() );
     }
     writer->flush();
@@ -272,10 +271,12 @@ MatVec MomentSolver::Import() {
         for( unsigned j = 0; j < _nStates; ++j ) {
             for( unsigned k = 0; k < _nTotal; ++k ) {
                 std::getline( lineStream, cell, ',' );
+                std::cout << cell << std::endl;
                 u[i]( j, k ) = std::stod( cell );
             }
         }
     }
+    std::cout << _nStates << "\t" << _nTotal << std::endl;
     file.close();
     return u;
 }
