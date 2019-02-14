@@ -27,9 +27,9 @@ class Problem
     virtual ~Problem();
     virtual void Solve() {}
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) = 0;
-    virtual double ComputeDt( const Matrix& u, double dx ) const                               = 0;
-    virtual Vector IC( const Vector& x, const Vector& xi )                                     = 0;
-    virtual Vector LoadIC( const Vector& x, const Vector& xi )                                 = 0;
+    virtual double ComputeDt( const Matrix& u, double dx ) const;
+    virtual Vector IC( const Vector& x, const Vector& xi )     = 0;
+    virtual Vector LoadIC( const Vector& x, const Vector& xi ) = 0;
     virtual Vector ExactSolution( double t, const Vector& x, const Vector& xi ) const;
 };
 

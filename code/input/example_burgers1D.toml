@@ -19,7 +19,7 @@ tEnd = 0.12
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
-closure = "StochasticGalerkin"
+closure = "BoundedBarrier"
 moments = 10
 quadPoints = 40
 maxIterations = 2000

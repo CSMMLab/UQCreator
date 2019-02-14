@@ -54,6 +54,7 @@ class Settings
     double _epsilon;
     double _CFL;
     double _tEnd;
+    double _dt;    // timestepsize only required if no function ComputeDt provided in problem
     unsigned _plotStepInterval;
     double _plotTimeInterval;
     LimiterType _limiterType;
@@ -96,6 +97,8 @@ class Settings
     double GetCFL() const;
     unsigned GetNDimXi() const;
     double GetTEnd() const;
+    double GetDT() const;
+    void SetDT( double dt );
     double GetGamma() const;
     void SetGamma( double gamma );
     void SetExactSolution( bool hasExactSolution );

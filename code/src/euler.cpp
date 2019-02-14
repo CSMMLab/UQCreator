@@ -72,17 +72,23 @@ Matrix Euler::F( const Matrix& u ) {
 }
 
 double Euler::ComputeDt( const Matrix& u, double dx ) const {
-    double rhoInv = 1.0 / u( 0, 0 );
-    double v      = u( 1, 0 ) * rhoInv;
-    double p      = ( _gamma - 1.0 ) * ( u( 2, 0 ) - 0.5 * u( 0, 0 ) * pow( v, 2 ) );
-    double a      = sqrt( _gamma * p * rhoInv );
+    double dtMinTotal = 1e10;
+    double dtMin;
+    double rhoInv, v, p, a, cfl;
 
-    double dt1 = dx * _settings->GetCFL() * ( v - a );
-    double dt2 = dx * _settings->GetCFL() * ( v + a );
-    if( dt1 < dt2 )
-        return dt1;
-    else
-        return dt2;
+    cfl = _settings->GetCFL();
+
+    for( unsigned k = 0; k < u.columns(); ++k ) {
+        rhoInv = 1.0 / u( 0, k );
+        v      = u( 1, k ) * rhoInv;
+        p      = ( _gamma - 1.0 ) * ( u( 2, k ) - 0.5 * u( 0, k ) * pow( v, 2 ) );
+        a      = sqrt( _gamma * p * rhoInv );
+
+        dtMin      = ( cfl / dx ) * std::min( std::fabs( 1.0 / ( v - a ) ), std::fabs( 1.0 / ( v + a ) ) );
+        dtMinTotal = std::min( dtMin, dtMinTotal );
+    }
+
+    return dtMinTotal;
 }
 
 Vector Euler::IC( const Vector& x, const Vector& xi ) {
