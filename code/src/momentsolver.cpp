@@ -271,7 +271,6 @@ MatVec MomentSolver::Import() {
         for( unsigned j = 0; j < _nStates; ++j ) {
             for( unsigned k = 0; k < _nTotal; ++k ) {
                 std::getline( lineStream, cell, ',' );
-                std::cout << cell << std::endl;
                 u[i]( j, k ) = std::stod( cell );
             }
         }
