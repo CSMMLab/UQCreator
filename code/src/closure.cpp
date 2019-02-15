@@ -142,6 +142,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
 
     // check if initial guess is good enough
     Gradient( g, lambda, u );
+    // std::cout << "Gradient = " << g << std::endl;
     if( CalcNorm( g ) < _settings->GetEpsilon() ) {
         return;
     }
@@ -165,11 +166,13 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
             Gradient( g, lambda, u );
             dlambda = -g;
             Hessian( H, lambda );
+            // std::cout << H << std::endl;
             posv( H, g );
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
             Gradient( dlambdaNew, lambdaNew, u );
         }
         int refinementCounter = 0;
+        // std::cout << "Res is " << CalcNorm( dlambda ) << std::endl;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
@@ -282,3 +285,51 @@ void Closure::DS( Vector& ds, const Vector& u ) const {}
 std::vector<Polynomial*> Closure::GetBasis() { return _basis; }
 
 std::vector<Polynomial*> Closure::GetQuadrature() { return _quad; }
+
+void Closure::SetAlpha( double alpha ) { _alpha = alpha; }
+
+void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u ) {
+    int maxRefinements = 1000;
+
+    Matrix H( _nStates * _nTotal, _nStates * _nTotal );
+    Vector g( _nStates * _nTotal );
+    Vector dlambdaNew( _nStates * _nTotal );
+
+    Vector dlambda = -g;
+    Matrix lambdaNew( _nStates, _nTotal );
+
+    // perform Newton iterations
+    for( unsigned l = 0; l < _settings->GetMaxIterations(); ++l ) {
+        double stepSize = 1.0;
+        Gradient( g, lambda, u );
+        dlambda = -g;
+        Hessian( H, lambda );
+        // std::cout << "H = " << H << std::endl;
+        // std::cout << "g = " << g << std::endl;
+        posv( H, g );
+        AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
+        Gradient( dlambdaNew, lambdaNew, u );
+        int refinementCounter = 0;
+        std::cout << "Res is " << CalcNorm( dlambdaNew ) << std::endl;
+        while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) || !std::isfinite( CalcNorm( dlambdaNew ) ) ) {
+            stepSize *= 0.5;
+            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
+            Gradient( dlambdaNew, lambdaNew, u );
+            if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
+                lambda = lambdaNew;
+                return;
+            }
+            else if( ++refinementCounter > maxRefinements ) {
+                _log->error( "[closure] Newton needed too many refinement steps!" );
+                exit( EXIT_FAILURE );
+            }
+        }
+        lambda = lambdaNew;
+        if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
+            lambda = lambdaNew;
+            return;
+        }
+    }
+    _log->error( "[closure] Newton did not converge!" );
+    exit( EXIT_FAILURE );
+}

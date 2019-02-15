@@ -17,6 +17,7 @@ class StochasticGalerkin : public Closure
     virtual Matrix U( const Matrix& Lambda );
     virtual void DU( Matrix& y, const Vector& Lambda );
     virtual void SolveClosure( Matrix& lambda, const Matrix& u );
+    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u );
 };
 
 #endif    // STOCHASTICGALERKIN_H

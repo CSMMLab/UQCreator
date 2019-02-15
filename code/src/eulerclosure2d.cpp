@@ -99,4 +99,7 @@ void EulerClosure2D::DS( Vector& ds, const Vector& u ) const {
     ds[1] = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
     ds[2] = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
     ds[3] = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
+
+    // safety factor on ds3
+    // ds[3] -= 1e-7;
 }

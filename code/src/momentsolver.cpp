@@ -64,10 +64,18 @@ void MomentSolver::Solve() {
 
     // Converge initial condition entropy variables for One Shot IPM
     if( _settings->GetMaxIterations() == 1 ) {
-        // TODO: Recalculate moments here
-        _settings->SetMaxIterations( 1000 );
-        for( unsigned j = 0; j < _nCells; ++j ) _closure->SolveClosure( _lambda[j], u[j] );
+
+        _settings->SetMaxIterations( 10000 );
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            _closure->SolveClosure( _lambda[j], u[j] );
+        }
         _settings->SetMaxIterations( 1 );
+
+        // recompute moments with inexact lambda
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+            u[j]  = uQ[j] * _closure->GetPhiTildeWf();
+        }
     }
 
     auto numFluxPtr = std::bind( &MomentSolver::numFlux,
@@ -114,7 +122,7 @@ void MomentSolver::Solve() {
 
         _time->Advance( numFluxPtr, uNew, u, uQ, dt );
 
-        // perform reduction to obtain full moments
+        // perform reduction to obtain full moments on all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
         }
@@ -130,6 +138,9 @@ void MomentSolver::Solve() {
         }
     }
     if( _settings->GetMyPE() != 0 ) return;
+
+    // save final moments on u
+    u = uNew;
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     log->info( "" );
@@ -193,7 +204,7 @@ void MomentSolver::Solve() {
     else
         _mesh->Export( meanAndVar );
 
-    this->Export( u );
+    this->Export( uNew );
 
     unsigned evalCell  = 300;    // 2404;
     unsigned plotState = 0;

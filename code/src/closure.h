@@ -22,7 +22,7 @@ class Closure
     Matrix _phiTildeWf;       // stores scaled basis functions evaluated at quadrature points times weight and pdf
     std::vector<Vector> _phiTildeVec;
     MatVec _hPartial;    // stores partial matrices for Hessian computation
-    double _alpha;
+    double _alpha;       // step size for Newton
     unsigned _nMoments;
     unsigned _nQuadPoints;
     unsigned _nStates;
@@ -49,6 +49,7 @@ class Closure
      * @return correct dual vector
      */
     virtual void SolveClosure( Matrix& lambda, const Matrix& u );
+    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u );
     /**
      * calculate entropic variable from given dual vector
      * @param dual variable
@@ -87,6 +88,12 @@ class Closure
     void SubstractVectorMatrixOnVector( Vector& b, const Matrix& A ) const;
 
     double CalcNorm( Vector& test );
+
+    /**
+     * reset step size for Newton
+     * @param new step size
+     */
+    void SetAlpha( double alpha );
 
     std::vector<Polynomial*> GetBasis();
     std::vector<Polynomial*> GetQuadrature();
