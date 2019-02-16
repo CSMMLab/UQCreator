@@ -1,0 +1,23 @@
+[general]
+problem = "Euler2D"
+outputDir = "../results"
+
+[mesh]
+dimension = 2
+format = "SU2"
+SU2MeshFile = "naca.su2"
+SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
+outputFile = "euler2D_naca0012_n5_nq10_s05"
+
+[problem]
+timestepping = "explicitEuler"
+distribution = [["Legendre"],[0.5]]
+CFL = 0.9
+tEnd = 0.2
+
+[moment_system]
+closure = "Euler2D"
+moments = 5
+quadPoints = 10
+maxIterations = 1
+epsilon = 5e-5
