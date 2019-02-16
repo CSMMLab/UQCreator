@@ -102,8 +102,7 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
     double uL   = 0.0;
     double uR   = 0.0;
     Vector y( _nStates );
-    _sigma    = Vector( xi.size() );
-    _sigma[0] = 0.0;
+    _sigma = _settings->GetSigma();
     if( x[0] < x0 + _sigma[0] * xi[0] ) {
         y[0]                  = rhoL;
         y[1]                  = rhoL * uL;

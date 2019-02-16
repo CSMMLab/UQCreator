@@ -32,15 +32,17 @@ void MomentSolver::Solve() {
     // create solution fields
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     if( _settings->HasRestartFile() ) {
-        u = this->Import();
+        this->ImportTime();
+        u       = this->ImportMoments();
+        _lambda = this->ImportDuals();
     }
     else {
-        u = SetupIC();
+        u       = SetupIC();
+        _lambda = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
     }
     MatVec uNew = u;
     MatVec uOld = u;
     MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
-    _lambda     = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
 
     Vector ds( _nStates );
     Vector u0( _nStates );
@@ -56,9 +58,11 @@ void MomentSolver::Solve() {
         for( unsigned l = 0; l < _nStates; ++l ) {
             u0[l] = u[j]( l, 0 );
         }
-        _closure->DS( ds, u0 );
-        for( unsigned l = 0; l < _nStates; ++l ) {
-            _lambda[j]( l, 0 ) = ds[l];
+        if( !_settings->HasRestartFile() ) {
+            _closure->DS( ds, u0 );
+            for( unsigned l = 0; l < _nStates; ++l ) {
+                _lambda[j]( l, 0 ) = ds[l];
+            }
         }
     }
 
@@ -204,7 +208,7 @@ void MomentSolver::Solve() {
     else
         _mesh->Export( meanAndVar );
 
-    this->Export( uNew );
+    this->Export( uNew, _lambda );
 
     unsigned evalCell  = 300;    // 2404;
     unsigned plotState = 0;
@@ -260,28 +264,49 @@ MatVec MomentSolver::SetupIC() {
     return u;
 }
 
-void MomentSolver::Export( const MatVec& u ) const {
-    std::shared_ptr<spdlog::logger> writer = spdlog::get( "moments" );
-    writer->info( "{0}", _tEnd );
+void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {
+    std::shared_ptr<spdlog::logger> moment_writer = spdlog::get( "moments" );
     for( unsigned i = 0; i < _nCells; ++i ) {
         std::stringstream line;
         for( unsigned j = 0; j < _nStates; ++j ) {
-
             for( unsigned k = 0; k < _nTotal; ++k ) {
                 line << u[i]( j, k ) << ",";
             }
         }
-        writer->info( line.str() );
+        moment_writer->info( line.str() );
     }
-    writer->flush();
+    moment_writer->flush();
+    std::shared_ptr<spdlog::logger> dual_writer = spdlog::get( "duals" );
+    for( unsigned i = 0; i < _nCells + 1; ++i ) {
+        std::stringstream line;
+        for( unsigned j = 0; j < _nStates; ++j ) {
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                line << lambda[i]( j, k ) << ",";
+            }
+        }
+        dual_writer->info( line.str() );
+    }
+    dual_writer->flush();
 }
 
-MatVec MomentSolver::Import() {
-    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
+void MomentSolver::ImportTime() {
     auto file = std::ifstream( _settings->GetRestartFile() );
     std::string line;
-    std::getline( file, line );
-    _tStart = std::stod( line );
+    while( std::getline( file, line ) ) {
+        if( line.find( "tEnd" ) != std::string::npos ) {
+            line.erase( 0, line.find_first_of( '=' ) + 1 );
+            line.erase( std::remove_if( line.begin(), line.end(), []( char c ) -> bool { return std::isspace<char>( c, std::locale::classic() ); } ),
+                        line.end() );
+            _tStart = std::stod( line );
+            break;
+        }
+    }
+}
+
+MatVec MomentSolver::ImportMoments() {
+    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
+    auto file = std::ifstream( _settings->GetRestartFile() + "_moments" );
+    std::string line;
     for( unsigned i = 0; i < _nCells; ++i ) {
         std::getline( file, line );
         std::stringstream lineStream( line );
@@ -293,7 +318,25 @@ MatVec MomentSolver::Import() {
             }
         }
     }
-    std::cout << _nStates << "\t" << _nTotal << std::endl;
     file.close();
     return u;
+}
+
+MatVec MomentSolver::ImportDuals() {
+    MatVec lambda( _nCells + 1, Matrix( _nStates, _nTotal ) );
+    auto file = std::ifstream( _settings->GetRestartFile() + "_duals" );
+    std::string line;
+    for( unsigned i = 0; i < _nCells + 1; ++i ) {
+        std::getline( file, line );
+        std::stringstream lineStream( line );
+        std::string cell;
+        for( unsigned j = 0; j < _nStates; ++j ) {
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                std::getline( lineStream, cell, ',' );
+                lambda[i]( j, k ) = std::stod( cell );
+            }
+        }
+    }
+    file.close();
+    return lambda;
 }

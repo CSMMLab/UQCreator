@@ -62,6 +62,7 @@ class Settings
     ProblemType _problemType;
     TimesteppingType _timesteppingType;
     std::vector<DistributionType> _distributionType;
+    std::vector<double> _sigma;
 
     // mesh dependent settings
 
@@ -94,6 +95,8 @@ class Settings
     // problem
     TimesteppingType GetTimesteppingType() const;
     DistributionType GetDistributionType( unsigned l ) const;
+    std::vector<double> GetSigma() const;
+    double GetSigma( unsigned l ) const;
     double GetCFL() const;
     unsigned GetNDimXi() const;
     double GetTEnd() const;

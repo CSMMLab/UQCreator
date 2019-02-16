@@ -76,9 +76,8 @@ double ShallowWater2D::ComputeDt( const Matrix& u, double dx ) const {
 
 Vector ShallowWater2D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
-    _sigma    = Vector( xi.size() );
+    _sigma    = _settings->GetSigma();
     double a  = 0.35;
-    _sigma[0] = 0.1;
     double uL = 10.0;    // 10.0;
     double uR = 5.0;
     y[1]      = 0.0;
@@ -94,7 +93,6 @@ Vector ShallowWater2D::IC( const Vector& x, const Vector& xi ) {
         }
     }
     else if( xi.size() == 2 ) {
-        _sigma[1] = 0.5;
         if( x[0] < a ) {
             y[0] = uL + _sigma[0] * xi[0];
             return y;

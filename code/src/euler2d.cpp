@@ -135,10 +135,9 @@ double Euler2D::ComputeDt( const Matrix& u, double dx ) const {
 
 Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
-    _sigma            = Vector( xi.size() );
+    _sigma            = _settings->GetSigma();
     bool pipeTestCase = false;
     if( pipeTestCase ) {    // pipe testcase
-        _sigma[0]    = 0.2;
         double gamma = 1.4;
         double R     = 287.87;
         double T     = 273.15;
@@ -179,8 +178,6 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         return y;
     }
     else {
-        _sigma[0]    = 0.75;
-        _sigma[1]    = 0.01;
         double gamma = 1.4;
         double R     = 287.87;
         double T     = 273.15;
@@ -211,9 +208,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
 Vector Euler2D::LoadIC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
 
-    _sigma    = Vector( xi.size() );
-    _sigma[0] = 1.25;
-    _sigma[1] = 0.01;
+    _sigma = _settings->GetSigma();
 
     double rhoFarfield = x[0];
     double u           = x[1] / rhoFarfield;

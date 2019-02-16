@@ -91,9 +91,14 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
     auto momentFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_moments" );
     momentFileSink->set_level( spdlog::level::info );
     momentFileSink->set_pattern( "%v" );
-
     auto moment_logger = std::make_shared<spdlog::logger>( "moments", momentFileSink );
     spdlog::register_logger( moment_logger );
+
+    auto dualsFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_duals" );
+    dualsFileSink->set_level( spdlog::level::info );
+    dualsFileSink->set_pattern( "%v" );
+    auto duals_logger = std::make_shared<spdlog::logger>( "duals", dualsFileSink );
+    spdlog::register_logger( duals_logger );
 }
 
 void PrintInit( std::string configFile ) {
