@@ -47,14 +47,12 @@ Matrix Burgers::F( const Matrix& u ) { return 0.5 * pow( u, 2 ); }
 
 Vector Burgers::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
-    _sigma = Vector( xi.size() );
+    _sigma = _settings->GetSigma();
     if( xi.size() == 1 ) {
-
-        _sigma[0] = 0.1;    // 0.2
-        _x0       = 0.5;
-        _x1       = 1.5;
-        _uL       = 12.0;
-        _uR       = 3.0;
+        _x0 = 0.5;
+        _x1 = 1.5;
+        _uL = 12.0;
+        _uR = 3.0;
         if( x[0] < _x0 + _sigma[0] * xi[0] ) {
             y[0] = _uL;
             return y;

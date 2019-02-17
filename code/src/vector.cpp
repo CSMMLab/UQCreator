@@ -2,6 +2,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 namespace VectorSpace {
 template <class T> class Vector;
@@ -32,6 +33,7 @@ template <class T> class Vector
     Vector( std::initializer_list<T> initList );
     ~Vector();
     void operator=( const Vector& other );
+    void operator=( const std::vector<T>& other );
 
     T& operator[]( unsigned i );
     const T& operator[]( unsigned i ) const;
@@ -119,6 +121,18 @@ template <class T> void Vector<T>::operator=( const Vector& other ) {
     }
     for( unsigned i = 0; i < _N; ++i ) {
         this->_data[i] = other._data[i];
+    }
+}
+
+template <class T> void Vector<T>::operator=( const std::vector<T>& other ) {
+    if( _data == nullptr ) {
+        _N   = other.size();
+        _ref = false;
+        //_data = new T[_N];
+        _data = static_cast<T*>( malloc( _N * sizeof( T ) ) );
+    }
+    for( unsigned i = 0; i < _N; ++i ) {
+        this->_data[i] = other[i];
     }
 }
 

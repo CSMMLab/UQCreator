@@ -53,6 +53,16 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             validConfig = false;
         }
 
+        auto restartFile = general->get_as<std::string>( "restartFile" );
+        if( restartFile ) {
+            _restartFile = _inputDir.string() + "/" + *restartFile;
+        }
+
+        auto icFile = general->get_as<std::string>( "icFile" );
+        if( icFile ) {
+            _icFile = _inputDir.string() + "/" + *icFile;
+        }
+
         // section mesh
         auto mesh          = file->get_table( "mesh" );
         auto meshDimension = mesh->get_as<unsigned>( "dimension" );
@@ -72,11 +82,6 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             validConfig = false;
         }
 
-        auto icFile = mesh->get_as<std::string>( "icFile" );
-        if( icFile ) {
-            _icFile = _inputDir.string() + "/" + *icFile;
-        }
-
         // section problem
         auto problem                = file->get_table( "problem" );
         auto timesteppingTypeString = problem->get_as<std::string>( "timestepping" );
@@ -93,23 +98,25 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             log->error( "[inputfile] [problem] 'timestepping' not set!\nPlease set one of the following types: explicitEuler" );
             validConfig = false;
         }
-        auto distribution = problem->get_array_of<std::string>( "distribution" );
+        auto distribution = problem->get_array_of<cpptoml::array>( "distribution" );
         if( distribution ) {
             _numDimXi = unsigned( distribution->size() );
             _distributionType.resize( _numDimXi );
-            unsigned l = 0;
-            for( const auto& dist : *distribution ) {
-                if( dist.compare( "Legendre" ) == 0 ) {
-                    _distributionType[l] = DistributionType::D_LEGENDRE;
+            _sigma.resize( _numDimXi );
+            auto dist  = ( *distribution )[0]->get_array_of<std::string>();
+            auto sigma = ( *distribution )[1]->get_array_of<double>();
+            for( unsigned i = 0; i < dist->size(); ++i ) {
+                if( dist->at( i ).compare( "Legendre" ) == 0 ) {
+                    _distributionType[i] = DistributionType::D_LEGENDRE;
                 }
-                else if( dist.compare( "Hermite" ) == 0 ) {
-                    _distributionType[l] = DistributionType::D_HERMITE;
+                else if( dist->at( i ).compare( "Hermite" ) == 0 ) {
+                    _distributionType[i] = DistributionType::D_HERMITE;
                 }
                 else {
                     log->error( "[inputfile] [problem] 'distribution' is invalid!\nPlease set one of the following types: Legendre, Hermite" );
                     validConfig = false;
                 }
-                l++;
+                _sigma[i] = ( *sigma )[i];
             }
         }
         else {
@@ -218,13 +225,8 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             log->error( "[inputfile] [moment_system] 'quadPoints' not set!" );
             validConfig = false;
         }
-        _maxIterations   = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
-        _epsilon         = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
-        auto restartFile = moment_system->get_as<std::string>( "restartFile" );
-        if( restartFile ) {
-            _restartFile = _inputDir.string() + "/" + *restartFile;
-        }
-
+        _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
+        _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
     } catch( const cpptoml::parse_exception& e ) {
         log->error( "Failed to parse {0}: {1}", _inputFile.c_str(), e.what() );
         exit( EXIT_FAILURE );
@@ -290,6 +292,8 @@ unsigned Settings::GetNDimXi() const { return _numDimXi; }
 double Settings::GetGamma() const { return _gamma; }
 void Settings::SetGamma( double gamma ) { _gamma = gamma; }
 DistributionType Settings::GetDistributionType( unsigned l ) const { return _distributionType[l]; }
+std::vector<double> Settings::GetSigma() const { return _sigma; }
+double Settings::GetSigma( unsigned l ) const { return _sigma[l]; }
 void Settings::SetExactSolution( bool hasExactSolution ) { _hasExactSolution = hasExactSolution; }
 bool Settings::HasExactSolution() const { return _hasExactSolution; }
 
