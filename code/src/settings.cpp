@@ -175,7 +175,19 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
         auto nMoments = moment_system->get_as<unsigned>( "moments" );
         if( nMoments ) {
             _nMoments = *nMoments;
-            _nTotal   = unsigned( std::pow( _nMoments, _numDimXi ) );
+
+            // compute nTotal
+            _useMaxDegree = false;
+            _nTotal       = 0;
+            unsigned totalDegree;    // compute total degree of basis function i
+            for( unsigned i = 0; i < std::pow( _nMoments, _numDimXi ); ++i ) {
+                totalDegree = 0;
+                for( unsigned l = 0; l < _numDimXi; ++l ) {
+                    totalDegree += unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
+                }
+                // if total degree is sufficiently small or max degree is used, indices are stored
+                if( totalDegree < _nMoments || _useMaxDegree ) ++_nTotal;
+            }
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
@@ -286,6 +298,7 @@ ClosureType Settings::GetClosureType() const { return _closureType; }
 unsigned Settings::GetNMoments() const { return _nMoments; }
 unsigned Settings::GetNQuadPoints() const { return _nQuadPoints; }
 unsigned Settings::GetNQTotal() const { return _nQTotal; }
+bool Settings::UsesMaxDegree() const { return _useMaxDegree; }
 LimiterType Settings::GetLimiterType() const { return _limiterType; }
 unsigned Settings::GetMaxIterations() const { return _maxIterations; }
 void Settings::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxIterations; }

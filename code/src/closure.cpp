@@ -4,6 +4,7 @@
 #include "eulerclosure2d.h"
 #include "l2filter.h"
 #include "lassofilter.h"
+#include "mathtools.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
 #include "stochasticgalerkin.h"
@@ -19,16 +20,14 @@ Closure::Closure( Settings* settings )
     _quad[0]  = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_LEGENDRE );
     _quad[1]  = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_HERMITE );
 
-    // compute total number of moments and quad points
+    // compute total number of quad points
     _numDimXi = _settings->GetNDimXi();
-    _nQTotal  = std::pow( _settings->GetNQuadPoints(), _numDimXi );
-    _nTotal   = std::pow( _settings->GetNMoments(), _numDimXi );
+    _nQTotal  = unsigned( std::pow( _settings->GetNQuadPoints(), _numDimXi ) );
 
-    // setup map from k and i total to individual indices
+    // setup map from k (0,...,_nQTotal-1) to individual indices
     std::vector<std::vector<unsigned>> indices;
     std::vector<std::vector<unsigned>> indicesQ;
     indicesQ.resize( _nQTotal );
-    indices.resize( _nTotal );
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         indicesQ[k].resize( _numDimXi );
         for( unsigned l = 0; l < _numDimXi; ++l ) {
@@ -36,13 +35,22 @@ Closure::Closure( Settings* settings )
         }
     }
 
-    for( unsigned i = 0; i < _nTotal; ++i ) {
-        indices[i].resize( _numDimXi );
+    // setup map from i (0,...,_nTotal-1) to individual indices
+    std::vector<unsigned> indexTest;
+    indexTest.resize( _numDimXi );
+    unsigned totalDegree;    // compute total degree of basis function i
+    for( unsigned i = 0; i < std::pow( _settings->GetNMoments(), _numDimXi ); ++i ) {
+        totalDegree = 0;
         for( unsigned l = 0; l < _numDimXi; ++l ) {
-            indices[i][l] = unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
+            indexTest[l] = unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
+            totalDegree += indexTest[l];
         }
+        // if total degree is sufficiently small or max degree is used, indices are stored
+        if( totalDegree < _nMoments || _settings->UsesMaxDegree() ) indices.push_back( indexTest );
     }
+    _nTotal = unsigned( indices.size() );
 
+    // store quad points and weights for individual distributions
     std::vector<Vector> xi;
     xi.resize( _quad.size() );
     std::vector<Vector> w;
