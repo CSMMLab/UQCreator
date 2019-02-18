@@ -183,13 +183,13 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         double T     = 273.15;
         double p     = 101325.0;
         double Ma    = 0.8;
-        if( xi.size() == 2 ) {
-            Ma = Ma + xi[1] * _sigma[1];
+        if( xi.size() == 1 ) {
+            Ma = Ma + xi[1] * _sigma[0];
         }
         double a = sqrt( gamma * R * T );
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
+        double angle = ( 1.25 + 0.0 * _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 

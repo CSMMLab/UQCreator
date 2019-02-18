@@ -6,6 +6,38 @@ double MathTools::Pythag( const double a, const double b ) {
                          : ( absb == 0.0 ? 0.0 : absb * std::sqrt( 1.0 + std::pow( absa / absb, 2 ) ) ) );
 }
 
+unsigned MathTools::BinomialCoefficient( unsigned n, unsigned k ) {
+    if( k > n ) return 0;
+
+    if( n - k < k ) k = n - k;
+
+    unsigned r = 1;
+
+    for( unsigned d = 1; d <= k; d++ ) {
+        unsigned mult = n;
+
+        bool divided = true;
+
+        if( mult % d == 0 )
+            mult /= d;
+        else if( r % d == 0 )
+            r /= d;
+        else
+            divided = false;
+
+        const unsigned r_mult = r * mult;
+        if( r_mult / mult != r ) throw std::overflow_error( "Overflow" );
+
+        r = r_mult;
+
+        if( !divided ) r /= d;
+
+        n--;
+    }
+
+    return r;
+}
+
 std::pair<Vector, Matrix> MathTools::ComputeEigenValTriDiagMatrix( const Matrix& mat ) {
     unsigned n = mat.rows();
 

@@ -44,6 +44,7 @@ class Settings
 
     unsigned _nMoments;    // number of moments in one dimension
     unsigned _nTotal;      // number of moments in all dimensions
+    bool _useMaxDegree;    // specifies moment hierarchy
 
     unsigned _maxIterations;
     unsigned _nStates;
@@ -113,6 +114,7 @@ class Settings
     unsigned GetNTotal() const;
     unsigned GetNQuadPoints() const;
     unsigned GetNQTotal() const;
+    bool UsesMaxDegree() const;
     LimiterType GetLimiterType() const;
     unsigned GetMaxIterations() const;
     void SetMaxIterations( unsigned maxIterations );
