@@ -100,7 +100,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
         }
         auto distribution = problem->get_array_of<cpptoml::array>( "distribution" );
         if( distribution ) {
-            _numDimXi = unsigned( distribution->size() );
+            _numDimXi = unsigned( distribution->at( 0 )->get_array_of<std::string>()->size() );
             _distributionType.resize( _numDimXi );
             _sigma.resize( _numDimXi );
             auto dist  = ( *distribution )[0]->get_array_of<std::string>();
