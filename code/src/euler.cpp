@@ -20,7 +20,7 @@ Euler::~Euler() {}
 void Euler::Solve() {}
 
 Vector Euler::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    double rhoInv = 1.0 / u[0];
+    double rhoInv = 1.0 / u[0];    //
     double vU     = u[1] * rhoInv;
     double p      = ( _gamma - 1.0 ) * ( u[2] - 0.5 * u[0] * pow( vU, 2 ) );
     double aU     = sqrt( _gamma * p * rhoInv );
