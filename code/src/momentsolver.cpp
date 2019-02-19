@@ -70,7 +70,7 @@ MatVec MomentSolver::Solve( Vector xi ) {
         for( unsigned j = 0; j < _nCells; ++j ) {
             residual += std::fabs( uNew[j]( 0, 0 ) - uQ[j]( 0, 0 ) );    // * _mesh->GetArea( j ) / dt;
         }
-        // log->info( "{:03.8f}   {:01.5e}", t, residual );
+        log->info( "{:03.8f}   {:01.5e}", t, residual );
         // std::cout << "dt = " << dt << std::endl;
 
         // update solution
