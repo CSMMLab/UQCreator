@@ -1,39 +1,121 @@
-\documentclass{article}
+\documentclass[3p]{elsarticle}
 
-\usepackage{arxiv}
-\usepackage[utf8]{inputenc} % allow utf-8 input
-\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
-\usepackage{hyperref}       % hyperlinks
-\usepackage{url}            % simple URL typesetting
-\usepackage{booktabs}       % professional-quality tables
-\usepackage{amsfonts}       % blackboard math symbols
-\usepackage{nicefrac}       % compact symbols for 1/2, etc.
-\usepackage{microtype}      % microtypography
+
+% Packages and macros go here
+\usepackage{bm}
+\usepackage[parfill]{parskip}
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{color}
+\usepackage{bm}
+\usepackage{graphicx}
+%\usepackage{subfig}
+\usepackage{subcaption}
+%\usepackage[]{algorithm2e}
+%\usepackage{algorithmic}
+%\usepackage{algorithmicx}
+\usepackage[linesnumbered,ruled]{algorithm2e}
+
 \usepackage{lipsum}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{algorithmic}
+\ifpdf
+  \DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
+\else
+  \DeclareGraphicsExtensions{.eps}
+\fi
 
-\title{13 special moments}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
 
-\author{
-  Jonas Kusch\\
-  Steinbuch Centre for Computing (SCC)\\
-  Karlsruhe Institute of Technology\\
-  \texttt{jonas.kusch@kit.edu} \\
-  %% examples of more authors
-  \And
-  Jannick Wolters\\
-  Steinbuch Centre for Computing (SCC)\\
-  Karlsruhe Institute of Technology\\
-  \texttt{jannick.wolters@kit.edu} \\ 
-}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\makeatletter
+\newsavebox\myboxA
+\newsavebox\myboxB
+\newlength\mylenA
+
+\newcommand*\xoverline[2][0.75]{%
+    \sbox{\myboxA}{$\m@th#2$}%
+    \setbox\myboxB\null% Phantom box
+    \ht\myboxB=\ht\myboxA%
+    \dp\myboxB=\dp\myboxA%
+    \wd\myboxB=#1\wd\myboxA% Scale phantom
+    \sbox\myboxB{$\m@th\overline{\copy\myboxB}$}%  Overlined phantom
+    \setlength\mylenA{\the\wd\myboxA}%   calc width diff
+    \addtolength\mylenA{-\the\wd\myboxB}%
+    \ifdim\wd\myboxB<\wd\myboxA%
+       \rlap{\hskip 0.5\mylenA\usebox\myboxB}{\usebox\myboxA}%
+    \else
+        \hskip -0.5\mylenA\rlap{\usebox\myboxA}{\hskip 0.5\mylenA\usebox\myboxB}%
+    \fi}
+\makeatother
+
+\journal{arXiv.org}
+
+%strongly recommended
+%\numberwithin{theorem}{section}
+
+% Declare title and authors, without \thanks
+\newcommand{\TheTitle}{A semi-intrusive Code Framework for Uncertainty Quantification} 
+
+\date{\today}
+
+% Sets running headers as well as PDF title and authors
+%\headers{\RunningTitle}{\TheAuthors}
+
+
+\usepackage{amsopn}
+\DeclareMathOperator{\diag}{diag}
+%\DeclareMathOperator{\argmin}{arg\min}
+
+% FundRef data to be entered by SIAM
+%<funding-group>
+%<award-group>
+%<funding-source>
+%<named-content content-type="funder-name"> 
+%</named-content> 
+%<named-content content-type="funder-identifier"> 
+%</named-content>
+%</funding-source>
+%<award-id> </award-id>
+%</award-group>
+%</funding-group>
+
+\def\lambdabar{\xoverline{\bm{\lambda}}}
+\def\lambdabarjn{\lambdabar_j^n}
+
+\newcommand{\commentRyan}[1]{{\Large{\textcolor{red}{\newline[RYAN: #1]\newline}}}}
+\newcommand{\commentJonas}[1]{{\Large{\textcolor{blue}{\newline[JONAS: #1]\newline}}}}
 
 \begin{document}
-\maketitle
+
+\begin{frontmatter}
+
+\title{\TheTitle}
+
+
+\author[adressJonas]{Jonas Kusch}
+\author[adressJannick]{Jannick Wolters}
+
+\address[adressJonas]{Karlsruhe Institute of Technology, Karlsruhe,
+    jonas.kusch@kit.edu}
+\address[adressJannick]{Karlsruhe Institute of Technology, Karlsruhe, jannick.wolters@kit.edu}
+
 
 \begin{abstract}
-\lipsum[1]
+Standard methods for quantifying the effects of uncertainties in hyperbolic problems can yield oscillatory solution approximations. ...
 \end{abstract}
 
-\keywords{UQ, IPM, SG, Collocation}
+\begin{keyword}
+conservation laws, hyperbolic, intrusive, UQ, IPM, SG, Collocation
+\end{keyword}
+
+\end{frontmatter}
+\section{Introduction}
 
 \section{Methods of Uncertainty Quantification}
 \subsection{Collocation}
