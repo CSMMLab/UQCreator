@@ -30,7 +30,6 @@ class TimeSolver
     static TimeSolver* Create( Settings* settings, Mesh* mesh );
     virtual void Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
                           MatVec& uNew,
-                          MatVec& u,
                           MatVec& uQ,
                           double dt ) = 0;
     double GetTimeStepSize();

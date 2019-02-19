@@ -4,7 +4,6 @@ ExplicitEuler::ExplicitEuler( Settings* settings, Mesh* mesh ) : TimeSolver( set
 
 void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
                              MatVec& uNew,
-                             MatVec& u,
                              MatVec& uQ,
                              double dt ) {
     auto numCells = _mesh->GetNumCells();
@@ -17,7 +16,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
         auto neighbors = cell->GetNeighborIDs();
         if( cell->IsBoundaryCell() ) {
             if( cell->GetBoundaryType() == BoundaryType::DIRICHLET ) {
-                uNew[j] = u[j];
+                uNew[j] = uQ[j];
                 continue;
             }
             else if( cell->GetBoundaryType() == BoundaryType::NOSLIP ) {
@@ -56,7 +55,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
             }
         }
 
-        Matrix rhs( u[0].rows(), u[0].columns(), 0.0 );
+        Matrix rhs( uQ[0].rows(), uQ[0].columns(), 0.0 );
         for( unsigned l = 0; l < neighbors.size(); ++l ) {
             if( ( _mesh->GetBoundaryType( j ) == BoundaryType::NOSLIP || _mesh->GetBoundaryType( j ) == BoundaryType::SWWALL ) &&
                 neighbors[l] == numCells ) {
@@ -66,6 +65,6 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
                 fluxFunc( rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ) );
             }
         }
-        uNew[j] = u[j] - ( dt / cell->GetArea() ) * rhs;
+        uNew[j] = uQ[j] - ( dt / cell->GetArea() ) * rhs;
     }
 }

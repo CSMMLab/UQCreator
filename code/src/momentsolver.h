@@ -35,7 +35,6 @@ class MomentSolver
     void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
     void SetupIC( MatVec& out );
     MatVec SetupIC();
-    void CalculateMoments( MatVec& out, const MatVec& lambda );
     Vector EvalLambda( const Vector& lambda, const Vector& xi );
     void Plot( double time, unsigned nSteps );
     void Export( const MatVec& u, const MatVec& lambda ) const;
