@@ -139,11 +139,84 @@ int main( int argc, char* argv[] ) {
     Mesh* mesh           = Mesh::Create( settings );
     Problem* problem     = Problem::Create( settings );
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );
+    Closure* closure     = Closure::Create( settings );
+    std::vector<MatVec> uQ;
+    uQ.resize( settings->GetKEnd() - settings->GetKStart() + 1 );
+    std::vector<Vector> xi;
+    xi.resize( settings->GetNQTotal() );
+    unsigned n;
+    unsigned nQuadPoints          = settings->GetNQTotal();
+    std::vector<Polynomial*> quad = closure->GetQuadrature();
+    unsigned nCells               = settings->GetNumCells();
+    unsigned nStates              = settings->GetNStates();
+    unsigned nQTotal              = settings->GetNQTotal();
+    unsigned nTotal               = settings->GetNTotal();
 
-    solver->Solve();
+    for( unsigned k = 0; k < settings->GetNQTotal(); ++k ) {
+        xi[k].resize( settings->GetNDimXi() );
+        for( unsigned l = 0; l < settings->GetNDimXi(); ++l ) {
+            if( settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+            if( settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+            unsigned index = unsigned( ( k - k % unsigned( std::pow( nQuadPoints, l ) ) ) / unsigned( std::pow( nQuadPoints, l ) ) ) % nQuadPoints;
+            xi[k][l]       = quad[n]->GetNodes()[index];
+        }
+    }
+
+    std::cout << "PE " << settings->GetMyPE() << ": kStart is " << settings->GetKStart() << " kEnd is " << settings->GetKEnd() << std::endl;
+    for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
+        std::cout << "PE " << settings->GetMyPE() << ": xi = " << xi[k] << std::endl;
+        uQ[k - settings->GetKStart()] = solver->Solve( xi[k] );
+    }
 
     log->info( "" );
     log->info( "Process exited normally on PE {:03.8f} .", double( settings->GetMyPE() ) );
+
+    // compute Moments
+    MatVec u( nCells, Matrix( nStates, nTotal ) );
+    MatVec uQFinal( nCells, Matrix( nStates, nQTotal ) );
+    for( unsigned j = 0; j < nCells; ++j ) {
+        uQFinal[j].reset();
+        for( unsigned l = 0; l < nStates; ++l ) {
+            for( unsigned k = settings->GetKStart(); k < settings->GetKEnd(); ++k ) {
+                uQFinal[j]( l, k ) = uQ[k - settings->GetKStart()][j]( l, 0 );
+            }
+        }
+        u[j].reset();
+        multOnPENoReset( uQFinal[j], closure->GetPhiTildeWf(), u[j], settings->GetKStart(), settings->GetKEnd() );
+    }
+
+    auto uMoments = u;
+
+    // perform reduction to obtain full moments on all PEs
+    std::vector<int> PEforCell = settings->GetPEforCell();
+    for( unsigned j = 0; j < nCells; ++j ) {
+        MPI_Reduce( uMoments[j].GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
+    }
+
+    if( settings->GetMyPE() == 0 ) {
+        // export moments
+        solver->Export( uMoments );
+
+        Matrix meanAndVar;
+
+        meanAndVar        = Matrix( 2 * nStates, nCells, 0.0 );
+        Matrix phiTildeWf = closure->GetPhiTildeWf();
+        Vector tmp( nStates, 0.0 );
+        for( unsigned j = 0; j < nCells; ++j ) {
+            // expected value
+            for( unsigned i = 0; i < nStates; ++i ) {
+                meanAndVar( i, j ) = uMoments[j]( i, 0 );
+            }
+            for( unsigned i = 0; i < nStates; ++i ) {
+                for( unsigned l = 1; l < settings->GetNTotal(); ++l ) meanAndVar( i, j ) += uMoments[j]( i, l );
+            }
+        }
+
+        if( settings->GetProblemType() == P_SHALLOWWATER_2D )
+            mesh->ExportShallowWater( meanAndVar );
+        else
+            mesh->Export( meanAndVar );
+    }
 
     delete solver;
     delete problem;

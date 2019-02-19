@@ -1,152 +1,342 @@
- 
-#include "expliciteuler.h"
+#include "momentsolver.h"
+#include <mpi.h>
 
-ExplicitEuler::ExplicitEuler( Settings* settings, Mesh* mesh ) : TimeSolver( settings, mesh ) {}
+MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
+    _log         = spdlog::get( "event" );
+    _nCells      = _settings->GetNumCells();
+    _nMoments    = _settings->GetNMoments();
+    _tStart      = 0.0;
+    _tEnd        = _settings->GetTEnd();
+    _nStates     = _settings->GetNStates();
+    _nQuadPoints = _settings->GetNQuadPoints();
+    _nQTotal     = _settings->GetNQTotal();
+    _nTotal      = _settings->GetNTotal();
 
-void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
-                             MatVec& uNew,
-                             MatVec& u,
-                             MatVec& uQ,
-                             double dt ) {
-    auto numCells = _mesh->GetNumCells();
-    auto cells    = _mesh->GetGrid();
-    Matrix ghostCell( _settings->GetNStates(), _settings->GetNQuadPoints() );
+    _closure = Closure::Create( _settings );
+    _time    = TimeSolver::Create( _settings, _mesh );
 
-#pragma omp parallel for private( ghostCell )
-    for( unsigned j = 0; j < numCells; ++j ) {
-        Cell* cell     = cells[j];
-        auto neighbors = cell->GetNeighborIDs();
-        if( cell->IsBoundaryCell() ) {
-            if( cell->GetBoundaryType() == BoundaryType::DIRICHLET ) {
-                uNew[j] = u[j];
-                continue;
-            }
-            else if( cell->GetBoundaryType() == BoundaryType::NOSLIP ) {
-                ghostCell = uQ[j];
-                Vector v( 2, 0.0 );
-                Vector n = cell->GetBoundaryUnitNormal();
-                for( unsigned k = 0; k < uQ[numCells].columns(); ++k ) {
-                    v.reset();
-                    v[0]              = ghostCell( 1, k ) / ghostCell( 0, k );
-                    v[1]              = ghostCell( 2, k ) / ghostCell( 0, k );
-                    double vn         = dot( n, v );
-                    Vector Vn         = vn * n;
-                    Vector Vb         = -Vn + v;
-                    double velMagB    = Vb[0] * Vb[0] + Vb[1] * Vb[1];
-                    double velMag     = v[0] * v[0] + v[1] * v[1];
-                    double rho        = ghostCell( 0, k );
-                    ghostCell( 1, k ) = rho * ( Vb[0] );
-                    ghostCell( 2, k ) = rho * ( Vb[1] );
-                    ghostCell( 3, k ) += rho * 0.5 * ( velMagB - velMag );
-                    // debugging
-                    if( cell->GetCenter()[0] < 0.024236900731921196 && j == 11848 ) {
-                        std::cout << "--------------------------------" << std::endl;
-                        std::cout << "n = " << n << std::endl;
-                        std::cout << "v = " << v << std::endl;
-                        std::cout << "Vb*n = " << dot( n, Vb ) << std::endl;
-                    }
-                }
-            }
-            else if( cell->GetBoundaryType() == BoundaryType::SWWALL ) {
-                ghostCell = uQ[j];
-                Vector v( 2, 0.0 );
-                for( unsigned k = 0; k < uQ[numCells].columns(); ++k ) {
-                    v[0]              = ghostCell( 1, k ) / ghostCell( 0, k );
-                    v[1]              = ghostCell( 2, k ) / ghostCell( 0, k );
-                    Vector n          = cell->GetBoundaryUnitNormal();
-                    double vn         = dot( n, v );
-                    Vector Vn         = vn * n;
-                    Vector Vb         = -Vn + v;
-                    double rho        = ghostCell( 0, k );
-                    ghostCell( 1, k ) = rho * ( Vb[0] );
-                    ghostCell( 2, k ) = rho * ( Vb[1] );
-                }
-            }
+    _dt = _time->GetTimeStepSize();
+    _settings->SetDT( _dt );
+}
+
+MomentSolver::~MomentSolver() {
+    delete _closure;
+    delete _time;
+}
+
+void MomentSolver::Solve() {
+    auto log = spdlog::get( "event" );
+
+    std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
+
+    // create solution fields
+    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
+    if( _settings->HasRestartFile() ) {
+        this->ImportTime();
+        u       = this->ImportMoments();
+        _lambda = this->ImportDuals();
+    }
+    else {
+        u       = SetupIC();
+        _lambda = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
+    }
+    MatVec uNew = u;
+    MatVec uOld = u;
+    MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
+
+    Vector ds( _nStates );
+    Vector u0( _nStates );
+
+    double residualFull;
+
+    std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
+    std::vector<int> PEforCell        = _settings->GetPEforCell();
+
+    log->info( "PE {0}: kStart {1}, kEnd {2}", _settings->GetMyPE(), _settings->GetKStart(), _settings->GetKEnd() );
+
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        for( unsigned l = 0; l < _nStates; ++l ) {
+            u0[l] = u[j]( l, 0 );
         }
-
-        Matrix rhs( u[0].rows(), u[0].columns(), 0.0 );
-        std::vector<int> front;
-        front.clear();
-        front.resize( 0 );
-        bool frontCell = false;
-        for( unsigned l = 0; l < neighbors.size(); ++l ) {
-            if( ( _mesh->GetBoundaryType( j ) == BoundaryType::NOSLIP || _mesh->GetBoundaryType( j ) == BoundaryType::SWWALL ) &&
-                neighbors[l] == numCells ) {
-                // debugging
-                if( cell->GetCenter()[0] < 0.024236900731921196 && j == 11848 ) {
-                    std::cout << "--------------------------------" << std::endl;
-                    std::cout << "rhs before boundary = " << rhs << std::endl;
-                    frontCell = true;
-                }
-                fluxFunc( rhs, ghostCell, ghostCell, cell->GetUnitNormal( l ), cell->GetNormal( l ) );
-                if( frontCell == true ) {
-                    std::cout << "rhs after boundary = " << rhs << std::endl;
-                    std::cout << "ghost cell = " << ghostCell << std::endl;
-                    std::cout << "nUnit = " << cell->GetUnitNormal( l ) << std::endl;
-                    std::cout << "n = " << cell->GetNormal( l ) << std::endl;
-
-                    auto u        = ghostCell;
-                    auto v        = ghostCell;
-                    unsigned k    = 0;
-                    auto nUnit    = cell->GetUnitNormal( l );
-                    auto n        = cell->GetNormal( l );
-                    double _gamma = 1.4;
-
-                    double rhoInv = 1.0 / u( 0, k );
-                    double uU     = u( 1, k ) * rhoInv;
-                    double vU     = u( 2, k ) * rhoInv;
-                    double p      = ( _gamma - 1.0 ) * ( u( 3, k ) - 0.5 * u( 0, k ) * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
-                    double aU     = sqrt( _gamma * p * rhoInv );
-
-                    rhoInv    = 1.0 / v( 0, k );
-                    double uV = v( 1, k ) * rhoInv;
-                    double vV = v( 2, k ) * rhoInv;
-                    p         = ( _gamma - 1.0 ) * ( v( 3, k ) - 0.5 * v( 0, k ) * ( pow( uV, 2 ) + pow( vV, 2 ) ) );
-                    double aV = sqrt( _gamma * p * rhoInv );
-
-                    double uUProjected = nUnit[0] * uU + nUnit[1] * vU;
-                    double uVProjected = nUnit[0] * uV + nUnit[1] * vV;
-
-                    double lambdaMin = uUProjected - aU;
-                    double lambdaMax = uVProjected + aV;
-
-                    // flux
-                    auto uNew = column( u, k );
-                    Matrix flux( uNew.size(), 2 );
-
-                    double rhoInvNew = 1.0 / uNew[0];
-                    double v1        = uNew[1] * rhoInvNew;
-                    double v2        = uNew[2] * rhoInvNew;
-
-                    flux( 0, 0 ) = uNew[1];
-                    flux( 1, 0 ) = uNew[1] * v1 + p;
-                    flux( 2, 0 ) = uNew[1] * v2;
-                    flux( 3, 0 ) = ( uNew[3] + p ) * v1;
-                    flux( 0, 1 ) = uNew[2];
-                    flux( 1, 1 ) = uNew[2] * v1;
-                    flux( 2, 1 ) = uNew[2] * v2 + p;
-                    flux( 3, 1 ) = ( uNew[3] + p ) * v2;
-
-                    std::cout << "mass flux = " << v1 * n[0] + v2 * n[1] << std::endl;
-
-                    std::cout << "boundary flux = " << flux * n << std::endl;
-
-                    std::cout << "cellID = " << j << ", nodes = " << cell->GetNodes()[0]->id << " " << cell->GetNodes()[1]->id << " "
-                              << cell->GetNodes()[2]->id << ", center = " << cell->GetCenter() << std::endl;
-                    std::cout << "mesh boundaryType = " << _mesh->GetBoundaryType( j ) << std::endl;
-                    std::cout << "cell boundaryType = " << cell->GetBoundaryType() << std::endl;
-                }
+        if( !_settings->HasRestartFile() ) {
+            _closure->DS( ds, u0 );
+            for( unsigned l = 0; l < _nStates; ++l ) {
+                _lambda[j]( l, 0 ) = ds[l];
             }
-            else {
-                fluxFunc( rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ) );
-                if( frontCell == true && j == 11848 ) {
-                    std::cout << "rhs = " << rhs << std::endl;
-                }
-            }
-        }
-        uNew[j] = u[j] - ( dt / cell->GetArea() ) * rhs;
-        if( frontCell == true && j == 11848 ) {
-            std::cout << "neighbors are " << neighbors << std::endl;
         }
     }
+
+    // Converge initial condition entropy variables for One Shot IPM
+    if( _settings->GetMaxIterations() == 1 ) {
+
+        _settings->SetMaxIterations( 10000 );
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            _closure->SolveClosure( _lambda[j], u[j] );
+        }
+        _settings->SetMaxIterations( 1 );
+
+        // recompute moments with inexact lambda
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+            u[j]  = uQ[j] * _closure->GetPhiTildeWf();
+        }
+    }
+
+    auto numFluxPtr = std::bind( &MomentSolver::numFlux,
+                                 this,
+                                 std::placeholders::_1,
+                                 std::placeholders::_2,
+                                 std::placeholders::_3,
+                                 std::placeholders::_4,
+                                 std::placeholders::_5 );
+
+    log->info( "{:10}   {:10}", "t", "residual" );
+    // Begin time loop
+    double t, dt;
+    for( t = _tStart; t < _tEnd; ) {
+        double residual = 0;
+
+#pragma omp parallel for schedule( dynamic, 10 )
+        for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
+            _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]] );
+        }
+
+        // MPI Broadcast lambdas to all PEs
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uOld[j] = u[j];    // save old Moments for residual computation
+            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
+        }
+
+        // compute solution at quad points as well as partial moment vectors on each PE
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
+            u[j].reset();
+            multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd() );
+        }
+
+        // determine time step size
+        double dtMinOnPE = 1e10;
+        double dtCurrent;
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            dtCurrent = _problem->ComputeDt( uQ[j], _mesh->GetMaxEdge( j ) / _mesh->GetArea( j ) );
+            if( dtCurrent < dtMinOnPE ) dtMinOnPE = dtCurrent;
+        }
+        MPI_Reduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+        t += dt;
+
+        _time->Advance( numFluxPtr, uNew, u, uQ, dt );
+
+        // perform reduction to obtain full moments on all PEs
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
+        }
+
+        for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
+            residual += std::fabs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] ) / _dt;
+        }
+
+        MPI_Reduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+        if( _settings->GetMyPE() == 0 ) {
+            log->info( "{:03.8f}   {:01.5e}", t, residualFull );
+            std::cout << "dt = " << dt << std::endl;
+        }
+    }
+    if( _settings->GetMyPE() != 0 ) return;
+
+    // save final moments on u
+    u = uNew;
+
+    std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
+    log->info( "" );
+    log->info( "Finished!" );
+    log->info( "" );
+    log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
+
+    Matrix meanAndVar;
+    if( _settings->HasExactSolution() ) {
+        meanAndVar = Matrix( 4 * _nStates, _mesh->GetNumCells(), 0.0 );
+    }
+    else {
+        meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+    }
+    Matrix phiTildeWf = _closure->GetPhiTildeWf();
+    Vector tmp( _nStates, 0.0 );
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        // expected value
+        for( unsigned k = 0; k < _nQTotal; ++k ) {
+            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
+            for( unsigned i = 0; i < _nStates; ++i ) {
+                meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
+            }
+        }
+
+        // variance
+        for( unsigned k = 0; k < _nQTotal; ++k ) {
+            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
+            for( unsigned i = 0; i < _nStates; ++i ) {
+                meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
+            }
+        }
+        if( _settings->HasExactSolution() ) {
+            Vector xiEta( _settings->GetNDimXi() );
+            std::vector<Polynomial*> quad = _closure->GetQuadrature();
+            unsigned n;
+
+            for( unsigned k = 0; k < _nQTotal; ++k ) {
+                for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                    if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                    if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                    unsigned index =
+                        unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
+                    xiEta[l] = quad[n]->GetNodes()[index];
+                }
+                tmp = _problem->ExactSolution( t, _mesh->GetCenterPos( j ), xiEta );
+                // expected value exact
+                for( unsigned i = 0; i < _nStates; ++i ) {
+                    meanAndVar( 2 * _nStates + i, j ) += tmp[i] * phiTildeWf( k, 0 );
+                }
+                // variance exact
+                for( unsigned i = 0; i < _nStates; ++i ) {
+                    meanAndVar( 3 * _nStates + i, j ) += pow( tmp[i] - meanAndVar( 2 * _nStates + i, j ), 2 ) * phiTildeWf( k, 0 );
+                }
+            }
+        }
+    }
+
+    if( _settings->GetProblemType() == P_SHALLOWWATER_2D )
+        _mesh->ExportShallowWater( meanAndVar );
+    else
+        _mesh->Export( meanAndVar );
+
+    this->Export( uNew, _lambda );
+
+    unsigned evalCell  = 300;    // 2404;
+    unsigned plotState = 0;
+    _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );
+}
+
+void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
+    // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
+    multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd() );
+}
+
+void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
+    Matrix U( _nStates, _nQTotal, 0.0 );
+    Matrix evalLambda( _nStates, _nQTotal, 0.0 );
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        _closure->EvaluateLambda( evalLambda, lambda[j] );
+        _closure->U( U, evalLambda );
+        out[j] = U * _closure->GetPhiTildeWf();
+    }
+}
+
+MatVec MomentSolver::SetupIC() {
+    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
+    std::vector<Polynomial*> quad = _closure->GetQuadrature();
+    Vector xiEta( _settings->GetNDimXi() );
+    Matrix uIC( _nStates, _nQTotal );
+    Matrix phiTildeWf = _closure->GetPhiTildeWf();
+    std::vector<Vector> IC;
+    if( _settings->HasICFile() ) {
+        IC = _mesh->Import();
+    }
+    unsigned n;
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        for( unsigned k = 0; k < _nQTotal; ++k ) {
+            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                unsigned index =
+                    unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
+                xiEta[l] = quad[n]->GetNodes()[index];
+            }
+
+            if( _settings->HasICFile() ) {
+                column( uIC, k ) = _problem->LoadIC( IC[j], xiEta );
+            }
+            else {
+                column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );
+            }
+        }
+
+        u[j] = uIC * phiTildeWf;
+    }
+    return u;
+}
+
+void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {
+    std::shared_ptr<spdlog::logger> moment_writer = spdlog::get( "moments" );
+    for( unsigned i = 0; i < _nCells; ++i ) {
+        std::stringstream line;
+        for( unsigned j = 0; j < _nStates; ++j ) {
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                line << u[i]( j, k ) << ",";
+            }
+        }
+        moment_writer->info( line.str() );
+    }
+    moment_writer->flush();
+    std::shared_ptr<spdlog::logger> dual_writer = spdlog::get( "duals" );
+    for( unsigned i = 0; i < _nCells + 1; ++i ) {
+        std::stringstream line;
+        for( unsigned j = 0; j < _nStates; ++j ) {
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                line << lambda[i]( j, k ) << ",";
+            }
+        }
+        dual_writer->info( line.str() );
+    }
+    dual_writer->flush();
+}
+
+void MomentSolver::ImportTime() {
+    auto file = std::ifstream( _settings->GetRestartFile() );
+    std::string line;
+    while( std::getline( file, line ) ) {
+        if( line.find( "tEnd" ) != std::string::npos ) {
+            line.erase( 0, line.find_first_of( '=' ) + 1 );
+            line.erase( std::remove_if( line.begin(), line.end(), []( char c ) -> bool { return std::isspace<char>( c, std::locale::classic() ); } ),
+                        line.end() );
+            _tStart = std::stod( line );
+            break;
+        }
+    }
+}
+
+MatVec MomentSolver::ImportMoments() {
+    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
+    auto file = std::ifstream( _settings->GetRestartFile() + "_moments" );
+    std::string line;
+    for( unsigned i = 0; i < _nCells; ++i ) {
+        std::getline( file, line );
+        std::stringstream lineStream( line );
+        std::string cell;
+        for( unsigned j = 0; j < _nStates; ++j ) {
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                std::getline( lineStream, cell, ',' );
+                u[i]( j, k ) = std::stod( cell );
+            }
+        }
+    }
+    file.close();
+    return u;
+}
+
+MatVec MomentSolver::ImportDuals() {
+    MatVec lambda( _nCells + 1, Matrix( _nStates, _nTotal ) );
+    auto file = std::ifstream( _settings->GetRestartFile() + "_duals" );
+    std::string line;
+    for( unsigned i = 0; i < _nCells + 1; ++i ) {
+        std::getline( file, line );
+        std::stringstream lineStream( line );
+        std::string cell;
+        for( unsigned j = 0; j < _nStates; ++j ) {
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                std::getline( lineStream, cell, ',' );
+                lambda[i]( j, k ) = std::stod( cell );
+            }
+        }
+    }
+    file.close();
+    return lambda;
 }

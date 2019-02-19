@@ -9,7 +9,7 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _tEnd        = _settings->GetTEnd();
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
-    _nQTotal     = _settings->GetNQTotal();
+    _nQTotal     = 1;
     _nTotal      = _settings->GetNTotal();
 
     _closure = Closure::Create( _settings );
@@ -24,32 +24,23 @@ MomentSolver::~MomentSolver() {
     delete _time;
 }
 
-void MomentSolver::Solve() {
+MatVec MomentSolver::Solve( Vector xi ) {
     auto log = spdlog::get( "event" );
 
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
-    MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNQTotal() ) );
+    MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, 1 ) );
 
     // create solution fields
-    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
+    MatVec u( _nCells, Matrix( _nStates, 1 ) );
     if( _settings->HasRestartFile() ) {
         this->ImportTime();
         uQ = this->ImportMoments();
     }
     else {
-        uQ = SetupIC();
+        uQ = SetupIC( xi );
     }
     MatVec uNew = uQ;
-    MatVec uOld = uNew;
-
-    Vector ds( _nStates );
-    Vector u0( _nStates );
-
-    double residualFull;
-
-    std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
-    std::vector<int> PEforCell        = _settings->GetPEforCell();
 
     auto numFluxPtr = std::bind( &MomentSolver::numFlux,
                                  this,
@@ -58,8 +49,6 @@ void MomentSolver::Solve() {
                                  std::placeholders::_3,
                                  std::placeholders::_4,
                                  std::placeholders::_5 );
-
-    std::cout << uQ[2]( 0, 0 ) << std::endl;
 
     log->info( "{:10}   {:10}", "t", "residual" );
     // Begin time loop
@@ -81,8 +70,8 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             residual += std::fabs( uNew[j]( 0, 0 ) - uQ[j]( 0, 0 ) );    // * _mesh->GetArea( j ) / dt;
         }
-        log->info( "{:03.8f}   {:01.5e}", t, residual );
-        std::cout << "dt = " << dt << std::endl;
+        // log->info( "{:03.8f}   {:01.5e}", t, residual );
+        // std::cout << "dt = " << dt << std::endl;
 
         // update solution
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -90,7 +79,7 @@ void MomentSolver::Solve() {
         }
     }
 
-    // save final moments on u
+    // save final moments on uQ
     uQ = uNew;
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
@@ -99,51 +88,7 @@ void MomentSolver::Solve() {
     log->info( "" );
     log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
-    Matrix meanAndVar;
-    if( _settings->HasExactSolution() ) {
-        meanAndVar = Matrix( 4 * _nStates, _mesh->GetNumCells(), 0.0 );
-    }
-    else {
-        meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
-    }
-    Matrix phiTildeWf = _closure->GetPhiTildeWf();
-    Vector tmp( _nStates, 0.0 );
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        // expected value
-        for( unsigned k = 0; k < _nQTotal; ++k ) {
-            for( unsigned i = 0; i < _nStates; ++i ) {
-                meanAndVar( i, j ) = uQ[j]( i, 0 );
-            }
-        }
-
-        if( _settings->HasExactSolution() ) {
-            Vector xiEta( _settings->GetNDimXi() );
-            std::vector<Polynomial*> quad = _closure->GetQuadrature();
-            unsigned n;
-
-            for( unsigned k = 0; k < _nQTotal; ++k ) {
-                for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                    if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                    if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                    unsigned index =
-                        unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
-                    xiEta[l] = quad[n]->GetNodes()[index];
-                }
-                tmp = _problem->ExactSolution( t, _mesh->GetCenterPos( j ), xiEta );
-                // expected value exact
-                for( unsigned i = 0; i < _nStates; ++i ) {
-                    meanAndVar( 2 * _nStates + i, j ) += tmp[i];
-                }
-            }
-        }
-    }
-
-    if( _settings->GetProblemType() == P_SHALLOWWATER_2D )
-        _mesh->ExportShallowWater( meanAndVar );
-    else
-        _mesh->Export( meanAndVar );
-
-    this->Export( uNew, _lambda );
+    return uQ;
 
     // for( unsigned j = 0; j < _nCells; ++j ) std::cout << uQ[j] << std::endl;
 }
@@ -152,33 +97,20 @@ void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, con
     out += _problem->G( u1, u2, nUnit, n );
 }
 
-MatVec MomentSolver::SetupIC() {
-    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
-    std::vector<Polynomial*> quad = _closure->GetQuadrature();
-    Vector xiEta( _settings->GetNDimXi() );
+MatVec MomentSolver::SetupIC( const Vector& xi ) {
+    MatVec u( _nCells, Matrix( _nStates, 1 ) );
     Matrix uIC( _nStates, _nQTotal );
-    Matrix phiTildeWf = _closure->GetPhiTildeWf();
     std::vector<Vector> IC;
     if( _settings->HasICFile() ) {
         IC = _mesh->Import();
     }
     unsigned n;
     for( unsigned j = 0; j < _nCells; ++j ) {
-        for( unsigned k = 0; k < _nQTotal; ++k ) {
-            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                unsigned index =
-                    unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
-                xiEta[l] = quad[n]->GetNodes()[index];
-            }
-
-            if( _settings->HasICFile() ) {
-                column( uIC, k ) = _problem->LoadIC( IC[j], xiEta );
-            }
-            else {
-                column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );
-            }
+        if( _settings->HasICFile() ) {
+            column( uIC, 0 ) = _problem->LoadIC( IC[j], xi );
+        }
+        else {
+            column( uIC, 0 ) = _problem->IC( _mesh->GetCenterPos( j ), xi );
         }
 
         u[j] = uIC;
@@ -186,13 +118,13 @@ MatVec MomentSolver::SetupIC() {
     return u;
 }
 
-void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {
+void MomentSolver::Export( const MatVec& u ) const {
     std::shared_ptr<spdlog::logger> moment_writer = spdlog::get( "moments" );
     for( unsigned i = 0; i < _nCells; ++i ) {
         std::stringstream line;
         for( unsigned j = 0; j < _nStates; ++j ) {
-            for( unsigned k = 0; k < _nTotal; ++k ) {
-                line << u[i]( j, k ) << ",";
+            for( unsigned k = 0; k < 1; ++k ) {
+                line << u[i]( j, 0 ) << ",";
             }
         }
         moment_writer->info( line.str() );
@@ -215,7 +147,7 @@ void MomentSolver::ImportTime() {
 }
 
 MatVec MomentSolver::ImportMoments() {
-    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
+    MatVec u( _nCells, Matrix( _nStates, 1 ) );
     auto file = std::ifstream( _settings->GetRestartFile() + "_moments" );
     std::string line;
     for( unsigned i = 0; i < _nCells; ++i ) {
@@ -223,9 +155,9 @@ MatVec MomentSolver::ImportMoments() {
         std::stringstream lineStream( line );
         std::string cell;
         for( unsigned j = 0; j < _nStates; ++j ) {
-            for( unsigned k = 0; k < _nTotal; ++k ) {
+            for( unsigned k = 0; k < 1; ++k ) {
                 std::getline( lineStream, cell, ',' );
-                u[i]( j, k ) = std::stod( cell );
+                u[i]( j, 0 ) = std::stod( cell );
             }
         }
     }
@@ -234,7 +166,7 @@ MatVec MomentSolver::ImportMoments() {
 }
 
 MatVec MomentSolver::ImportDuals() {
-    MatVec lambda( _nCells + 1, Matrix( _nStates, _nTotal ) );
+    MatVec lambda( _nCells + 1, Matrix( _nStates, 1 ) );
     auto file = std::ifstream( _settings->GetRestartFile() + "_duals" );
     std::string line;
     for( unsigned i = 0; i < _nCells + 1; ++i ) {
@@ -242,9 +174,9 @@ MatVec MomentSolver::ImportDuals() {
         std::stringstream lineStream( line );
         std::string cell;
         for( unsigned j = 0; j < _nStates; ++j ) {
-            for( unsigned k = 0; k < _nTotal; ++k ) {
+            for( unsigned k = 0; k < 1; ++k ) {
                 std::getline( lineStream, cell, ',' );
-                lambda[i]( j, k ) = std::stod( cell );
+                lambda[i]( j, 0 ) = std::stod( cell );
             }
         }
     }

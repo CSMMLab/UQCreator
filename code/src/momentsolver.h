@@ -34,10 +34,10 @@ class MomentSolver
 
     void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
     void SetupIC( MatVec& out );
-    MatVec SetupIC();
+    MatVec SetupIC( const Vector& xi );
     Vector EvalLambda( const Vector& lambda, const Vector& xi );
     void Plot( double time, unsigned nSteps );
-    void Export( const MatVec& u, const MatVec& lambda ) const;
+
     void ImportTime();
     MatVec ImportMoments();
     MatVec ImportDuals();
@@ -45,7 +45,8 @@ class MomentSolver
   public:
     MomentSolver( Settings* settings, Mesh* mesh, Problem* problem );
     ~MomentSolver();
-    void Solve();
+    MatVec Solve( Vector xi );
+    void Export( const MatVec& u ) const;
 };
 
 #endif    // MOMENTSOLVER_H
