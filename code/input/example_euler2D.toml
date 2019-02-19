@@ -1,7 +1,7 @@
 [general]
 problem = "Euler2D"
 outputDir = "../results"
-restartFile = "../results/logs/2019-02-16_13:56:15"
+#restartFile = "../results/logs/2019-02-16_13:56:15"
 #icFile = "../../su2/SU2RefSol.vtk"
 
 [mesh]
@@ -15,15 +15,15 @@ outputFile = "euler_naca0012"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.75]]
+distribution = [["Legendre"],[1.25]]
 CFL = 0.9
-tEnd = 0.00001
+tEnd = 0.01
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "StochasticGalerkin"
-moments = 1
-quadPoints = 1
+moments = 5
+quadPoints = 10
 maxIterations = 1
 epsilon = 5e-5
 
