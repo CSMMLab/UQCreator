@@ -7,17 +7,17 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "nacaCoarse.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "euler2D_naca0012_n10_nq15_s125_aoa"
+outputFile = "euler2D_naca0012_n10_nq20_s05_aoa"
 
 [problem]
 timestepping = "explicitEuler"
-distribution = [["Legendre"],[1.25]]
+distribution = [["Legendre"],[0.5]]
 CFL = 0.9
 tEnd = 0.2
 
 [moment_system]
 closure = "Euler2D"
 moments = 10
-quadPoints = 15
+quadPoints = 20
 maxIterations = 1
 epsilon = 5e-5
