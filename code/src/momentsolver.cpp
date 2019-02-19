@@ -77,8 +77,8 @@ void MomentSolver::Solve() {
 
         // recompute moments with inexact lambda
         for( unsigned j = 0; j < _nCells; ++j ) {
-            uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-            u[j]  = uQ[j] * _closure->GetPhiTildeWf();
+            // uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+            // u[j]  = uQ[j] * _closure->GetPhiTildeWf();
         }
     }
 
