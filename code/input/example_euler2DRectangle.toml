@@ -1,0 +1,27 @@
+[general]
+problem = "Euler2D"
+outputDir = "../results"
+
+[mesh]
+dimension = 2
+format = "SU2"
+SU2MeshFile = "nacaCoarse.su2"
+SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
+outputFile = "euler_naca0012CollocationN5Nq10"
+
+[problem]
+# available timesteppings: explicitEuler
+timestepping = "explicitEuler"
+# available distributions: Legendre, Hermite
+distribution = [["Legendre"],[1.25]]
+CFL = 0.9
+tEnd = 0.1
+
+[moment_system]
+# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
+closure = "StochasticGalerkin"
+moments = 5
+quadPoints = 10
+maxIterations = 1
+epsilon = 5e-5
+
