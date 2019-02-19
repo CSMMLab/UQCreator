@@ -20,8 +20,8 @@ tEnd = 0.001
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
 closure = "StochasticGalerkin"
-moments = 1
-quadPoints = 1
+moments = 5
+quadPoints = 10
 maxIterations = 1
 epsilon = 5e-5
 

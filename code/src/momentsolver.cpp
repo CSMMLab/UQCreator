@@ -9,7 +9,7 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _tEnd        = _settings->GetTEnd();
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
-    _nQTotal     = 1;
+    _nQTotal     = _settings->GetNQTotal();
     _nTotal      = _settings->GetNTotal();
 
     _closure = Closure::Create( _settings );
@@ -89,8 +89,6 @@ MatVec MomentSolver::Solve( Vector xi ) {
     log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
     return uQ;
-
-    // for( unsigned j = 0; j < _nCells; ++j ) std::cout << uQ[j] << std::endl;
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {

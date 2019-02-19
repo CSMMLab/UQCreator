@@ -177,7 +177,7 @@ int main( int argc, char* argv[] ) {
     for( unsigned j = 0; j < nCells; ++j ) {
         uQFinal[j].reset();
         for( unsigned l = 0; l < nStates; ++l ) {
-            for( unsigned k = settings->GetKStart(); k < settings->GetKEnd(); ++k ) {
+            for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
                 uQFinal[j]( l, k ) = uQ[k - settings->GetKStart()][j]( l, 0 );
             }
         }
@@ -194,6 +194,7 @@ int main( int argc, char* argv[] ) {
     }
 
     if( settings->GetMyPE() == 0 ) {
+        std::cout << "Exporting solution..." << std::endl;
         // export moments
         solver->Export( uMoments );
 
@@ -207,8 +208,9 @@ int main( int argc, char* argv[] ) {
             for( unsigned i = 0; i < nStates; ++i ) {
                 meanAndVar( i, j ) = uMoments[j]( i, 0 );
             }
+            // variance
             for( unsigned i = 0; i < nStates; ++i ) {
-                for( unsigned l = 1; l < settings->GetNTotal(); ++l ) meanAndVar( i, j ) += uMoments[j]( i, l );
+                for( unsigned l = 1; l < settings->GetNTotal(); ++l ) meanAndVar( i + nStates, j ) += uMoments[j]( i, l );
             }
         }
 
