@@ -138,7 +138,6 @@ void MomentSolver::Solve() {
         MPI_Reduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}", t, residualFull );
-            std::cout << "dt = " << dt << std::endl;
         }
     }
     if( _settings->GetMyPE() != 0 ) return;
