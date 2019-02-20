@@ -187,30 +187,29 @@ int main( int argc, char* argv[] ) {
 
     auto uMoments = u;
 
-    if( settings->GetMyPE() == 0 ) std::cout << "u before reduce: " << u[0] << std::endl;
+    // if( settings->GetMyPE() == 0 )
+    // std::cout << "PE " << settings->GetMyPE() << ": u before reduce: " << u[0] << std::endl;
 
     // perform reduction to obtain full moments on all PEs
     std::vector<int> PEforCell = settings->GetPEforCell();
     for( unsigned j = 0; j < nCells; ++j ) {
-        MPI_Reduce( uMoments[j].GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
+        MPI_Reduce( uMoments[j].GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
     }
-
-    if( settings->GetMyPE() == 0 ) std::cout << "u after reduce: " << uMoments[0] << std::endl;
 
     if( settings->GetMyPE() == 0 ) {
         std::cout << "Exporting solution..." << std::endl;
         // export moments
-        solver->Export( uMoments );
+        solver->Export( u );
 
         Matrix meanAndVar( 2 * nStates, nCells, 0.0 );
         for( unsigned j = 0; j < nCells; ++j ) {
             // expected value
             for( unsigned i = 0; i < nStates; ++i ) {
-                meanAndVar( i, j ) = uMoments[j]( i, 0 );
+                meanAndVar( i, j ) = u[j]( i, 0 );
             }
             // variance
             for( unsigned s = 0; s < nStates; ++s ) {
-                for( unsigned i = 1; i < settings->GetNTotal(); ++i ) meanAndVar( s + nStates, j ) += std::pow( uMoments[j]( s, i ), 2 );
+                for( unsigned i = 1; i < settings->GetNTotal(); ++i ) meanAndVar( s + nStates, j ) += std::pow( u[j]( s, i ), 2 );
             }
         }
 
@@ -218,6 +217,8 @@ int main( int argc, char* argv[] ) {
             mesh->ExportShallowWater( meanAndVar );
         else
             mesh->Export( meanAndVar );
+
+        // if( settings->GetMyPE() == 0 ) std::cout << "u after reduce: " << u[0] << std::endl;
     }
 
     delete solver;
