@@ -38,12 +38,17 @@ When using the stochastic-Galerkin method to close \eqref{eq:nonClosedMomentSyst
 This problem can be rewritten as
 \begin{align}\label{eq:dualProblem}
  \bm{\hat \lambda}(\bm{\hat u}) := \argmin_{\bm{\lambda} \in \mathbb{R}^{s\cdot(N + 1)}}
-  \left\{\langle s_*(\sum_{i=0}^{N}\bm{\lambda}_i \varphi_i)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}\right\},
+  \left\{\langle s_*(\sum_{i=0}^{N}\bm{\lambda}_i \varphi_i)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i\right\},
 \end{align}
-where $s_*:\mathbb{R}\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then given by
+where $s_*:\mathbb{R}^p\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then given by
 \begin{align}\label{eq:ansatz}
- \mathcal{U}_{ME}(\bm{u}) = \left( s_{\bm{u}} \right)^{-1}(\bm{\hat{\lambda}}(\bm{u})^T \bm{\varphi}).
+ \mathcal{U}_{ME}(\bm{\hat u}) = \left( s_{\bm{\hat u}} \right)^{-1}(\bm{\hat{\lambda}}(\bm{u})^T \bm{\varphi}).
 \end{align}
-The IPM method has several advantages: Choosing the entropy $s(\bm{u}) = \frac{1}{2}\bm{u}^T\bm{u}$ yields the stochastic-Galerkin method, i.e. IPM generalizes different intrusive method. Furthermore, at least for scalar problems, IPM is less oscillatory compared to SG \cite{kusch2017maximum}.
+The IPM method has several advantages: Choosing the entropy $s(\bm{u}) = \frac{1}{2}\bm{u}^T\bm{u}$ yields the stochastic-Galerkin method, i.e. IPM generalizes different intrusive method. Furthermore, at least for scalar problems, IPM is significantly less oscillatory compared to SG \cite{kusch2017maximum}. Also, as discussed in \cite{poette2009uncertainty}, when choosing $s(\bm u)$ to be a physically correct entropy of the deterministic problem, the IPM solution dissipates the entropy
+\begin{align*}
+S(\bm{\hat u}) := \langle s( \mathcal{U}_{ME}(\bm{\hat u}))\rangle,
+\end{align*}
+i.e. the IPM method yields a physically correct entropy solution. This again underlines a weakness of stochastic-Galerkin: If $s(\bm{u}) = \frac{1}{2}\bm{u}^T\bm{u}$ is not a correct entropy of the original problem, the SG method can lead to non-physical solution, which can then lead to a failure of the method. The main weakness of the IPM method is its run time, since it requires the repeated evaluation of \eqref{eq:ansatz}, which involves the computation of the optimization problem \eqref{eq:dualProblem}.
+
 
 When investigating hyperbolic problems, standard methods tend to suffer from non-physical oscillations, which yield 
