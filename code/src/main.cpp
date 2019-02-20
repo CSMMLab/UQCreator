@@ -173,12 +173,12 @@ int main( int argc, char* argv[] ) {
 
     // compute Moments
     MatVec u( nCells, Matrix( nStates, nTotal ) );
-    MatVec uQFinal( nCells, Matrix( nStates, nQTotal ) );
+    MatVec uQFinal( nCells, Matrix( nStates, settings->GetKEnd() - settings->GetKStart() + 1 ) );
     for( unsigned j = 0; j < nCells; ++j ) {
         uQFinal[j].reset();
         for( unsigned l = 0; l < nStates; ++l ) {
             for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
-                uQFinal[j]( l, k ) = uQ[k - settings->GetKStart()][j]( l, 0 );
+                uQFinal[j]( l, k - settings->GetKStart() ) = uQ[k - settings->GetKStart()][j]( l, 0 );
             }
         }
         u[j].reset();
@@ -187,30 +187,30 @@ int main( int argc, char* argv[] ) {
 
     auto uMoments = u;
 
+    if( settings->GetMyPE() == 0 ) std::cout << "u before reduce: " << u[0] << std::endl;
+
     // perform reduction to obtain full moments on all PEs
     std::vector<int> PEforCell = settings->GetPEforCell();
     for( unsigned j = 0; j < nCells; ++j ) {
         MPI_Reduce( uMoments[j].GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
     }
 
+    if( settings->GetMyPE() == 0 ) std::cout << "u after reduce: " << uMoments[0] << std::endl;
+
     if( settings->GetMyPE() == 0 ) {
         std::cout << "Exporting solution..." << std::endl;
         // export moments
         solver->Export( uMoments );
 
-        Matrix meanAndVar;
-
-        meanAndVar        = Matrix( 2 * nStates, nCells, 0.0 );
-        Matrix phiTildeWf = closure->GetPhiTildeWf();
-        Vector tmp( nStates, 0.0 );
+        Matrix meanAndVar( 2 * nStates, nCells, 0.0 );
         for( unsigned j = 0; j < nCells; ++j ) {
             // expected value
             for( unsigned i = 0; i < nStates; ++i ) {
                 meanAndVar( i, j ) = uMoments[j]( i, 0 );
             }
             // variance
-            for( unsigned i = 0; i < nStates; ++i ) {
-                for( unsigned l = 1; l < settings->GetNTotal(); ++l ) meanAndVar( i + nStates, j ) += uMoments[j]( i, l );
+            for( unsigned s = 0; s < nStates; ++s ) {
+                for( unsigned i = 1; i < settings->GetNTotal(); ++i ) meanAndVar( s + nStates, j ) += std::pow( uMoments[j]( s, i ), 2 );
             }
         }
 

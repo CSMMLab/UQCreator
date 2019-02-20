@@ -7,7 +7,7 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "nacaCoarse.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "euler_naca0012CollocationN5Nq10"
+outputFile = "collNaca"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -15,7 +15,7 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[1.25]]
 CFL = 0.9
-tEnd = 0.01
+tEnd = 0.0
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D
