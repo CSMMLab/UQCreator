@@ -56,6 +56,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
         auto restartFile = general->get_as<std::string>( "restartFile" );
         if( restartFile ) {
             _restartFile = _inputDir.string() + "/" + *restartFile;
+            _loadLambda  = general->get_as<bool>( "importDualState" ).value_or( false );
         }
 
         auto icFile = general->get_as<std::string>( "icFile" );
@@ -281,6 +282,7 @@ bool Settings::HasICFile() const { return !_icFile.empty(); }
 std::string Settings::GetICFile() const { return _icFile; }
 bool Settings::HasRestartFile() const { return !_restartFile.empty(); }
 std::string Settings::GetRestartFile() const { return _restartFile; }
+bool Settings::LoadLambda() const { return _loadLambda; }
 
 // problem
 TimesteppingType Settings::GetTimesteppingType() const { return _timesteppingType; }

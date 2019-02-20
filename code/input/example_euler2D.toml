@@ -2,6 +2,7 @@
 problem = "Euler2D"
 outputDir = "../results"
 #restartFile = "../results/logs/2019-02-16_13:56:15"
+#importDualState = true
 #icFile = "../../su2/SU2RefSol.vtk"
 
 [mesh]

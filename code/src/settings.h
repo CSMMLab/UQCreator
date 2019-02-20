@@ -25,6 +25,7 @@ class Settings
     std::filesystem::path _outputFile;
     std::filesystem::path _icFile;
     std::filesystem::path _restartFile;
+    bool _loadLambda;
 
     // requied settings
     unsigned _meshDimension;
@@ -92,6 +93,7 @@ class Settings
     std::string GetICFile() const;
     bool HasRestartFile() const;
     std::string GetRestartFile() const;
+    bool LoadLambda() const;
 
     // problem
     TimesteppingType GetTimesteppingType() const;

@@ -33,8 +33,10 @@ void MomentSolver::Solve() {
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     if( _settings->HasRestartFile() ) {
         this->ImportTime();
-        u       = this->ImportMoments();
-        _lambda = this->ImportDuals();
+        u = this->ImportMoments();
+        if( _settings->LoadLambda() ) {
+            _lambda = this->ImportDuals();
+        }
     }
     else {
         u       = SetupIC();
@@ -58,7 +60,7 @@ void MomentSolver::Solve() {
         for( unsigned l = 0; l < _nStates; ++l ) {
             u0[l] = u[j]( l, 0 );
         }
-        if( !_settings->HasRestartFile() ) {
+        if( !_settings->LoadLambda() ) {
             _closure->DS( ds, u0 );
             for( unsigned l = 0; l < _nStates; ++l ) {
                 _lambda[j]( l, 0 ) = ds[l];
