@@ -121,12 +121,12 @@ void MomentSolver::Solve() {
             dtCurrent = _problem->ComputeDt( uQ[j], _mesh->GetMaxEdge( j ) / _mesh->GetArea( j ) );
             if( dtCurrent < dtMinOnPE ) dtMinOnPE = dtCurrent;
         }
-        MPI_Reduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+        MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
         t += dt;
 
         _time->Advance( numFluxPtr, uNew, u, uQ, dt );
 
-        // perform reduction to obtain full moments on all PEs
+        // perform reduction to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
         }
