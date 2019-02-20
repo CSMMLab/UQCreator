@@ -100,10 +100,12 @@
 
 \author[adressJonas]{Jonas Kusch}
 \author[adressJannick]{Jannick Wolters}
+\author[adressMartin]{Martin Frank}
 
 \address[adressJonas]{Karlsruhe Institute of Technology, Karlsruhe,
     jonas.kusch@kit.edu}
 \address[adressJannick]{Karlsruhe Institute of Technology, Karlsruhe, jannick.wolters@kit.edu}
+\address[adressMartin]{Karlsruhe Institute of Technology, Karlsruhe, martin.frank@kit.edu}
 
 
 \begin{abstract}
@@ -117,81 +119,37 @@ conservation laws, hyperbolic, intrusive, UQ, IPM, SG, Collocation
 \end{keyword}
 
 \end{frontmatter}
-\section{Introduction}
-Hyperbolic equations play an important role in various research areas such as fluid dynamics or plasma physics. Efficient numerical methods combined with robust implementations are available for these problems, however they do not account for uncertainties which can arise in measurement data or modeling assumptions. Including the effects of uncertainties in differential equations has become an important topic in the last decades. %Examples include computational fluid dynamics \cite{bijl2013uncertainty}. 
 
-A general hyperbolic set of equations with random initial data can be written as
-\begin{subequations}\label{eq:hyperbolicProblem}
-\begin{align}
-\partial_t \bm{u}(t,\bm{x},\bm{\xi}) + \nabla&\cdot\bm{F}(\bm{u}(t,\bm{x},\bm{\xi})) = \bm{0}, \\ \label{eq:ic}
-\bm{u}(t=0,\bm{x},&\bm{\xi}) = \bm{u}_{\text{IC}}(\bm{x},\bm{\xi}),
-\end{align}
-\end{subequations}
-where the solution $u\in\mathbb{R}^p$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subset \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subset\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. The physical flux is given by $\bm{F}:\mathbb{R}^p\to\mathbb{R}^p$. To simplify notation, we assume that the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
+\input{introduction}
+\input{framework}
+\input{colloc_ipm}
+\input{one_shot_ipm}
+\input{results}
 
-Due to the randomness of the solution, one is interested in determining the expectation value or the variance of the solution, i.e.
-\begin{align*}
-\text{E}[\bm{u}] = \langle \bm{u} \rangle,\qquad \text{Var}[\bm{u}] = \langle \left( \bm{u}-\text{E}[\bm{u}]\right)^2\rangle,
-\end{align*}
-where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot \prod_{i=1}^s f_{\Xi,i}(\xi_i)d\xi_1 \cdots d\xi_s$. More generally, one is interested in determining the moments of the solution for a given set of orthonormal basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_s)$ we have $|i| \leq N$. The moments are then given by $\bm{\hat u_i} := \langle \bm{u}\varphi_i \rangle$.\\
-
-Numerical methods for approximating the moment $\bm{\hat u_i}$ can be divided into intrusive and non-intrusive methods. The main idea of intrusive methods is to derive a system of equations for the moments and implementing a numerical solver for this system: Testing the initial problem \eqref{eq:hyperbolicProblem} with $\varphi_i$ for $|i|\leq M$ yields
-\begin{subequations}\label{eq:nonClosedMomentSystem}
-\begin{align}
-\partial_t \bm{\hat u}_i(t,\bm{x}) + \nabla&\cdot\langle\bm{F}(\bm{u}(t,\bm{x},\cdot)) \varphi_i\rangle = \bm{0}, \\
-\bm{\hat u_i}(t=0,\bm{x}&) = \langle\bm{u}_{\text{IC}}(\bm{x},\cdot)\varphi_i\rangle.
-\end{align}
-\end{subequations}
-To obtain a closed set of equations, one needs to derive a closure $\mathcal{U}$ such that 
-\begin{align*}
-\bm{u}(t,\bm x,\bm \xi) \approx \mathcal{U}(\bm{\hat u}_0,\cdots,\bm{\hat u}_N;\xi).
-\end{align*}
-A commonly used closure is the stochastic-Galerkin, which represents the solution by a polynomial:
-\begin{align*}
-\mathcal{U}_{\text{SG}}(\bm{\hat u}_0,\cdots,\bm{\hat u}_N;\xi):= \sum_{i=0}^N \bm{\hat{u}}_i\varphi_i(\bm{\xi}).
-\end{align*}
-When using the stochastic-Galerkin method to close \eqref{eq:nonClosedMomentSystem}, the resulting moment system is not necessarily hyperbolic, meaning that it cannot be solved with standard methods. An approach to derive a closure, which ensures hyperbolicity is the Intrusive Polynomial Moment (IPM) closure, which has been presented in \cite{poette2009uncertainty}: The closure is given by a constraint optimization problem. For a given convex entropy $s:\mathbb{R}^p\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, this optimization problem is
-\begin{align}\label{eq:primalProblem}
-\mathcal{U}_{ME}(\bm{u}) = \argmin_{\bm u} \langle s(\bm u) \rangle \enskip \text{ subject to } \bm{\hat u}_i = \langle \bm u \varphi_i \rangle \text{ for } i = 0,\cdots,N.
-\end{align}
-This problem can be rewritten as
-\begin{align}\label{eq:dualProblem}
- \bm{\hat \lambda}(\bm{\hat u}) := \argmin_{\bm{\lambda} \in \mathbb{R}^{s\cdot(N + 1)}}
-  \left\{\langle s_*(\sum_{i=0}^{N}\bm{\lambda}_i \varphi_i)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}\right\},
-\end{align}
-where $s_*:\mathbb{R}\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then given by
-\begin{align}\label{eq:ansatz}
- \mathcal{U}_{ME}(\bm{u}) = \left( s_{\bm{u}} \right)^{-1}(\bm{\hat{\lambda}}(\bm{u})^T \bm{\varphi}).
-\end{align}
-The IPM method has several advantages: Choosing the entropy $s(\bm{u}) = \frac{1}{2}\bm{u}^T\bm{u}$ yields the stochastic-Galerkin method, i.e. IPM generalizes different intrusive method. Furthermore, at least for scalar problems, IPM is less oscillatory compared to SG \cite{kusch2017maximum}.
-
-When investigating hyperbolic problems, standard methods tend to suffer from non-physical oscillations, which yield 
-
-
-\section{Methods of Uncertainty Quantification}
-\subsection{Collocation}
-\subsection{Stochastic Galerkin}
-\subsection{Intrusive Polynomial Moment Method}
-\section{Method discussion}
-\begin{itemize}
-	\item kleinere Fehler [11]
-	\item Programmieraufwand [31]
-	\item zweiabhängig
-	\item adaptiv (breack up black box approach )
-	\item grobe Auflösung für Momente 
-\end{itemize}
-\section{UQCreator}
-\subsection{Adaptivity}
-\subsection{restart IPM} %relay(-strategy) IPM?
-\subsection{one-shot IPM}
-\subsection{adaptive IPM}
-\section{Results}
-\subsection{2D Euler flow over NACA0012}
-\begin{itemize}
-	\item AoA study
-	\item AoA + Ma number + mehr ?
-\end{itemize}
-\subsection{2D shallow water dam break}
+%\section{Methods of Uncertainty Quantification}
+%\subsection{Collocation}
+%\subsection{Stochastic Galerkin}
+%\subsection{Intrusive Polynomial Moment Method}
+%\section{Method discussion}
+%\begin{itemize}
+%	\item kleinere Fehler [11]
+%	\item Programmieraufwand [31]
+%	\item zweiabhängig
+%	\item adaptiv (breack up black box approach )
+%	\item grobe Auflösung für Momente 
+%\end{itemize}
+%\section{UQCreator}
+%\subsection{Adaptivity}
+%\subsection{restart IPM} %relay(-strategy) IPM?
+%\subsection{one-shot IPM}
+%\subsection{adaptive IPM}
+%\section{Results}
+%\subsection{2D Euler flow over NACA0012}
+%\begin{itemize}
+%	\item AoA study
+%	\item AoA + Ma number + mehr ?
+%\end{itemize}
+%\subsection{2D shallow water dam break}
 
 \bibliographystyle{unsrt}  
 \bibliography{references}
