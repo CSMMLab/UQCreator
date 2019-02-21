@@ -32,20 +32,20 @@ To obtain a closed set of equations, one needs to derive a closure $\mathcal{U}$
 \begin{align*}
 \bm{u}(t,\bm x,\bm \xi) \approx \mathcal{U}(\bm{\hat u}_0,\cdots,\bm{\hat u}_N;\xi).
 \end{align*}
-A commonly used closure is the stochastic-Galerkin, which represents the solution by a polynomial:
+A commonly used closure is given by stochastic-Galerkin, which represents the solution by a polynomial:
 \begin{align*}
-\mathcal{U}_{\text{SG}}(\bm{\hat u}_0,\cdots,\bm{\hat u}_N;\xi):= \sum_{i=0}^N \bm{\hat{u}}_i\varphi_i(\bm{\xi}).
+\mathcal{U}_{\text{SG}}(\bm{\hat u}_0,\cdots,\bm{\hat u}_N;\bm\xi):= \sum_{i=0}^N \bm{\hat{u}}_i\varphi_i(\bm{\xi}) = \hat{\bm u}^T\bm{\varphi},
 \end{align*}
-When using the stochastic-Galerkin method to close \eqref{eq:nonClosedMomentSystem}, the resulting moment system is not necessarily hyperbolic, meaning that it cannot be solved with standard methods. An approach to derive a closure, which ensures hyperbolicity is the Intrusive Polynomial Moment (IPM) closure, which has been presented in \cite{poette2009uncertainty}: The closure is given by a constraint optimization problem. For a given convex entropy $s:\mathbb{R}^p\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, this optimization problem is
+where we collect moments in $\hat{u}:=(\hat{u}_0,\cdots,\hat{u}_N)^T\in\mathbb{R}^{(N+1) \times p}$ and basis functions in $\bm{\varphi}:=(\varphi_0,\cdots,\varphi_N)^T\in\mathbb{R}^{N+1}$. When using the stochastic-Galerkin method to close \eqref{eq:nonClosedMomentSystem}, the resulting moment system is not necessarily hyperbolic, meaning that it cannot be solved with standard methods. A generalization of stochastic-Galerkin, which ensures hyperbolicity is the Intrusive Polynomial Moment (IPM) closure \cite{poette2009uncertainty}: The closure is given by a constraint optimization problem. For a given convex entropy $s:\mathbb{R}^p\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, this optimization problem is
 \begin{align}\label{eq:primalProblem}
 \mathcal{U}_{ME}(\bm{\hat u}) = \argmin_{\bm u} \langle s(\bm u) \rangle \enskip \text{ subject to } \bm{\hat u}_i = \langle \bm u \varphi_i \rangle \text{ for } i = 0,\cdots,N.
 \end{align}
 This problem can be rewritten as
 \begin{align}\label{eq:dualProblem}
- \bm{\hat \lambda}(\bm{\hat u}) := \argmin_{\bm{\lambda} \in \mathbb{R}methods^{s\cdot(N + 1)}}
-  \left\{\langle s_*(\sum_{i=0}^{N}\bm{\lambda}_i \varphi_i)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i\right\},
+ \bm{\hat \lambda}(\bm{\hat u}) := \argmin_{\bm{\lambda} \in \mathbb{R}^{(N+1) \times p}}
+  \left\{\langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i\right\},
 \end{align}
-where $s_*:\mathbb{R}^p\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then given by
+where $s_*:\mathbb{R}^p\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}\in \mathbb{R}^{(N+1) \times p}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then given by
 \begin{align}\label{eq:ansatz}
  \mathcal{U}_{ME}(\bm{\hat u}) = \left( s_{\bm{\hat u}} \right)^{-1}(\bm{\hat{\lambda}}(\bm{u})^T \bm{\varphi}).
 \end{align}
