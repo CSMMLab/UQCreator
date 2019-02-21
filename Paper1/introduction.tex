@@ -4,11 +4,11 @@ Hyperbolic equations play an important role in various research areas such as fl
 A general hyperbolic set of equations with random initial data can be written as
 \begin{subequations}\label{eq:hyperbolicProblem}
 \begin{align}
-\partial_t \bm{u}(t,\bm{x},\bm{\xi}) + \nabla&\cdot\bm{F}(\bm{u}(t,\bm{x},\bm{\xi})) = \bm{0}, \\ \label{eq:ic}
+\partial_t \bm{u}(t,\bm{x},\bm{\xi}) + \nabla&\cdot\bm{f}(\bm{u}(t,\bm{x},\bm{\xi})) = \bm{0}, \\ \label{eq:ic}
 \bm{u}(t=0,\bm{x},&\bm{\xi}) = \bm{u}_{\text{IC}}(\bm{x},\bm{\xi}),
 \end{align}
 \end{subequations}
-where the solution $u\in\mathbb{R}^p$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subset \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subset\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. The physical flux is given by $\bm{F}:\mathbb{R}^p\to\mathbb{R}^p$. To simplify notation, we assume that the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
+where the solution $u\in\mathbb{R}^p$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subset \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subset\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. The physical flux is given by $\bm{f}:\mathbb{R}^p\to\mathbb{R}^p$. To simplify notation, we assume that the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
 
 Due to the randomness of the solution, one is interested in determining the expectation value or the variance of the solution, i.e.
 \begin{align*}
@@ -24,7 +24,7 @@ Since the solution at a fixed quadrature point can be computed by a standard det
 This problem does not occur in intrusive methods, since the computation is carried out on the moments, i.e. the time evolution can be recorded during the computation. Also for steady problems, the fact that the computation is carried out on the moments provided the ability to compute the stochastic residual, which indicates when to stop the iteration towards the steady state solution. However intrusive methods are in general more difficult to implement and come with higher numerical costs. The main idea of these methods is to derive a system of equations for the moments and implementing a numerical solver for this system: Testing the initial problem \eqref{eq:hyperbolicProblem} with $\varphi_i$ for $|i|\leq M$ yields
 \begin{subequations}\label{eq:nonClosedMomentSystem}
 \begin{align}
-\partial_t \bm{\hat u}_i(t,\bm{x}) + \nabla&\cdot\langle\bm{F}(\bm{u}(t,\bm{x},\cdot)) \varphi_i\rangle = \bm{0}, \\
+\partial_t \bm{\hat u}_i(t,\bm{x}) + \nabla&\cdot\langle\bm{f}(\bm{u}(t,\bm{x},\cdot)) \varphi_i\rangle = \bm{0}, \\
 \bm{\hat u_i}(t=0,\bm{x}&) = \langle\bm{u}_{\text{IC}}(\bm{x},\cdot)\varphi_i\rangle.
 \end{align}
 \end{subequations}
@@ -47,12 +47,12 @@ This problem can be rewritten as
 \end{align}
 where $s_*:\mathbb{R}^p\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}\in \mathbb{R}^{(N+1) \times p}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then given by
 \begin{align}\label{eq:ansatz}
- \mathcal{U}_{ME}(\bm{\hat u}) = \left( s_{\bm{\hat u}} \right)^{-1}(\bm{\hat{\lambda}}(\bm{u})^T \bm{\varphi}).
+ \mathcal{U}_{ME}(\bm{\hat u}) = \left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm{\hat{\lambda}}(\bm{\hat u})^T \bm{\varphi}).
 \end{align}
 Plugging the derived closure into the moment system \eqref{eq:nonClosedMomentSystem}, one obtains the IPM moment system
 \begin{subequations}\label{eq:IPMmomentSystem}
 \begin{align}
-\partial_t \bm{\hat u}_i(t,\bm{x}) + \nabla&\cdot\langle\bm{F}(\mathcal{U}_{ME}(\bm{\hat u})) \varphi_i\rangle = \bm{0}, \\
+\partial_t \bm{\hat u}_i(t,\bm{x}) + \nabla&\cdot\langle\bm{f}(\mathcal{U}_{ME}(\bm{\hat u})) \varphi_i\rangle = \bm{0}, \\
 \bm{\hat u_i}(t=0,\bm{x}&) = \langle\bm{u}_{\text{IC}}(\bm{x},\cdot)\varphi_i\rangle.
 \end{align}
 \end{subequations}

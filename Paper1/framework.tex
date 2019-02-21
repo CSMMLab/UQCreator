@@ -6,7 +6,7 @@ Omitting initial conditions and assuming a one-dimensional spatial domain, we ca
 \begin{align*}
 \partial_t \bm{\hat u}+\partial_x \bm{F}(\bm{\hat u}) = \bm{0}
 \end{align*}
-with the flux $\bm{F}:\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$, $\bm{F}(\bm{u})=\langle f(\mathcal{U}_{ME}(\bm{\hat u}))\bm{\varphi} \rangle$, where we omit the index ME in the following for efficiency of exposition. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. First we perform the discretization of the spatial domain: We choose the discrete unknowns to be the spatial averages over each cell at time $t_n$, given by
+with the flux $\bm{F}:\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$, $\bm{F}(\bm{\hat u})=\langle f(\mathcal{U}_{ME}(\bm{\hat u}))\bm{\varphi} \rangle$, where we omit the index ME in the following for efficiency of exposition. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. First we perform the discretization of the spatial domain: We choose the discrete unknowns to be the spatial averages over each cell at time $t_n$, given by
 \begin{align*}
 \bm{\hat u}_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}\bm{\hat u}_i(t_n,x) dx.
 \end{align*}
@@ -18,16 +18,21 @@ for $j = 1,\cdots,N_x$ and $n = 0,\cdots,N_t$, where $N_x$ is the number of spat
 The numerical flux is assumed to be consistent, i.e., that $\bm{G}(\bm{u},\bm{u})=\bm{F}(\bm{u})$.
 To ensure stability, a CFL condition has to be derived by investigating the eigenvalues of $\nabla \bm{F}$.
 
-When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the deterministic problem \eqref{eq:origProblem}, then for the IPM system we can simply take
+When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the deterministic problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take
 \begin{align*}
- \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle g(u_{ME}(\hat\Lambda(\bm{\hat u}_{j}^{n})),u_{ME}(\hat\Lambda(\bm{\hat u}_{j+1}^{n})))\bm{\varphi}\rangle.
+ \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}_{ME}(\bm{\hat u}_j^n),\mathcal{U}_{ME}(\bm{\hat u}_{j+1}^n))\bm{\varphi}\rangle.
 \end{align*}
 This choice of the numerical flux is a common choice in kinetic theory and is called kinetic flux.
-The time update of the moment vector now becomes
-\begin{align}\label{eq:exactUpdate}
-\bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}- \frac{\Delta t}{\Delta x}\left( \langle g(u_{ME}(\hat \Lambda_j^n),u_{ME}(\hat \Lambda_{j+1}^n))\bm{\varphi}\rangle - \langle g(u_{ME}(\hat \Lambda_{j-1}^n),u_{ME}(\hat \Lambda_{j}^n))\bm{\varphi} \rangle\right),
-\end{align}
-where $\hat\Lambda_{j}^n :=\hat\Lambda(\bm{\hat u}_{j}^{n})$ for all $j$. Note that the computation of $\hat\Lambda_{j}^n$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$.
+
+The numerical flux requires evaluating the closure $\mathcal{U}_{ME}(\bm{\hat u}_j^n)$. To simplify notation, we define
+\begin{align*}
+\bm{u}_{ME}(\bm\Lambda):=\left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm\Lambda),
+\end{align*}
+meaning that we can write the closure as
+\begin{align*}
+\mathcal{U}_{ME}(\bm{\hat u}_j^n) = \bm{u}_{ME}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
+\end{align*}
+The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. Commonly, this optimization problem is solved with Newton's method: 
 
 Unfortunately \eqref{eq:exactUpdate} cannot be implemented because the dual problem cannot be solved exactly.%
 \footnote{
