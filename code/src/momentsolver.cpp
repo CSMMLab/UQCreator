@@ -37,6 +37,9 @@ void MomentSolver::Solve() {
         if( _settings->LoadLambda() ) {
             _lambda = this->ImportDuals();
         }
+        else {
+            _lambda = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
+        }
     }
     else {
         u       = SetupIC();
