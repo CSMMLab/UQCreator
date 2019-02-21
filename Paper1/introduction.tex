@@ -38,7 +38,7 @@ A commonly used closure is the stochastic-Galerkin, which represents the solutio
 \end{align*}
 When using the stochastic-Galerkin method to close \eqref{eq:nonClosedMomentSystem}, the resulting moment system is not necessarily hyperbolic, meaning that it cannot be solved with standard methods. An approach to derive a closure, which ensures hyperbolicity is the Intrusive Polynomial Moment (IPM) closure, which has been presented in \cite{poette2009uncertainty}: The closure is given by a constraint optimization problem. For a given convex entropy $s:\mathbb{R}^p\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, this optimization problem is
 \begin{align}\label{eq:primalProblem}
-\mathcal{U}_{ME}(\bm{u}) = \argmin_{\bm u} \langle s(\bm u) \rangle \enskip \text{ subject to } \bm{\hat u}_i = \langle \bm u \varphi_i \rangle \text{ for } i = 0,\cdots,N.
+\mathcal{U}_{ME}(\bm{\hat u}) = \argmin_{\bm u} \langle s(\bm u) \rangle \enskip \text{ subject to } \bm{\hat u}_i = \langle \bm u \varphi_i \rangle \text{ for } i = 0,\cdots,N.
 \end{align}
 This problem can be rewritten as
 \begin{align}\label{eq:dualProblem}
@@ -65,9 +65,9 @@ i.e. the IPM method yields a physically correct entropy solution. This again und
 In this paper, we present a semi-intrusive code framework, which facilitates the task of implementing general intrusive methods. The framework only requires the numerical flux of the deterministic problem. If IPM is used, the entropy of the deterministic problem needs to be provided. We thereby provide the ability to recycle existing implementations of deterministic solvers.
 Furthermore, we investigate intrusive methods for steady problems and compare them to collocation methods. The steady setting provides different opportunities to take advantage of features of intrusive methods: 
 \begin{itemize}
-\item We propose to apply intrusive methods as a post-processing step for collocation methods: We converge the moments of the solution to a steady state with an inaccurate, but cheap collocation method and then use the resulting collocation moments as starting values for an expensive but accurate intrusive method, which we then again converge to steady state. 
-\item Since the moments during the iteration process are inaccurate, i.e. they are not the steady state solution, we propose not fully converge the dual iteration, which computes \eqref{eq:dualProblem}. 
+\item Apply intrusive methods as a post-processing step for collocation methods: We converge the moments of the solution to a steady state with an inaccurate, but cheap collocation method and then use the resulting collocation moments as starting values for an expensive but accurate intrusive method, which we then again converge to steady state. 
+\item Since the moments during the iteration process are inaccurate, i.e. they are not the steady state solution, we propose to not fully converge the dual iteration, which computes \eqref{eq:dualProblem}. 
 \end{itemize}
 
-The paper is structured as follows: After 
+The paper is structured as follows: After the introduction, we discuss the numerical discretization as well as the implementation and structure of the semi-intrusive framework in section \ref{sec:framework}. Section \ref{sec:collIPM} discusses the IPM acceleration with a non-intrusive method and in section \ref{sec:OneShotIPM}. A comparison of results computed with the presented methods is given in \ref{sec:results}, followed by a summary and outlook in section \ref{sec:summary_outlook}.
 
