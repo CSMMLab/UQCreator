@@ -142,6 +142,12 @@ void MomentSolver::Solve() {
             log->info( "{:03.8f}   {:01.5e}", t, residualFull );
         }
     }
+
+    // MPI Broadcast final moment vectors to all PEs
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        MPI_Bcast( uNew[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
+    }
+
     if( _settings->GetMyPE() != 0 ) return;
 
     // save final moments on u
