@@ -552,6 +552,7 @@ bool Settings::HasExactSolution() const { return _hasExactSolution; }
 ClosureType Settings::GetClosureType() const { return _closureType; }
 unsigned Settings::GetNMoments() const { return _nMoments; }
 unsigned Settings::GetNQuadPoints() const { return _nQuadPoints; }
+void Settings::SetNQuadPoints( unsigned nqNew ) { _nQuadPoints = nqNew; }
 unsigned Settings::GetNQTotal() const { return _nQTotal; }
 bool Settings::UsesMaxDegree() const { return _useMaxDegree; }
 LimiterType Settings::GetLimiterType() const { return _limiterType; }

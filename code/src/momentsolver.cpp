@@ -31,28 +31,38 @@ MomentSolver::~MomentSolver() {
 
 void MomentSolver::Solve() {
     auto log = spdlog::get( "event" );
+    Closure* prevClosure;
+    Settings* prevSettings;
 
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
     // create solution fields
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     if( _settings->HasRestartFile() ) {
-        this->ImportPrevSettings();
-        u = this->ImportPrevMoments();
-        if( _settings->LoadLambda() ) {
-            _lambda = this->ImportPrevDuals();
+        prevSettings = this->ImportPrevSettings();
+        prevSettings->SetNStates( _settings->GetNStates() );
+        prevSettings->SetGamma( _settings->GetGamma() );
+        if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+            prevClosure = Closure::Create( prevSettings );
         }
         else {
-            _lambda = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
+            prevClosure = _closure;
+        }
+
+        u = this->ImportPrevMoments( prevSettings->GetNTotal() );
+        if( _settings->LoadLambda() ) {
+            _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
+        }
+        else {
+            _lambda = MatVec( _nCells + 1, Matrix( _nStates, prevSettings->GetNTotal() ) );
         }
     }
     else {
-        u       = SetupIC();
-        _lambda = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
+        u           = SetupIC();
+        _lambda     = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
+        prevClosure = _closure;
     }
-    MatVec uNew = u;
-    MatVec uOld = u;
-    MatVec uQ   = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
+    MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
 
     Vector ds( _nStates );
     Vector u0( _nStates );
@@ -77,20 +87,49 @@ void MomentSolver::Solve() {
     }
 
     // Converge initial condition entropy variables for One Shot IPM
-    if( _settings->GetMaxIterations() == 1 ) {
-
-        _settings->SetMaxIterations( 10000 );
+    if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+        prevClosure->SetMaxIterations( 10000 );
         for( unsigned j = 0; j < _nCells; ++j ) {
-            _closure->SolveClosure( _lambda[j], u[j] );
+            prevClosure->SolveClosureSafe( _lambda[j], u[j] );
         }
-        _settings->SetMaxIterations( 1 );
-
-        // recompute moments with inexact lambda
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            // uQ[j] = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-            // u[j]  = uQ[j] * _closure->GetPhiTildeWf();
-        }
+        prevClosure->SetMaxIterations( 1 );
     }
+
+    // for restart with lower order of moments reconstruct solution at finer quad points and compute moments at higher order
+    if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+        MatVec uQFullProc      = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNQTotal() ) );
+        unsigned maxIterations = _closure->GetMaxIterations();
+        if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
+        prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
+        Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uQFullProc[j] = _closure->U( intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
+
+            auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
+            u[j].resize( _nStates, _nTotal );
+            u[j] = uCurrent;    // new Moments of size new nMoments
+
+            // compute lambda with size newMoments
+            Matrix lambdaOld = _lambda[j];
+            _lambda[j].resize( _nStates, _nTotal );
+            for( unsigned s = 0; s < _nStates; ++s ) {
+                for( unsigned i = 0; i < prevSettings->GetNTotal(); ++i ) {
+                    _lambda[j]( s, i ) = lambdaOld( s, i );
+                }
+            }
+            auto uQTest = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+            auto uTest  = uQTest * _closure->GetPhiTildeWf();
+            _closure->SolveClosureSafe( _lambda[j], u[j] );
+        }
+        _closure->SetMaxIterations( maxIterations );
+        // delete reload closures and settings
+        delete intermediateClosure;
+        delete prevClosure;
+        delete prevSettings;
+    }
+
+    MatVec uNew = u;
+    MatVec uOld = u;
 
     auto numFluxPtr = std::bind( &MomentSolver::numFlux,
                                  this,
@@ -314,7 +353,7 @@ void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {
     dual_writer->flush();
 }
 
-void MomentSolver::ImportPrevSettings() {
+Settings* MomentSolver::ImportPrevSettings() {
     auto file = std::ifstream( _settings->GetRestartFile() );
     std::string line;
     std::stringstream prevSettingsStream;
@@ -336,14 +375,11 @@ void MomentSolver::ImportPrevSettings() {
     std::istringstream inputStream( prevSettingsStream.str() );
     Settings* prevSettings = new Settings( inputStream );
     _tStart                = prevSettings->GetTEnd();
-    if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
-        // Closure* prevClosure = Closure::Create( prevSettings );
-        // TODO
-    }
+    return prevSettings;
 }
 
-MatVec MomentSolver::ImportPrevMoments() {
-    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
+MatVec MomentSolver::ImportPrevMoments( unsigned nPrevTotal ) {
+    MatVec u( _nCells, Matrix( _nStates, nPrevTotal ) );
     auto file = std::ifstream( _settings->GetRestartFile() + "_moments" );
     std::string line;
     for( unsigned i = 0; i < _nCells; ++i ) {
@@ -351,7 +387,7 @@ MatVec MomentSolver::ImportPrevMoments() {
         std::stringstream lineStream( line );
         std::string cell;
         for( unsigned j = 0; j < _nStates; ++j ) {
-            for( unsigned k = 0; k < _nTotal; ++k ) {
+            for( unsigned k = 0; k < nPrevTotal; ++k ) {
                 std::getline( lineStream, cell, ',' );
                 u[i]( j, k ) = std::stod( cell );
             }
@@ -361,8 +397,8 @@ MatVec MomentSolver::ImportPrevMoments() {
     return u;
 }
 
-MatVec MomentSolver::ImportPrevDuals() {
-    MatVec lambda( _nCells + 1, Matrix( _nStates, _nTotal ) );
+MatVec MomentSolver::ImportPrevDuals( unsigned nPrevTotal ) {
+    MatVec lambda( _nCells + 1, Matrix( _nStates, nPrevTotal ) );
     auto file = std::ifstream( _settings->GetRestartFile() + "_duals" );
     std::string line;
     for( unsigned i = 0; i < _nCells + 1; ++i ) {
@@ -370,7 +406,7 @@ MatVec MomentSolver::ImportPrevDuals() {
         std::stringstream lineStream( line );
         std::string cell;
         for( unsigned j = 0; j < _nStates; ++j ) {
-            for( unsigned k = 0; k < _nTotal; ++k ) {
+            for( unsigned k = 0; k < nPrevTotal; ++k ) {
                 std::getline( lineStream, cell, ',' );
                 lambda[i]( j, k ) = std::stod( cell );
             }

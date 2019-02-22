@@ -119,6 +119,7 @@ class Settings
     unsigned GetNMoments() const;
     unsigned GetNTotal() const;
     unsigned GetNQuadPoints() const;
+    void SetNQuadPoints( unsigned nqNew );
     unsigned GetNQTotal() const;
     bool UsesMaxDegree() const;
     LimiterType GetLimiterType() const;

@@ -29,11 +29,11 @@ class Closure
     unsigned _numDimXi;
     unsigned _nQTotal;
     unsigned _nTotal;
+    unsigned _maxIterations;
     void Hessian( Matrix& H, const Matrix& lambda );
     void Gradient( Vector& g, const Matrix& lambda, const Matrix& u );
     std::shared_ptr<spdlog::logger> _log;
     Matrix _dUdLambda;    // preallocated memory dor computation of Hessian
-
   public:
     /**
      * constructor of class Closure
@@ -94,6 +94,18 @@ class Closure
      * @param new step size
      */
     void SetAlpha( double alpha );
+
+    /**
+     * reset max iteration number for Newton
+     * @param new max iteration number
+     */
+    void SetMaxIterations( unsigned maxIterations );
+
+    /**
+     * get max iteration number for Newton
+     * @return max iteration number
+     */
+    unsigned GetMaxIterations() const;
 
     std::vector<Polynomial*> GetBasis();
     std::vector<Polynomial*> GetQuadrature();

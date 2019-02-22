@@ -10,7 +10,8 @@
 #include "stochasticgalerkin.h"
 
 Closure::Closure( Settings* settings )
-    : _settings( settings ), _nMoments( _settings->GetNMoments() ), _nQuadPoints( _settings->GetNQuadPoints() ), _nStates( _settings->GetNStates() ) {
+    : _settings( settings ), _nMoments( _settings->GetNMoments() ), _nQuadPoints( _settings->GetNQuadPoints() ), _nStates( _settings->GetNStates() ),
+      _maxIterations( _settings->GetMaxIterations() ) {
     _log = spdlog::get( "event" );
     // initialize classes: Basis Functions and Quadrature rules are defined for Legendre and Hermite
     _basis.resize( 2 );
@@ -144,23 +145,22 @@ Closure* Closure::Create( Settings* settings ) {
 void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     int maxRefinements = 1000;
 
-    Matrix H( _nStates * _nTotal, _nStates * _nTotal );
     Vector g( _nStates * _nTotal );
-    Vector dlambdaNew( _nStates * _nTotal );
 
     // check if initial guess is good enough
     Gradient( g, lambda, u );
-    // std::cout << "Gradient = " << g << std::endl;
     if( CalcNorm( g ) < _settings->GetEpsilon() ) {
         return;
     }
+    Matrix H( _nStates * _nTotal, _nStates * _nTotal );
+    Vector dlambdaNew( _nStates * _nTotal );
     // std::cout << "before first Hessian inversion..." << std::endl;
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
     // std::cout << g << std::endl;
     Hessian( H, lambda );
     posv( H, g );
-    if( _settings->GetMaxIterations() == 1 ) {
+    if( _maxIterations == 1 ) {
         AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda );
         return;
     }
@@ -168,7 +168,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew );
     Gradient( dlambdaNew, lambdaNew, u );
     // perform Newton iterations
-    for( unsigned l = 0; l < _settings->GetMaxIterations(); ++l ) {
+    for( unsigned l = 0; l < _maxIterations; ++l ) {
         double stepSize = 1.0;
         if( l != 0 ) {
             Gradient( g, lambda, u );
@@ -242,14 +242,19 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
     Vector uKinetic( _nStates, 0.0 );
     g.reset();
 
+    // std::cout << "Lambda = " << lambda * _phiTildeVec[_nQTotal - 1] << std::endl;
+
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         U( uKinetic, lambda * _phiTildeVec[k] );
+        // std::cout << "uKinetic = " << uKinetic << std::endl;
         for( unsigned j = 0; j < _nTotal; ++j ) {
             for( unsigned l = 0; l < _nStates; ++l ) {
                 g[l * _nTotal + j] += uKinetic[l] * _phiTildeWf( k, j );
             }
         }
     }
+    // std::cout << "uKinetic = " << uKinetic << std::endl;
+    // std::cout << "g int = " << g << std::endl;
 
     SubstractVectorMatrixOnVector( g, u );
 }
@@ -307,18 +312,15 @@ void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u ) {
     Matrix lambdaNew( _nStates, _nTotal );
 
     // perform Newton iterations
-    for( unsigned l = 0; l < _settings->GetMaxIterations(); ++l ) {
+    for( unsigned l = 0; l < _maxIterations; ++l ) {
         double stepSize = 1.0;
         Gradient( g, lambda, u );
         dlambda = -g;
         Hessian( H, lambda );
-        // std::cout << "H = " << H << std::endl;
-        // std::cout << "g = " << g << std::endl;
         posv( H, g );
         AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
         Gradient( dlambdaNew, lambdaNew, u );
         int refinementCounter = 0;
-        std::cout << "Res is " << CalcNorm( dlambdaNew ) << std::endl;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) || !std::isfinite( CalcNorm( dlambdaNew ) ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
@@ -341,3 +343,7 @@ void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u ) {
     _log->error( "[closure] Newton did not converge!" );
     exit( EXIT_FAILURE );
 }
+
+void Closure::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxIterations; }
+
+unsigned Closure::GetMaxIterations() const { return _maxIterations; }
