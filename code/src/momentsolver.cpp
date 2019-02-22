@@ -121,8 +121,8 @@ void MomentSolver::Export( const MatVec& u ) const {
     for( unsigned i = 0; i < _nCells; ++i ) {
         std::stringstream line;
         for( unsigned j = 0; j < _nStates; ++j ) {
-            for( unsigned k = 0; k < 1; ++k ) {
-                line << u[i]( j, 0 ) << ",";
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                line << u[i]( j, k ) << ",";
             }
         }
         moment_writer->info( line.str() );
