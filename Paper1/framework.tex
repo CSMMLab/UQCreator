@@ -1,41 +1,38 @@
 \section{Discretization and code framework}
 \label{sec:framework}
 \subsection{Discretization}
-Omitting initial conditions, we can write the IPM moment system \eqref{eq:IPMmomentSystem} as
+In the following, we discretize the moment system in space and time following according to \cite{kusch2017maximum}. Due to the fact, that stochastic-Galerkin can be interpreted as IPM with a quadratic entropy, it suffices to only derive a discretization of the IPM moment system \eqref{eq:IPMmomentSystem}.  
+Omitting initial conditions and assuming a one-dimensional spatial domain, we can write this system  as
 \begin{align*}
-\partial_t \bm{u}+\partial_x \bm{F}(\bm{u}) = \bm{0}
+\partial_t \bm{\hat u}+\partial_x \bm{F}(\bm{\hat u}) = \bm{0}
 \end{align*}
-with the flux $\bm{F}:\mathbb{R}^{N+1}\to\mathbb{R}^{N+1}$, $\bm{F}(\bm{u})=\langle f(u_{ME}(\hat \Lambda(\bm{u})))\bm{\varphi} \rangle$ depending on the dual state 
+with the flux $\bm{F}:\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$, $\bm{F}(\bm{\hat u})=\langle f(\mathcal{U}_{ME}(\bm{\hat u}))\bm{\varphi} \rangle$, where we omit the index ME in the following for efficiency of exposition. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. First we perform the discretization of the spatial domain: We choose the discrete unknowns to be the spatial averages over each cell at time $t_n$, given by
 \begin{align*}
-\hat \Lambda(\bm{u}) = \bm{\hat{\lambda}}(\bm{u})^T\bm{\varphi}.
+\bm{\hat u}_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}\bm{\hat u}_i(t_n,x) dx.
 \end{align*}
-For efficiency of exposition, we sometimes omit the dependence on $\bm{u}$.
-The IPM system is hyperbolic, so it is naturally solved by a finite-volume method. First we discretize the spatial domain into cells. The discrete unknowns are chosen to be the spatial averages over each cell at time $t_n$, given by
-\begin{align*}
-u_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}u_i(t_n,x) dx.
-\end{align*}
-If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{u}_j^n = (u_{0j}^n,\cdots,u_{Nj}^n)^T\in\mathbb{R}^{N+1}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{N+1}\times\mathbb{R}^{N+1}\to\mathbb{R}^{N+1}$ as
+If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{0j}^n,\cdots,\bm{\hat u}_{Nj}^n)^T\in\mathbb{R}^{N+1}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{(N+1)\times p}\times\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$ as
 \begin{align}\label{eq:IPMDiscretization}
-\bm{u}_{j}^{n+1} = \bm{u}_{j}^{n}  - \frac{\Delta t}{\Delta x}\left( \bm{G}(\bm{u}_j^n,\bm{u}_{j+1}^n)- \bm{G}(\bm{u}_{j-1}^n,\bm{u}_{j}^n)\right)
+\bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}  - \frac{\Delta t}{\Delta x}\left( \bm{G}(\bm{\hat u}_{j}^{n},\bm{\hat u}_{j+1}^{n})- \bm{G}(\bm{\hat u}_{j-1}^{n},\bm{\hat u}_{j}^{n})\right)
 \end{align}
 for $j = 1,\cdots,N_x$ and $n = 0,\cdots,N_t$, where $N_x$ is the number of spatial cells and $N_t$ is the number of time steps.
-%The discretization of the dual state $\Lambda$ at spatial cell $j$ and time step $n$ is given by
-%\begin{align*}
-%\hat{\Lambda}_j^n = \bm{\hat{\lambda}}(\bm{u}_j^n)^T\bm{\varphi}.
-%\end{align*}
 The numerical flux is assumed to be consistent, i.e., that $\bm{G}(\bm{u},\bm{u})=\bm{F}(\bm{u})$.
 To ensure stability, a CFL condition has to be derived by investigating the eigenvalues of $\nabla \bm{F}$.
 
-When a consistent numerical flux $g:\mathbb{R}\times\mathbb{R}\to\mathbb{R}$, $g = g(u_\ell, u_r)$ is available for the deterministic problem \eqref{eq:origProblem}, then for the IPM system we can simply take
+When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the deterministic problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take
 \begin{align*}
- \bm{G}(\bm{u}_{j}^n,\bm{u}_{j+1}^n) = \langle g(u_{ME}(\hat\Lambda(\bm{u}_{j}^n)),u_{ME}(\hat\Lambda(\bm{u}_{j+1}^n)))\bm{\varphi}\rangle.
+ \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}_{ME}(\bm{\hat u}_j^n),\mathcal{U}_{ME}(\bm{\hat u}_{j+1}^n))\bm{\varphi}\rangle.
 \end{align*}
 This choice of the numerical flux is a common choice in kinetic theory and is called kinetic flux.
-The time update of the moment vector now becomes
-\begin{align}\label{eq:exactUpdate}
-\bm{u}_{j}^{n+1} = \bm{u}_{j}^{n}- \frac{\Delta t}{\Delta x}\left( \langle g(u_{ME}(\hat \Lambda_j^n),u_{ME}(\hat \Lambda_{j+1}^n))\bm{\varphi}\rangle - \langle g(u_{ME}(\hat \Lambda_{j-1}^n),u_{ME}(\hat \Lambda_{j}^n))\bm{\varphi} \rangle\right),
-\end{align}
-where $\hat\Lambda_{j}^n :=\hat\Lambda(\bm{u}_{j}^n)$ for all $j$. Note that the computation of $\hat\Lambda_{j}^n$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{u}_{j}^n$.
+
+The numerical flux requires evaluating the closure $\mathcal{U}_{ME}(\bm{\hat u}_j^n)$. To simplify notation, we define
+\begin{align*}
+\bm{u}_{ME}(\bm\Lambda):=\left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm\Lambda),
+\end{align*}
+meaning that we can write the closure as
+\begin{align*}
+\mathcal{U}_{ME}(\bm{\hat u}_j^n) = \bm{u}_{ME}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
+\end{align*}
+The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. Commonly, this optimization problem is solved with Newton's method: 
 
 Unfortunately \eqref{eq:exactUpdate} cannot be implemented because the dual problem cannot be solved exactly.%
 \footnote{
@@ -43,9 +40,9 @@ Equation \eqref{eq:exactUpdate} also includes integral evaluations which cannot 
 Their approximation by numerical quadrature, however, does not play a role in the realizability problems we discuss below.
 }
 Instead, it must be solved numerically, for example with Newton's method.
-The stopping criterion for the numerical optimizer ensures that the approximate multiplier vector it returns, which we denote $\xoverline{\bm{\lambda}}_j^n\in\mathbb{R}^{N+1}$ for the moment vector $\bm{u}_j^n$, satisfies the stopping criterion
+The stopping criterion for the numerical optimizer ensures that the approximate multiplier vector it returns, which we denote $\xoverline{\bm{\lambda}}_j^n\in\mathbb{R}^{N+1}$ for the moment vector $\bm{\hat u}_{j}^{n}$, satisfies the stopping criterion
 \begin{align}\label{eq:tauCrit}
-\left\Vert \bm{u}_j^n-\left\langle u_{ME}\left(\left(\xoverline{\bm{\lambda}}_j^n\right)^T\bm{\varphi}\right)\bm{\varphi}\right\rangle \right\Vert < \tau.
+\left\Vert \bm{\hat u}_{j}^{n}-\left\langle u_{ME}\left(\left(\xoverline{\bm{\lambda}}_j^n\right)^T\bm{\varphi}\right)\bm{\varphi}\right\rangle \right\Vert < \tau.
 \end{align}
 This is derived from the first-order necessary conditions for the dual problem.
 Once the numerical optimizer finds such a $\xoverline{\bm{\lambda}}_j^n$, the corresponding dual state $\xoverline{\Lambda}_j^n := \left(\xoverline{\bm{\lambda}}_j^n\right)^T\bm{\varphi} \in \mathbb{P}(\Theta)$ can be used in \eqref{eq:exactUpdate} for the unknown $\hat \Lambda_j^n$.
@@ -58,12 +55,12 @@ This gives Algorithm \ref{alg:seq}.
 \ENDFOR
 \FOR{$n=0$ to $N_t$}
 \FOR{$j=0$ to $N_x+1$}
-\STATE $\xoverline{\bm{\lambda}}_j^n \approx \argmin_{\bm{\lambda}}  \left( \langle s_*(\bm{\lambda}^T \bm{\varphi})\rangle - \bm{\lambda}^T \bm{u}_j^n \right)$
+\STATE $\xoverline{\bm{\lambda}}_j^n \approx \argmin_{\bm{\lambda}}  \left( \langle s_*(\bm{\lambda}^T \bm{\varphi})\rangle - \bm{\lambda}^T \bm{\hat u}_{j}^{n} \right)$
 \hfill such that \eqref{eq:tauCrit} holds
 \STATE $\xoverline \Lambda_j^n = \left(\xoverline{\bm{\lambda}}_j^n\right)^T\bm{\varphi}$
 \ENDFOR
 \FOR{$j=1$ to $N_x$}
-\STATE $\bm{u}_{j}^{n+1} = \bm{u}_{j}^{n}- \frac{\Delta t}{\Delta x}\left( \langle g(u_{ME}(\xoverline \Lambda_j^n),u_{ME}(\xoverline \Lambda_{j+1}^n))\bm{\varphi}\rangle - \langle g(u_{ME}(\xoverline \Lambda_{j-1}^n),u_{ME}(\xoverline \Lambda_{j}^n))\bm{\varphi} \rangle\right)$ 
+\STATE $\bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}- \frac{\Delta t}{\Delta x}\left( \langle g(u_{ME}(\xoverline \Lambda_j^n),u_{ME}(\xoverline \Lambda_{j+1}^n))\bm{\varphi}\rangle - \langle g(u_{ME}(\xoverline \Lambda_{j-1}^n),u_{ME}(\xoverline \Lambda_{j}^n))\bm{\varphi} \rangle\right)$ 
 \ENDFOR
 \ENDFOR
 \end{algorithmic}
