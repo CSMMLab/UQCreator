@@ -43,6 +43,7 @@ class MomentSolver
     Settings* ImportPrevSettings();
     MatVec ImportPrevMoments( unsigned nPrevTotal );
     MatVec ImportPrevDuals( unsigned nPrevTotal );
+    Vector CalculateErrorVar( Matrix solution, unsigned LNorm );
 
   public:
     MomentSolver( Settings* settings, Mesh* mesh, Problem* problem );

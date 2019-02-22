@@ -192,13 +192,13 @@ void MomentSolver::Solve() {
 
     // MPI Broadcast final moment vectors to all PEs
     for( unsigned j = 0; j < _nCells; ++j ) {
-        MPI_Bcast( uNew[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
+        MPI_Bcast( u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
     }
 
     if( _settings->GetMyPE() != 0 ) return;
 
-    // save final moments on u
-    u = uNew;
+    // save final moments on uNew
+    uNew = u;
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     log->info( "" );
