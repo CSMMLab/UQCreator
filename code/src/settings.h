@@ -71,10 +71,11 @@ class Settings
     // problem specific settings
     double _gamma;
 
-    Settings() {}
+    Settings() = delete;
 
   public:
     Settings( std::string inputFile );
+    Settings( const std::istringstream& inputStream );
     ~Settings();
 
     ProblemType GetProblemType() const;

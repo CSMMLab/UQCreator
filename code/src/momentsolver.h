@@ -39,9 +39,9 @@ class MomentSolver
     Vector EvalLambda( const Vector& lambda, const Vector& xi );
     void Plot( double time, unsigned nSteps );
     void Export( const MatVec& u, const MatVec& lambda ) const;
-    void ImportTime();
-    MatVec ImportMoments();
-    MatVec ImportDuals();
+    void ImportPrevSettings();
+    MatVec ImportPrevMoments();
+    MatVec ImportPrevDuals();
 
   public:
     MomentSolver( Settings* settings, Mesh* mesh, Problem* problem );

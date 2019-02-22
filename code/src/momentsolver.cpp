@@ -32,10 +32,10 @@ void MomentSolver::Solve() {
     // create solution fields
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     if( _settings->HasRestartFile() ) {
-        this->ImportTime();
-        u = this->ImportMoments();
+        this->ImportPrevSettings();
+        u = this->ImportPrevMoments();
         if( _settings->LoadLambda() ) {
-            _lambda = this->ImportDuals();
+            _lambda = this->ImportPrevDuals();
         }
         else {
             _lambda = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
@@ -299,21 +299,35 @@ void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {
     dual_writer->flush();
 }
 
-void MomentSolver::ImportTime() {
+void MomentSolver::ImportPrevSettings() {
     auto file = std::ifstream( _settings->GetRestartFile() );
     std::string line;
+    std::stringstream prevSettingsStream;
+    bool configSection = false;
     while( std::getline( file, line ) ) {
-        if( line.find( "tEnd" ) != std::string::npos ) {
-            line.erase( 0, line.find_first_of( '=' ) + 1 );
-            line.erase( std::remove_if( line.begin(), line.end(), []( char c ) -> bool { return std::isspace<char>( c, std::locale::classic() ); } ),
-                        line.end() );
-            _tStart = std::stod( line );
+        if( line.find( "Config file" ) != std::string::npos ) {
+            configSection = true;
+            std::getline( file, line );
+            std::getline( file, line );
+        }
+        else if( configSection && line.find( "==================================" ) != std::string::npos ) {
             break;
         }
+        if( configSection ) {
+            line.erase( 0, line.find_first_of( '|' ) + 1 );
+            prevSettingsStream << line << std::endl;
+        }
+    }
+    std::istringstream inputStream( prevSettingsStream.str() );
+    Settings* prevSettings = new Settings( inputStream );
+    _tStart                = prevSettings->GetTEnd();
+    if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+        Closure* prevClosure = Closure::Create( prevSettings );
+        // TODO
     }
 }
 
-MatVec MomentSolver::ImportMoments() {
+MatVec MomentSolver::ImportPrevMoments() {
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     auto file = std::ifstream( _settings->GetRestartFile() + "_moments" );
     std::string line;
@@ -332,7 +346,7 @@ MatVec MomentSolver::ImportMoments() {
     return u;
 }
 
-MatVec MomentSolver::ImportDuals() {
+MatVec MomentSolver::ImportPrevDuals() {
     MatVec lambda( _nCells + 1, Matrix( _nStates, _nTotal ) );
     auto file = std::ifstream( _settings->GetRestartFile() + "_duals" );
     std::string line;
