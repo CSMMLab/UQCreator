@@ -17,6 +17,11 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
 
     _dt = _time->GetTimeStepSize();
     _settings->SetDT( _dt );
+
+    if( _settings->HasReferenceFile() ) {
+        _referenceSolution = _mesh->Import();
+        assert( _nCells == _referenceSolution.size() );
+    }
 }
 
 MomentSolver::~MomentSolver() {
@@ -148,13 +153,13 @@ void MomentSolver::Solve() {
 
     // MPI Broadcast final moment vectors to all PEs
     for( unsigned j = 0; j < _nCells; ++j ) {
-        MPI_Bcast( u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
+        MPI_Bcast( uNew[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
     }
 
     if( _settings->GetMyPE() != 0 ) return;
 
-    // save final moments on uNew
-    uNew = u;
+    // save final moments on u
+    u = uNew;
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     log->info( "" );
@@ -210,6 +215,16 @@ void MomentSolver::Solve() {
                     meanAndVar( 3 * _nStates + i, j ) += pow( tmp[i] - meanAndVar( 2 * _nStates + i, j ), 2 ) * phiTildeWf( k, 0 );
                 }
             }
+        }
+    }
+
+    if( _settings->HasReferenceFile() ) {
+        auto l1Error = this->CalculateErrorVar( meanAndVar, 1 );
+        auto l2Error = this->CalculateErrorVar( meanAndVar, 2 );
+        log->info( "\nVariance error w.r.t reference solution:" );
+        log->info( "State   L1-error      L2-error" );
+        for( unsigned i = 0; i < _nStates; ++i ) {
+            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
         }
     }
 
@@ -322,7 +337,7 @@ void MomentSolver::ImportPrevSettings() {
     Settings* prevSettings = new Settings( inputStream );
     _tStart                = prevSettings->GetTEnd();
     if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
-        Closure* prevClosure = Closure::Create( prevSettings );
+        // Closure* prevClosure = Closure::Create( prevSettings );
         // TODO
     }
 }
@@ -363,4 +378,20 @@ MatVec MomentSolver::ImportPrevDuals() {
     }
     file.close();
     return lambda;
+}
+
+Vector MomentSolver::CalculateErrorVar( Matrix solution, unsigned LNorm ) {
+    Vector error( _nStates );
+    for( unsigned i = 0; i < _nCells; ++i ) {
+        switch( LNorm ) {
+            case 1:
+                for( unsigned j = 0; j < _nStates; ++j ) error[j] += std::fabs( solution( _nStates + j, i ) - _referenceSolution[j + _nStates][i] );
+                break;
+            case 2:
+                for( unsigned j = 0; j < _nStates; ++j ) error[j] += std::pow( solution( _nStates + j, i ) - _referenceSolution[j + _nStates][i], 2 );
+                break;
+            default: exit( EXIT_FAILURE );
+        }
+    }
+    return error;
 }

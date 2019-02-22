@@ -25,6 +25,7 @@ class Settings
     std::filesystem::path _outputFile;
     std::filesystem::path _icFile;
     std::filesystem::path _restartFile;
+    std::filesystem::path _referenceFile;
     bool _loadLambda;
 
     // requied settings
@@ -94,6 +95,8 @@ class Settings
     std::string GetICFile() const;
     bool HasRestartFile() const;
     std::string GetRestartFile() const;
+    bool HasReferenceFile() const;
+    std::string GetReferenceFile() const;
     bool LoadLambda() const;
 
     // problem

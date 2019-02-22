@@ -71,6 +71,11 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             _icFile = _inputDir.string() + "/" + *icFile;
         }
 
+        auto refFile = general->get_as<std::string>( "referenceSolution" );
+        if( refFile ) {
+            _referenceFile = _inputDir.string() + "/" + *refFile;
+        }
+
         // section mesh
         auto mesh          = file->get_table( "mesh" );
         auto meshDimension = mesh->get_as<unsigned>( "dimension" );
@@ -524,6 +529,8 @@ bool Settings::HasICFile() const { return !_icFile.empty(); }
 std::string Settings::GetICFile() const { return _icFile; }
 bool Settings::HasRestartFile() const { return !_restartFile.empty(); }
 std::string Settings::GetRestartFile() const { return _restartFile; }
+bool Settings::HasReferenceFile() const { return !_referenceFile.empty(); }
+std::string Settings::GetReferenceFile() const { return _referenceFile; }
 bool Settings::LoadLambda() const { return _loadLambda; }
 
 // problem

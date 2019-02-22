@@ -31,6 +31,7 @@ class MomentSolver
     unsigned _nQTotal;        // total number of quad points
     unsigned _nTotal;         // total number of moments
     std::shared_ptr<spdlog::logger> _log;
+    std::vector<Vector> _referenceSolution;
 
     void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
     void SetupIC( MatVec& out );
@@ -42,6 +43,7 @@ class MomentSolver
     void ImportPrevSettings();
     MatVec ImportPrevMoments();
     MatVec ImportPrevDuals();
+    Vector CalculateErrorVar( Matrix solution, unsigned LNorm );
 
   public:
     MomentSolver( Settings* settings, Mesh* mesh, Problem* problem );
