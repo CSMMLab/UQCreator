@@ -1,7 +1,7 @@
 [general]
 problem = "Euler2D"
 outputDir = "../results"
-#restartFile = "../results/logs/2019-02-16_13:56:15"
+restartFile = "../results/logs/collocation_lsg_5_mom/2019-02-22_201556"
 #importDualState = true
 #icFile = "../../su2/SU2RefSol.vtk"
 #referenceSolution = "../results/collNaca_n20_nq20_s125_reference.vtk"
@@ -19,13 +19,13 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[1.25]]
 CFL = 0.9
-tEnd = 0.01
+tEnd = 0.3
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "Euler2D"
-moments = 5
-quadPoints = 10
+moments = 10
+quadPoints = 15
 maxIterations = 1
 epsilon = 5e-5
 

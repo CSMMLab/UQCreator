@@ -116,6 +116,7 @@ class Settings
 
     // moment_system
     ClosureType GetClosureType() const;
+    void SetClosureType( ClosureType cType );
     unsigned GetNMoments() const;
     unsigned GetNTotal() const;
     unsigned GetNQuadPoints() const;

@@ -41,6 +41,7 @@ Matrix EulerClosure2D::U( const Matrix& Lambda ) {
         v3      = Lambda( 2, k );
         v4      = Lambda( 3, k );
         expTerm = pow( -exp( ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) );
+
         y( 0, k ) = expTerm;
         y( 1, k ) = -( ( v2 * expTerm ) / v4 );
         y( 2, k ) = -( ( v3 * expTerm ) / v4 );

@@ -42,6 +42,7 @@ void MomentSolver::Solve() {
         prevSettings = this->ImportPrevSettings();
         prevSettings->SetNStates( _settings->GetNStates() );
         prevSettings->SetGamma( _settings->GetGamma() );
+        prevSettings->SetClosureType( _settings->GetClosureType() );
         if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
             prevClosure = Closure::Create( prevSettings );
         }
@@ -87,7 +88,7 @@ void MomentSolver::Solve() {
     }
 
     // Converge initial condition entropy variables for One Shot IPM
-    if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+    if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() || true ) {
         prevClosure->SetMaxIterations( 10000 );
         for( unsigned j = 0; j < _nCells; ++j ) {
             prevClosure->SolveClosureSafe( _lambda[j], u[j] );
@@ -103,7 +104,7 @@ void MomentSolver::Solve() {
         prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
         Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
         for( unsigned j = 0; j < _nCells; ++j ) {
-            uQFullProc[j] = _closure->U( intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
+            _closure->U( uQFullProc[j], intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
 
             auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
             u[j].resize( _nStates, _nTotal );
