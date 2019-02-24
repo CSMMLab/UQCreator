@@ -16,7 +16,6 @@ If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\
 \end{align}
 for $j = 1,\cdots,N_x$ and $n = 0,\cdots,N_t$, where $N_x$ is the number of spatial cells and $N_t$ is the number of time steps.
 The numerical flux is assumed to be consistent, i.e., that $\bm{G}(\hat{\bm{u}},\hat{\bm{u}})=\bm{F}(\hat{\bm{u}})$.
-To ensure stability, a CFL condition has to be derived by investigating the eigenvalues of $\nabla \bm{F}$.
 
 When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the deterministic problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take
 \begin{align*}
@@ -25,13 +24,13 @@ When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb
 
 The numerical flux requires evaluating the closure $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define
 \begin{align*}
-\bm{u}(\bm\Lambda):=\left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm\Lambda),
+\bm{u}_{ME}(\bm\Lambda):=\left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm\Lambda),
 \end{align*}
 meaning that we can write the closure as
 \begin{align*}
-\mathcal{U}(\bm{\hat u}_j^n) = \bm{u}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
+\mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{ME}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
 \end{align*}
-The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. We wish to minimize the cost function
+The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. To determine the dual variables for a given moment vector $\bm{\hat{u}}$, we must minimize the cost function
 \begin{align*}
 L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i,
 \end{align*}
@@ -41,28 +40,21 @@ i.e. we need to find the root of
 \end{align*}
 which is done by an iterative method. Defining the dual iteration function
 \begin{align*}
-\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}\cdot \left(\langle \bm u(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\rangle)-\bm{\hat{u}}\right),
+\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}(\bm{\lambda})\cdot \left(\langle \bm u_{ME}(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\rangle)-\bm{\hat{u}}\right),
 \end{align*}
-the iteration process for spatial cell $j$ is given by
+with an adequate preconditioner $\bm{B}$, the iteration process for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
-\bm{\lambda}^{m+1}_j = \bm{d}(\bm{\lambda}_j,\bm{\hat{u}_j})
+\bm{\lambda}^{(m+1)}_j = \bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j}).
 \end{align}
-and the exact dual state is then obtained by converging this iteration, i.e. $\bm{\hat\lambda}_j^n=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^m,\bm{\hat{u}_j^n})$.
-
-
-Unfortunately \eqref{eq:exactUpdate} cannot be implemented because the dual problem cannot be solved exactly.%
-\footnote{
-Equation \eqref{eq:exactUpdate} also includes integral evaluations which cannot be computed in closed form.
-Their approximation by numerical quadrature, however, does not play a role in the realizability problems we discuss below.
-}
-Instead, it must be solved numerically, for example with Newton's method.
-The stopping criterion for the numerical optimizer ensures that the approximate multiplier vector it returns, which we denote $\xoverline{\bm{\lambda}}_j^n\in\mathbb{R}^{N+1}$ for the moment vector $\bm{\hat u}_{j}^{n}$, satisfies the stopping criterion
+The exact dual state is then obtained by converging this iteration, i.e. $\bm{\hat\lambda}_j^n=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$. A common preconditioner is the inverse Hessian of the dual problem, i.e.
+\begin{align*}
+\bm{B}(\bm{\lambda}) := \langle \nabla \bm{u} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}.
+\end{align*}
+To obtain a finite number of iterations, a stopping criterion 
 \begin{align}\label{eq:tauCrit}
-\left\Vert \bm{\hat u}_{j}^{n}-\left\langle u\left(\left(\xoverline{\bm{\lambda}}_j^n\right)^T\bm{\varphi}\right)\bm{\varphi}\right\rangle \right\Vert < \tau.
+\left\Vert \bm{\hat u}_{j}^{n}-\left\langle \bm{u}_{ME}\left(\left(\hat{\bm{\lambda}}_j^n\right)^T\bm{\varphi}\right)\bm{\varphi}\right\rangle \right\Vert < \tau
 \end{align}
-This is derived from the first-order necessary conditions for the dual problem.
-Once the numerical optimizer finds such a $\xoverline{\bm{\lambda}}_j^n$, the corresponding dual state $\xoverline{\Lambda}_j^n := \left(\xoverline{\bm{\lambda}}_j^n\right)^T\bm{\varphi} \in \mathbb{P}(\Theta)$ can be used in \eqref{eq:exactUpdate} for the unknown $\hat \Lambda_j^n$.
-This gives Algorithm \ref{alg:seq}.
+is used. This gives Algorithm \ref{alg:seq}.
 
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
@@ -71,15 +63,17 @@ This gives Algorithm \ref{alg:seq}.
 \ENDFOR
 \FOR{$n=0$ to $N_t$}
 \FOR{$j=0$ to $N_x+1$}
-\STATE $\xoverline{\bm{\lambda}}_j^n \approx \argmin_{\bm{\lambda}}  \left( \langle s_*(\bm{\lambda}^T \bm{\varphi})\rangle - \bm{\lambda}^T \bm{\hat u}_{j}^{n} \right)$
+\STATE $\hat{\bm{\lambda}}_j^n \approx \argmin_{\bm{\lambda}}  \left( \langle s_*(\bm{\lambda}^T \bm{\varphi})\rangle - \bm{\lambda}^T \bm{\hat u}_{j}^{n} \right)$
 \hfill such that \eqref{eq:tauCrit} holds
-\STATE $\xoverline \Lambda_j^n = \left(\xoverline{\bm{\lambda}}_j^n\right)^T\bm{\varphi}$
+\STATE $\hat \Lambda_j^n = \left(\hat{\bm{\lambda}}_j^n\right)^T\bm{\varphi}$
 \ENDFOR
 \FOR{$j=1$ to $N_x$}
-\STATE $\bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}- \frac{\Delta t}{\Delta x}\left( \langle g(u(\xoverline \Lambda_j^n),u(\xoverline \Lambda_{j+1}^n))\bm{\varphi}\rangle - \langle g(u(\xoverline \Lambda_{j-1}^n),u(\xoverline \Lambda_{j}^n))\bm{\varphi} \rangle\right)$ 
+\STATE $\bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}- \frac{\Delta t}{\Delta x}\left( \langle g(\bm{u}_{ME}(\hat \Lambda_j^n),\bm{u}_{ME}(\hat \Lambda_{j+1}^n))\bm{\varphi}\rangle - \langle g(\bm{u}_{ME}(\hat \Lambda_{j-1}^n),\bm{u}_{ME}(\hat \Lambda_{j}^n))\bm{\varphi} \rangle\right)$ 
 \ENDFOR
 \ENDFOR
 \end{algorithmic}
 \caption{IPM for Uncertainty Quantification}
 \label{alg:seq}
 \end{algorithm}
+
+\subsection{Code framework}
