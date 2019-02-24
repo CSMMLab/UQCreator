@@ -68,9 +68,9 @@ MatVec MomentSolver::Solve( Vector xi ) {
         _time->Advance( numFluxPtr, uNew, uQ, dt );
 
         for( unsigned j = 0; j < _nCells; ++j ) {
-            residual += std::fabs( uNew[j]( 0, 0 ) - uQ[j]( 0, 0 ) ) * _mesh->GetArea( j ) / dt;
+            residual += std::fabs( uNew[j]( 0, 0 ) - uQ[j]( 0, 0 ) ) * _mesh->GetArea( j );
         }
-        log->info( "{:03.8f}   {:01.5e}", t, residual );
+        if( _settings->GetMyPE() == 0 ) log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residual, residual / dt );
         // std::cout << "dt = " << dt << std::endl;
 
         // update solution
@@ -102,7 +102,6 @@ MatVec MomentSolver::SetupIC( const Vector& xi ) {
     if( _settings->HasICFile() ) {
         IC = _mesh->Import();
     }
-    unsigned n;
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _settings->HasICFile() ) {
             column( uIC, 0 ) = _problem->LoadIC( IC[j], xi );

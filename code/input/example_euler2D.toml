@@ -1,7 +1,7 @@
 [general]
 problem = "Euler2D"
 outputDir = "../results"
-restartFile = "../results/logs/2019-02-16_13:56:15"
+#restartFile = "../results/logs/2019-02-16_13:56:15"
 #icFile = "../../su2/SU2RefSol.vtk"
 
 [mesh]
@@ -9,7 +9,7 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "naca0012.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "euler_naca0012"
+outputFile = "euler_naca0012_Collocation_Nq5_Sigma0-75"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -17,13 +17,13 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.75]]
 CFL = 0.9
-tEnd = 0.00001
+tEnd = 0.2
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "StochasticGalerkin"
-moments = 1
-quadPoints = 1
+moments = 5
+quadPoints = 5
 maxIterations = 1
 epsilon = 5e-5
 
