@@ -32,11 +32,18 @@ meaning that we can write the closure as
 \begin{align*}
 \mathcal{U}_{ME}(\bm{\hat u}_j^n) = \bm{u}_{ME}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
 \end{align*}
-The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. Commonly, this optimization problem is solved with Newton's method: We wish to minimize the cost function
+The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. We wish to minimize the cost function
 \begin{align*}
-L(\bm{\lambda}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i
+L(\bm{\lambda}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i,
 \end{align*}
-Algorithm 
+i.e. we need to find the root of
+\begin{align*}
+\nabla_{\bm{\lambda_i}}L(\bm{\lambda}) = \langle \nabla_{\bm{u}}s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi\rangle - \bm{\hat u}_i,
+\end{align*}
+which is done by an iterative method
+\begin{align}\label{eq:dualIteration1}
+\bm{\lambda}^{m+1} = \bm{\lambda}-\bm{B}\cdot \left(\langle u(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\rangle)-\bm{u}\right).
+\end{align}
 
 
 Unfortunately \eqref{eq:exactUpdate} cannot be implemented because the dual problem cannot be solved exactly.%

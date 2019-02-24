@@ -182,12 +182,12 @@ void MomentSolver::Solve() {
         }
 
         for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
-            residual += std::fabs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] ) / _dt;
+            residual += std::fabs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] );
         }
 
         MPI_Reduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
-            log->info( "{:03.8f}   {:01.5e}", t, residualFull );
+            log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
         }
     }
 
