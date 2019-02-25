@@ -7,7 +7,7 @@ outputDir = "../results"
 [mesh]
 dimension = 2
 format = "SU2"
-SU2MeshFile = "naca0012.su2"
+SU2MeshFile = "nacaCoarse.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
 outputFile = "euler_naca0012_Collocation_Nq5_Sigma0-75"
 
