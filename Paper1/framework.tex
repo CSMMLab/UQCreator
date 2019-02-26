@@ -1,1 +1,78 @@
 \section{Discretization and code framework}
+\label{sec:framework}
+\subsection{Discretization}
+In the following, we discretize the moment system in space and time according to \cite{kusch2017maximum}. Due to the fact, that stochastic-Galerkin can be interpreted as IPM with a quadratic entropy, it suffices to only derive a discretization of the IPM moment system \eqref{eq:IPMmomentSystem}.  
+Omitting initial conditions and assuming a one-dimensional spatial domain, we can write this system  as
+\begin{align*}
+\partial_t \bm{\hat u}+\partial_x \bm{F}(\bm{\hat u}) = \bm{0}
+\end{align*}
+with the flux $\bm{F}:\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$, $\bm{F}(\bm{\hat u})=\langle \bm f(\mathcal{U}(\bm{\hat u}))\bm{\varphi}^T \rangle^T$. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. First we perform the discretization of the spatial domain: We choose the discrete unknowns which represent the solution to be the spatial averages over each cell at time $t_n$, given by
+\begin{align*}
+\bm{\hat u}_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}\bm{\hat u}_i(t_n,x) dx.
+\end{align*}
+If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{0j}^n,\cdots,\bm{\hat u}_{Nj}^n)^T\in\mathbb{R}^{N+1}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{(N+1)\times p}\times\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$ as
+\begin{align}\label{eq:IPMDiscretization}
+\bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}  - \frac{\Delta t}{\Delta x}\left( \bm{G}(\bm{\hat u}_{j}^{n},\bm{\hat u}_{j+1}^{n})- \bm{G}(\bm{\hat u}_{j-1}^{n},\bm{\hat u}_{j}^{n})\right)
+\end{align}
+for $j = 1,\cdots,N_x$ and $n = 0,\cdots,N_t$, where $N_x$ is the number of spatial cells and $N_t$ is the number of time steps.
+The numerical flux is assumed to be consistent, i.e., that $\bm{G}(\hat{\bm{u}},\hat{\bm{u}})=\bm{F}(\hat{\bm{u}})$.
+
+When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the deterministic problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take
+\begin{align*}
+ \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T.
+\end{align*}
+The numerical flux requires evaluating the closure $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define
+\begin{align*}
+\bm{u}_{ME}(\bm\Lambda):=\left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm\Lambda),
+\end{align*}
+meaning that the closure \eqref{eq:ansatz} can be written as
+\begin{align*}
+\mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{ME}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
+\end{align*}
+The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. To determine the dual variables for a given moment vector $\bm{\hat{u}}$, the cost function
+\begin{align*}
+L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i
+\end{align*}
+needs to be minimized, i.e. one needs to find the root of
+\begin{align*}
+\nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla_{\bm{u}}s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle^T - \bm{\hat u}_i,
+\end{align*}
+which is usually done by an iterative method. Defining the dual iteration function
+\begin{align*}
+\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}(\bm{\lambda})\cdot \left(\langle \bm u_{ME}(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}^T\rangle^T-\bm{\hat{u}}\right),
+\end{align*}
+with an adequate preconditioner $\bm{B}$, the iteration process for spatial cell $j$ is given by
+\begin{align}\label{eq:dualIteration1}
+\bm{\lambda}^{(m+1)}_j = \bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j}).
+\end{align}
+The exact dual state is then obtained by converging this iteration, i.e. $\bm{\hat\lambda}_j^n=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$. A common preconditioner is the inverse Hessian of the dual problem, i.e.
+\begin{align*}
+\bm{B}(\bm{\lambda}) := \langle \nabla \bm{u} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}.
+\end{align*}
+To obtain a finite number of iterations for the iteration in cell $j$, a stopping criterion 
+\begin{align}\label{eq:tauCrit}
+\sum_{i=0}^p\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(m)};\bm{\hat{u}}_j^n) \right\Vert < \tau
+\end{align}
+is used. This gives Algorithm \ref{alg:seq}.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+\FOR{$j=0$ to $N_x+1$}
+\STATE $\bm{u}_j^0 = \frac{1}{\Delta x} \int_{x_{j-1/ 2}}^{x_{j+1/ 2}} \langle u_0(x, \cdot) \bm{\varphi} \rangle dx$
+\ENDFOR
+\FOR{$n=0$ to $N_t$}
+\FOR{$j=0$ to $N_x+1$}
+\STATE $\hat{\bm{\lambda}}_j^n \approx \argmin_{\bm{\lambda}}  \left( \langle s_*(\bm{\lambda}^T \bm{\varphi})\rangle - \bm{\lambda}^T \bm{\hat u}_{j}^{n} \right)$
+\hfill such that \eqref{eq:tauCrit} holds
+\STATE $\hat \Lambda_j^n = \left(\hat{\bm{\lambda}}_j^n\right)^T\bm{\varphi}$
+\ENDFOR
+\FOR{$j=1$ to $N_x$}
+\STATE $\bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}- \frac{\Delta t}{\Delta x}\left( \langle g(\bm{u}_{ME}(\hat \Lambda_j^n),\bm{u}_{ME}(\hat \Lambda_{j+1}^n))\bm{\varphi}\rangle - \langle g(\bm{u}_{ME}(\hat \Lambda_{j-1}^n),\bm{u}_{ME}(\hat \Lambda_{j}^n))\bm{\varphi} \rangle\right)$ 
+\ENDFOR
+\ENDFOR
+\end{algorithmic}
+\caption{IPM for Uncertainty Quantification}
+\label{alg:seq}
+\end{algorithm}
+
+\subsection{Code framework}

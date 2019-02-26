@@ -1,1 +1,9 @@
 \section{Collocation accelerated IPM for steady state problems}
+\label{sec:collIPM}
+
+In the following, we look at steady state problems, i.e. we have
+\begin{align}\label{eq:hyperbolicProblemSteady}
+\nabla\cdot\bm{f}(\bm{u}(t,\bm{x},\bm{\xi})) = \bm{0} \enskip \text{ in } D
+\end{align}
+with adequate boundary conditions. A general strategy for computing the steady state solution to \eqref{eq:hyperbolicProblemSteady} is to introduce a pseudo-time and numerically treat \eqref{eq:hyperbolicProblemSteady} as an unsteady problem. A steady state solution is then obtained by iterating in pseudo-time untill the solution remains constant.
+When computing steady state moments for this problem, the run time of different UQ methods crucially depends on the chosen initial condition and its distance to the steady state solution.

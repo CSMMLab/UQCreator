@@ -19,6 +19,7 @@ template <class T> class Matrix    // column major
     Matrix( const Matrix& other );
     ~Matrix();
     void operator=( const Matrix<T>& other );
+    void resize( unsigned rows, unsigned columns );
 
     T& operator()( unsigned i, unsigned j );
     const T& operator()( unsigned i, unsigned j ) const;
@@ -212,6 +213,19 @@ template <class T> void Matrix<T>::reset() {
             ( *this )( i, j ) = 0.0;
         }
     }
+}
+
+template <class T> void Matrix<T>::resize( unsigned rows, unsigned columns ) {
+    auto dataOld = _data;
+    _data        = static_cast<T*>( malloc( rows * columns * sizeof( T ) ) );
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
+            _data[j * rows + i] = dataOld[j * _rows + i];
+        }
+    }
+    delete dataOld;
+    _rows    = rows;
+    _columns = columns;
 }
 
 template <class T> bool Matrix<T>::isSymmetric() const {

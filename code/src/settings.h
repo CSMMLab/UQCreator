@@ -25,6 +25,8 @@ class Settings
     std::filesystem::path _outputFile;
     std::filesystem::path _icFile;
     std::filesystem::path _restartFile;
+    std::filesystem::path _referenceFile;
+    bool _loadLambda;
 
     // requied settings
     unsigned _meshDimension;
@@ -70,10 +72,11 @@ class Settings
     // problem specific settings
     double _gamma;
 
-    Settings() {}
+    Settings() = delete;
 
   public:
     Settings( std::string inputFile );
+    Settings( const std::istringstream& inputStream );
     ~Settings();
 
     ProblemType GetProblemType() const;
@@ -92,6 +95,9 @@ class Settings
     std::string GetICFile() const;
     bool HasRestartFile() const;
     std::string GetRestartFile() const;
+    bool HasReferenceFile() const;
+    std::string GetReferenceFile() const;
+    bool LoadLambda() const;
 
     // problem
     TimesteppingType GetTimesteppingType() const;
@@ -110,9 +116,11 @@ class Settings
 
     // moment_system
     ClosureType GetClosureType() const;
+    void SetClosureType( ClosureType cType );
     unsigned GetNMoments() const;
     unsigned GetNTotal() const;
     unsigned GetNQuadPoints() const;
+    void SetNQuadPoints( unsigned nqNew );
     unsigned GetNQTotal() const;
     bool UsesMaxDegree() const;
     LimiterType GetLimiterType() const;
