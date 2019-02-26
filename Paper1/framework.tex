@@ -6,7 +6,7 @@ Omitting initial conditions and assuming a one-dimensional spatial domain, we ca
 \begin{align*}
 \partial_t \bm{\hat u}+\partial_x \bm{F}(\bm{\hat u}) = \bm{0}
 \end{align*}
-with the flux $\bm{F}:\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$, $\bm{F}(\bm{\hat u})=\langle f(\mathcal{U}(\bm{\hat u}))\bm{\varphi} \rangle$. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. First we perform the discretization of the spatial domain: We choose the discrete unknowns which represent the solution to be the spatial averages over each cell at time $t_n$, given by
+with the flux $\bm{F}:\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$, $\bm{F}(\bm{\hat u})=\langle \bm f(\mathcal{U}(\bm{\hat u}))\bm{\varphi}^T \rangle^T$. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. First we perform the discretization of the spatial domain: We choose the discrete unknowns which represent the solution to be the spatial averages over each cell at time $t_n$, given by
 \begin{align*}
 \bm{\hat u}_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}\bm{\hat u}_i(t_n,x) dx.
 \end{align*}
@@ -19,28 +19,27 @@ The numerical flux is assumed to be consistent, i.e., that $\bm{G}(\hat{\bm{u}},
 
 When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the deterministic problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take
 \begin{align*}
- \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}\rangle.
+ \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T.
 \end{align*}
-
 The numerical flux requires evaluating the closure $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define
 \begin{align*}
 \bm{u}_{ME}(\bm\Lambda):=\left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm\Lambda),
 \end{align*}
-meaning that we can write the closure as
+meaning that the closure \eqref{eq:ansatz} can be written as
 \begin{align*}
 \mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{ME}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
 \end{align*}
-The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. To determine the dual variables for a given moment vector $\bm{\hat{u}}$, we must minimize the cost function
+The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. To determine the dual variables for a given moment vector $\bm{\hat{u}}$, the cost function
 \begin{align*}
-L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i,
+L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i
 \end{align*}
-i.e. we need to find the root of
+needs to be minimized, i.e. one needs to find the root of
 \begin{align*}
-\nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla_{\bm{u}}s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi\rangle - \bm{\hat u}_i,
+\nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla_{\bm{u}}s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle^T - \bm{\hat u}_i,
 \end{align*}
-which is done by an iterative method. Defining the dual iteration function
+which is usually done by an iterative method. Defining the dual iteration function
 \begin{align*}
-\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}(\bm{\lambda})\cdot \left(\langle \bm u_{ME}(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\rangle)-\bm{\hat{u}}\right),
+\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}(\bm{\lambda})\cdot \left(\langle \bm u_{ME}(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}^T\rangle^T-\bm{\hat{u}}\right),
 \end{align*}
 with an adequate preconditioner $\bm{B}$, the iteration process for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
