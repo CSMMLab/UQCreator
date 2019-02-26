@@ -63,8 +63,8 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
         auto restartFile = general->get_as<std::string>( "restartFile" );
         if( restartFile ) {
             _restartFile = _inputDir.string() + "/" + *restartFile;
-            _loadLambda  = general->get_as<bool>( "importDualState" ).value_or( false );
         }
+        _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
 
         auto icFile = general->get_as<std::string>( "icFile" );
         if( icFile ) {
