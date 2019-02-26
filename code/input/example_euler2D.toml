@@ -2,7 +2,7 @@
 problem = "Euler2D"
 outputDir = "../results"
 #restartFile = "../results/logs/2019-02-23_22:37:18"
-restartFile = "../results/logs/2019-02-25_08:37:39"
+restartFile = "../results/logs/2019-02-26_12:06:00"
 #importDualState = true
 #icFile = "../../su2/SU2RefSol.vtk"
 #referenceSolution = "../results/collNaca_n20_nq20_s125_reference.vtk"
@@ -12,21 +12,21 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "nacaCoarse.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "euler_naca0012_Restart_IPM_N8_Sigma0-75"
+outputFile = "euler_naca0012_Restart_IPM_N5_Sigma0-5"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.75]]
+distribution = [["Legendre"],[0.5]]
 CFL = 0.9
 tEnd = 0.21
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "Euler2D"
-moments = 10
-quadPoints = 15
+moments = 5
+quadPoints = 10
 maxIterations = 1000
 epsilon = 5e-5
 

@@ -88,14 +88,14 @@ void MomentSolver::Solve() {
     }
 
     // Converge initial condition entropy variables for One Shot IPM
-    if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() || true ) {
+    if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
         prevClosure->SetMaxIterations( 10000 );
         for( unsigned j = 0; j < _nCells; ++j ) {
             prevClosure->SolveClosureSafe( _lambda[j], u[j] );
         }
         prevClosure->SetMaxIterations( 1 );
     }
-
+    // std::cout << "PE " << _settings->GetMyPE() << ": First dual DONE." << std::endl;
     // for restart with lower order of moments reconstruct solution at finer quad points and compute moments at higher order
     if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
         MatVec uQFullProc      = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNQTotal() ) );
@@ -120,6 +120,8 @@ void MomentSolver::Solve() {
             }
             auto uQTest = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
             auto uTest  = uQTest * _closure->GetPhiTildeWf();
+            // std::cout << "----------------------------------" << std::endl;
+            // std::cout << "u = " << u[j] << std::endl;
             _closure->SolveClosureSafe( _lambda[j], u[j] );
         }
         _closure->SetMaxIterations( maxIterations );
@@ -128,6 +130,7 @@ void MomentSolver::Solve() {
         delete prevClosure;
         delete prevSettings;
     }
+    // std::cout << "PE " << _settings->GetMyPE() << ": Second dual DONE." << std::endl;
 
     MatVec uNew = u;
     MatVec uOld = u;
