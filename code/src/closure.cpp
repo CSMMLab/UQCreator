@@ -321,7 +321,7 @@ void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u ) {
         AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
         Gradient( dlambdaNew, lambdaNew, u );
         int refinementCounter = 0;
-        std::cout << "Res " << CalcNorm( dlambdaNew ) << std::endl;
+        // std::cout << "Res " << CalcNorm( dlambdaNew ) << std::endl;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) || !std::isfinite( CalcNorm( dlambdaNew ) ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );

@@ -59,9 +59,10 @@ void MomentSolver::Solve() {
         }
     }
     else {
-        u           = SetupIC();
-        _lambda     = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
-        prevClosure = _closure;
+        u            = SetupIC();
+        _lambda      = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
+        prevClosure  = _closure;
+        prevSettings = _settings;
     }
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
 
@@ -86,6 +87,7 @@ void MomentSolver::Solve() {
             }
         }
     }
+    std::cout << "Prev Moments to moments: " << prevSettings->GetNMoments() << " " << _settings->GetNMoments() << std::endl;
 
     // Converge initial condition entropy variables for One Shot IPM
     if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
