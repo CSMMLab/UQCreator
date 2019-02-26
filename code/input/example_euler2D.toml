@@ -9,13 +9,13 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "nacaCoarse.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "euler_naca0012_Collocation_Nq5_Sigma0-75"
+outputFile = "euler_naca0012_Collocation_Nq5_Sigma0-5"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.75]]
+distribution = [["Legendre"],[0.5]]
 CFL = 0.9
 tEnd = 0.2
 
