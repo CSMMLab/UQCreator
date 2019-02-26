@@ -49,9 +49,9 @@ The exact dual state is then obtained by converging this iteration, i.e. $\bm{\h
 \begin{align*}
 \bm{B}(\bm{\lambda}) := \langle \nabla \bm{u} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}.
 \end{align*}
-To obtain a finite number of iterations, a stopping criterion 
+To obtain a finite number of iterations for the iteration in cell $j$, a stopping criterion 
 \begin{align}\label{eq:tauCrit}
-\left\Vert \bm{\hat u}_{j}^{n}-\left\langle \bm{u}_{ME}\left(\left(\hat{\bm{\lambda}}_j^n\right)^T\bm{\varphi}\right)\bm{\varphi}\right\rangle \right\Vert < \tau
+\sum_{i=0}^p\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(m)};\bm{\hat{u}}_j^n) \right\Vert < \tau
 \end{align}
 is used. This gives Algorithm \ref{alg:seq}.
 

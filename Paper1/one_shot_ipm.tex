@@ -6,7 +6,7 @@ For classical IPM, the iteration scheme for the moment vectors is
 \end{align}
 where $\bm{c}:\mathbb{R}^{N+1}\times\mathbb{R}^{N+1}\times\mathbb{R}^{N+1}\to\mathbb{R}^{N+1}$ is given by
 \begin{align*}
-\bm{c}\left(\bm{\lambda}_{\ell},\bm{\lambda}_c,\bm{\lambda}_r\right):= \langle u(\bm{\lambda}_c^T\bm{\varphi})\bm{\varphi}\rangle - \frac{\Delta t}{\Delta x}\left(\langle g(u(\bm{\lambda}_c^T\bm{\varphi}),u(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}\rangle-\langle g(u(\bm{\lambda}_{\ell}^T\bm{\varphi}),u(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}\rangle\right).
+\bm{c}\left(\bm{\lambda}_{\ell},\bm{\lambda}_c,\bm{\lambda}_r\right):= \langle u(\bm{\lambda}_c^T\bm{\varphi})\bm{\varphi}\rangle - \frac{\Delta t}{\Delta x}\left(\langle g(u(\bm{\lambda}_c^T\bm{\varphi}),u(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}\rangle-\langle g(u(\bm{\lambda}_{\ell}^T\bm{\varphi}),u(\bm{\lambda}_c^T\bm{\varphi}))\bm{\varphi}\rangle\right).
 \end{align*}
 The map from the moment vector to the dual variables is given by the exact fix point of $\bm{d}:\mathbb{R}^{N+1}\times\mathbb{R}^{N+1}\to\mathbb{R}^{N+1}$,
 \begin{align*}
@@ -104,7 +104,7 @@ since we already showed that by the choice of $\bm{B}$ the term $\partial_{\bm{\
 \begin{align*}
 \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{u}_{j-1}^{n})}{\partial \bm{u}} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \bm{B} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \langle u'(\bm{\varphi}^T\bm{\lambda}_{j-1}^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-1} = \partial_{\bm{u}_{\ell}}\bm{\tilde c}_j
 \end{align*}
-by the choice of $\bm{B}$ as well as \eqref{eq:cTildeDer} and \eqref{eq:dudlambdaex}. Hence, we have that $\partial_{\bm{u}} \bm{c} = \bm{\tilde c}_{\bm{u}}$, which only has eigenvalues between $-1$ and $1$ by the assumption that the classical IPM iteration is contractive. Since $\bm{J}$ is an upper triangluar block matrix, the eigenvalues are given by $\lambda\left(\partial_{\bm{\lambda}} \bm{d}\right) = 0$ and $\lambda\left(\partial_{\bm{u}} \bm{c}\right)\in(-1,1)$, hence the One-Shot IPM is contractive around its fix point.\qed
+by the choice of $\bm{B}$ as well as \eqref{eq:cTildeDer} and \eqref{eq:dudlambdaex}. Hence, we have that $\partial_{\bm{u}} \bm{c} = \bm{\tilde c}_{\bm{u}}$, which only has eigenvalues between $-1$ and $1$ by the assumption that the classical IPM iteration is contractive. Since $\bm{J}$ is an upper triangluar block matrix, the eigenvalues are given by $\lambda\left(\partial_{\bm{\lambda}} \bm{d}\right) = 0$ and $\lambda\left(\partial_{\bm{u}} \bm{c}\right)\in(-1,1)$, hence the One-Shot IPM is contractive around its fix point.
 \end{proof}
 \begin{theorem}\label{th:localConvergence}
 With the assumptions from Theorem \ref{th:Contractive}, the One-Shot IPM converges locally, i.e. there exists a $\delta>0$ s.t. for all starting points $(\bm{\lambda}^0,\bm{u}^0)\in B_{\delta}(\bm{\lambda}^*,\bm{u}^*)$ we have
@@ -117,7 +117,7 @@ By Theorem \ref{th:Contractive}, the One-Shot scheme is contractive at its fix p
 \begin{align*}
 \text{det}(\bm{\tilde J}) = \sum_{\sigma} \text{sgn}(\sigma)\prod_{i = 1}^{2 N_x (N+1)} \tilde J_{\sigma(i),i}.
 \end{align*}
-Since the roots of a polynomial vary continuously with its coefficients, the eigenvalues of $\bm{J}$ are continuous w.r.t $(\bm{\lambda},\bm{u})$. Hence there exists an open ball with radius $\delta$ around the fix point in which the eigenvalues remain in the interval $(-1,1)$.\qed
+Since the roots of a polynomial vary continuously with its coefficients, the eigenvalues of $\bm{J}$ are continuous w.r.t $(\bm{\lambda},\bm{u})$. Hence there exists an open ball with radius $\delta$ around the fix point in which the eigenvalues remain in the interval $(-1,1)$.
 \end{proof}
 \begin{remark}
 Theorem \ref{th:localConvergence} gives some insights in how to set up the One-Shot IPM iteration: If we look at the Jacobian \eqref{eq:Jacobian} at an arbitrary point, we obtain
