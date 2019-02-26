@@ -23,11 +23,11 @@ When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb
 \end{align*}
 The numerical flux requires evaluating the closure $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define
 \begin{align*}
-\bm{u}_{ME}(\bm\Lambda):=\left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm\Lambda),
+\bm{u}_{s}(\bm\Lambda):=\left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm\Lambda),
 \end{align*}
 meaning that the closure \eqref{eq:ansatz} can be written as
 \begin{align*}
-\mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{ME}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
+\mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{s}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
 \end{align*}
 The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. To determine the dual variables for a given moment vector $\bm{\hat{u}}$, the cost function
 \begin{align*}
@@ -37,41 +37,58 @@ needs to be minimized, i.e. one needs to find the root of
 \begin{align*}
 \nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla_{\bm{u}}s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle^T - \bm{\hat u}_i,
 \end{align*}
-which is usually done by an iterative method. Defining the dual iteration function
+which is usually done by an iterative method. Defining the dual iteration function $\bm{d}:\mathbb{R}^{(N+1)\times p}\times\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$,
 \begin{align*}
-\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}(\bm{\lambda})\cdot \left(\langle \bm u_{ME}(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}^T\rangle^T-\bm{\hat{u}}\right),
+\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}(\bm{\lambda})\cdot \left(\langle \bm u_{s}(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}^T\rangle^T-\bm{\hat{u}}\right),
 \end{align*}
 with an adequate preconditioner $\bm{B}$, the iteration process for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
 \bm{\lambda}^{(m+1)}_j = \bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j}).
 \end{align}
-The exact dual state is then obtained by converging this iteration, i.e. $\bm{\hat\lambda}_j^n=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$. A common preconditioner is the inverse Hessian of the dual problem, i.e.
+The exact dual state is then obtained by computing the fix point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$. A common preconditioner is the inverse Hessian of the dual problem, i.e.
 \begin{align*}
-\bm{B}(\bm{\lambda}) := \langle \nabla \bm{u} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}.
+\bm{B}(\bm{\lambda}) := \langle \nabla \bm{u} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-T}.
 \end{align*}
 To obtain a finite number of iterations for the iteration in cell $j$, a stopping criterion 
 \begin{align}\label{eq:tauCrit}
 \sum_{i=0}^p\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(m)};\bm{\hat{u}}_j^n) \right\Vert < \tau
 \end{align}
-is used. This gives Algorithm \ref{alg:seq}.
+is used.
+
+We now write down the entire scheme: To obtain a more compact notation, one defines
+\begin{align*}
+\bm{c}\left(\bm{\lambda}_{\ell},\bm{\lambda}_c,\bm{\lambda}_r\right):= \langle \bm u_{s}(\bm{\lambda}_c^T\bm{\varphi})\bm{\varphi}^T\rangle^T - \frac{\Delta t}{\Delta x}\left(\langle \bm g(\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}^T\rangle^T-\langle \bm g(\bm u_{s}(\bm{\lambda}_{\ell}^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}))\bm{\varphi}^T\rangle^T\right).
+\end{align*}
+The moment iteration is then given by
+\begin{align}\label{eq:momentIteration}
+\bm{\hat u}_j^{n+1} = \bm{c}\left(\bm{\lambda}(\bm{\hat u}_{j-1}^n),\bm{\lambda}(\bm{\hat u}_{j}^n),\bm{\lambda}(\bm{\hat u}_{j+1}^n)\right),
+\end{align}
+where the map from the moment vector to the dual variables, i.e. $\bm{\lambda}(\bm{\hat u}_{j}^n)$, is obtained by iterating
+\begin{align}\label{eq:dualIteration}
+\bm{\lambda}_j^{(m+1)} = \bm{d}(\bm{\lambda}_{j}^{(m)};\bm{\hat u}_j^{n}).
+\end{align}
+until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:seq}.
 
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
-\FOR{$j=0$ to $N_x+1$}
-\STATE $\bm{u}_j^0 = \frac{1}{\Delta x} \int_{x_{j-1/ 2}}^{x_{j+1/ 2}} \langle u_0(x, \cdot) \bm{\varphi} \rangle dx$
-\ENDFOR
-\FOR{$n=0$ to $N_t$}
-\FOR{$j=0$ to $N_x+1$}
-\STATE $\hat{\bm{\lambda}}_j^n \approx \argmin_{\bm{\lambda}}  \left( \langle s_*(\bm{\lambda}^T \bm{\varphi})\rangle - \bm{\lambda}^T \bm{\hat u}_{j}^{n} \right)$
-\hfill such that \eqref{eq:tauCrit} holds
-\STATE $\hat \Lambda_j^n = \left(\hat{\bm{\lambda}}_j^n\right)^T\bm{\varphi}$
-\ENDFOR
-\FOR{$j=1$ to $N_x$}
-\STATE $\bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}- \frac{\Delta t}{\Delta x}\left( \langle g(\bm{u}_{ME}(\hat \Lambda_j^n),\bm{u}_{ME}(\hat \Lambda_{j+1}^n))\bm{\varphi}\rangle - \langle g(\bm{u}_{ME}(\hat \Lambda_{j-1}^n),\bm{u}_{ME}(\hat \Lambda_{j}^n))\bm{\varphi} \rangle\right)$ 
-\ENDFOR
-\ENDFOR
+\For{$j=0$ to $N_x+1$}
+\State $\bm{u}_j^0 \leftarrow \frac{1}{\Delta x} \int_{x_{j-1/ 2}}^{x_{j+1/ 2}} \langle u_{\text{IC}}(x, \cdot) \bm{\varphi} \rangle dx$
+\EndFor
+\For{$n=0$ to $N_t$}
+\For{$j=0$ to $N_x+1$}
+\State $\bm{\lambda}_j^{(0)} \leftarrow \bm{\hat \lambda}_j^{n}$
+\While{\eqref{eq:tauCrit} is violated}
+\State $\bm{\lambda}_j^{(m+1)} \leftarrow \bm{d}(\bm{\lambda}_{j}^{(m)};\bm{\hat u}_j^{n})$
+\State $m \leftarrow m+1$
+\EndWhile
+\State $\bm{\hat \lambda}_j^{n+1} \leftarrow \bm{\lambda}_j^{(m)}$
+\EndFor
+\For{$j=1$ to $N_x$}
+\State $\bm{\hat u}_j^{n+1} \leftarrow \bm{c}(\bm{\hat \lambda}_{j-1}^{n+1},\bm{\hat \lambda}_j^{n+1},\bm{\hat \lambda}_{j+1}^{n+1})$
+\EndFor
+\EndFor
 \end{algorithmic}
-\caption{IPM for Uncertainty Quantification}
+\caption{IPM implementation}
 \label{alg:seq}
 \end{algorithm}
 

@@ -8,14 +8,13 @@ A general hyperbolic set of equations with random initial data can be written as
 \bm{u}(t=0,\bm{x},&\bm{\xi}) = \bm{u}_{\text{IC}}(\bm{x},\bm{\xi}),
 \end{align}
 \end{subequations}
-where the solution $\bm u\in\mathbb{R}^p$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subseteq \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subseteq\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. The physical flux is given by $\bm{f}:\mathbb{R}^p\to\mathbb{R}^p$. To simplify notation, we assume that only the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
+where the solution $\bm u\in\mathbb{R}^p$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subseteq \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subseteq\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. The physical flux is given by $\bm{f}:\mathbb{R}^p\to\mathbb{R}^{d\times p}$. To simplify notation, we assume that only the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
 
 Due to the randomness of the solution, one is interested in determining the expectation value or the variance of the solution, i.e.
 \begin{align*}
 \text{E}[\bm{u}] = \langle \bm{u} \rangle,\qquad \text{Var}[\bm{u}] = \langle \left( \bm{u}-\text{E}[\bm{u}]\right)^2\rangle,
 \end{align*}
-where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot \prod_{i=1}^s f_{\Xi,i}(\xi_i)d\xi_1 \cdots d\xi_s$. More generally, one is interested in determining the moments of the solution for a given set of basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_s)$ we have $|i| \leq N$. Commonly one chooses t
-orthonormal basis functions, i.e. $\langle \varphi_n \varphi_m \rangle = \delta_{nm}$.  The moments are then given by $\bm{\hat u_i} := \langle \bm{u}\varphi_i \rangle$.\\
+where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot \prod_{i=1}^s f_{\Xi,i}(\xi_i)d\xi_1 \cdots d\xi_s$. More generally, one is interested in determining the moments of the solution for a given set of basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_s)$ we have $|i| \leq N$. Commonly one chooses orthonormal basis functions, i.e. $\langle \varphi_n \varphi_m \rangle = \delta_{nm}$.  The moments are then given by $\bm{\hat u_i} := \langle \bm{u}\varphi_i \rangle$.\\
 
 Numerical methods for approximating the moment $\bm{\hat u_i}$ can be divided into intrusive and non-intrusive methods. A popular non-intrusive method is the stochastic-Collocation (SC) method, which computes the moments with the help of a numerical quadrature rule: For a given set of $N_q$ quadrature weights $w_k$ and quadrature points $\bm{\xi}_k$, the moments are approximated by
 \begin{align*}
