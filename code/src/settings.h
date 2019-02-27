@@ -55,6 +55,7 @@ class Settings
     double _epsilon;
     double _CFL;
     double _tEnd;
+    double _minResidual;
     double _dt;    // timestepsize only required if no function ComputeDt provided in problem
     unsigned _plotStepInterval;
     double _plotTimeInterval;
@@ -101,6 +102,7 @@ class Settings
     double GetCFL() const;
     unsigned GetNDimXi() const;
     double GetTEnd() const;
+    double GetMinResidual() const;
     double GetDT() const;
     void SetDT( double dt );
     double GetGamma() const;

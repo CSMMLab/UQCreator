@@ -52,9 +52,12 @@ MatVec MomentSolver::Solve( Vector xi ) {
 
     log->info( "{:10}   {:10}", "t", "residual" );
     // Begin time loop
-    double t, dt;
-    for( t = _tStart; t < _tEnd; ) {
-        double residual = 0;
+    double t = _tStart;
+    double dt;
+    double minResidual = _settings->GetMinResidual();
+    double residual    = minResidual + 1.0;
+    while( t < _tEnd && residual > minResidual ) {
+        residual = 0;
 
         // determine time step size
         double dtCurrent;
