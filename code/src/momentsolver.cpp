@@ -30,107 +30,21 @@ MomentSolver::~MomentSolver() {
 }
 
 void MomentSolver::Solve() {
-    auto log = spdlog::get( "event" );
-    Closure* prevClosure;
-    Settings* prevSettings;
-
+    auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
-    // create solution fields
-    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
-    if( _settings->HasRestartFile() ) {
-        prevSettings = this->ImportPrevSettings();
-        prevSettings->SetNStates( _settings->GetNStates() );
-        prevSettings->SetGamma( _settings->GetGamma() );
-        prevSettings->SetClosureType( _settings->GetClosureType() );
-        if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
-            prevClosure = Closure::Create( prevSettings );
-        }
-        else {
-            prevClosure = _closure;
-        }
-
-        u = this->ImportPrevMoments( prevSettings->GetNTotal() );
-        if( _settings->LoadLambda() ) {
-            _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
-        }
-        else {
-            _lambda = MatVec( _nCells + 1, Matrix( _nStates, prevSettings->GetNTotal() ) );
-        }
-    }
-    else {
-        u            = SetupIC();
-        _lambda      = MatVec( _nCells + 1, Matrix( _nStates, _nTotal ) );
-        prevClosure  = _closure;
-        prevSettings = _settings;
-    }
+    // create settings+closure for restart as well as solution fields
+    Settings* prevSettings = DeterminePreviousSettings();
+    Closure* prevClosure   = DeterminePreviousClosure( prevSettings );
+    if( _settings->HasRestartFile() ) _tStart = prevSettings->GetTEnd();
+    MatVec u = DetermineMoments( prevSettings->GetNTotal() );
+    SetDuals( prevSettings, prevClosure, u );
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
-
-    Vector ds( _nStates );
-    Vector u0( _nStates );
 
     std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
     std::vector<int> PEforCell        = _settings->GetPEforCell();
 
     log->info( "PE {0}: kStart {1}, kEnd {2}", _settings->GetMyPE(), _settings->GetKStart(), _settings->GetKEnd() );
-
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        for( unsigned l = 0; l < _nStates; ++l ) {
-            u0[l] = u[j]( l, 0 );
-        }
-        if( !_settings->LoadLambda() ) {
-            _closure->DS( ds, u0 );
-            for( unsigned l = 0; l < _nStates; ++l ) {
-                _lambda[j]( l, 0 ) = ds[l];
-            }
-        }
-    }
-    std::cout << "Prev Moments to moments: " << prevSettings->GetNMoments() << " " << _settings->GetNMoments() << std::endl;
-
-    // Converge initial condition entropy variables for One Shot IPM
-    if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
-        prevClosure->SetMaxIterations( 10000 );
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            prevClosure->SolveClosureSafe( _lambda[j], u[j] );
-        }
-        prevClosure->SetMaxIterations( 1 );
-    }
-    // std::cout << "PE " << _settings->GetMyPE() << ": First dual DONE." << std::endl;
-    // for restart with lower order of moments reconstruct solution at finer quad points and compute moments at higher order
-    if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
-        MatVec uQFullProc      = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNQTotal() ) );
-        unsigned maxIterations = _closure->GetMaxIterations();
-        if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
-        prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
-        Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            _closure->U( uQFullProc[j], intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
-
-            auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
-            u[j].resize( _nStates, _nTotal );
-            u[j] = uCurrent;    // new Moments of size new nMoments
-
-            // compute lambda with size newMoments
-            Matrix lambdaOld = _lambda[j];
-            _lambda[j].resize( _nStates, _nTotal );
-            for( unsigned s = 0; s < _nStates; ++s ) {
-                for( unsigned i = 0; i < prevSettings->GetNTotal(); ++i ) {
-                    _lambda[j]( s, i ) = lambdaOld( s, i );
-                }
-            }
-            auto uQTest = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-            auto uTest  = uQTest * _closure->GetPhiTildeWf();
-            // std::cout << "----------------------------------" << std::endl;
-            // std::cout << "u = " << u[j] << std::endl;
-            _closure->SolveClosureSafe( _lambda[j], u[j] );
-        }
-        _closure->SetMaxIterations( maxIterations );
-        // delete reload closures and settings
-        delete intermediateClosure;
-        delete prevClosure;
-        delete prevSettings;
-    }
-    // std::cout << "PE " << _settings->GetMyPE() << ": Second dual DONE." << std::endl;
 
     MatVec uNew = u;
     MatVec uOld = u;
@@ -146,6 +60,7 @@ void MomentSolver::Solve() {
     log->info( "{:10}   {:10}", "t", "residual" );
     // Begin time loop
     double t = _tStart;
+    std::cout << "time is " << t << std::endl;
     double dt;
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
@@ -286,6 +201,105 @@ void MomentSolver::Solve() {
     _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );
 }
 
+MatVec MomentSolver::DetermineMoments( unsigned nTotal ) const {
+    MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
+    if( _settings->HasRestartFile() ) {
+        u = this->ImportPrevMoments( nTotal );
+    }
+    else {
+        u = this->SetupIC();
+    }
+    return u;
+}
+
+Settings* MomentSolver::DeterminePreviousSettings() const {
+    Settings* prevSettings;
+    if( _settings->HasRestartFile() ) {
+        prevSettings = this->ImportPrevSettings();
+        prevSettings->SetNStates( _settings->GetNStates() );
+        prevSettings->SetGamma( _settings->GetGamma() );
+        prevSettings->SetClosureType( _settings->GetClosureType() );
+    }
+    else {
+        prevSettings = _settings;
+    }
+    return prevSettings;
+}
+
+Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const {
+    Closure* prevClosure;
+    if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+        prevClosure = Closure::Create( prevSettings );
+    }
+    else {
+        prevClosure = _closure;
+    }
+    return prevClosure;
+}
+
+void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u ) {
+    if( _settings->LoadLambda() ) {
+        _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
+    }
+    else {
+        _lambda = MatVec( _nCells + 1, Matrix( _nStates, prevSettings->GetNTotal() ) );
+        Vector ds( _nStates );
+        Vector u0( _nStates );
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            for( unsigned l = 0; l < _nStates; ++l ) {
+                u0[l] = u[j]( l, 0 );
+            }
+            if( !_settings->LoadLambda() ) {
+                _closure->DS( ds, u0 );
+                for( unsigned l = 0; l < _nStates; ++l ) {
+                    _lambda[j]( l, 0 ) = ds[l];
+                }
+            }
+        }
+
+        // Converge initial condition entropy variables for One Shot IPM
+        if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+            prevClosure->SetMaxIterations( 10000 );
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                prevClosure->SolveClosureSafe( _lambda[j], u[j] );
+            }
+            prevClosure->SetMaxIterations( 1 );
+        }
+        // for restart with lower order of moments reconstruct solution at finer quad points and compute moments at higher order
+        if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+            MatVec uQFullProc      = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNQTotal() ) );
+            unsigned maxIterations = _closure->GetMaxIterations();
+            if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
+            prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
+            Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                _closure->U( uQFullProc[j], intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
+
+                auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
+                u[j].resize( _nStates, _nTotal );
+                u[j] = uCurrent;    // new Moments of size new nMoments
+
+                // compute lambda with size newMoments
+                Matrix lambdaOld = _lambda[j];
+                _lambda[j].resize( _nStates, _nTotal );
+                for( unsigned s = 0; s < _nStates; ++s ) {
+                    for( unsigned i = 0; i < prevSettings->GetNTotal(); ++i ) {
+                        _lambda[j]( s, i ) = lambdaOld( s, i );
+                    }
+                }
+                auto uQTest = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
+                auto uTest  = uQTest * _closure->GetPhiTildeWf();
+                _closure->SolveClosureSafe( _lambda[j], u[j] );
+            }
+            _closure->SetMaxIterations( maxIterations );
+            // delete reload closures and settings
+            delete intermediateClosure;
+            delete prevClosure;
+            delete prevSettings;
+        }
+    }
+}
+
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
     // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
     multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd() );
@@ -301,7 +315,7 @@ void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
     }
 }
 
-MatVec MomentSolver::SetupIC() {
+MatVec MomentSolver::SetupIC() const {
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     std::vector<Polynomial*> quad = _closure->GetQuadrature();
     Vector xiEta( _settings->GetNDimXi() );
@@ -360,7 +374,7 @@ void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {
     dual_writer->flush();
 }
 
-Settings* MomentSolver::ImportPrevSettings() {
+Settings* MomentSolver::ImportPrevSettings() const {
     auto file = std::ifstream( _settings->GetRestartFile() );
     std::string line;
     std::stringstream prevSettingsStream;
@@ -381,11 +395,11 @@ Settings* MomentSolver::ImportPrevSettings() {
     }
     std::istringstream inputStream( prevSettingsStream.str() );
     Settings* prevSettings = new Settings( inputStream );
-    _tStart                = prevSettings->GetTEnd();
+
     return prevSettings;
 }
 
-MatVec MomentSolver::ImportPrevMoments( unsigned nPrevTotal ) {
+MatVec MomentSolver::ImportPrevMoments( unsigned nPrevTotal ) const {
     MatVec u( _nCells, Matrix( _nStates, nPrevTotal ) );
     auto file = std::ifstream( _settings->GetRestartFile() + "_moments" );
     std::string line;

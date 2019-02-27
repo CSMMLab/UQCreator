@@ -35,15 +35,19 @@ class MomentSolver
 
     void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
     void SetupIC( MatVec& out );
-    MatVec SetupIC();
+    MatVec SetupIC() const;
     void CalculateMoments( MatVec& out, const MatVec& lambda );
     Vector EvalLambda( const Vector& lambda, const Vector& xi );
     void Plot( double time, unsigned nSteps );
     void Export( const MatVec& u, const MatVec& lambda ) const;
-    Settings* ImportPrevSettings();
-    MatVec ImportPrevMoments( unsigned nPrevTotal );
+    Settings* ImportPrevSettings() const;
+    MatVec ImportPrevMoments( unsigned nPrevTotal ) const;
     MatVec ImportPrevDuals( unsigned nPrevTotal );
     Vector CalculateErrorVar( Matrix solution, unsigned LNorm );
+    MatVec DetermineMoments( unsigned nTotal ) const;
+    void SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u );
+    Settings* DeterminePreviousSettings() const;
+    Closure* DeterminePreviousClosure( Settings* prevSettings ) const;
 
   public:
     MomentSolver( Settings* settings, Mesh* mesh, Problem* problem );
