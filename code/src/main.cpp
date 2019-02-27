@@ -104,10 +104,10 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
 void PrintInit( std::string configFile ) {
     auto log = spdlog::get( "event" );
     log->info( "UQCreator" );
-    log->info( "==================================" );
-    log->info( "" );
+    log->info( "================================================================" );
+    log->info( "Git commit hash:\t{0}", GIT_HASH );
     log->info( "Config file:\t{0}", configFile );
-    log->info( "==================================" );
+    log->info( "================================================================" );
     std::ifstream ifs( configFile );
     if( ifs.is_open() ) {
         std::string line;
@@ -116,7 +116,7 @@ void PrintInit( std::string configFile ) {
             log->info( " {0}", line );
         }
     }
-    log->info( "==================================" );
+    log->info( "================================================================" );
     log->info( "" );
 }
 

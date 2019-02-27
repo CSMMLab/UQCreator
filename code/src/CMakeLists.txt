@@ -28,4 +28,12 @@ find_package( VTK REQUIRED COMPONENTS vtkIOGeometry vtkFiltersCore )
 include_directories( ${CMAKE_SOURCE_DIR}/../ext/cpptoml/include )
 include_directories( ${CMAKE_SOURCE_DIR}/../ext/spdlog/include )
 
+execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+add_definitions('-DGIT_HASH="${GIT_HASH}"')
+
 target_link_libraries( ${CMAKE_PROJECT_NAME} ${LAPACK_LIBRARIES} ${VTK_LIBRARIES} ${MPI_LIBRARIES} -lstdc++fs)
