@@ -12,7 +12,7 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "nacaCoarse.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "euler_naca0012_Restart_IPM_N5_Sigma0-5"
+outputFile = "euler_naca0012_Restart_OneShotIPM_N10_Sigma0-5"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -21,12 +21,13 @@ timestepping = "explicitEuler"
 distribution = [["Legendre"],[0.5]]
 CFL = 0.9
 tEnd = 0.21
+residual = 1e-5
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "Euler2D"
-moments = 5
-quadPoints = 10
-maxIterations = 1000
-epsilon = 5e-5
+moments = 10
+quadPoints = 15
+maxIterations = 1
+epsilon = 1e-7
 

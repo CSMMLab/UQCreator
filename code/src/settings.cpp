@@ -152,6 +152,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             log->error( "[inputfile] [problem] 'tEnd' not set!" );
             validConfig = false;
         }
+        _minResidual = problem->get_as<double>( "residual" ).value_or( -1.0 );
 
         // section moment_system
         auto moment_system     = file->get_table( "moment_system" );
@@ -537,6 +538,7 @@ bool Settings::LoadLambda() const { return _loadLambda; }
 TimesteppingType Settings::GetTimesteppingType() const { return _timesteppingType; }
 double Settings::GetCFL() const { return _CFL; }
 double Settings::GetTEnd() const { return _tEnd; }
+double Settings::GetMinResidual() const { return _minResidual; }
 double Settings::GetDT() const { return _dt; }
 void Settings::SetDT( double dt ) { _dt = dt; }
 unsigned Settings::GetNDimXi() const { return _numDimXi; }

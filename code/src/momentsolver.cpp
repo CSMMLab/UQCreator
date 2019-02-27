@@ -69,8 +69,6 @@ void MomentSolver::Solve() {
     Vector ds( _nStates );
     Vector u0( _nStates );
 
-    double residualFull;
-
     std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
     std::vector<int> PEforCell        = _settings->GetPEforCell();
 
@@ -147,8 +145,11 @@ void MomentSolver::Solve() {
 
     log->info( "{:10}   {:10}", "t", "residual" );
     // Begin time loop
-    double t, dt;
-    for( t = _tStart; t < _tEnd; ) {
+    double t = _tStart;
+    double dt;
+    double minResidual  = _settings->GetMinResidual();
+    double residualFull = minResidual + 1.0;
+    while( t < _tEnd && residualFull > minResidual ) {
         double residual = 0;
 
 #pragma omp parallel for schedule( dynamic, 10 )
@@ -190,7 +191,7 @@ void MomentSolver::Solve() {
             residual += std::fabs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] );
         }
 
-        MPI_Reduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+        MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
         }
