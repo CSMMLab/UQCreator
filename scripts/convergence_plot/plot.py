@@ -92,11 +92,11 @@ def create_runtime_residual_plots(data, labels, threshold=np.inf):
     plt.legend(labels)
     plt.savefig("convergence_runtime_residual.pdf")
 
-def create_time_residual_plots(data, labels, threshold=np.inf):   
+def create_time_residual_plots(data, labels, tEnd=np.inf):   
     plt.cla()
     plt.clf()
     for df in data:
-        df = df[df['residual_scaled'] < threshold]
+        df = df[df['t'] < threshold]
         plt.semilogy(df['t'],df['residual_scaled'])
     plt.xlabel('Time [s]')
     plt.ylabel('Residual')
@@ -107,6 +107,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", "-d", type=str, required=True)
     parser.add_argument("--threshold", "-t", type=str, required=False)
+    parser.add_argument("--tEnd", "-e", type=str, required=False)
     args = parser.parse_args()
     data = []
     labels = []
@@ -119,7 +120,7 @@ if __name__ == "__main__":
         labels.append(create_label(args.dir, file))
     if(args.threshold):
         create_runtime_residual_plots(data, labels, args.threshold)
-        create_time_residual_plots(data, labels, args.threshold)
+        create_time_residual_plots(data, labels, args.tEnd)
     else:
         create_runtime_residual_plots(data, labels)
         create_time_residual_plots(data, labels)
