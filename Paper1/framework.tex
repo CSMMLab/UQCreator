@@ -25,7 +25,7 @@ Note that the numerical flux requires evaluating the closure $\mathcal{U}(\bm{\h
 \begin{align*}
 \bm{u}_{s}(\bm\Lambda):=\left( \nabla_{\bm{u}} s \right)^{-1}(\bm\Lambda),
 \end{align*}
-meaning that the closure \eqref{eq:ansatz} in cell $j$ at timestep $n$ can be written as
+meaning that the closure \eqref{eq:ansatz} at cell $j$ in timestep $n$ can be written as
 \begin{align*}
 \mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{s}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
 \end{align*}
@@ -67,7 +67,7 @@ where the map from the moment vector to the dual variables, i.e. $\bm{\lambda}(\
 \begin{align}\label{eq:dualIteration}
 \bm{\lambda}_j^{(m+1)} = \bm{d}(\bm{\lambda}_{j}^{(m)};\bm{\hat u}_j^{n}).
 \end{align}
-until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:seq}.
+until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:IPM}.
 
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
@@ -89,7 +89,7 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:s
 \EndFor
 \end{algorithmic}
 \caption{IPM implementation}
-\label{alg:seq}
+\label{alg:IPM}
 \end{algorithm}
 
 \subsection{Code framework}
