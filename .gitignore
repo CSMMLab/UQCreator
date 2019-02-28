@@ -323,3 +323,6 @@ TSWLatexianTemp*
 ### LaTeX Patch ###
 # glossaries
 *.glstex
+
+# bwsync dir
+result_sync/*
