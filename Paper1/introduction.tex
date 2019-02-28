@@ -10,18 +10,19 @@ A general hyperbolic set of equations with random initial data can be written as
 \end{subequations}
 where the solution $\bm u\in\mathbb{R}^p$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subseteq \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subseteq\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. The physical flux is given by $\bm{f}:\mathbb{R}^p\to\mathbb{R}^{d\times p}$. To simplify notation, we assume that only the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
 
-Due to the randomness of the solution, one is interested in determining the expectation value or the variance of the solution, i.e.
+Due to the randomness of the solution, one is interested in determining the expectation value or the variance, i.e.
 \begin{align*}
 \text{E}[\bm{u}] = \langle \bm{u} \rangle,\qquad \text{Var}[\bm{u}] = \langle \left( \bm{u}-\text{E}[\bm{u}]\right)^2\rangle,
 \end{align*}
-where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot \prod_{i=1}^s f_{\Xi,i}(\xi_i)d\xi_1 \cdots d\xi_s$. More generally, one is interested in determining the moments of the solution for a given set of basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_s)$ we have $|i| \leq N$. Commonly one chooses orthonormal basis functions, i.e. $\langle \varphi_n \varphi_m \rangle = \delta_{nm}$.  The moments are then given by $\bm{\hat u_i} := \langle \bm{u}\varphi_i \rangle$.\\
+where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot \prod_{i=1}^s f_{\Xi,i}(\xi_i)d\xi_1 \cdots d\xi_s$. More generally, one is interested in determining the moments of the solution for a given set of basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_s)$ we have $|i| \leq M$. Commonly one chooses orthonormal polynomials as basis functions \cite{xiu2002wiener}, i.e. $\langle \varphi_n \varphi_m \rangle = \delta_{nm}$.  The moments are then given by $\bm{\hat u_i} := \langle \bm{u}\varphi_i \rangle$ can for example be used to span the solution \cite{wiener1938homogeneous}. \\
 
-Numerical methods for approximating the moment $\bm{\hat u_i}$ can be divided into intrusive and non-intrusive methods. A popular non-intrusive method is the stochastic-Collocation (SC) method, which computes the moments with the help of a numerical quadrature rule: For a given set of $N_q$ quadrature weights $w_k$ and quadrature points $\bm{\xi}_k$, the moments are approximated by
+Numerical methods for approximating the moment $\bm{\hat u_i}$ can be divided into intrusive and non-intrusive methods. A popular non-intrusive method is the stochastic-Collocation (SC) method, see e.g. \cite{xiu2005high,babuvska2007stochastic,loeven2008probabilistic}, which computes the moments with the help of a numerical quadrature rule: For a given set of $N_q$ quadrature weights $w_k$ and quadrature points $\bm{\xi}_k$, the moments are approximated by
 \begin{align*}
 \bm{\hat u_i} = \langle \bm{u}\varphi_i \rangle \approx \sum_{k = 1}^{N_q}w_k \bm{u}({t,\bm{x},\bm{\xi}_k})\varphi_i(\bm{\xi_k})f_{\Xi}(\bm{\xi}_k).
 \end{align*} 
 Since the solution at a fixed quadrature point can be computed by a standard deterministic solver, the SC method does not require a big implementation effort. Furthermore, SC is embarrassingly parallel, since the required computations can be carried out in parallel on different cores. A downside of collocation methods are aliasing effects, which stem from the inexact approximation of integrals. Furthermore, collocation methods require more runs of the deterministic solver than intrusive methods \cite{xiu2009fast,alekseev2011estimation}. Despite their easy implementation, collocation methods can become cumbersome for unsteady problems, since in this case, the solution needs to be written out, i.e. stored in an external file, at all quadrature points in every time step to compute the time evolution of the moments.
-This problem does not occur in intrusive methods, since the computation is carried out on the moments, i.e. the time evolution can be recorded during the computation. Also for steady problems, the fact that the computation is carried out on the moments enables the computation of the stochastic residual, which indicates when to stop the iteration towards the steady state solution. However intrusive methods are in general more difficult to implement and come along with higher numerical costs. The main idea of these methods is to derive a system of equations for the moments and then implementing a numerical solver for this system: Testing the initial problem \eqref{eq:hyperbolicProblem} with $\varphi_i$ for $|i|\leq M$ yields
+
+Intrusive methods do not suffer from this problem, since the computation is directly carried out on the moments, i.e. their time evolution can be recorded during the computation. Also for steady problems, the fact that the computation is carried out on the moments enables the computation of the stochastic residual, which indicates when to stop the iteration towards the steady state solution. However intrusive methods are in general more difficult to implement and come along with higher numerical costs. The main idea of these methods is to derive a system of equations for the moments and then implementing a numerical solver for this system: Testing the initial problem \eqref{eq:hyperbolicProblem} with $\varphi_i$ for $|i|\leq M$ yields
 \begin{subequations}\label{eq:nonClosedMomentSystem}
 \begin{align}
 \partial_t \bm{\hat u}_i(t,\bm{x}) + \nabla&\cdot\langle\bm{f}(\bm{u}(t,\bm{x},\cdot)) \varphi_i\rangle = \bm{0}, \\
@@ -32,20 +33,20 @@ To obtain a closed set of equations, one needs to derive a closure $\mathcal{U}$
 \begin{align*}
 \bm{u}(t,\bm x,\bm \xi) \approx \mathcal{U}(\bm{\hat u}_0,\cdots,\bm{\hat u}_N;\xi).
 \end{align*}
-A commonly used closure is given by stochastic-Galerkin, which represents the solution by a polynomial:
+A commonly used closure is given by stochastic-Galerkin \cite{ghanem2003stochastic}, which represents the solution by a polynomial:
 \begin{align*}
 \mathcal{U}_{\text{SG}}(\bm{\hat u}_0,\cdots,\bm{\hat u}_N;\bm\xi):= \sum_{i=0}^N \bm{\hat{u}}_i\varphi_i(\bm{\xi}) = \hat{\bm u}^T\bm{\varphi}(\bm\xi),
 \end{align*}
-Here, we collect the moments in $\bm{\hat{u}}:=(\bm{\hat{u}}_0,\cdots,\bm{\hat{u}}_N)^T\in\mathbb{R}^{(N+1) \times p}$ and basis functions in $\bm{\varphi}:=(\varphi_0,\cdots,\varphi_N)^T\in\mathbb{R}^{N+1}$. When using the stochastic-Galerkin method to close \eqref{eq:nonClosedMomentSystem}, the resulting moment system is not necessarily hyperbolic, meaning that it cannot be solved with standard methods. A generalization of stochastic-Galerkin, which ensures hyperbolicity is the Intrusive Polynomial Moment (IPM) closure \cite{poette2009uncertainty}: The closure is given by a constraint optimization problem. For a given convex entropy $s:\mathbb{R}^p\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, this optimization problem is
+Here, we collect the moments in $\bm{\hat{u}}:=(\bm{\hat{u}}_0,\cdots,\bm{\hat{u}}_N)^T\in\mathbb{R}^{(N+1) \times p}$ and basis functions in $\bm{\varphi}:=(\varphi_0,\cdots,\varphi_N)^T\in\mathbb{R}^{N+1}$. When using the stochastic-Galerkin method to close \eqref{eq:nonClosedMomentSystem}, the resulting moment system is not necessarily hyperbolic, meaning that it cannot be solved with standard methods. A generalization of stochastic-Galerkin, which ensures hyperbolicity is the Intrusive Polynomial Moment (IPM) closure \cite{poette2009uncertainty}: The closure is given by a constraint optimization problem. For a given convex entropy $s:\mathbb{R}^p\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, this optimization problem is given by
 \begin{align}\label{eq:primalProblem}
 \mathcal{U}(\bm{\hat u}) = \argmin_{\bm u} \langle s(\bm u) \rangle \enskip \text{ subject to } \bm{\hat u}_i = \langle \bm u \varphi_i \rangle \text{ for } i = 0,\cdots,N.
 \end{align}
-This problem can be rewritten as
+Rewritten in its dual form, the problem is given by
 \begin{align}\label{eq:dualProblem}
  \bm{\hat \lambda}(\bm{\hat u}) := \argmin_{\bm{\lambda} \in \mathbb{R}^{(N+1) \times p}}
   \left\{\langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i\right\},
 \end{align}
-where $s_*:\mathbb{R}^p\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}\in \mathbb{R}^{(N+1) \times p}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then given by
+where $s_*:\mathbb{R}^p\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}\in \mathbb{R}^{(N+1) \times p}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then obtained by
 \begin{align}\label{eq:ansatz}
  \mathcal{U}(\bm{\hat u}) = \left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm{\hat{\lambda}}(\bm{\hat u})^T \bm{\varphi}).
 \end{align}
@@ -56,7 +57,7 @@ Plugging the derived closure into the moment system \eqref{eq:nonClosedMomentSys
 \bm{\hat u_i}(t=0,\bm{x}&) = \langle\bm{u}_{\text{IC}}(\bm{x},\cdot)\varphi_i\rangle.
 \end{align}
 \end{subequations}
-The IPM method has several advantages: Choosing the entropy $s(\bm{u}) = \frac{1}{2}\bm{u}^T\bm{u}$ yields the stochastic-Galerkin method, i.e. IPM generalizes different intrusive methods. Furthermore, at least for scalar problems, IPM is significantly less oscillatory compared to SG \cite{kusch2017maximum}. Also, as discussed in \cite{poette2009uncertainty}, when choosing $s(\bm u)$ to be a physically correct entropy of the deterministic problem, the IPM solution dissipates the entropy
+The IPM method has several advantages: Choosing the entropy $s(\bm{u}) = \frac{1}{2}\bm{u}^T\bm{u}$ yields the stochastic-Galerkin closure, i.e. IPM generalizes different intrusive methods. Furthermore, at least for scalar problems, IPM is significantly less oscillatory compared to SG \cite{kusch2017maximum}. Also, as discussed in \cite{poette2009uncertainty}, when choosing $s(\bm u)$ to be a physically correct entropy of the deterministic problem, the IPM solution dissipates the entropy
 \begin{align*}
 S(\bm{\hat u}) := \langle s( \mathcal{U}(\bm{\hat u}))\rangle,
 \end{align*}
