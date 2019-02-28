@@ -16,8 +16,8 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.5]]
 CFL = 0.9
-tEnd = 0.201
-residual = 2.2e-3
+tEnd = 0.2
+residual = 1e-4
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter

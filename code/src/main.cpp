@@ -76,7 +76,13 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
         std::filesystem::create_directory( outputDir + "/logs" );
     }
 
-    auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() );
+    int mype;
+    MPI_Comm_rank( MPI_COMM_WORLD, &mype );
+    std::ostringstream strs;
+    strs << mype;
+    std::string strPE = strs.str();
+
+    auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_PE" + strPE );
     fileSink->set_level( fileLogLvl );
     fileSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
 
@@ -187,9 +193,6 @@ int main( int argc, char* argv[] ) {
 
     auto uMoments = u;
 
-    // if( settings->GetMyPE() == 0 )
-    // std::cout << "PE " << settings->GetMyPE() << ": u before reduce: " << u[0] << std::endl;
-
     // perform reduction to obtain full moments on all PEs
     std::vector<int> PEforCell = settings->GetPEforCell();
     for( unsigned j = 0; j < nCells; ++j ) {
@@ -218,8 +221,6 @@ int main( int argc, char* argv[] ) {
             mesh->ExportShallowWater( meanAndVar );
         else
             mesh->Export( meanAndVar );
-
-        // if( settings->GetMyPE() == 0 ) std::cout << "u after reduce: " << u[0] << std::endl;
     }
 
     delete solver;
