@@ -17,15 +17,15 @@ If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\
 for $j = 1,\cdots,N_x$ and $n = 0,\cdots,N_t$, where $N_x$ is the number of spatial cells and $N_t$ is the number of time steps.
 The numerical flux is assumed to be consistent, i.e., that $\bm{G}(\hat{\bm{u}},\hat{\bm{u}})=\bm{F}(\hat{\bm{u}})$.
 
-When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the deterministic problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take
+When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the original problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take
 \begin{align*}
  \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T.
 \end{align*}
-The numerical flux requires evaluating the closure $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define
+Note that the numerical flux requires evaluating the closure $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define
 \begin{align*}
-\bm{u}_{s}(\bm\Lambda):=\left( \nabla_{\bm{\hat u}} s \right)^{-1}(\bm\Lambda),
+\bm{u}_{s}(\bm\Lambda):=\left( \nabla_{\bm{u}} s \right)^{-1}(\bm\Lambda),
 \end{align*}
-meaning that the closure \eqref{eq:ansatz} can be written as
+meaning that the closure \eqref{eq:ansatz} in cell $j$ at timestep $n$ can be written as
 \begin{align*}
 \mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{s}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
 \end{align*}
@@ -35,7 +35,7 @@ L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - 
 \end{align*}
 needs to be minimized, i.e. one needs to find the root of
 \begin{align*}
-\nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla_{\bm{u}}s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle^T - \bm{\hat u}_i,
+\nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle^T - \bm{\hat u}_i,
 \end{align*}
 which is usually done by an iterative method. Defining the dual iteration function $\bm{d}:\mathbb{R}^{(N+1)\times p}\times\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$,
 \begin{align*}
