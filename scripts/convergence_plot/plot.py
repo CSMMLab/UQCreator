@@ -96,7 +96,7 @@ def create_time_residual_plots(data, labels, tEnd=np.inf):
     plt.cla()
     plt.clf()
     for df in data:
-        df = df[df['t'] < threshold]
+        df = df[df['t'] < tEnd]
         plt.semilogy(df['t'],df['residual_scaled'])
     plt.xlabel('Time [s]')
     plt.ylabel('Residual')
