@@ -8,6 +8,8 @@ class ExplicitEuler : public TimeSolver
 {
   private:
     ExplicitEuler() = delete;
+    std::vector<Cell*> _cells;
+    Matrix _ghostCell;
 
   public:
     ExplicitEuler( Settings* settings, Mesh* mesh );
