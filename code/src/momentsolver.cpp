@@ -44,7 +44,7 @@ void MomentSolver::Solve() {
     std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
     std::vector<int> PEforCell        = _settings->GetPEforCell();
 
-    log->info( "PE {0}: kStart {1}, kEnd {2}", _settings->GetMyPE(), _settings->GetKStart(), _settings->GetKEnd() );
+    // log->info( "PE {0}: kStart {1}, kEnd {2}", _settings->GetMyPE(), _settings->GetKStart(), _settings->GetKEnd() );
 
     MatVec uNew = u;
     MatVec uOld = u;
@@ -57,10 +57,9 @@ void MomentSolver::Solve() {
                                  std::placeholders::_4,
                                  std::placeholders::_5 );
 
-    log->info( "{:10}   {:10}", "t", "residual" );
+    if( _settings->GetMyPE() == 0 ) log->info( "{:10}   {:10}", "t", "residual" );
     // Begin time loop
     double t = _tStart;
-    std::cout << "time is " << t << std::endl;
     double dt;
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
@@ -180,12 +179,19 @@ void MomentSolver::Solve() {
     }
 
     if( _settings->HasReferenceFile() ) {
-        auto l1Error = this->CalculateErrorVar( meanAndVar, 1 );
-        auto l2Error = this->CalculateErrorVar( meanAndVar, 2 );
+        auto l1Error = this->CalculateErrorExpectedValue( meanAndVar, 1 );
+        auto l2Error = this->CalculateErrorExpectedValue( meanAndVar, 2 );
+        log->info( "\nExpectation Value error w.r.t reference solution:" );
+        log->info( "State   L1-error      L2-error" );
+        for( unsigned i = 0; i < _nStates; ++i ) {
+            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], sqrt( l2Error[i] ) );
+        }
+        l1Error = this->CalculateErrorVar( meanAndVar, 1 );
+        l2Error = this->CalculateErrorVar( meanAndVar, 2 );
         log->info( "\nVariance error w.r.t reference solution:" );
         log->info( "State   L1-error      L2-error" );
         for( unsigned i = 0; i < _nStates; ++i ) {
-            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
+            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], sqrt( l2Error[i] ) );
         }
     }
 
@@ -437,15 +443,33 @@ MatVec MomentSolver::ImportPrevDuals( unsigned nPrevTotal ) {
     return lambda;
 }
 
-Vector MomentSolver::CalculateErrorVar( Matrix solution, unsigned LNorm ) {
+Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm ) const {
     Vector error( _nStates );
-    for( unsigned i = 0; i < _nCells; ++i ) {
+    for( unsigned j = 0; j < _nCells; ++j ) {
         switch( LNorm ) {
             case 1:
-                for( unsigned j = 0; j < _nStates; ++j ) error[j] += std::fabs( solution( _nStates + j, i ) - _referenceSolution[j + _nStates][i] );
+                for( unsigned s = 0; s < _nStates; ++s )
+                    error[s] += std::fabs( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) * _mesh->GetArea( j );
                 break;
             case 2:
-                for( unsigned j = 0; j < _nStates; ++j ) error[j] += std::pow( solution( _nStates + j, i ) - _referenceSolution[j + _nStates][i], 2 );
+                for( unsigned s = 0; s < _nStates; ++s )
+                    error[s] += std::pow( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates], 2 ) * _mesh->GetArea( j );
+                break;
+            default: exit( EXIT_FAILURE );
+        }
+    }
+    return error;
+}
+
+Vector MomentSolver::CalculateErrorExpectedValue( const Matrix& solution, unsigned LNorm ) const {
+    Vector error( _nStates );
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        switch( LNorm ) {
+            case 1:
+                for( unsigned s = 0; s < _nStates; ++s ) error[s] += std::fabs( solution( s, j ) - _referenceSolution[j][s] ) * _mesh->GetArea( j );
+                break;
+            case 2:
+                for( unsigned s = 0; s < _nStates; ++s ) error[s] += std::pow( solution( s, j ) - _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
                 break;
             default: exit( EXIT_FAILURE );
         }

@@ -143,7 +143,7 @@ int main( int argc, char* argv[] ) {
     solver->Solve();
 
     log->info( "" );
-    log->info( "Process exited normally on PE {:03.8f} .", double( settings->GetMyPE() ) );
+    log->info( "Process exited normally on PE {:1d} .", settings->GetMyPE() );
 
     delete solver;
     delete problem;
