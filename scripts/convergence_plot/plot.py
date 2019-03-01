@@ -48,6 +48,12 @@ def create_label(dir, file):
             return 'os-IPM'
         elif closure == 'Euler2D':
             return 'IPM'
+        elif closure == 'L2Filter':
+            return 'L2Filter'
+        elif closure == 'LassoFilter':
+            return 'LassoFilter'         
+        elif closure == 'BoundedBarrier':
+            return 'BoundedBarrier'         
         else:
             return 'unkown'
 
