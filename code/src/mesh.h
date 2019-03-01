@@ -49,6 +49,7 @@ class Mesh
     std::vector<Cell*>& GetGrid();
     std::vector<Cell*> GetGrid() const;
     double GetArea( unsigned i ) const;
+    double GetDomainArea() const;
     double GetMinEdge( unsigned i ) const;
     double GetMaxEdge( unsigned i ) const;
     Vector GetCenterPos( unsigned i ) const;

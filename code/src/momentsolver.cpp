@@ -443,36 +443,44 @@ MatVec MomentSolver::ImportPrevDuals( unsigned nPrevTotal ) {
     return lambda;
 }
 
+Vector MomentSolver::CalculateErrorExpectedValue( const Matrix& solution, unsigned LNorm ) const {
+    Vector error( _nStates );
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        switch( LNorm ) {
+            case 1:
+                for( unsigned s = 0; s < _nStates; ++s )
+                    error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s] ) * _mesh->GetArea( j );
+                break;
+            case 2:
+                for( unsigned s = 0; s < _nStates; ++s )
+                    error[s] += std::pow( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
+                break;
+            default: exit( EXIT_FAILURE );
+        }
+    }
+    error = error / _mesh->GetDomainArea();
+    return error;
+}
+
 Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm ) const {
     Vector error( _nStates );
     for( unsigned j = 0; j < _nCells; ++j ) {
         switch( LNorm ) {
             case 1:
                 for( unsigned s = 0; s < _nStates; ++s )
-                    error[s] += std::fabs( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) * _mesh->GetArea( j );
+                    error[s] +=
+                        std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates] ) *
+                        _mesh->GetArea( j );
                 break;
             case 2:
                 for( unsigned s = 0; s < _nStates; ++s )
-                    error[s] += std::pow( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates], 2 ) * _mesh->GetArea( j );
+                    error[s] +=
+                        std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates], 2 ) *
+                        _mesh->GetArea( j );
                 break;
             default: exit( EXIT_FAILURE );
         }
     }
-    return error;
-}
-
-Vector MomentSolver::CalculateErrorExpectedValue( const Matrix& solution, unsigned LNorm ) const {
-    Vector error( _nStates );
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        switch( LNorm ) {
-            case 1:
-                for( unsigned s = 0; s < _nStates; ++s ) error[s] += std::fabs( solution( s, j ) - _referenceSolution[j][s] ) * _mesh->GetArea( j );
-                break;
-            case 2:
-                for( unsigned s = 0; s < _nStates; ++s ) error[s] += std::pow( solution( s, j ) - _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
-                break;
-            default: exit( EXIT_FAILURE );
-        }
-    }
+    error = error / _mesh->GetDomainArea();
     return error;
 }

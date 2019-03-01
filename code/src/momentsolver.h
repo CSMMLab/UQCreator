@@ -43,8 +43,8 @@ class MomentSolver
     Settings* ImportPrevSettings() const;
     MatVec ImportPrevMoments( unsigned nPrevTotal ) const;
     MatVec ImportPrevDuals( unsigned nPrevTotal );
-    Vector CalculateErrorVar( const Matrix& solution, unsigned LNorm ) const;
     Vector CalculateErrorExpectedValue( const Matrix& solution, unsigned LNorm ) const;
+    Vector CalculateErrorVar( const Matrix& solution, unsigned LNorm ) const;
     MatVec DetermineMoments( unsigned nTotal ) const;
     void SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u );
     Settings* DeterminePreviousSettings() const;

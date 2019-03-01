@@ -69,3 +69,11 @@ void Mesh::PlotInXi( const Matrix& u, unsigned state ) const {
     }
     out.close();
 }
+
+double Mesh::GetDomainArea() const {
+    double area = 0;
+    for( unsigned j = 0; j < _cells.size(); ++j ) {
+        area += this->GetArea( j );
+    }
+    return area;
+}
