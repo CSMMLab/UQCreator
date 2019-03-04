@@ -11,6 +11,22 @@ def time_to_float(time):
     epoch = dt.datetime.utcfromtimestamp(0)
     return (t-epoch).total_seconds()
 
+def checkForRestartFile(dir, file):
+    section_ctr = 0
+    line_ctr = 0    
+    restartFile = False
+    restartFileName = ''
+    with open(dir+'/'+file, 'r') as content:
+        lines = content.readlines()        
+        while section_ctr<3:                     
+            if "=====" in lines[line_ctr]:
+                section_ctr = section_ctr + 1
+            elif "restartFile" in lines[line_ctr] and not "#" in lines[line_ctr]:
+                restartFile = True
+                restartFileName = lines[line_ctr].split('=')[-1].split("/")[-1][:-2]
+            line_ctr = line_ctr + 1 
+    return restartFile, restartFileName
+
 def create_label(dir, file):    
     section_ctr = 0
     line_ctr = 0    
@@ -35,15 +51,17 @@ def create_label(dir, file):
                 nMoments = int(lines[line_ctr].split("=")[1])
             elif "maxIterations" in lines[line_ctr]:
                 maxIter = int(lines[line_ctr].split("=")[1])
-            elif "restartFile" in lines[line_ctr] and not "#restartFile" in lines[line_ctr]:
-                restartFile = True
+            elif "restartFile" in lines[line_ctr] and not "#" in lines[line_ctr]:
+                restartFile = True                
             line_ctr = line_ctr + 1        
         if closure == 'StochasticGalerkin' and nQuad == nMoments:
             return 'SC'
         elif closure == 'StochasticGalerkin':
             return 'SG'
+        elif closure == 'Euler2D' and restartFile and maxIter == 1:
+            return 'caos-IPM'            
         elif closure == 'Euler2D' and restartFile:
-            return 'caos-IPM'
+            return 'ca-IPM'
         elif closure == 'Euler2D' and maxIter == 1:
             return 'os-IPM'
         elif closure == 'Euler2D':
@@ -65,10 +83,10 @@ def parse_logfile(dir, file):
         while section_ctr<3:
             if "=====" in lines[line_ctr]:
                 section_ctr = section_ctr + 1
-            line_ctr = line_ctr + 1
-        line_ctr = line_ctr + 1
+            line_ctr += 1
+        line_ctr += 1
         while "PE" in lines[line_ctr] or "residual" in lines[line_ctr]:
-            line_ctr = line_ctr + 1
+            line_ctr += 1
         lines = lines[line_ctr:]
         lines_to_del = []
         for i in range(len(lines)):
@@ -85,7 +103,14 @@ def parse_logfile(dir, file):
         for index, row in df.iterrows():
             df.loc[index,'runtime'] = time_to_float(df['date'][index]+' '+df['time'][index]) - t0
         df = df.drop(columns=['date','time'])
-        return(df)
+
+        isRestartFile, prevFileName = checkForRestartFile(dir, file)
+        if isRestartFile and os.path.isfile(dir+'/'+prevFileName) :
+            df_prev = parse_logfile(dir, prevFileName)
+            df['runtime'] += df_prev['runtime'].iloc[-1]
+            return pd.concat([df_prev, df])
+        else:
+            return(df)
 
 def create_runtime_residual_plots(data, labels, threshold=np.inf):   
     plt.cla()
@@ -95,8 +120,9 @@ def create_runtime_residual_plots(data, labels, threshold=np.inf):
         plt.semilogy(df['runtime'],df['residual_scaled'])
     plt.xlabel('Runtime [s]')
     plt.ylabel('Residual')
-    plt.legend(labels)
+    plt.legend(labels)    
     plt.savefig("convergence_runtime_residual.pdf")
+    print("Plot saved as: 'convergence_runtime_residual.pdf'")
 
 def create_time_residual_plots(data, labels, tEnd=np.inf):   
     plt.cla()
@@ -108,6 +134,7 @@ def create_time_residual_plots(data, labels, tEnd=np.inf):
     plt.ylabel('Residual')
     plt.legend(labels)
     plt.savefig("convergence_time_residual.pdf")
+    print("Plot saved as: 'convergence_time_residual.pdf'")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -117,7 +144,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     data = []
     labels = []
-    for file in os.listdir(args.dir):
+    files = os.listdir(args.dir)
+    ignored_files = []
+    for file in files:
+        isRestartFile, prevFileName = checkForRestartFile(args.dir, file)
+        if isRestartFile:
+            if prevFileName not in ignored_files: ignored_files.append(prevFileName)
+            if prevFileName not in files: print("WARNING: restart file found but previous file was not found")
+    for file in ignored_files:
+        if file in files: files.remove(file)
+    for file in files:
         if file.endswith('_moments') or file.endswith('_duals'):
             print("Skipping '" + file + "'!")
             continue
@@ -129,4 +165,4 @@ if __name__ == "__main__":
         create_time_residual_plots(data, labels, args.tEnd)
     else:
         create_runtime_residual_plots(data, labels)
-        create_time_residual_plots(data, labels)
+        create_time_residual_plots(data, labels)    
