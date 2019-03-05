@@ -101,6 +101,54 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
     spdlog::register_logger( duals_logger );
 }
 
+void initErrorLogger( std::string configFile ) {
+    auto file      = cpptoml::parse_file( configFile );
+    auto general   = file->get_table( "general" );
+    auto outputDir = general->get_as<std::string>( "outputDir" ).value_or( "." );
+    if( !std::filesystem::exists( outputDir ) ) {
+        std::filesystem::create_directory( outputDir );
+    }
+    if( !std::filesystem::exists( outputDir + "/logs" ) ) {
+        std::filesystem::create_directory( outputDir + "/logs" );
+    }
+
+    auto l1ErrorMeanSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_L1ErrorMean" );
+    l1ErrorMeanSink->set_level( spdlog::level::info );
+    l1ErrorMeanSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
+    auto l1ErrorMeanLogger = std::make_shared<spdlog::logger>( "l1ErrorMean", l1ErrorMeanSink );
+    spdlog::register_logger( l1ErrorMeanLogger );
+
+    auto l2ErrorMeanSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_L2ErrorMean" );
+    l2ErrorMeanSink->set_level( spdlog::level::info );
+    l2ErrorMeanSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
+    auto l2ErrorMeanLogger = std::make_shared<spdlog::logger>( "l2ErrorMean", l2ErrorMeanSink );
+    spdlog::register_logger( l2ErrorMeanLogger );
+
+    auto lInfErrorMeanSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_LInfErrorMean" );
+    lInfErrorMeanSink->set_level( spdlog::level::info );
+    lInfErrorMeanSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
+    auto lInfErrorMeanLogger = std::make_shared<spdlog::logger>( "lInfErrorMean", lInfErrorMeanSink );
+    spdlog::register_logger( lInfErrorMeanLogger );
+
+    auto l1ErrorVarSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_L1ErrorVar" );
+    l1ErrorVarSink->set_level( spdlog::level::info );
+    l1ErrorVarSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
+    auto l1ErrorVarLogger = std::make_shared<spdlog::logger>( "l1ErrorVar", l1ErrorVarSink );
+    spdlog::register_logger( l1ErrorVarLogger );
+
+    auto l2ErrorVarSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_L2ErrorVar" );
+    l2ErrorVarSink->set_level( spdlog::level::info );
+    l2ErrorVarSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
+    auto l2ErrorVarLogger = std::make_shared<spdlog::logger>( "l2ErrorVar", l2ErrorVarSink );
+    spdlog::register_logger( l2ErrorVarLogger );
+
+    auto lInfErrorVarSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_LInfErrorVar" );
+    lInfErrorVarSink->set_level( spdlog::level::info );
+    lInfErrorVarSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
+    auto lInfErrorVarLogger = std::make_shared<spdlog::logger>( "lInfErrorVar", lInfErrorVarSink );
+    spdlog::register_logger( lInfErrorVarLogger );
+}
+
 void PrintInit( std::string configFile ) {
     auto log = spdlog::get( "event" );
     log->info( "UQCreator" );
@@ -132,10 +180,9 @@ int main( int argc, char* argv[] ) {
     initLogger( spdlog::level::info, spdlog::level::info, configFile );
     auto log = spdlog::get( "event" );
 
-    // PrintInit( configFile );
-
     Settings* settings = new Settings( configFile );
     if( settings->GetMyPE() == 0 ) PrintInit( configFile );
+    if( settings->HasReferenceFile() ) initErrorLogger( configFile );
     Mesh* mesh           = Mesh::Create( settings );
     Problem* problem     = Problem::Create( settings );
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );

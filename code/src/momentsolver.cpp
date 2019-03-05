@@ -108,6 +108,59 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
+
+            if( _settings->HasReferenceFile() ) {
+                auto l1ErrorMeanLog   = spdlog::get( "l1ErrorMean" );
+                auto l2ErrorMeanLog   = spdlog::get( "l2ErrorMean" );
+                auto lInfErrorMeanLog = spdlog::get( "lInfErrorMean" );
+                auto l1ErrorVarLog    = spdlog::get( "l1ErrorVar" );
+                auto l2ErrorVarLog    = spdlog::get( "l2ErrorVar" );
+                auto lInfErrorVarLog  = spdlog::get( "lInfErrorVar" );
+
+                Matrix meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+                Matrix phiTildeWf = _closure->GetPhiTildeWf();
+                Vector tmp( _nStates, 0.0 );
+                for( unsigned j = 0; j < _nCells; ++j ) {
+                    // expected value
+                    for( unsigned k = 0; k < _nQTotal; ++k ) {
+                        _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
+                        for( unsigned i = 0; i < _nStates; ++i ) {
+                            meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
+                        }
+                    }
+
+                    // variance
+                    for( unsigned k = 0; k < _nQTotal; ++k ) {
+                        _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
+                        for( unsigned i = 0; i < _nStates; ++i ) {
+                            meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
+                        }
+                    }
+                }
+                auto l1ErrorMean   = this->CalculateErrorMean( meanAndVar, 1 );
+                auto l2ErrorMean   = this->CalculateErrorMean( meanAndVar, 2 );
+                auto lInfErrorMean = this->CalculateErrorMean( meanAndVar, 0 );
+                auto l1ErrorVar    = this->CalculateErrorVar( meanAndVar, 1 );
+                auto l2ErrorVar    = this->CalculateErrorVar( meanAndVar, 2 );
+                auto lInfErrorVar  = this->CalculateErrorVar( meanAndVar, 0 );
+
+                std::ostringstream osL1ErrorMean, osL2ErrorMean, osLInfErrorMean, osL1ErrorVar, osL2ErrorVar, osLInfErrorVar;
+                for( unsigned i = 0; i < _nStates; ++i ) {
+                    osL1ErrorMean << l1ErrorMean[i] << "\t";
+                    osL2ErrorMean << l2ErrorMean[i] << "\t";
+                    osLInfErrorMean << lInfErrorMean[i] << "\t";
+                    osL1ErrorVar << l1ErrorVar[i] << "\t";
+                    osL2ErrorVar << l2ErrorVar[i] << "\t";
+                    osLInfErrorVar << lInfErrorVar[i] << "\t";
+                }
+
+                l1ErrorMeanLog->info( osL1ErrorMean.str() );
+                l2ErrorMeanLog->info( osL2ErrorMean.str() );
+                lInfErrorMeanLog->info( osLInfErrorMean.str() );
+                l1ErrorVarLog->info( osL1ErrorVar.str() );
+                l2ErrorVarLog->info( osL2ErrorVar.str() );
+                lInfErrorVarLog->info( osLInfErrorVar.str() );
+            }
         }
     }
 
@@ -175,23 +228,6 @@ void MomentSolver::Solve() {
                     meanAndVar( 3 * _nStates + i, j ) += pow( tmp[i] - meanAndVar( 2 * _nStates + i, j ), 2 ) * phiTildeWf( k, 0 );
                 }
             }
-        }
-    }
-
-    if( _settings->HasReferenceFile() ) {
-        auto l1Error = this->CalculateErrorExpectedValue( meanAndVar, 1 );
-        auto l2Error = this->CalculateErrorExpectedValue( meanAndVar, 2 );
-        log->info( "\nExpectation Value error w.r.t reference solution:" );
-        log->info( "State   L1-error      L2-error" );
-        for( unsigned i = 0; i < _nStates; ++i ) {
-            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], sqrt( l2Error[i] ) );
-        }
-        l1Error = this->CalculateErrorVar( meanAndVar, 1 );
-        l2Error = this->CalculateErrorVar( meanAndVar, 2 );
-        log->info( "\nVariance error w.r.t reference solution:" );
-        log->info( "State   L1-error      L2-error" );
-        for( unsigned i = 0; i < _nStates; ++i ) {
-            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], sqrt( l2Error[i] ) );
         }
     }
 
@@ -443,7 +479,7 @@ MatVec MomentSolver::ImportPrevDuals( unsigned nPrevTotal ) {
     return lambda;
 }
 
-Vector MomentSolver::CalculateErrorExpectedValue( const Matrix& solution, unsigned LNorm ) const {
+Vector MomentSolver::CalculateErrorMean( const Matrix& solution, unsigned LNorm ) const {
     Vector error( _nStates );
     for( unsigned j = 0; j < _nCells; ++j ) {
         switch( LNorm ) {
@@ -458,7 +494,7 @@ Vector MomentSolver::CalculateErrorExpectedValue( const Matrix& solution, unsign
             default: exit( EXIT_FAILURE );
         }
     }
-    error = error / _mesh->GetDomainArea();
+    error /= _mesh->GetDomainArea();
     return error;
 }
 
@@ -466,6 +502,13 @@ Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm )
     Vector error( _nStates );
     for( unsigned j = 0; j < _nCells; ++j ) {
         switch( LNorm ) {
+            case 0:
+                for( unsigned s = 0; s < _nStates; ++s )
+                    error[s] = std::max(
+                        error[s],
+                        std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates] ) *
+                            _mesh->GetArea( j ) );
+                break;
             case 1:
                 for( unsigned s = 0; s < _nStates; ++s )
                     error[s] +=
@@ -481,6 +524,7 @@ Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm )
             default: exit( EXIT_FAILURE );
         }
     }
-    error = error / _mesh->GetDomainArea();
+    error /= _mesh->GetDomainArea();
+    for( unsigned s = 0; s < _nStates; ++s ) error[s] = sqrt( error[s] );
     return error;
 }
