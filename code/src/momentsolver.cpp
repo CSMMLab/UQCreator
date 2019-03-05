@@ -146,12 +146,12 @@ void MomentSolver::Solve() {
 
                 std::ostringstream osL1ErrorMean, osL2ErrorMean, osLInfErrorMean, osL1ErrorVar, osL2ErrorVar, osLInfErrorVar;
                 for( unsigned i = 0; i < _nStates; ++i ) {
-                    osL1ErrorMean << l1ErrorMean[i] << "\t";
-                    osL2ErrorMean << l2ErrorMean[i] << "\t";
-                    osLInfErrorMean << lInfErrorMean[i] << "\t";
-                    osL1ErrorVar << l1ErrorVar[i] << "\t";
-                    osL2ErrorVar << l2ErrorVar[i] << "\t";
-                    osLInfErrorVar << lInfErrorVar[i] << "\t";
+                    osL1ErrorMean << std::scientific << l1ErrorMean[i] << "\t";
+                    osL2ErrorMean << std::scientific << l2ErrorMean[i] << "\t";
+                    osLInfErrorMean << std::scientific << lInfErrorMean[i] << "\t";
+                    osL1ErrorVar << std::scientific << l1ErrorVar[i] << "\t";
+                    osL2ErrorVar << std::scientific << l2ErrorVar[i] << "\t";
+                    osLInfErrorVar << std::scientific << lInfErrorVar[i] << "\t";
                 }
 
                 l1ErrorMeanLog->info( osL1ErrorMean.str() );
@@ -483,6 +483,11 @@ Vector MomentSolver::CalculateErrorMean( const Matrix& solution, unsigned LNorm 
     Vector error( _nStates );
     for( unsigned j = 0; j < _nCells; ++j ) {
         switch( LNorm ) {
+            case 0:
+                for( unsigned s = 0; s < _nStates; ++s )
+                    error[s] = std::max(
+                        error[s], std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s] ) * _mesh->GetArea( j ) );
+                break;
             case 1:
                 for( unsigned s = 0; s < _nStates; ++s )
                     error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s] ) * _mesh->GetArea( j );
