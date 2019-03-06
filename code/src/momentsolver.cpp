@@ -246,20 +246,19 @@ Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const 
 void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u ) {
     if( _settings->LoadLambda() ) {
         _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
+        return;
     }
     else {
-        _lambda = MatVec( _nCells + 1, Matrix( _nStates, prevSettings->GetNTotal() ) );
+        _lambda = MatVec( _nCells, Matrix( _nStates, prevSettings->GetNTotal() ) );
         Vector ds( _nStates );
         Vector u0( _nStates );
         for( unsigned j = 0; j < _nCells; ++j ) {
             for( unsigned l = 0; l < _nStates; ++l ) {
                 u0[l] = u[j]( l, 0 );
             }
-            if( !_settings->LoadLambda() ) {
-                _closure->DS( ds, u0 );
-                for( unsigned l = 0; l < _nStates; ++l ) {
-                    _lambda[j]( l, 0 ) = ds[l];
-                }
+            _closure->DS( ds, u0 );
+            for( unsigned l = 0; l < _nStates; ++l ) {
+                _lambda[j]( l, 0 ) = ds[l];
             }
         }
 
@@ -273,7 +272,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         }
         // for restart with lower order of moments reconstruct solution at finer quad points and compute moments at higher order
         if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
-            MatVec uQFullProc      = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNQTotal() ) );
+            MatVec uQFullProc      = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
             unsigned maxIterations = _closure->GetMaxIterations();
             if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
             prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
@@ -368,7 +367,7 @@ void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {
     }
     moment_writer->flush();
     std::shared_ptr<spdlog::logger> dual_writer = spdlog::get( "duals" );
-    for( unsigned i = 0; i < _nCells + 1; ++i ) {
+    for( unsigned i = 0; i < _nCells; ++i ) {
         std::stringstream line;
         for( unsigned j = 0; j < _nStates; ++j ) {
             for( unsigned k = 0; k < _nTotal; ++k ) {
@@ -425,10 +424,10 @@ MatVec MomentSolver::ImportPrevMoments( unsigned nPrevTotal ) const {
 }
 
 MatVec MomentSolver::ImportPrevDuals( unsigned nPrevTotal ) {
-    MatVec lambda( _nCells + 1, Matrix( _nStates, nPrevTotal ) );
+    MatVec lambda( _nCells, Matrix( _nStates, nPrevTotal ) );
     auto file = std::ifstream( _settings->GetRestartFile() + "_duals" );
     std::string line;
-    for( unsigned i = 0; i < _nCells + 1; ++i ) {
+    for( unsigned i = 0; i < _nCells; ++i ) {
         std::getline( file, line );
         std::stringstream lineStream( line );
         std::string cell;
