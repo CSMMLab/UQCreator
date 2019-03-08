@@ -12,6 +12,22 @@ def time_to_float(time):
     epoch = dt.datetime.utcfromtimestamp(0)
     return (t-epoch).total_seconds()
 
+def checkForRestartFile(dir, file):
+    section_ctr = 0
+    line_ctr = 0    
+    restartFile = False
+    restartFileName = ''
+    with open(dir+'/'+file, 'r') as content:
+        lines = content.readlines()        
+        while section_ctr<3 and line_ctr<len(lines):                     
+            if "=====" in lines[line_ctr]:
+                section_ctr = section_ctr + 1
+            elif "restartFile" in lines[line_ctr] and not "#" in lines[line_ctr]:
+                restartFile = True
+                restartFileName = lines[line_ctr].split('=')[-1].split("/")[-1][:-2]
+            line_ctr = line_ctr + 1 
+    return restartFile, restartFileName
+
 def create_label(dir, file):    
     section_ctr = 0
     line_ctr = 0    
@@ -81,8 +97,21 @@ def create_plot(dir, configFiles, files, title, type):
     data = []
     label = []
     for f in range(len(files)):
-        data.append(parse_logfile(dir, files[f]))
         label.append(create_label(dir, configFiles[f]))
+        isRestartFile, prevFileName = checkForRestartFile(dir, configFiles[f])
+        if isRestartFile and os.path.isfile(dir+'/'+prevFileName):
+            ext = ''
+            if title == 'L1': ext = 'L1Error'
+            elif title == 'L2': ext = 'L2Error'
+            elif title == 'L-infinity': ext = 'LInfError'
+            if type == 'E': ext += 'Mean'
+            elif type == 'Var': ext += 'Var'
+            df_prev = parse_logfile(dir, prevFileName+'_'+ext)
+            df = parse_logfile(dir, files[f])
+            df['runtime'] += df_prev['runtime'].iloc[-1]
+            data.append(pd.concat([df_prev, df]))
+        else:
+            data.append(parse_logfile(dir, files[f]))
     for s in range(nStates):
         plt.cla()
         plt.clf()
@@ -102,6 +131,7 @@ if __name__ == "__main__":
     data = []
     labels = []
     files = os.listdir(args.dir)
+    ignoredFiles = []
     configFiles = []
     L1ErrMeanFiles = []
     L2ErrMeanFiles = []
@@ -110,6 +140,17 @@ if __name__ == "__main__":
     L2ErrVarFiles = []
     LInfErrVarFiles = []
     for file in files:
+        isRestartFile, prevFileName = checkForRestartFile(args.dir, file)
+        if isRestartFile:
+            if prevFileName not in ignoredFiles: ignoredFiles.append(prevFileName)
+            if prevFileName not in files: print("WARNING: restart file found but previous file was not found")    
+    for file in files:
+        for ifile in ignoredFiles:
+            if file.startswith(ifile):
+                if file not in ignoredFiles: ignoredFiles.append(file)
+    for ifile in ignoredFiles:
+        files.remove(ifile)
+    for file in files:      
         if re.search(r'\d+$', file) is not None:
             configFiles.append(file)
         if file.endswith('_L1ErrorMean'):
@@ -124,6 +165,13 @@ if __name__ == "__main__":
             L2ErrVarFiles.append(file)
         elif file.endswith('_LInfErrorVar'):            
             LInfErrVarFiles.append(file)
+    configFiles.sort()
+    L1ErrMeanFiles.sort()
+    L2ErrMeanFiles.sort()
+    LInfErrMeanFiles.sort()
+    L1ErrVarFiles.sort()
+    L2ErrVarFiles.sort()
+    LInfErrVarFiles.sort()
     create_plot(args.dir, configFiles, L1ErrMeanFiles, 'L1', 'E')
     create_plot(args.dir, configFiles, L2ErrMeanFiles, 'L2', 'E')
     create_plot(args.dir, configFiles, LInfErrMeanFiles, 'L-infinity', 'E')
