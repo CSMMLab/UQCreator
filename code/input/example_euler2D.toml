@@ -1,10 +1,11 @@
 [general]
 problem = "Euler2D"
 outputDir = "../results"
-restartFile = "../../result_sync/CAOS-IPM/euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa/2019-03-01_15:37:33"
-#restartFile = "../results/logs/2019-02-26_12:06:00"
+#restartFile = "../../result_sync/CAOS-IPM/euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa/2019-03-01_15:37:33"
+#restartFile = "../../result_sync/CA-IPM/euler2D_nacaCoarse_caipm_n10_nq15_s05_aoa/2019-03-01_15:37:27"
+restartFile = "../results/logs/2019-03-06_16:19:03"
 #importDualState = true
-#icFile = "../../su2/SU2RefSol.vtk"
+#restartFile = "../../result_sync/SC/euler2D_nacaCoarse_sc_n5_s05_aoa/2019-02-28_14:35:30"
 referenceSolution = "../../result_sync/SC/euler2D_nacaCoarse_sc_n50_s05_aoa/euler2D_nacaCoarse_sc_n50_s05_aoa.vtk"
 
 [mesh]
@@ -20,7 +21,7 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.5]]
 CFL = 0.9
-tEnd = 0.0
+tEnd = 2.00001
 residual = 1e-5
 
 [moment_system]
