@@ -118,6 +118,8 @@ void MomentSolver::Solve() {
 
     if( _settings->GetMyPE() != 0 ) return;
 
+    // TODO: Lambdas do not match moments here!!!! Compute lambdas for final moments
+
     // save final moments on uNew
     uNew = u;
 
@@ -195,16 +197,18 @@ void MomentSolver::Solve() {
         }
     }
 
+    meanAndVar = this->CalculateErrorField( meanAndVar, 1 );
+
     if( _settings->GetProblemType() == P_SHALLOWWATER_2D )
         _mesh->ExportShallowWater( meanAndVar );
     else
         _mesh->Export( meanAndVar );
 
     this->Export( uNew, _lambda );
-
-    unsigned evalCell  = 300;    // 2404;
-    unsigned plotState = 0;
-    _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );
+    /*
+        unsigned evalCell  = 300;    // 2404;
+        unsigned plotState = 0;
+        _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );*/
 }
 
 MatVec MomentSolver::DetermineMoments( unsigned nTotal ) const {
@@ -458,6 +462,38 @@ Vector MomentSolver::CalculateErrorExpectedValue( const Matrix& solution, unsign
         }
     }
     error = error / _mesh->GetDomainArea();
+    return error;
+}
+
+Matrix MomentSolver::CalculateErrorField( const Matrix& solution, unsigned LNorm ) const {
+    Matrix error( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        switch( LNorm ) {
+            case 1:
+                for( unsigned s = 0; s < _nStates; ++s ) {
+                    error( s, j ) = std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
+                    error( _nStates + s, j ) =
+                        std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) ) * _mesh->GetArea( j );
+                    // error( s, j )            = _referenceSolution[j][s];
+                    // error( _nStates + s, j ) = _referenceSolution[j][s + _nStates];
+                    /*
+                    error( s, j ) = std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s] ) * _mesh->GetArea( j );
+                    error( _nStates + s, j ) =
+                        std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates] ) *
+                        _mesh->GetArea( j );*/
+                }
+                break;
+            case 2:
+                for( unsigned s = 0; s < _nStates; ++s ) {
+                    error( s, j ) = std::pow( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
+                    error( _nStates + s, j ) =
+                        std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates], 2 ) *
+                        _mesh->GetArea( j );
+                }
+                break;
+            default: exit( EXIT_FAILURE );
+        }
+    }
     return error;
 }
 

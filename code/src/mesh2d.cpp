@@ -380,12 +380,12 @@ std::vector<Vector> Mesh2D::Import() const {
 
     std::vector<Vector> data( _numCells, Vector( 2 * _settings->GetNStates() ) );
 
-    auto converter = vtkPointDataToCellDataSP::New();
-    converter->AddInputDataObject( reader->GetOutput() );
-    converter->PassPointDataOn();
-    converter->Update();
+    // auto converter = vtkPointDataToCellDataSP::New();
+    // converter->AddInputDataObject( reader->GetOutput() );
+    // converter->PassPointDataOn();
+    // converter->Update();
 
-    auto grid     = converter->GetOutput();
+    auto grid     = reader->GetOutput();
     auto cellData = grid->GetCellData();
 
     for( unsigned i = 0; i < _numCells; ++i ) {

@@ -49,6 +49,7 @@ class MomentSolver
     void SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u );
     Settings* DeterminePreviousSettings() const;
     Closure* DeterminePreviousClosure( Settings* prevSettings ) const;
+    Matrix CalculateErrorField( const Matrix& solution, unsigned LNorm ) const;
 
   public:
     MomentSolver( Settings* settings, Mesh* mesh, Problem* problem );
