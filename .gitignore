@@ -58,3 +58,6 @@ code/ext/*
 /.DS_Store
 ._.DS_Store
 ._*
+
+# sync folder
+result_sync/*
