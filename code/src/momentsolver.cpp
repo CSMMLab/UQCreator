@@ -215,6 +215,13 @@ MatVec MomentSolver::DetermineMoments( unsigned nTotal ) const {
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     if( _settings->HasRestartFile() ) {
         u = this->ImportPrevMoments( nTotal );
+
+        // if cells are Dirichlet cells and we increase nTotal on restart, we should use moments from initial condition:
+        // if we use old moments we have inexact BCs for new truncation order
+        MatVec uIC = this->SetupIC();
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) u[j] = uIC[j];
+        }
     }
     else {
         u = this->SetupIC();
@@ -296,8 +303,6 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
                         _lambda[j]( s, i ) = lambdaOld( s, i );
                     }
                 }
-                auto uQTest = _closure->U( _closure->EvaluateLambda( _lambda[j] ) );
-                auto uTest  = uQTest * _closure->GetPhiTildeWf();
                 _closure->SolveClosureSafe( _lambda[j], u[j] );
             }
             _closure->SetMaxIterations( maxIterations );
@@ -474,8 +479,6 @@ Matrix MomentSolver::CalculateErrorField( const Matrix& solution, unsigned LNorm
                     error( s, j ) = std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
                     error( _nStates + s, j ) =
                         std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) ) * _mesh->GetArea( j );
-                    // error( s, j )            = _referenceSolution[j][s];
-                    // error( _nStates + s, j ) = _referenceSolution[j][s + _nStates];
                     /*
                     error( s, j ) = std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s] ) * _mesh->GetArea( j );
                     error( _nStates + s, j ) =
