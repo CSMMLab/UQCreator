@@ -49,6 +49,7 @@ void MomentSolver::Solve() {
     MatVec uNew = u;
     MatVec uOld = u;
 
+    // set up function pointer for right hand side
     auto numFluxPtr = std::bind( &MomentSolver::numFlux,
                                  this,
                                  std::placeholders::_1,
@@ -58,11 +59,14 @@ void MomentSolver::Solve() {
                                  std::placeholders::_5 );
 
     if( _settings->GetMyPE() == 0 ) log->info( "{:10}   {:10}", "t", "residual" );
-    // Begin time loop
+
+    // init time and residual
     double t = _tStart;
     double dt;
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
+
+    // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
         double residual = 0;
 
