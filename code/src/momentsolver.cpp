@@ -81,7 +81,7 @@ void MomentSolver::Solve() {
             MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
 
-        // compute solution at quad points as well as partial moment vectors on each PE
+        // compute solution at quad points as well as partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
             u[j].reset();
@@ -105,10 +105,10 @@ void MomentSolver::Solve() {
             MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
         }
 
+        // compute residual
         for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
             residual += std::fabs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] );
         }
-
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
@@ -224,9 +224,11 @@ MatVec MomentSolver::DetermineMoments( unsigned nTotal ) const {
 
         // if cells are Dirichlet cells and we increase nTotal on restart, we should use moments from initial condition:
         // if we use old moments we have inexact BCs for new truncation order
-        MatVec uIC = this->SetupIC();
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) u[j] = uIC[j];
+        if( nTotal != _nTotal ) {
+            MatVec uIC = this->SetupIC();
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) u[j] = uIC[j];
+            }
         }
     }
     else {
@@ -266,7 +268,10 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         return;
     }
     else {
+        // compute dual states for given moment vector
         _lambda = MatVec( _nCells, Matrix( _nStates, prevSettings->GetNTotal() ) );
+
+        // compute first initial guess
         Vector ds( _nStates );
         Vector u0( _nStates );
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -279,7 +284,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             }
         }
 
-        // Converge initial condition entropy variables for One Shot IPM
+        // Converge initial condition entropy variables for One Shot IPM or if truncation order is increased
         if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
             prevClosure->SetMaxIterations( 10000 );
             for( unsigned j = 0; j < _nCells; ++j ) {
@@ -287,7 +292,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             }
             prevClosure->SetMaxIterations( 1 );
         }
-        // for restart with lower order of moments reconstruct solution at finer quad points and compute moments at higher order
+        // for restart with increased number of moments reconstruct solution at finer quad points and compute moments for new truncation order
         if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
             MatVec uQFullProc      = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
             unsigned maxIterations = _closure->GetMaxIterations();
