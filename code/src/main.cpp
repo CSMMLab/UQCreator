@@ -155,7 +155,6 @@ int main( int argc, char* argv[] ) {
     std::vector<Polynomial*> quad = closure->GetQuadrature();
     unsigned nCells               = settings->GetNumCells();
     unsigned nStates              = settings->GetNStates();
-    unsigned nQTotal              = settings->GetNQTotal();
     unsigned nTotal               = settings->GetNTotal();
 
     for( unsigned k = 0; k < settings->GetNQTotal(); ++k ) {
@@ -208,8 +207,8 @@ int main( int argc, char* argv[] ) {
         Matrix meanAndVar( 2 * nStates, nCells, 0.0 );
         for( unsigned j = 0; j < nCells; ++j ) {
             // expected value
-            for( unsigned i = 0; i < nStates; ++i ) {
-                meanAndVar( i, j ) = u[j]( i, 0 );
+            for( unsigned s = 0; s < nStates; ++s ) {
+                meanAndVar( s, j ) = u[j]( s, 0 );
             }
             // variance
             for( unsigned s = 0; s < nStates; ++s ) {
