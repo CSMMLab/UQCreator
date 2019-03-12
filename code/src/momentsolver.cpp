@@ -501,10 +501,9 @@ Matrix MomentSolver::CalculateErrorField( const Matrix& solution, unsigned LNorm
                 break;
             case 2:
                 for( unsigned s = 0; s < _nStates; ++s ) {
-                    error( s, j ) = std::pow( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
+                    error( s, j ) = std::pow( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s], 2 );
                     error( _nStates + s, j ) =
-                        std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates], 2 ) *
-                        _mesh->GetArea( j );
+                        std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates], 2 );
                 }
                 break;
             default: exit( EXIT_FAILURE );
