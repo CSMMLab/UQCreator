@@ -380,11 +380,6 @@ std::vector<Vector> Mesh2D::Import() const {
 
     std::vector<Vector> data( _numCells, Vector( 2 * _settings->GetNStates() ) );
 
-    // auto converter = vtkPointDataToCellDataSP::New();
-    // converter->AddInputDataObject( reader->GetOutput() );
-    // converter->PassPointDataOn();
-    // converter->Update();
-
     auto grid     = reader->GetOutput();
     auto cellData = grid->GetCellData();
 
@@ -411,6 +406,7 @@ void Mesh2D::Export( const Matrix& results, std::string append ) const {
     writer->SetFileName( vtkFile.c_str() );
     auto grid = vtkUnstructuredGridSP::New();
     auto pts  = vtkPointsSP::New();
+    pts->SetDataTypeToDouble();
     pts->SetNumberOfPoints( static_cast<int>( _nodes.size() ) );
     for( const auto& node : _nodes ) {
         pts->SetPoint( node->id, node->coords[0], node->coords[1], node->coords[2] );
