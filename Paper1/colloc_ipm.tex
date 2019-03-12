@@ -1,12 +1,9 @@
-\subsection{Collocation accelerated IPM}
-\label{sec:collIPM}
-
 In the following, we look at steady state problems, i.e. we have
 \begin{align}\label{eq:hyperbolicProblemSteady}
 \nabla\cdot\bm{f}(\bm{u}(\bm{x},\bm{\xi})) = \bm{0} \enskip \text{ in } D
 \end{align}
 with adequate boundary conditions. A general strategy for computing the steady state solution to \eqref{eq:hyperbolicProblemSteady} is to introduce a pseudo-time and numerically treat \eqref{eq:hyperbolicProblemSteady} as an unsteady problem. A steady state solution is then obtained by iterating in pseudo-time until the solution remains constant.
-Similar to the unsteady case \eqref{eq:hyperbolicProblem}, we can again derive a moment system 
+Similar to the unsteady case \eqref{eq:hyperbolicProblem}, we can again derive a moment system for \eqref{eq:hyperbolicProblemSteady} given by
 \begin{align}\label{eq:MomentSystemSteady}
 \nabla\cdot\langle\bm{f}(\bm{u}(\bm{x},\bm{\xi}))\bm{\varphi}^T\rangle^T = \bm{0} \enskip \text{ in } D
 \end{align}
@@ -15,6 +12,9 @@ which is again needed for the construction of intrusive methdos. By adding a pse
 \sum_{j = 1}^{N_x} \Delta x_j \Vert \bm{\hat{u}}_j^n - \bm{\hat{u}}_j^{n-1} \Vert \leq \varepsilon
 \end{align*}
 is fulfilled. Note that since one is generally interested in low order moments such as the expectation value, this residual can be modified by only accounting for the zero order moments.
+
+\subsection{Collocation accelerated IPM}
+\label{sec:collIPM}
 
 When computing steady state moments for this problem, the run time of different UQ methods crucially depends on the chosen initial condition and its distance to the steady state solution. However, it is not always clear how to choose a satisfactory initial guess for the moments. We tackle this problem with the following method: For a bad initial guess, we iterate to the steady state solution with the help of a cheap method. Note that one expects to need a lot of iteration steps to arrive at a steady state solution, however the overall computational time is acceptable due to the choice of a cheap method. The obtained inaccurate moments are then used to start a more accurate, but at the same time more expensive method. Due to the choice of the initial condition, a smaller number of iterations is needed to arrive at the steady state solution of the expensive method, i.e. the numerical costs are again acceptable.
 

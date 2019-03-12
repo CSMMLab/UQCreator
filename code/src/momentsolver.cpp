@@ -201,6 +201,8 @@ void MomentSolver::Solve() {
             log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], sqrt( l2Error[i] ) );
         }
         meanAndVarErrors = this->CalculateErrorField( meanAndVar, 1 );
+        std::cout << std::setprecision( 9 ) << meanAndVar( 0, 19080 ) << " " << _referenceSolution[19080][0] << std::endl;
+        std::cout << "error is " << meanAndVarErrors( 0, 19080 ) << std::endl;
         _mesh->Export( meanAndVarErrors, "_errors" );
     }
 
