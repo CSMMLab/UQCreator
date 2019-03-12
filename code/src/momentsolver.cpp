@@ -382,7 +382,7 @@ void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {
         std::stringstream line;
         for( unsigned j = 0; j < _nStates; ++j ) {
             for( unsigned k = 0; k < _nTotal; ++k ) {
-                line << u[i]( j, k ) << ",";
+                line << std::setprecision( std::numeric_limits<double>::digits10 ) << u[i]( j, k ) << ",";
             }
         }
         moment_writer->info( line.str() );
@@ -393,7 +393,7 @@ void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {
         std::stringstream line;
         for( unsigned j = 0; j < _nStates; ++j ) {
             for( unsigned k = 0; k < _nTotal; ++k ) {
-                line << lambda[i]( j, k ) << ",";
+                line << std::setprecision( std::numeric_limits<double>::digits10 ) << lambda[i]( j, k ) << ",";
             }
         }
         dual_writer->info( line.str() );
