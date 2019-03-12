@@ -130,6 +130,7 @@ void MomentSolver::Solve() {
     log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
     Matrix meanAndVar;
+    Matrix meanAndVarErrors = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     if( _settings->HasExactSolution() ) {
         meanAndVar = Matrix( 4 * _nStates, _mesh->GetNumCells(), 0.0 );
     }
@@ -195,14 +196,15 @@ void MomentSolver::Solve() {
         for( unsigned i = 0; i < _nStates; ++i ) {
             log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], sqrt( l2Error[i] ) );
         }
+        meanAndVarErrors = this->CalculateErrorField( meanAndVar, 1 );
+        _mesh->Export( meanAndVarErrors, "_errors" );
     }
-
-    meanAndVar = this->CalculateErrorField( meanAndVar, 1 );
 
     if( _settings->GetProblemType() == P_SHALLOWWATER_2D )
         _mesh->ExportShallowWater( meanAndVar );
-    else
-        _mesh->Export( meanAndVar );
+    else {
+        _mesh->Export( meanAndVar, "" );
+    }
 
     this->Export( uNew, _lambda );
     /*

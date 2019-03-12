@@ -65,7 +65,7 @@ class Mesh2D : public Mesh
 
     virtual std::vector<Vector> ImportSU2Solution() const;
     virtual std::vector<Vector> Import() const;
-    virtual void Export( const Matrix& results ) const;
+    virtual void Export( const Matrix& results, std::string append ) const;
     virtual void ExportShallowWater( const Matrix& results ) const;
 };
 
