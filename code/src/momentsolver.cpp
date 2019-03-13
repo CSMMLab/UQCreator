@@ -517,8 +517,8 @@ Matrix MomentSolver::CalculateErrorField( const Matrix& solution, unsigned LNorm
 
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned s = 0; s < _nStates; ++s ) {
-            error( s, j )            = std::pow( error( s, j ) / refNorm[s], 1 / LNorm );
-            error( _nStates + s, j ) = std::pow( error( _nStates + s, j ) / refNorm[s + _nStates], 1 / LNorm );
+            error( s, j )            = std::pow( error( s, j ) / refNorm[s], 1.0 / double( LNorm ) );
+            error( _nStates + s, j ) = std::pow( error( _nStates + s, j ) / refNorm[s + _nStates], 1.0 / double( LNorm ) );
         }
     }
 
