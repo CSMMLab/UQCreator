@@ -200,9 +200,9 @@ void MomentSolver::Solve() {
         for( unsigned i = 0; i < _nStates; ++i ) {
             log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], sqrt( l2Error[i] ) );
         }
-        meanAndVarErrors = this->CalculateErrorField( meanAndVar, 1 );
-        std::cout << std::setprecision( 9 ) << meanAndVar( 0, 19080 ) << " " << _referenceSolution[19080][0] << std::endl;
-        std::cout << "error is " << meanAndVarErrors( 0, 19080 ) << std::endl;
+        meanAndVarErrors = this->CalculateErrorField( meanAndVar, 2 );
+        // std::cout << std::setprecision( 9 ) << meanAndVar( 0, 19080 ) << " " << _referenceSolution[19080][0] << std::endl;
+        // std::cout << "error is " << meanAndVarErrors( 0, 19080 ) << std::endl;
         _mesh->Export( meanAndVarErrors, "_errors" );
     }
 
@@ -465,72 +465,88 @@ MatVec MomentSolver::ImportPrevDuals( unsigned nPrevTotal ) {
 }
 
 Vector MomentSolver::CalculateErrorExpectedValue( const Matrix& solution, unsigned LNorm ) const {
-    Vector error( _nStates );
+    Vector error( _nStates, 0.0 );
+    Vector refNorm( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
         switch( LNorm ) {
             case 1:
-                for( unsigned s = 0; s < _nStates; ++s )
-                    error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s] ) * _mesh->GetArea( j );
+                for( unsigned s = 0; s < _nStates; ++s ) {
+                    error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
+                    refNorm[s] += std::fabs( _referenceSolution[j][s] ) * _mesh->GetArea( j );
+                }
                 break;
             case 2:
-                for( unsigned s = 0; s < _nStates; ++s )
-                    error[s] += std::pow( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
+                for( unsigned s = 0; s < _nStates; ++s ) {
+                    error[s] += std::pow( ( solution( s, j ) - _referenceSolution[j][s] ), 2 ) * _mesh->GetArea( j );
+                    refNorm[s] += std::pow( _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
+                }
                 break;
             default: exit( EXIT_FAILURE );
         }
     }
-    error = error / _mesh->GetDomainArea();
+    for( unsigned s = 0; s < _nStates; ++s ) {
+        error[s] = error[s] / refNorm[s];
+    }
     return error;
 }
 
 Matrix MomentSolver::CalculateErrorField( const Matrix& solution, unsigned LNorm ) const {
     Matrix error( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+    Vector refNorm( 2 * _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
         switch( LNorm ) {
             case 1:
                 for( unsigned s = 0; s < _nStates; ++s ) {
-                    error( s, j ) = std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
-                    error( _nStates + s, j ) =
-                        std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) ) * _mesh->GetArea( j );
-                    /*
-                    error( s, j ) = std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s] ) * _mesh->GetArea( j );
-                    error( _nStates + s, j ) =
-                        std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates] ) *
-                        _mesh->GetArea( j );*/
+                    error( s, j )            = std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) );
+                    error( _nStates + s, j ) = std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) );
+                    refNorm[s] += std::fabs( _referenceSolution[j][s] ) * _mesh->GetArea( j );
+                    refNorm[s + _nStates] += std::fabs( _referenceSolution[j][s + _nStates] ) * _mesh->GetArea( j );
                 }
                 break;
             case 2:
                 for( unsigned s = 0; s < _nStates; ++s ) {
-                    error( s, j ) = std::pow( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s], 2 );
-                    error( _nStates + s, j ) =
-                        std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates], 2 );
+                    error( s, j )            = std::pow( ( solution( s, j ) - _referenceSolution[j][s] ), 2 );
+                    error( _nStates + s, j ) = std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ), 2 );
+                    refNorm[s] += std::pow( _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
+                    refNorm[s + _nStates] += std::pow( _referenceSolution[j][s + _nStates], 2 ) * _mesh->GetArea( j );
                 }
                 break;
             default: exit( EXIT_FAILURE );
         }
     }
+
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        for( unsigned s = 0; s < _nStates; ++s ) {
+            error( s, j )            = std::pow( error( s, j ) / refNorm[s], 1 / LNorm );
+            error( _nStates + s, j ) = std::pow( error( _nStates + s, j ) / refNorm[s + _nStates], 1 / LNorm );
+        }
+    }
+
     return error;
 }
 
 Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm ) const {
-    Vector error( _nStates );
+    Vector error( _nStates, 0.0 );
+    Vector refNorm( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
         switch( LNorm ) {
             case 1:
-                for( unsigned s = 0; s < _nStates; ++s )
-                    error[s] +=
-                        std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates] ) *
-                        _mesh->GetArea( j );
+                for( unsigned s = 0; s < _nStates; ++s ) {
+                    error[s] += std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) ) * _mesh->GetArea( j );
+                    refNorm[s] += std::fabs( _referenceSolution[j][s + _nStates] ) * _mesh->GetArea( j );
+                }
                 break;
             case 2:
-                for( unsigned s = 0; s < _nStates; ++s )
-                    error[s] +=
-                        std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates], 2 ) *
-                        _mesh->GetArea( j );
+                for( unsigned s = 0; s < _nStates; ++s ) {
+                    error[s] += std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ), 2 ) * _mesh->GetArea( j );
+                    refNorm[s] += std::pow( _referenceSolution[j][s + _nStates], 2 ) * _mesh->GetArea( j );
+                }
                 break;
             default: exit( EXIT_FAILURE );
         }
     }
-    error = error / _mesh->GetDomainArea();
+    for( unsigned s = 0; s < _nStates; ++s ) {
+        error[s] = error[s] / refNorm[s];
+    }
     return error;
 }
