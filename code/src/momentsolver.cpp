@@ -67,7 +67,7 @@ void MomentSolver::Solve() {
     double residualFull = minResidual + 1.0;
 
     // Begin time loop
-    while( t < _tEnd && residualFull > minResidual ) {
+    while( t < _tEnd && std::sqrt( residualFull ) > minResidual ) {
         double residual = 0;
 
 #pragma omp parallel for schedule( dynamic, 10 )
@@ -107,11 +107,11 @@ void MomentSolver::Solve() {
 
         // compute residual
         for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
-            residual += std::fabs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] );
+            residual += std::pow( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ), 2 ) * _mesh->GetArea( cellIndexPE[j] );
         }
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
-            log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
+            log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, std::sqrt( residualFull ), residualFull / dt );
         }
     }
 
@@ -517,8 +517,8 @@ Matrix MomentSolver::CalculateErrorField( const Matrix& solution, unsigned LNorm
 
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned s = 0; s < _nStates; ++s ) {
-            error( s, j )            = std::pow( error( s, j ) / refNorm[s], 1.0 / double( LNorm ) );
-            error( _nStates + s, j ) = std::pow( error( _nStates + s, j ) / refNorm[s + _nStates], 1.0 / double( LNorm ) );
+            error( s, j )            = error( s, j ) / refNorm[s];
+            error( _nStates + s, j ) = error( _nStates + s, j ) / refNorm[s + _nStates];
         }
     }
 
