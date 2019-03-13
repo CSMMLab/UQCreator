@@ -1,2 +1,155 @@
 \section{Results}
 \label{sec:results}
+
+\subsection{2D Euler equations}
+We start by quantifying the effects of an uncertain angle of attack $\phi\sim U(0.75,1.75)$ for a NACA0012 profile computed with different methods. To be able to measure the quality of the obtained solutions, we compute a reference solution using stochastic-Collocation with $50$ quadrature points and compare against Collocation with $5$ collocation points as well as SG and IPM with $5$ moments and $10$ quadrature points. Furthermore, we use convergence accelerated (caIPM) as well as convergence accelerated one-shot IPM (caosIPM), which we introduced in Sections \ref{sec:collIPM} and \ref{sec:OneShotIPM} with $10$ moments and $15$ quadrature points to converge the collocation solution with $5$ quadrature points to an entropy solution with increased accuracy.
+
+\begin{figure}[h!]
+\centering
+		\centering
+		\includegraphics[scale=0.5]{figs/{convergence_runtime_residual}.pdf}
+		\label{fig:sub1}
+	\caption{Convergence to steady state with 5 MPI and 2 OMP threads.}
+	\label{fig:Obstacles2D}
+\end{figure}
+
+\newgeometry{top=1.5cm, left=1.0cm}
+\begin{figure}[h!]
+\centering
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_sc_n5_s05_aoa}.png}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_sg_n5_nq10_s05_aoa}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_ipm_n5_nq10_s05_aoa}.png}
+		\label{fig:sub1}
+	\end{subfigure}
+	
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_caipm_n10_nq15_s05_aoa}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa}.png}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_sc_n50_s05_aoa_legend}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\caption{E$[\rho]$ (from top left to bottom right) SC, SG, IPM, caIPM, caosIPM, reference solution.}
+	\label{fig:Obstacles2D}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_sc_n5_s05_aoa_var}.png}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_sg_n5_nq10_s05_aoa_var}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_ipm_n5_nq10_s05_aoa_var}.png}
+		\label{fig:sub1}
+	\end{subfigure}
+	
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_caipm_n10_nq15_s05_aoa_var}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa_var}.png}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_sc_n50_s05_aoa_var_legend}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\caption{Var$[\rho]$ (from top left to bottom right) SC, SG, IPM, caIPM, caosIPM, reference solution.}
+	\label{fig:Obstacles2D}
+\end{figure}
+
+%%% error plots %%%
+\begin{figure}[h!]
+\centering
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/errors/{euler2D_nacaCoarse_sc_n5_s05_aoa_error_legend}.png}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/errors/{euler2D_nacaCoarse_sg_n5_nq10_s05_aoa_error_legend}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/errors/{euler2D_nacaCoarse_ipm_n5_nq10_s05_aoa_error_legend}.png}
+		\label{fig:sub1}
+	\end{subfigure}
+	
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/errors/{euler2D_nacaCoarse_caipm_n10_nq15_s05_aoa_error_legend}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/expectedRho/errors/{euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa_error_legend}.png}
+		\label{fig:sub1}
+	\end{subfigure}
+	\caption{E$[\rho]$ distance to reference solution (from top left to bottom right) SC, SG, IPM, caIPM, caosIPM.}
+	\label{fig:Obstacles2D}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/errors/{euler2D_nacaCoarse_sc_n5_s05_aoa_var_error_legend}.png}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/errors/{euler2D_nacaCoarse_sg_n5_nq10_s05_aoa_var_error_legend}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/errors/{euler2D_nacaCoarse_ipm_n5_nq10_s05_aoa_var_error_legend}.png}
+		\label{fig:sub1}
+	\end{subfigure}
+	
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/errors/{euler2D_nacaCoarse_caipm_n10_nq15_s05_aoa_var_error_legend}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/varRho/errors/{euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa_var_error_legend}.png}
+		\label{fig:sub1}
+	\end{subfigure}
+	\caption{Var$[\rho]$ distance to reference solution (from top left to bottom right) SC, SG, IPM, caIPM, caosIPM.}
+	\label{fig:Obstacles2D}
+\end{figure}
+\newgeometry{top=2.5cm, bottom=2.5cm}

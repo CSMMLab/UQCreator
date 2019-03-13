@@ -21,7 +21,7 @@ When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb
 \begin{align*}
  \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T.
 \end{align*}
-Note that the numerical flux requires evaluating the closure $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define
+Note that the numerical flux requires evaluating the closure $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define $\bm{u}_{s}:\mathbb{R}^s \to \mathbb{R}^s$,
 \begin{align*}
 \bm{u}_{s}(\bm\Lambda):=\left( \nabla_{\bm{u}} s \right)^{-1}(\bm\Lambda),
 \end{align*}
@@ -45,9 +45,9 @@ with an adequate preconditioner $\bm{B}$, the iteration process for spatial cell
 \begin{align}\label{eq:dualIteration1}
 \bm{\lambda}^{(m+1)}_j = \bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j}).
 \end{align}
-The exact dual state is then obtained by computing the fix point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$. A common preconditioner is the inverse Hessian of the dual problem, i.e.
+The exact dual state is then obtained by computing the fix point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$. A common preconditioner is the inverse Hessian of the dual problem, i.e.
 \begin{align*}
-\bm{B}(\bm{\lambda}) := \langle \nabla \bm{u} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-T}.
+\bm{B}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-T}.
 \end{align*}
 To obtain a finite number of iterations for the iteration in cell $j$, a stopping criterion 
 \begin{align}\label{eq:tauCrit}
@@ -61,7 +61,7 @@ We now write down the entire scheme: To obtain a more compact notation, one defi
 \end{align*}
 The moment iteration is then given by
 \begin{align}\label{eq:momentIteration}
-\bm{\hat u}_j^{n+1} = \bm{c}\left(\bm{\lambda}(\bm{\hat u}_{j-1}^n),\bm{\lambda}(\bm{\hat u}_{j}^n),\bm{\lambda}(\bm{\hat u}_{j+1}^n)\right),
+\bm{\hat u}_j^{n+1} = \bm{c}\left(\bm{\hat\lambda}(\bm{\hat u}_{j-1}^n),\bm{\hat\lambda}(\bm{\hat u}_{j}^n),\bm{\hat\lambda}(\bm{\hat u}_{j+1}^n)\right),
 \end{align}
 where the map from the moment vector to the dual variables, i.e. $\bm{\lambda}(\bm{\hat u}_{j}^n)$, is obtained by iterating
 \begin{align}\label{eq:dualIteration}
