@@ -239,8 +239,8 @@ void MomentSolver::Solve() {
     }
 
     if( _settings->HasReferenceFile() ) {
-        auto l1Error = this->CalculateErrorExpectedValue( meanAndVar, 1 );
-        auto l2Error = this->CalculateErrorExpectedValue( meanAndVar, 2 );
+        auto l1Error = this->CalculateErrorMean( meanAndVar, 1 );
+        auto l2Error = this->CalculateErrorMean( meanAndVar, 2 );
         log->info( "\nExpectation Value error w.r.t reference solution:" );
         log->info( "State   L1-error      L2-error" );
         for( unsigned i = 0; i < _nStates; ++i ) {
