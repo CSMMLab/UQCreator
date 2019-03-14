@@ -13,31 +13,45 @@ def time_to_float(time):
 
 def checkForRestartFile(dir, file):
     section_ctr = 0
-    line_ctr = 0    
+    line_ctr = 0
     restartFile = False
     restartFileName = ''
     with open(dir+'/'+file, 'r') as content:
-        lines = content.readlines()        
-        while section_ctr<3:                     
+        lines = content.readlines()
+        while section_ctr<3:
             if "=====" in lines[line_ctr]:
                 section_ctr = section_ctr + 1
             elif "restartFile" in lines[line_ctr] and not "#" in lines[line_ctr]:
                 restartFile = True
                 restartFileName = lines[line_ctr].split('=')[-1].split("/")[-1][:-2]
-            line_ctr = line_ctr + 1 
+            line_ctr = line_ctr + 1
     return restartFile, restartFileName
 
-def create_label(dir, file):    
+def getTEnd(dir,file):
     section_ctr = 0
-    line_ctr = 0    
+    line_ctr = 0
+    tEnd = 0.0
     with open(dir+'/'+file, 'r') as content:
-        lines = content.readlines()        
+        lines = content.readlines()
+        while section_ctr<3:
+            if "=====" in lines[line_ctr]:
+                section_ctr = section_ctr + 1
+            elif "tEnd" in lines[line_ctr] and not "#" in lines[line_ctr]:
+                tEnd = float(lines[line_ctr].split('=')[-1][:-1])
+            line_ctr = line_ctr + 1
+    return tEnd
+
+def create_label(dir, file):
+    section_ctr = 0
+    line_ctr = 0
+    with open(dir+'/'+file, 'r') as content:
+        lines = content.readlines()
         closure = ''
         nQuad = -1
-        nMoments = -1   
+        nMoments = -1
         maxIter = -1
         restartFile = False
-        while section_ctr<3:            
+        while section_ctr<3:
             if "#" in lines[line_ctr]:
                 line_ctr = line_ctr + 1
                 continue
@@ -52,14 +66,14 @@ def create_label(dir, file):
             elif "maxIterations" in lines[line_ctr]:
                 maxIter = int(lines[line_ctr].split("=")[1])
             elif "restartFile" in lines[line_ctr] and not "#" in lines[line_ctr]:
-                restartFile = True                
-            line_ctr = line_ctr + 1        
+                restartFile = True
+            line_ctr = line_ctr + 1
         if closure == 'StochasticGalerkin' and nQuad == nMoments:
             return 'SC'
         elif closure == 'StochasticGalerkin':
             return 'SG'
         elif closure == 'Euler2D' and restartFile and maxIter == 1:
-            return 'caos-IPM'            
+            return 'caos-IPM'
         elif closure == 'Euler2D' and restartFile:
             return 'ca-IPM'
         elif closure == 'Euler2D' and maxIter == 1:
@@ -69,9 +83,9 @@ def create_label(dir, file):
         elif closure == 'L2Filter':
             return 'L2Filter'
         elif closure == 'LassoFilter':
-            return 'LassoFilter'         
+            return 'LassoFilter'
         elif closure == 'BoundedBarrier':
-            return 'BoundedBarrier'         
+            return 'BoundedBarrier'
         else:
             return 'unkown'
 
@@ -79,7 +93,7 @@ def parse_logfile(dir, file):
     section_ctr = 0
     line_ctr = 0
     with open(dir+'/'+file, 'r') as content:
-        lines = content.readlines()        
+        lines = content.readlines()
         while section_ctr<3:
             if "=====" in lines[line_ctr]:
                 section_ctr = section_ctr + 1
@@ -90,6 +104,10 @@ def parse_logfile(dir, file):
         lines = lines[line_ctr:]
         lines_to_del = []
         for i in range(len(lines)):
+            if "Finished!" in lines[i]: 
+                for j in range(i,len(lines)):
+                    lines_to_del.append(j)    
+                break
             if any(x in lines[i] for x in ['a','i','o','u']): #sketchy but works
                 lines_to_del.append(i)
         for line in reversed(lines_to_del):
@@ -108,11 +126,13 @@ def parse_logfile(dir, file):
         if isRestartFile and os.path.isfile(dir+'/'+prevFileName) :
             df_prev = parse_logfile(dir, prevFileName)
             df['runtime'] += df_prev['runtime'].iloc[-1]
+            tEnd_prev = getTEnd(dir, prevFileName)
+            df['t'] += df_prev['t'].iloc[-1] - tEnd_prev
             return pd.concat([df_prev, df])
         else:
             return(df)
 
-def create_runtime_residual_plots(data, labels, threshold=np.inf):   
+def create_runtime_residual_plots(data, labels, threshold=np.inf):
     plt.cla()
     plt.clf()
     for df in data:
@@ -120,11 +140,11 @@ def create_runtime_residual_plots(data, labels, threshold=np.inf):
         plt.semilogy(df['runtime'],df['residual_scaled'])
     plt.xlabel('Runtime [s]')
     plt.ylabel('Residual')
-    plt.legend(labels)    
+    plt.legend(labels)
     plt.savefig("convergence_runtime_residual.pdf")
     print("Plot saved as: 'convergence_runtime_residual.pdf'")
 
-def create_time_residual_plots(data, labels, tEnd=np.inf):   
+def create_time_residual_plots(data, labels, tEnd=np.inf):
     plt.cla()
     plt.clf()
     for df in data:
@@ -147,16 +167,16 @@ if __name__ == "__main__":
     files = os.listdir(args.dir)
     ignored_files = []
     for file in files:
+        if file.endswith('_moments') or file.endswith('_duals'):
+            ignored_files.append(file)
+            continue
         isRestartFile, prevFileName = checkForRestartFile(args.dir, file)
         if isRestartFile:
             if prevFileName not in ignored_files: ignored_files.append(prevFileName)
-            if prevFileName not in files: print("WARNING: restart file found but previous file was not found")
+            if prevFileName not in files: print("WARNING: restart file found but previous file was not found")              
     for file in ignored_files:
         if file in files: files.remove(file)
     for file in files:
-        if file.endswith('_moments') or file.endswith('_duals'):
-            print("Skipping '" + file + "'!")
-            continue
         print("Processing '" + file + "'...")
         data.append(parse_logfile(args.dir, file))
         labels.append(create_label(args.dir, file))
@@ -165,4 +185,4 @@ if __name__ == "__main__":
         create_time_residual_plots(data, labels, args.tEnd)
     else:
         create_runtime_residual_plots(data, labels)
-        create_time_residual_plots(data, labels)    
+        create_time_residual_plots(data, labels)
