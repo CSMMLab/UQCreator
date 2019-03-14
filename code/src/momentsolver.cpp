@@ -111,7 +111,7 @@ void MomentSolver::Solve() {
         }
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
-            log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
+            log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, std::sqrt( residualFull ), residualFull / dt );
 
             if( _settings->HasReferenceFile() ) {
                 auto l1ErrorMeanLog   = spdlog::get( "l1ErrorMean" );
