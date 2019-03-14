@@ -485,7 +485,7 @@ Vector MomentSolver::CalculateErrorExpectedValue( const Matrix& solution, unsign
         }
     }
     for( unsigned s = 0; s < _nStates; ++s ) {
-        error[s] = error[s] / refNorm[s];
+        error[s] = std::pow( error[s] / refNorm[s], 1.0 / double( LNorm ) );
     }
     return error;
 }
@@ -546,7 +546,7 @@ Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm )
         }
     }
     for( unsigned s = 0; s < _nStates; ++s ) {
-        error[s] = error[s] / refNorm[s];
+        error[s] = std::pow( error[s] / refNorm[s], 1.0 / double( LNorm ) );
     }
     return error;
 }
