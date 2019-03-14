@@ -518,14 +518,13 @@ MatVec MomentSolver::ImportPrevDuals( unsigned nPrevTotal ) {
 }
 
 Vector MomentSolver::CalculateErrorMean( const Matrix& solution, unsigned LNorm ) const {
-    Vector error( _nStates );
+    Vector error( _nStates, 0.0 );
     Vector refNorm( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
         switch( LNorm ) {
             case 0:
                 for( unsigned s = 0; s < _nStates; ++s )
-                    error[s] = std::max(
-                        error[s], std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) / _referenceSolution[j][s] ) * _mesh->GetArea( j ) );
+                    error[s] = std::max( error[s], std::fabs( solution( s, j ) - _referenceSolution[j][s] ) * _mesh->GetArea( j ) );
                 break;
             case 1:
                 for( unsigned s = 0; s < _nStates; ++s ) {
@@ -543,7 +542,7 @@ Vector MomentSolver::CalculateErrorMean( const Matrix& solution, unsigned LNorm 
         }
     }
     for( unsigned s = 0; s < _nStates; ++s ) {
-        error[s] = error[s] / refNorm[s];
+        error[s] = std::pow( error[s] / refNorm[s], 1.0 / double( LNorm ) );
     }
     return error;
 }
@@ -590,10 +589,8 @@ Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm )
         switch( LNorm ) {
             case 0:
                 for( unsigned s = 0; s < _nStates; ++s )
-                    error[s] = std::max(
-                        error[s],
-                        std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) / _referenceSolution[j][s + _nStates] ) *
-                            _mesh->GetArea( j ) );
+                    error[s] =
+                        std::max( error[s], std::fabs( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) * _mesh->GetArea( j ) );
                 break;
             case 1:
                 for( unsigned s = 0; s < _nStates; ++s ) {
@@ -610,9 +607,8 @@ Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm )
             default: exit( EXIT_FAILURE );
         }
     }
-    for( unsigned s = 0; s < _nStates; ++s ) error[s] = sqrt( error[s] );
     for( unsigned s = 0; s < _nStates; ++s ) {
-        error[s] = error[s] / refNorm[s];
+        error[s] = std::pow( error[s] / refNorm[s], 1.0 / double( LNorm ) );
     }
     return error;
 }
