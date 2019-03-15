@@ -81,20 +81,27 @@ class MomentSolver
      * @param norm used for error (can be 1 or 2)
      * @return error expected value for different states
      */
-    Vector CalculateErrorMean( const Matrix& solution, unsigned LNorm ) const;
+    Vector CalculateErrorMean( const Matrix& solution, unsigned LNorm, const Vector& a, const Vector& b ) const;
     /**
      * compute distance of computed variance to reference solution
      * @param export matrix after computation
      * @param norm used for error (can be 1 or 2)
      * @return error variance for different states
      */
-    Vector CalculateErrorVar( const Matrix& solution, unsigned LNorm ) const;
+    Vector CalculateErrorVar( const Matrix& solution, unsigned LNorm, const Vector& a, const Vector& b ) const;
     /**
      * loads moments from restart file or computes moments fron initial condtion
      * @param number of moments
      * @return moment matrix
      */
     MatVec DetermineMoments( unsigned nTotal ) const;
+    /**
+     * compute distance of computed variance to reference solution
+     * @param export matrix after computation
+     * @param norm used for error (can be 1 or 2)
+     * @return error variance for different states
+     */
+    Vector CalculateError( const Matrix& solution, unsigned LNorm, const Vector& a, const Vector& b ) const;
     /**
      * writes duals on _lambda and recomputes moment matrix for specified duals
      * @param previous settings

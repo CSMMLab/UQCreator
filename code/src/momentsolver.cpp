@@ -60,6 +60,14 @@ void MomentSolver::Solve() {
 
     if( _settings->GetMyPE() == 0 ) log->info( "{:10}   {:10}", "t", "residual" );
 
+    // define rectangle for error computation
+    Vector a( 2 );
+    a[0] = -0.05;
+    a[1] = -0.5;
+    Vector b( 2 );
+    b[0] = 1.05;
+    b[1] = 0.5;
+
     // init time and residual
     double t = _tStart;
     double dt;
@@ -141,12 +149,12 @@ void MomentSolver::Solve() {
                         }
                     }
                 }
-                auto l1ErrorMean   = this->CalculateErrorMean( meanAndVar, 1 );
-                auto l2ErrorMean   = this->CalculateErrorMean( meanAndVar, 2 );
-                auto lInfErrorMean = this->CalculateErrorMean( meanAndVar, 0 );
-                auto l1ErrorVar    = this->CalculateErrorVar( meanAndVar, 1 );
-                auto l2ErrorVar    = this->CalculateErrorVar( meanAndVar, 2 );
-                auto lInfErrorVar  = this->CalculateErrorVar( meanAndVar, 0 );
+                auto l1ErrorMean   = this->CalculateErrorMean( meanAndVar, 1, a, b );
+                auto l2ErrorMean   = this->CalculateErrorMean( meanAndVar, 2, a, b );
+                auto lInfErrorMean = this->CalculateErrorMean( meanAndVar, 0, a, b );
+                auto l1ErrorVar    = this->CalculateErrorVar( meanAndVar, 1, a, b );
+                auto l2ErrorVar    = this->CalculateErrorVar( meanAndVar, 2, a, b );
+                auto lInfErrorVar  = this->CalculateErrorVar( meanAndVar, 0, a, b );
 
                 std::ostringstream osL1ErrorMean, osL2ErrorMean, osLInfErrorMean, osL1ErrorVar, osL2ErrorVar, osLInfErrorVar;
                 for( unsigned i = 0; i < _nStates; ++i ) {
@@ -174,8 +182,6 @@ void MomentSolver::Solve() {
     }
 
     if( _settings->GetMyPE() != 0 ) return;
-
-    // TODO: Lambdas do not match moments here!!!! Compute lambdas for final moments
 
     // save final moments on uNew
     uNew = u;
@@ -239,15 +245,15 @@ void MomentSolver::Solve() {
     }
 
     if( _settings->HasReferenceFile() ) {
-        auto l1Error = this->CalculateErrorMean( meanAndVar, 1 );
-        auto l2Error = this->CalculateErrorMean( meanAndVar, 2 );
+        auto l1Error = this->CalculateErrorMean( meanAndVar, 1, a, b );
+        auto l2Error = this->CalculateErrorMean( meanAndVar, 2, a, b );
         log->info( "\nExpectation Value error w.r.t reference solution:" );
         log->info( "State   L1-error      L2-error" );
         for( unsigned i = 0; i < _nStates; ++i ) {
             log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], sqrt( l2Error[i] ) );
         }
-        l1Error = this->CalculateErrorVar( meanAndVar, 1 );
-        l2Error = this->CalculateErrorVar( meanAndVar, 2 );
+        l1Error = this->CalculateErrorVar( meanAndVar, 1, a, b );
+        l2Error = this->CalculateErrorVar( meanAndVar, 2, a, b );
         log->info( "\nVariance error w.r.t reference solution:" );
         log->info( "State   L1-error      L2-error" );
         for( unsigned i = 0; i < _nStates; ++i ) {
@@ -517,28 +523,31 @@ MatVec MomentSolver::ImportPrevDuals( unsigned nPrevTotal ) {
     return lambda;
 }
 
-Vector MomentSolver::CalculateErrorMean( const Matrix& solution, unsigned LNorm ) const {
+Vector MomentSolver::CalculateErrorMean( const Matrix& solution, unsigned LNorm, const Vector& a, const Vector& b ) const {
     Vector error( _nStates, 0.0 );
     Vector refNorm( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
-        switch( LNorm ) {
-            case 0:
-                for( unsigned s = 0; s < _nStates; ++s )
-                    error[s] = std::max( error[s], std::fabs( solution( s, j ) - _referenceSolution[j][s] ) * _mesh->GetArea( j ) );
-                break;
-            case 1:
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
-                    refNorm[s] += std::fabs( _referenceSolution[j][s] ) * _mesh->GetArea( j );
-                }
-                break;
-            case 2:
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    error[s] += std::pow( ( solution( s, j ) - _referenceSolution[j][s] ), 2 ) * _mesh->GetArea( j );
-                    refNorm[s] += std::pow( _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
-                }
-                break;
-            default: exit( EXIT_FAILURE );
+        if( _mesh->GetGrid()[j]->GetCenter()[0] > a[0] && _mesh->GetGrid()[j]->GetCenter()[0] < b[0] && _mesh->GetGrid()[j]->GetCenter()[1] > a[1] &&
+            _mesh->GetGrid()[j]->GetCenter()[1] < b[1] ) {
+            switch( LNorm ) {
+                case 0:
+                    for( unsigned s = 0; s < _nStates; ++s )
+                        error[s] = std::max( error[s], std::fabs( solution( s, j ) - _referenceSolution[j][s] ) * _mesh->GetArea( j ) );
+                    break;
+                case 1:
+                    for( unsigned s = 0; s < _nStates; ++s ) {
+                        error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
+                        refNorm[s] += std::fabs( _referenceSolution[j][s] ) * _mesh->GetArea( j );
+                    }
+                    break;
+                case 2:
+                    for( unsigned s = 0; s < _nStates; ++s ) {
+                        error[s] += std::pow( ( solution( s, j ) - _referenceSolution[j][s] ), 2 ) * _mesh->GetArea( j );
+                        refNorm[s] += std::pow( _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
+                    }
+                    break;
+                default: exit( EXIT_FAILURE );
+            }
         }
     }
     for( unsigned s = 0; s < _nStates; ++s ) {
@@ -582,32 +591,65 @@ Matrix MomentSolver::CalculateErrorField( const Matrix& solution, unsigned LNorm
     return error;
 }
 
-Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm ) const {
+Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm, const Vector& a, const Vector& b ) const {
     Vector error( _nStates, 0.0 );
     Vector refNorm( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
-        switch( LNorm ) {
-            case 0:
-                for( unsigned s = 0; s < _nStates; ++s )
-                    error[s] =
-                        std::max( error[s], std::fabs( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) * _mesh->GetArea( j ) );
-                break;
-            case 1:
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    error[s] += std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) ) * _mesh->GetArea( j );
-                    refNorm[s] += std::fabs( _referenceSolution[j][s + _nStates] ) * _mesh->GetArea( j );
-                }
-                break;
-            case 2:
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    error[s] += std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ), 2 ) * _mesh->GetArea( j );
-                    refNorm[s] += std::pow( _referenceSolution[j][s + _nStates], 2 ) * _mesh->GetArea( j );
-                }
-                break;
-            default: exit( EXIT_FAILURE );
+        if( _mesh->GetGrid()[j]->GetCenter()[0] > a[0] && _mesh->GetGrid()[j]->GetCenter()[0] < b[0] && _mesh->GetGrid()[j]->GetCenter()[1] > a[1] &&
+            _mesh->GetGrid()[j]->GetCenter()[1] < b[1] ) {
+            switch( LNorm ) {
+                case 0:
+                    for( unsigned s = 0; s < _nStates; ++s )
+                        error[s] = std::max( error[s],
+                                             std::fabs( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) * _mesh->GetArea( j ) );
+                    break;
+                case 1:
+                    for( unsigned s = 0; s < _nStates; ++s ) {
+                        error[s] += std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) ) * _mesh->GetArea( j );
+                        refNorm[s] += std::fabs( _referenceSolution[j][s + _nStates] ) * _mesh->GetArea( j );
+                    }
+                    break;
+                case 2:
+                    for( unsigned s = 0; s < _nStates; ++s ) {
+                        error[s] += std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ), 2 ) * _mesh->GetArea( j );
+                        refNorm[s] += std::pow( _referenceSolution[j][s + _nStates], 2 ) * _mesh->GetArea( j );
+                    }
+                    break;
+                default: exit( EXIT_FAILURE );
+            }
         }
     }
     for( unsigned s = 0; s < _nStates; ++s ) {
+        error[s] = std::pow( error[s] / refNorm[s], 1.0 / double( LNorm ) );
+    }
+    return error;
+}
+
+Vector MomentSolver::CalculateError( const Matrix& solution, unsigned LNorm, const Vector& a, const Vector& b ) const {
+    Vector error( 2 * _nStates, 0.0 );
+    Vector refNorm( 2 * _nStates, 0.0 );
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        if( _mesh->GetGrid()[j]->GetCenter()[0] > a[0] && _mesh->GetGrid()[j]->GetCenter()[0] < b[0] && _mesh->GetGrid()[j]->GetCenter()[1] > a[1] &&
+            _mesh->GetGrid()[j]->GetCenter()[1] < b[1] ) {
+
+            switch( LNorm ) {
+                case 1:
+                    for( unsigned s = 0; s < 2 * _nStates; ++s ) {
+                        error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
+                        refNorm[s] += std::fabs( _referenceSolution[j][s] ) * _mesh->GetArea( j );
+                    }
+                    break;
+                case 2:
+                    for( unsigned s = 0; s < 2 * _nStates; ++s ) {
+                        error[s] += std::pow( ( solution( s, j ) - _referenceSolution[j][s] ), 2 ) * _mesh->GetArea( j );
+                        refNorm[s] += std::pow( _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
+                    }
+                    break;
+                default: exit( EXIT_FAILURE );
+            }
+        }
+    }
+    for( unsigned s = 0; s < 2 * _nStates; ++s ) {
         error[s] = std::pow( error[s] / refNorm[s], 1.0 / double( LNorm ) );
     }
     return error;
