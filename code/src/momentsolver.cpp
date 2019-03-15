@@ -185,11 +185,11 @@ void MomentSolver::Solve() {
 
     if( _settings->HasReferenceFile() ) {
         Vector a( 2 );
-        a[0] = -100.0;
-        a[1] = -100.0;
+        a[0] = -0.05;
+        a[1] = -0.5;
         Vector b( 2 );
-        b[0]         = 100.0;
-        b[1]         = 100.0;
+        b[0]         = 1.05;
+        b[1]         = 0.5;
         auto l1Error = this->CalculateError( meanAndVar, 1, a, b );
         auto l2Error = this->CalculateError( meanAndVar, 2, a, b );
         log->info( "\nExpectation Value error w.r.t reference solution:" );
