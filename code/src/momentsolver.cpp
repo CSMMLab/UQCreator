@@ -122,8 +122,6 @@ void MomentSolver::Solve() {
 
     if( _settings->GetMyPE() != 0 ) return;
 
-    // TODO: Lambdas do not match moments here!!!! Compute lambdas for final moments
-
     // save final moments on uNew
     uNew = u;
 
@@ -186,23 +184,26 @@ void MomentSolver::Solve() {
     }
 
     if( _settings->HasReferenceFile() ) {
-        auto l1Error = this->CalculateErrorExpectedValue( meanAndVar, 1 );
-        auto l2Error = this->CalculateErrorExpectedValue( meanAndVar, 2 );
+        Vector a( 2 );
+        a[0] = -100.0;
+        a[1] = -100.0;
+        Vector b( 2 );
+        b[0]         = 100.0;
+        b[1]         = 100.0;
+        auto l1Error = this->CalculateError( meanAndVar, 1, a, b );
+        auto l2Error = this->CalculateError( meanAndVar, 2, a, b );
         log->info( "\nExpectation Value error w.r.t reference solution:" );
         log->info( "State   L1-error      L2-error" );
         for( unsigned i = 0; i < _nStates; ++i ) {
-            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], sqrt( l2Error[i] ) );
+            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
         }
-        l1Error = this->CalculateErrorVar( meanAndVar, 1 );
-        l2Error = this->CalculateErrorVar( meanAndVar, 2 );
         log->info( "\nVariance error w.r.t reference solution:" );
         log->info( "State   L1-error      L2-error" );
-        for( unsigned i = 0; i < _nStates; ++i ) {
-            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], sqrt( l2Error[i] ) );
+        for( unsigned i = _nStates; i < 2 * _nStates; ++i ) {
+            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
         }
         meanAndVarErrors = this->CalculateErrorField( meanAndVar, 2 );
-        // std::cout << std::setprecision( 9 ) << meanAndVar( 0, 19080 ) << " " << _referenceSolution[19080][0] << std::endl;
-        // std::cout << "error is " << meanAndVarErrors( 0, 19080 ) << std::endl;
+
         _mesh->Export( meanAndVarErrors, "_errors" );
     }
 
@@ -464,32 +465,6 @@ MatVec MomentSolver::ImportPrevDuals( unsigned nPrevTotal ) {
     return lambda;
 }
 
-Vector MomentSolver::CalculateErrorExpectedValue( const Matrix& solution, unsigned LNorm ) const {
-    Vector error( _nStates, 0.0 );
-    Vector refNorm( _nStates, 0.0 );
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        switch( LNorm ) {
-            case 1:
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
-                    refNorm[s] += std::fabs( _referenceSolution[j][s] ) * _mesh->GetArea( j );
-                }
-                break;
-            case 2:
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    error[s] += std::pow( ( solution( s, j ) - _referenceSolution[j][s] ), 2 ) * _mesh->GetArea( j );
-                    refNorm[s] += std::pow( _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
-                }
-                break;
-            default: exit( EXIT_FAILURE );
-        }
-    }
-    for( unsigned s = 0; s < _nStates; ++s ) {
-        error[s] = std::pow( error[s] / refNorm[s], 1.0 / double( LNorm ) );
-    }
-    return error;
-}
-
 Matrix MomentSolver::CalculateErrorField( const Matrix& solution, unsigned LNorm ) const {
     Matrix error( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     Vector refNorm( 2 * _nStates, 0.0 );
@@ -525,27 +500,32 @@ Matrix MomentSolver::CalculateErrorField( const Matrix& solution, unsigned LNorm
     return error;
 }
 
-Vector MomentSolver::CalculateErrorVar( const Matrix& solution, unsigned LNorm ) const {
-    Vector error( _nStates, 0.0 );
-    Vector refNorm( _nStates, 0.0 );
+Vector MomentSolver::CalculateError( const Matrix& solution, unsigned LNorm, const Vector& a, const Vector& b ) const {
+    Vector error( 2 * _nStates, 0.0 );
+    Vector refNorm( 2 * _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
-        switch( LNorm ) {
-            case 1:
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    error[s] += std::fabs( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ) ) * _mesh->GetArea( j );
-                    refNorm[s] += std::fabs( _referenceSolution[j][s + _nStates] ) * _mesh->GetArea( j );
-                }
-                break;
-            case 2:
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    error[s] += std::pow( ( solution( _nStates + s, j ) - _referenceSolution[j][s + _nStates] ), 2 ) * _mesh->GetArea( j );
-                    refNorm[s] += std::pow( _referenceSolution[j][s + _nStates], 2 ) * _mesh->GetArea( j );
-                }
-                break;
-            default: exit( EXIT_FAILURE );
+        if( _mesh->GetGrid()[j]->GetCenter()[0] > a[0] && _mesh->GetGrid()[j]->GetCenter()[0] < b[0] && _mesh->GetGrid()[j]->GetCenter()[1] > a[1] &&
+            _mesh->GetGrid()[j]->GetCenter()[1] < b[1] ) {
+
+            switch( LNorm ) {
+                case 1:
+                    for( unsigned s = 0; s < 2 * _nStates; ++s ) {
+                        error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
+                        refNorm[s] += std::fabs( _referenceSolution[j][s] ) * _mesh->GetArea( j );
+                    }
+                    break;
+                case 2:
+                    for( unsigned s = 0; s < 2 * _nStates; ++s ) {
+                        error[s] += std::pow( ( solution( s, j ) - _referenceSolution[j][s] ), 2 ) * _mesh->GetArea( j );
+                        refNorm[s] += std::pow( _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
+                    }
+
+                    break;
+                default: exit( EXIT_FAILURE );
+            }
         }
     }
-    for( unsigned s = 0; s < _nStates; ++s ) {
+    for( unsigned s = 0; s < 2 * _nStates; ++s ) {
         error[s] = std::pow( error[s] / refNorm[s], 1.0 / double( LNorm ) );
     }
     return error;

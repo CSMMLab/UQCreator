@@ -76,19 +76,14 @@ class MomentSolver
      */
     MatVec ImportPrevDuals( unsigned nPrevTotal );
     /**
-     * compute distance of computed expected value to reference solution
+     * compute distance of computed mean and variance to reference solution
      * @param export matrix after computation
      * @param norm used for error (can be 1 or 2)
-     * @return error expected value for different states
-     */
-    Vector CalculateErrorExpectedValue( const Matrix& solution, unsigned LNorm ) const;
-    /**
-     * compute distance of computed variance to reference solution
-     * @param export matrix after computation
-     * @param norm used for error (can be 1 or 2)
+     * @param defines left bottom point of rectangle in which error is computed
+     * @param defines right top point of rectangle in which error is computed
      * @return error variance for different states
      */
-    Vector CalculateErrorVar( const Matrix& solution, unsigned LNorm ) const;
+    Vector CalculateError( const Matrix& solution, unsigned LNorm, const Vector& a, const Vector& b ) const;
     /**
      * loads moments from restart file or computes moments fron initial condtion
      * @param number of moments
