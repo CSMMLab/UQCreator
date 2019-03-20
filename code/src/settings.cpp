@@ -161,6 +161,9 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             if( closureTypeString->compare( "BoundedBarrier" ) == 0 ) {
                 _closureType = ClosureType::C_BOUNDEDBARRIER;
             }
+            else if( closureTypeString->compare( "LogSin" ) == 0 ) {
+                _closureType = ClosureType::C_LOGSIN;
+            }
             else if( closureTypeString->compare( "StochasticGalerkin" ) == 0 ) {
                 _closureType = ClosureType::C_STOCHASTICGALERKIN;
             }
@@ -183,13 +186,13 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
                 _closureType = ClosureType::C_LASSOFILTER;
             }
             else {
-                log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, "
+                log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogSin, "
                             "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
                 validConfig = false;
             }
         }
         else {
-            log->error( "[inputfile] [moment_system] 'closure' not set!\n Please set one of the following types: BoundedBarrier, "
+            log->error( "[inputfile] [moment_system] 'closure' not set!\n Please set one of the following types: BoundedBarrier, LogSin, "
                         "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
             validConfig = false;
         }
@@ -396,6 +399,9 @@ Settings::Settings( const std::istringstream& inputStream ) {
             if( closureTypeString->compare( "BoundedBarrier" ) == 0 ) {
                 _closureType = ClosureType::C_BOUNDEDBARRIER;
             }
+            if( closureTypeString->compare( "LogSin" ) == 0 ) {
+                _closureType = ClosureType::C_LOGSIN;
+            }
             else if( closureTypeString->compare( "StochasticGalerkin" ) == 0 ) {
                 _closureType = ClosureType::C_STOCHASTICGALERKIN;
             }
@@ -418,13 +424,13 @@ Settings::Settings( const std::istringstream& inputStream ) {
                 _closureType = ClosureType::C_LASSOFILTER;
             }
             else {
-                log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, "
+                log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier,LogSin, "
                             "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
                 validConfig = false;
             }
         }
         else {
-            log->error( "[inputfile] [moment_system] 'closure' not set!\n Please set one of the following types: BoundedBarrier, "
+            log->error( "[inputfile] [moment_system] 'closure' not set!\n Please set one of the following types: BoundedBarrier,LogSin, "
                         "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
             validConfig = false;
         }

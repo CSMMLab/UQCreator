@@ -4,6 +4,7 @@
 #include "eulerclosure2d.h"
 #include "l2filter.h"
 #include "lassofilter.h"
+#include "logsin.h"
 #include "mathtools.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
@@ -114,6 +115,9 @@ Closure* Closure::Create( Settings* settings ) {
     auto closureType = settings->GetClosureType();
     if( closureType == ClosureType::C_BOUNDEDBARRIER ) {
         return new BoundedBarrier( settings );
+    }
+    else if( closureType == ClosureType::C_LOGSIN ) {
+        return new LogSin( settings );
     }
     else if( closureType == ClosureType::C_STOCHASTICGALERKIN ) {
         return new StochasticGalerkin( settings );
