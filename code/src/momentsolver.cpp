@@ -107,7 +107,7 @@ void MomentSolver::Solve() {
 
         // compute residual
         for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
-            residual += std::pow( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ), 2 ) * _mesh->GetArea( cellIndexPE[j] );
+            residual += std::abs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] );
         }
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
