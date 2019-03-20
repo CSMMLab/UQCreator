@@ -67,7 +67,7 @@ void MomentSolver::Solve() {
     double residualFull = minResidual + 1.0;
 
     // Begin time loop
-    while( t < _tEnd && std::sqrt( residualFull ) > minResidual ) {
+    while( t < _tEnd && residualFull > minResidual ) {
         double residual = 0;
 
 #pragma omp parallel for schedule( dynamic, 10 )
@@ -111,7 +111,7 @@ void MomentSolver::Solve() {
         }
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
-            log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, std::sqrt( residualFull ), residualFull / dt );
+            log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
         }
     }
 
