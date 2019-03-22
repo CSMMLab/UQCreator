@@ -75,8 +75,17 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
     if( !std::filesystem::exists( outputDir + "/logs" ) ) {
         std::filesystem::create_directory( outputDir + "/logs" );
     }
+    std::string filename = currentDateTime();
+    int ctr              = 0;
+    if( std::filesystem::exists( outputDir + "/logs/" + filename ) ) {
+        filename += "_" + std::to_string( ++ctr );
+    }
+    while( std::filesystem::exists( outputDir + "/logs/" + filename ) ) {
+        filename.pop_back();
+        filename += std::to_string( ++ctr );
+    }
 
-    auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() );
+    auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + filename );
     fileSink->set_level( fileLogLvl );
     fileSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
 
@@ -88,13 +97,13 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
     spdlog::register_logger( event_logger );
     spdlog::flush_every( std::chrono::seconds( 5 ) );
 
-    auto momentFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_moments" );
+    auto momentFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + filename + "_moments" );
     momentFileSink->set_level( spdlog::level::info );
     momentFileSink->set_pattern( "%v" );
     auto moment_logger = std::make_shared<spdlog::logger>( "moments", momentFileSink );
     spdlog::register_logger( moment_logger );
 
-    auto dualsFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_duals" );
+    auto dualsFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + filename + "_duals" );
     dualsFileSink->set_level( spdlog::level::info );
     dualsFileSink->set_pattern( "%v" );
     auto duals_logger = std::make_shared<spdlog::logger>( "duals", dualsFileSink );
