@@ -116,13 +116,17 @@ void PrintInit( std::string configFile ) {
     log->info( "================================================================" );
     log->info( "Git commit hash:\t{0}", GIT_HASH );
     log->info( "Config file:\t{0}", configFile );
+    int nprocs;
+    MPI_Comm_size( MPI_COMM_WORLD, &nprocs );
+    log->info( "MPI Threads:\t{0}", nprocs );
+    log->info( "OMP Threads:\t{0}", omp_get_max_threads() );
     log->info( "================================================================" );
     std::ifstream ifs( configFile );
     if( ifs.is_open() ) {
         std::string line;
         while( !ifs.eof() ) {
             std::getline( ifs, line );
-            log->info( " {0}", line );
+            if( line[0] != '#' ) log->info( " {0}", line );
         }
     }
     log->info( "================================================================" );
