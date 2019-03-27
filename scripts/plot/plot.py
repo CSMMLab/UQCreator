@@ -118,7 +118,7 @@ def parse_logfile(dir, file):
         lines = content.readlines()
         pattern = re.compile("(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2}.\d{6}\s\|){1}(\s+[+-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+-]?\d+)?){3}")
         valid_lines = []
-        for line in lines:
+        for line in lines: 
             if pattern.match(line):
                 valid_lines.append(line)
         lines = extract_intervals(valid_lines,100)
@@ -208,17 +208,47 @@ def create_convergence_plots(dir, configFiles):
     plt.savefig(outputdir + '/' + plotname)
     print('Plot created:\t' + outputdir + '/' + plotname)
 
-def create_vtk_plots(dir, vtkFiles):
+def create_vtk_plots(dir, vtkFiles, rescale):
     outputdir = 'plots/vtk'
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
     fields = ["E(ρ)", "E(ρU)", "E(ρE)", "Var(ρ)", "Var(ρU)", "Var(ρE)"]
+    vtk_label = [''.join('${0}$'.format(f)).replace('ρ', '\\rho ') for f in fields]
+    vtk_label_dict = {}
+    for f in range(len(fields)):
+        vtk_label_dict[fields[f]] = vtk_label[f]
+    minVal = {}
+    maxVal = {}
+    minErr = {}
+    maxErr = {}
+    for field_name in fields:
+        minVal[field_name] = -np.inf
+        maxVal[field_name] = np.inf
+        minErr[field_name] = -np.inf
+        maxErr[field_name] = np.inf
+    if rescale:
+        for file in vtkFiles:
+            reader = vtk.vtkUnstructuredGridReader()
+            reader.SetFileName(dir+'/'+file)
+            reader.ReadAllScalarsOn()
+            reader.ReadAllVectorsOn()
+            reader.Update() 
+            output = reader.GetOutput()
+            for field_name in fields:
+                valRange = output.GetCellData().GetArray(field_name).GetRange()
+                if file.endswith('_errors.vtk'):
+                    minErr[field_name] = np.maximum(minErr[field_name], valRange[0])
+                    maxErr[field_name] = np.minimum(maxErr[field_name], valRange[1])
+                else:
+                    minVal[field_name] = np.maximum(minVal[field_name], valRange[0])
+                    maxVal[field_name] = np.minimum(maxVal[field_name], valRange[1])
+
     for file in vtkFiles:
         reader = vtk.vtkUnstructuredGridReader()
         reader.SetFileName(dir+'/'+file)
         reader.ReadAllScalarsOn()
         reader.ReadAllVectorsOn()
-        reader.Update()
+        reader.Update() 
         output = reader.GetOutput()
 
         numvals = 1024
@@ -234,7 +264,7 @@ def create_vtk_plots(dir, vtkFiles):
         ctf.AddRGBPoint(1.723930/1.72393, 0.87843, 0, 1)
         lut = vtk.vtkLookupTable()
         lut.SetNumberOfTableValues(numvals)
-        lut.Build()
+        lut.Build()        
         for i in range(0,numvals):
             rgb = list(ctf.GetColor(float(i)/numvals))+[1]
             lut.SetTableValue(i,rgb)
@@ -251,17 +281,33 @@ def create_vtk_plots(dir, vtkFiles):
             mapper.SetLookupTable(lut)
             mapper.SetScalarModeToUsePointFieldData()
             mapper.SelectColorArray(field_name)
-            mapper.SetScalarRange(output.GetCellData().GetArray(field_name).GetRange())
+            if rescale:
+                if file.endswith('_errors.vtk'):
+                    mapper.SetScalarRange(minErr[field_name], maxErr[field_name])
+                else:
+                    mapper.SetScalarRange(minVal[field_name], maxVal[field_name])
+            else:
+                mapper.SetScalarRange(output.GetCellData().GetArray(field_name).GetRange())
 
             scalarBar = vtk.vtkScalarBarActor()
             scalarBar.SetLookupTable(mapper.GetLookupTable())
-            #scalarBar.SetTitle(field_name)
+            scalarBar.SetTitle(vtk_label_dict[field_name])
             scalarBar.SetOrientationToHorizontal()
             scalarBar.SetPosition(0.1,0)
             scalarBar.SetWidth(0.8)
-            scalarBar.SetHeight(0.05)
+            scalarBar.SetHeight(0.1)
             scalarBar.SetNumberOfLabels(4)
             scalarBar.SetMaximumNumberOfColors(numvals)
+            scalarBar.SetTitleRatio(0.6)
+            labelprop = scalarBar.GetLabelTextProperty()
+            labelprop.ShadowOff()
+            labelprop.BoldOff()
+            if 'E(' in field_name and not file.endswith('_errors.vtk'):
+                labelprop.SetColor(0,0,0)
+                titleprop = scalarBar.GetTitleTextProperty()
+                titleprop.SetColor(0,0,0)
+                scalarBar.SetTitleTextProperty(titleprop)
+            scalarBar.SetLabelTextProperty(labelprop)
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
@@ -272,7 +318,7 @@ def create_vtk_plots(dir, vtkFiles):
             renderer.AddActor(actor)
             renderer.AddActor2D(scalarBar)
             renderer.UseFXAAOn()
-            renderer.SetBackground(1, 1, 1)
+            renderer.SetBackground(1, 1, 1) 
             renderer.SetActiveCamera(camera)
 
             render_window = vtk.vtkRenderWindow()
@@ -285,7 +331,7 @@ def create_vtk_plots(dir, vtkFiles):
             windowToImageFilter.SetInput(render_window)
             windowToImageFilter.ReadFrontBufferOff()
             windowToImageFilter.Update()
-
+            
             writer = vtk.vtkPNGWriter()
             writer.SetFileName(outputdir+'/'+os.path.splitext(file)[0]+"_"+field_name+".png")
             writer.SetInputConnection(windowToImageFilter.GetOutputPort())
@@ -294,15 +340,13 @@ def create_vtk_plots(dir, vtkFiles):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--logdir", "-l", type=str, required=False)
-    parser.add_argument("--vtkdir", "-v", type=str, required=False)
+    parser.add_argument("--logdir", "-l", type=str, required=False, default='logs')
+    parser.add_argument("--vtkdir", "-v", type=str, required=False, default='.')
+    parser.add_argument("--rescale", "-r", type=bool, required=False, default=True)
     args = parser.parse_args()
-    logdir = 'logs'
-    vtkdir = '.'
-    if args.logdir:
-        logdir = args.logdir
-    if args.vtkdir:
-        vtkdir = args.vtkdir
+    logdir = args.logdir
+    vtkdir = args.vtkdir
+    rescale = args.rescale
     logdirfiles = os.listdir(logdir)
     vtkdirfiles = os.listdir(vtkdir)
     ignoredFiles = []
@@ -315,8 +359,8 @@ if __name__ == "__main__":
     L2ErrVarFiles = []
     LInfErrVarFiles = []
     for file in vtkdirfiles:
-        if file.endswith('.vtk'):
-            vtkFiles.append(file)
+        if file.endswith('.vtk'): 
+            vtkFiles.append(file)  
     for file in logdirfiles:
         isRestartFile, prevFileName = checkForRestartFile(logdir, file)
         if isRestartFile:
@@ -327,7 +371,7 @@ if __name__ == "__main__":
             if file.startswith(ifile):
                 if file not in ignoredFiles: ignoredFiles.append(file)
     for ifile in ignoredFiles:
-        logdirfiles.remove(ifile)
+        logfiles.remove(ifile)
     for file in logdirfiles:
         if re.search(r'\d+$', file) is not None:
             configFiles.append(file)
@@ -351,7 +395,7 @@ if __name__ == "__main__":
     L2ErrVarFiles.sort()
     LInfErrVarFiles.sort()
     if any(configFiles): create_convergence_plots(logdir, configFiles)
-    if any(vtkFiles): create_vtk_plots(vtkdir, vtkFiles)
+    if any(vtkFiles): create_vtk_plots(vtkdir, vtkFiles, rescale)
     if any(L1ErrMeanFiles): create_error_plot(logdir, configFiles, L1ErrMeanFiles, 'L1', 'E')
     if any(L2ErrMeanFiles): create_error_plot(logdir, configFiles, L2ErrMeanFiles, 'L2', 'E')
     #if any(LInfErrMeanFiles): create_error_plot(logdir, configFiles, LInfErrMeanFiles, 'L-infinity', 'E')
