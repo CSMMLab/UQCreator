@@ -118,7 +118,7 @@ def parse_logfile(dir, file):
         lines = content.readlines()
         pattern = re.compile("(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2}.\d{6}\s\|){1}(\s+[+-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+-]?\d+)?){3}")
         valid_lines = []
-        for line in lines: 
+        for line in lines:
             if pattern.match(line):
                 valid_lines.append(line)
         lines = extract_intervals(valid_lines,100)
@@ -218,7 +218,7 @@ def create_vtk_plots(dir, vtkFiles):
         reader.SetFileName(dir+'/'+file)
         reader.ReadAllScalarsOn()
         reader.ReadAllVectorsOn()
-        reader.Update() 
+        reader.Update()
         output = reader.GetOutput()
 
         numvals = 1024
@@ -234,7 +234,7 @@ def create_vtk_plots(dir, vtkFiles):
         ctf.AddRGBPoint(1.723930/1.72393, 0.87843, 0, 1)
         lut = vtk.vtkLookupTable()
         lut.SetNumberOfTableValues(numvals)
-        lut.Build()        
+        lut.Build()
         for i in range(0,numvals):
             rgb = list(ctf.GetColor(float(i)/numvals))+[1]
             lut.SetTableValue(i,rgb)
@@ -272,7 +272,7 @@ def create_vtk_plots(dir, vtkFiles):
             renderer.AddActor(actor)
             renderer.AddActor2D(scalarBar)
             renderer.UseFXAAOn()
-            renderer.SetBackground(1, 1, 1) 
+            renderer.SetBackground(1, 1, 1)
             renderer.SetActiveCamera(camera)
 
             render_window = vtk.vtkRenderWindow()
@@ -285,7 +285,7 @@ def create_vtk_plots(dir, vtkFiles):
             windowToImageFilter.SetInput(render_window)
             windowToImageFilter.ReadFrontBufferOff()
             windowToImageFilter.Update()
-            
+
             writer = vtk.vtkPNGWriter()
             writer.SetFileName(outputdir+'/'+os.path.splitext(file)[0]+"_"+field_name+".png")
             writer.SetInputConnection(windowToImageFilter.GetOutputPort())
@@ -315,19 +315,19 @@ if __name__ == "__main__":
     L2ErrVarFiles = []
     LInfErrVarFiles = []
     for file in vtkdirfiles:
-        if file.endswith('.vtk'): 
-            vtkFiles.append(file)  
+        if file.endswith('.vtk'):
+            vtkFiles.append(file)
     for file in logdirfiles:
         isRestartFile, prevFileName = checkForRestartFile(logdir, file)
         if isRestartFile:
             if prevFileName not in ignoredFiles: ignoredFiles.append(prevFileName)
-            if prevFileName not in files: print("WARNING: restart file found but previous file was not found")
+            if prevFileName not in logdirfiles: print("WARNING: restart file found but previous file was not found")
     for file in logdirfiles:
         for ifile in ignoredFiles:
             if file.startswith(ifile):
                 if file not in ignoredFiles: ignoredFiles.append(file)
     for ifile in ignoredFiles:
-        logfiles.remove(ifile)
+        logdirfiles.remove(ifile)
     for file in logdirfiles:
         if re.search(r'\d+$', file) is not None:
             configFiles.append(file)
