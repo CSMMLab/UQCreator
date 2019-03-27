@@ -261,6 +261,7 @@ def create_vtk_plots(dir, vtkFiles):
             scalarBar.SetWidth(0.8)
             scalarBar.SetHeight(0.05)
             scalarBar.SetNumberOfLabels(4)
+            scalarBar.SetMaximumNumberOfColors(numvals)
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
