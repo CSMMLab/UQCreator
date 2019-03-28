@@ -16,10 +16,7 @@
 bool CheckInput( std::string& configFile, int argc, char* argv[] ) {
     std::string usage_help = "\n"
                              "Usage: " +
-                             std::string( argv[0] ) +
-                             " -c inputfile\n\n"
-                             "Options:\n"
-                             "  -h               displays this message\n";
+                             std::string( argv[0] ) + " -c inputfile\n";
 
     if( argc < 3 ) {
         std::cout << usage_help;
