@@ -18,6 +18,14 @@ def time_to_float(time):
     epoch = dt.datetime.utcfromtimestamp(0)
     return (t-epoch).total_seconds()
 
+def sortByMethod(dir, configFiles, files):
+    labels = []
+    for file in configFiles:
+        labels.append(create_label(dir,file))
+    labels = [l.upper() for l in labels]
+    order = np.argsort(labels)
+    return [files[idx] for idx in order]
+
 def checkForRestartFile(dir, file):
     section_ctr = 0
     line_ctr = 0
@@ -414,11 +422,19 @@ if __name__ == "__main__":
     L1ErrVarFiles.sort()
     L2ErrVarFiles.sort()
     LInfErrVarFiles.sort()
+    if any(L1ErrMeanFiles): L1ErrMeanFiles = sortByMethod(logdir, configFiles, L1ErrMeanFiles)
+    if any(L2ErrMeanFiles): L2ErrMeanFiles = sortByMethod(logdir, configFiles, L2ErrMeanFiles)
+    if any(LInfErrMeanFiles): LInfErrMeanFiles = sortByMethod(logdir, configFiles, LInfErrMeanFiles)
+    if any(L1ErrVarFiles): L1ErrVarFiles = sortByMethod(logdir, configFiles, L1ErrVarFiles)
+    if any(L2ErrVarFiles): L2ErrVarFiles = sortByMethod(logdir, configFiles, L2ErrVarFiles)
+    if any(LInfErrVarFiles): LInfErrVarFiles = sortByMethod(logdir, configFiles, LInfErrVarFiles)
+    if any(configFiles): configFiles = sortByMethod(logdir, configFiles, configFiles)
+
     if any(configFiles): create_convergence_plots(logdir, configFiles)
     if any(vtkFiles): create_vtk_plots(vtkdir, vtkFiles, rescale)
     if any(L1ErrMeanFiles): create_error_plot(logdir, configFiles, L1ErrMeanFiles, 'L1', 'E')
     if any(L2ErrMeanFiles): create_error_plot(logdir, configFiles, L2ErrMeanFiles, 'L2', 'E')
-    #if any(LInfErrMeanFiles): create_error_plot(logdir, configFiles, LInfErrMeanFiles, 'L-infinity', 'E')
+    if any(LInfErrMeanFiles): create_error_plot(logdir, configFiles, LInfErrMeanFiles, 'L-infinity', 'E')
     if any(L1ErrVarFiles): create_error_plot(logdir, configFiles, L1ErrVarFiles, 'L1', 'Var')
     if any(L2ErrVarFiles): create_error_plot(logdir, configFiles, L2ErrVarFiles, 'L2', 'Var')
-    #if any(LInfErrVarFiles): create_error_plot(logdir, configFiles, LInfErrVarFiles, 'L-infinity', 'Var')
+    if any(LInfErrVarFiles): create_error_plot(logdir, configFiles, LInfErrVarFiles, 'L-infinity', 'Var')
