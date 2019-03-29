@@ -58,6 +58,7 @@ def create_label(dir, file):
         nQuad = -1
         nMoments = -1
         maxIter = -1
+        label = ''
         restartFile = False
         while section_ctr<3:
             current_line = lines[line_ctr]
@@ -67,34 +68,53 @@ def create_label(dir, file):
                 elif "closure" in current_line:
                     closure = current_line.split("=")[1].strip().strip('"').strip('\n')
                 elif "moments" in current_line:
-                    nQuad = int(current_line.split("=")[1])
-                elif "quadPoints" in current_line:
                     nMoments = int(current_line.split("=")[1])
+                elif "quadPoints" in current_line:
+                    nQuad = int(current_line.split("=")[1])
                 elif "maxIterations" in current_line:
                     maxIter = int(current_line.split("=")[1])
                 elif "restartFile" in current_line:
                     restartFile = True
             line_ctr = line_ctr + 1
         if closure == 'StochasticGalerkin' and nQuad == nMoments:
-            return 'SC'
+            label += 'SC'
+            label += '$^{'+str(nQuad)+'}$'
         elif closure == 'StochasticGalerkin':
-            return 'SG'
+            label += 'SG'
+            label += '$^{'+str(nQuad)+'}'
+            label += '_{'+str(nMoments)+'}$'
         elif closure == 'Euler2D' and restartFile and maxIter == 1:
-            return 'caos-IPM'
+            label += 'caos-IPM'
+            label += '$^{'+str(nQuad)+'}'
+            label += '_{'+str(nMoments)+'}$'
         elif closure == 'Euler2D' and restartFile:
-            return 'ca-IPM'
+            label += 'ca-IPM'
+            label += '$^{'+str(nQuad)+'}'
+            label += '_{'+str(nMoments)+'}$'
         elif closure == 'Euler2D' and maxIter == 1:
-            return 'os-IPM'
+            label += 'os-IPM'
+            label += '$^{'+str(nQuad)+'}'
+            label += '_{'+str(nMoments)+'}$'
         elif closure == 'Euler2D':
-            return 'IPM'
+            label += 'IPM'
+            label += '$^{'+str(nQuad)+'}'
+            label += '_{'+str(nMoments)+'}$'
         elif closure == 'L2Filter':
-            return 'L2Filter'
+            label += 'L2Filter'
+            label += '$^{'+str(nQuad)+'}'
+            label += '_{'+str(nMoments)+'}$'
         elif closure == 'LassoFilter':
-            return 'LassoFilter'
+            label += 'LassoFilter'
+            label += '$^{'+str(nQuad)+'}'
+            label += '_{'+str(nMoments)+'}$'
         elif closure == 'BoundedBarrier':
-            return 'BoundedBarrier'
+            label += 'BoundedBarrier'
+            label += '$^{'+str(nQuad)+'}'
+            label += '_{'+str(nMoments)+'}$'
         else:
-            return 'unkown'
+            label += 'unkown'
+        return label
+
 
 def parse_error_logfile(dir, file):
     with open(dir+'/'+file, 'r') as content:
@@ -118,7 +138,7 @@ def parse_logfile(dir, file):
         lines = content.readlines()
         pattern = re.compile("(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2}.\d{6}\s\|){1}(\s+[+-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+-]?\d+)?){3}")
         valid_lines = []
-        for line in lines: 
+        for line in lines:
             if pattern.match(line):
                 valid_lines.append(line)
         lines = extract_intervals(valid_lines,100)
@@ -169,7 +189,7 @@ def create_error_plot(dir, configFiles, files, title, type):
         plt.cla()
         plt.clf()
         plt.xlabel('Time [s]')
-        plt.ylabel('Residual')
+        plt.ylabel('Error')
         plt.title(title + ' error ' + type + '[' + stateLabel[s] + ']')
         for d in data:
             plt.semilogy(d['runtime'], d[stateLabel[s]])
@@ -232,7 +252,7 @@ def create_vtk_plots(dir, vtkFiles, rescale):
             reader.SetFileName(dir+'/'+file)
             reader.ReadAllScalarsOn()
             reader.ReadAllVectorsOn()
-            reader.Update() 
+            reader.Update()
             output = reader.GetOutput()
             for field_name in fields:
                 valRange = output.GetCellData().GetArray(field_name).GetRange()
@@ -248,7 +268,7 @@ def create_vtk_plots(dir, vtkFiles, rescale):
         reader.SetFileName(dir+'/'+file)
         reader.ReadAllScalarsOn()
         reader.ReadAllVectorsOn()
-        reader.Update() 
+        reader.Update()
         output = reader.GetOutput()
 
         numvals = 1024
@@ -264,7 +284,7 @@ def create_vtk_plots(dir, vtkFiles, rescale):
         ctf.AddRGBPoint(1.723930/1.72393, 0.87843, 0, 1)
         lut = vtk.vtkLookupTable()
         lut.SetNumberOfTableValues(numvals)
-        lut.Build()        
+        lut.Build()
         for i in range(0,numvals):
             rgb = list(ctf.GetColor(float(i)/numvals))+[1]
             lut.SetTableValue(i,rgb)
@@ -318,7 +338,7 @@ def create_vtk_plots(dir, vtkFiles, rescale):
             renderer.AddActor(actor)
             renderer.AddActor2D(scalarBar)
             renderer.UseFXAAOn()
-            renderer.SetBackground(1, 1, 1) 
+            renderer.SetBackground(1, 1, 1)
             renderer.SetActiveCamera(camera)
 
             render_window = vtk.vtkRenderWindow()
@@ -331,7 +351,7 @@ def create_vtk_plots(dir, vtkFiles, rescale):
             windowToImageFilter.SetInput(render_window)
             windowToImageFilter.ReadFrontBufferOff()
             windowToImageFilter.Update()
-            
+
             writer = vtk.vtkPNGWriter()
             writer.SetFileName(outputdir+'/'+os.path.splitext(file)[0]+"_"+field_name+".png")
             writer.SetInputConnection(windowToImageFilter.GetOutputPort())
@@ -359,8 +379,8 @@ if __name__ == "__main__":
     L2ErrVarFiles = []
     LInfErrVarFiles = []
     for file in vtkdirfiles:
-        if file.endswith('.vtk'): 
-            vtkFiles.append(file)  
+        if file.endswith('.vtk'):
+            vtkFiles.append(file)
     for file in logdirfiles:
         isRestartFile, prevFileName = checkForRestartFile(logdir, file)
         if isRestartFile:
@@ -371,7 +391,7 @@ if __name__ == "__main__":
             if file.startswith(ifile):
                 if file not in ignoredFiles: ignoredFiles.append(file)
     for ifile in ignoredFiles:
-        logfiles.remove(ifile)
+        logdirfiles.remove(ifile)
     for file in logdirfiles:
         if re.search(r'\d+$', file) is not None:
             configFiles.append(file)
