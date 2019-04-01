@@ -128,7 +128,7 @@ def parse_error_logfile(dir, file):
     with open(dir+'/'+file, 'r') as content:
         print("Parsing:\t" + dir + '/' + file)
         lines = content.readlines()
-        lines = extract_intervals(lines,100)
+        lines = extract_intervals(lines,1000)
         header = ['date', 'time', 'delim', 'rho', 'rhoU_x', 'rhoU_y', 'rhoE']
         df = pd.read_csv(StringIO("\n".join(lines)), header=None, names=header, delim_whitespace=True)
         df = df.drop(columns=['delim'])
@@ -149,7 +149,7 @@ def parse_logfile(dir, file):
         for line in lines:
             if pattern.match(line):
                 valid_lines.append(line)
-        lines = extract_intervals(valid_lines,100)
+        lines = extract_intervals(valid_lines,1000)
         header = ['date', 'time', 'delim', 't', 'residual_scaled', 'residual_abs']
         df = pd.read_csv(StringIO("\n".join(lines)), header=None, names=header, delim_whitespace = True)
         df = df.drop(columns=['delim'])
