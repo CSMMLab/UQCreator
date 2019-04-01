@@ -16,11 +16,7 @@
 bool CheckInput( std::string& configFile, int argc, char* argv[] ) {
     std::string usage_help = "\n"
                              "Usage: " +
-                             std::string( argv[0] ) +
-                             " -c inputfile\n\n"
-                             "Options:\n"
-                             "  -t N             number of threads to use\n"
-                             "  -h               displays this message\n";
+                             std::string( argv[0] ) + " -c inputfile\n";
 
     if( argc < 3 ) {
         std::cout << usage_help;
@@ -39,9 +35,6 @@ bool CheckInput( std::string& configFile, int argc, char* argv[] ) {
                 std::cerr << "[ERROR] Unable to open specified inputfile!" << std::endl;
                 return false;
             }
-        }
-        else if( arg == "-t" ) {
-            omp_set_num_threads( std::stoi( argv[++i] ) );
         }
         else {
             std::cout << usage_help;
