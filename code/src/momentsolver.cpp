@@ -30,6 +30,11 @@ MomentSolver::~MomentSolver() {
 }
 
 void MomentSolver::Solve() {
+    bool useAdaptivity = true;                // flag for using adaptivity
+    std::vector<unsigned> refinementLevel;    // vector carries refinement level for each cell
+    refinementLevel.resize( _nCells );        // koennnte auch cellIndexPE.size() sein bei MPI
+    Matrix refinementIndicatorPlot( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+
     auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
@@ -112,6 +117,14 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
+        }
+
+        // loop over all cells and check refinement indicator
+        if( useAdaptivity && _settings->GetMyPE() == 0 ) {    // master determines refinement level for now
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                // for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
+                refinementIndicatorPlot( 0, j ) = std::fabs( u[j]( 0, _nTotal - 1 ) );    // modify for multiD
+            }
         }
     }
 
@@ -211,6 +224,15 @@ void MomentSolver::Solve() {
         _mesh->ExportShallowWater( meanAndVar );
     else {
         _mesh->Export( meanAndVar, "" );
+    }
+
+    // loop over all cells and check refinement indicator
+    if( useAdaptivity ) {    // master determines refinement level for now
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            // for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
+            refinementIndicatorPlot( 0, j ) = std::fabs( u[j]( 0, _nTotal - 1 ) ) + std::fabs( u[j]( 0, _nTotal - 2 ) );    // modify for multiD
+        }
+        _mesh->Export( refinementIndicatorPlot, "_refinementIndicator" );
     }
 
     this->Export( uNew, _lambda );
