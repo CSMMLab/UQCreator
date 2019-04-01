@@ -12,6 +12,7 @@ def extract_intervals(sequence, num):
     length = float(len(sequence))
     for i in range(num):
         yield sequence[int(np.ceil(i * length / num))]
+    return sequence
 
 def time_to_float(time):
     t = dt.datetime.strptime(time, "%Y-%m-%d %H:%M:%S.%f")
@@ -144,7 +145,7 @@ def parse_logfile(dir, file):
     with open(dir+'/'+file, 'r') as content:
         print("Parsing:\t" + dir + '/' + file)
         lines = content.readlines()
-        pattern = re.compile("(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2}.\d{6}\s\|){1}(\s+[+-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+-]?\d+)?){3}")
+        pattern = re.compile("(\d{4}\-\d{2}\-\d{2}\s\d{2}\:\d{2}\:\d{2}.\d{6}\s\|){1}(\s+[+-]?(?:0|[1-9]\d*)(?:\.\d*)+(?:[eE][+-]?\d+)?){3}")
         valid_lines = []
         for line in lines:
             if pattern.match(line):
