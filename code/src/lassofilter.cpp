@@ -37,9 +37,9 @@ void LassoFilter::SolveClosure( Matrix& lambda, const Matrix& u ) {
     unsigned nMax = _settings->GetNTotal() - 1;
 
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        filterStrength = std::fabs( u( s, nMax ) ) / ( _filterParam[nMax] * _l1Norms[nMax] );
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            filterStrength = std::fabs( u( s, nMax ) ) / ( _filterParam[nMax] * _l1Norms[nMax] );
-            scL1           = 1.0 - filterStrength * _filterParam[i] * _l1Norms[i] / std::fabs( u( s, i ) );
+            scL1 = 1.0 - filterStrength * _filterParam[i] * _l1Norms[i] / std::fabs( u( s, i ) );
             if( scL1 < 0 || std::fabs( u( s, i ) ) < 1e-7 ) scL1 = 0.0;
             lambda( s, i ) = scL1 * u( s, i );
         }
