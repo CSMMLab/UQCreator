@@ -10,7 +10,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
                              MatVec& u,
                              MatVec& uQ,
                              double dt,
-                             const std::vector<unsigned>& refLevel ) {
+                             const VectorU& refLevel ) {
     auto numCells = _mesh->GetNumCells();
 
 #pragma omp parallel for private( _ghostCell )

@@ -213,11 +213,17 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
                 if( totalDegree < _nMoments || _useMaxDegree ) ++_nTotal;
             }
             // set vector containing nMoments for each refinement level
-            _nTotalRefinementLevel.resize( 4 );
+            _nRefinementLevels        = 5;
+            _nTotalRefinementLevel    = VectorU( _nRefinementLevels );
             _nTotalRefinementLevel[0] = 2;
-            _nTotalRefinementLevel[1] = 3;
-            _nTotalRefinementLevel[2] = 4;
-            _nTotalRefinementLevel[3] = 5;
+            _nTotalRefinementLevel[1] = 4;
+            _nTotalRefinementLevel[2] = 6;
+            _nTotalRefinementLevel[3] = 8;
+            _nTotalRefinementLevel[4] = 10;
+            //_nTotalRefinementLevel[5] = 7;
+            //_nTotalRefinementLevel[6] = 8;
+            //_nTotalRefinementLevel[7] = 9;
+            //_nTotalRefinementLevel[8] = 10;
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
@@ -575,7 +581,8 @@ unsigned Settings::GetMaxIterations() const { return _maxIterations; }
 void Settings::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxIterations; }
 double Settings::GetEpsilon() const { return _epsilon; }
 unsigned Settings::GetNTotal() const { return _nTotal; }
-std::vector<unsigned> Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLevel; }
+VectorU Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLevel; }
+unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
 unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }
 
 // plot

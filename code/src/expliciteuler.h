@@ -18,7 +18,7 @@ class ExplicitEuler : public TimeSolver
                           MatVec& u,
                           MatVec& uQ,
                           double dt,
-                          const std::vector<unsigned>& refLevel );
+                          const VectorU& refLevel );
 };
 
 #endif    // EXPLICITEULER_H

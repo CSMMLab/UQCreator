@@ -33,7 +33,7 @@ class TimeSolver
                           MatVec& u,
                           MatVec& uQ,
                           double dt,
-                          const std::vector<unsigned>& refLevel ) = 0;
+                          const VectorU& refLevel ) = 0;
     double GetTimeStepSize();
     double GetNTimeSteps();
 };
