@@ -30,8 +30,8 @@ class Closure
     unsigned _nQTotal;
     unsigned _nTotal;
     unsigned _maxIterations;
-    void Hessian( Matrix& H, const Matrix& lambda );
-    void Gradient( Vector& g, const Matrix& lambda, const Matrix& u );
+    void Hessian( Matrix& H, const Matrix& lambda, unsigned nTotal, unsigned nQTotal );
+    void Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
     std::shared_ptr<spdlog::logger> _log;
     Matrix _dUdLambda;    // preallocated memory dor computation of Hessian
   public:
@@ -48,15 +48,16 @@ class Closure
      * @param initial guess for dual vector
      * @return correct dual vector
      */
-    virtual void SolveClosure( Matrix& lambda, const Matrix& u );
-    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u );
+    // virtual void SolveClosure( Matrix& lambda, const Matrix& u );
+    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
+    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
     /**
      * calculate entropic variable from given dual vector
      * @param dual variable
      * @param dual variable
      * @return entropic state
      */
-    Vector EvaluateLambda( const Matrix& lambda, unsigned k );
+    Vector EvaluateLambda( const Matrix& lambda, unsigned k, unsigned nTotal );
     Matrix EvaluateLambda( const Matrix& lambda ) const;
     void EvaluateLambda( Matrix& out, const Matrix& lambda ) const;
     Vector EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k );
@@ -81,13 +82,13 @@ class Closure
     /**
      * Add matrix A and vector b and save result in a matrix
      */
-    void AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y ) const;
+    void AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y, unsigned nTotal ) const;
     /**
      * Add matrix A and vector b and save result in b
      */
-    void SubstractVectorMatrixOnVector( Vector& b, const Matrix& A ) const;
+    void SubstractVectorMatrixOnVector( Vector& b, const Matrix& A, unsigned nTotal ) const;
 
-    double CalcNorm( Vector& test );
+    double CalcNorm( Vector& test, unsigned nTotal ) const;
 
     /**
      * reset step size for Newton

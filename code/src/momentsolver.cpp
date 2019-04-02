@@ -77,7 +77,7 @@ void MomentSolver::Solve() {
 
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-            _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]] );
+            _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], _nTotal, _nQTotal );
         }
 
         // MPI Broadcast lambdas to all PEs
@@ -123,7 +123,7 @@ void MomentSolver::Solve() {
         if( useAdaptivity && _settings->GetMyPE() == 0 ) {    // master determines refinement level for now
             for( unsigned j = 0; j < _nCells; ++j ) {
                 // for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-                refinementIndicatorPlot( 0, j ) = std::fabs( u[j]( 0, _nTotal - 1 ) );    // modify for multiD
+                refinementIndicatorPlot( 0, j ) = std::fabs( u[j]( 0, _nTotal - 1 ) ) + std::fabs( u[j]( 0, _nTotal - 2 ) );    // modify for multiD
             }
         }
     }
@@ -157,7 +157,7 @@ void MomentSolver::Solve() {
     for( unsigned j = 0; j < _nCells; ++j ) {
         // expected value
         for( unsigned k = 0; k < _nQTotal; ++k ) {
-            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
+            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotal ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
             }
@@ -165,7 +165,7 @@ void MomentSolver::Solve() {
 
         // variance
         for( unsigned k = 0; k < _nQTotal; ++k ) {
-            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k ) );
+            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotal ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
             }
@@ -313,7 +313,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
             prevClosure->SetMaxIterations( 10000 );
             for( unsigned j = 0; j < _nCells; ++j ) {
-                prevClosure->SolveClosureSafe( _lambda[j], u[j] );
+                prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNTotal(), prevSettings->GetNQTotal() );
             }
             prevClosure->SetMaxIterations( 1 );
         }
@@ -339,7 +339,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
                         _lambda[j]( s, i ) = lambdaOld( s, i );
                     }
                 }
-                _closure->SolveClosureSafe( _lambda[j], u[j] );
+                _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
             }
             _closure->SetMaxIterations( maxIterations );
             // delete reload closures and settings

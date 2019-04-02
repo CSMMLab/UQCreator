@@ -26,7 +26,15 @@ Matrix L2Filter::U( const Matrix& Lambda ) { return Lambda; }
 
 void L2Filter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 
-void L2Filter::SolveClosure( Matrix& lambda, const Matrix& u ) {
+void L2Filter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
+    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+            lambda( s, i ) = _filterFunction[i] * u( s, i );
+        }
+    }
+}
+
+void L2Filter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             lambda( s, i ) = _filterFunction[i] * u( s, i );

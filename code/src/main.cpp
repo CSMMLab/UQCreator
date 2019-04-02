@@ -3,6 +3,7 @@
 #include <mpi.h>
 #include <omp.h>
 
+#include "closure.h"
 #include "mesh.h"
 #include "momentsolver.h"
 #include "problem.h"
@@ -142,18 +143,68 @@ int main( int argc, char* argv[] ) {
 
     Settings* settings = new Settings( configFile );
     if( settings->GetMyPE() == 0 ) PrintInit( configFile );
-    Mesh* mesh           = Mesh::Create( settings );
-    Problem* problem     = Problem::Create( settings );
-    MomentSolver* solver = new MomentSolver( settings, mesh, problem );
 
-    solver->Solve();
+    // DEBUG START
+    Problem* p = Problem::Create( settings );
+    Closure* c = Closure::Create( settings );
+
+    Matrix u( settings->GetNStates(), settings->GetNTotal(), 0.0 );
+    Matrix lambda( settings->GetNStates(), settings->GetNTotal(), 0.0 );
+
+    u( 0, 0 ) = 0.95452;
+    u( 0, 1 ) = -0.17321;
+    u( 0, 2 ) = 0.0493441;
+    u( 0, 3 ) = 0.054137;
+    u( 0, 4 ) = -0.070956;
+
+    u( 1, 0 ) = 324.193;
+    u( 1, 1 ) = -3.92017;
+    u( 1, 2 ) = -0.378675;
+    u( 1, 3 ) = 0.470835;
+    u( 1, 4 ) = 1.47966;
+
+    u( 2, 0 ) = -26.3248;
+    u( 2, 1 ) = -0.232118;
+    u( 2, 2 ) = -0.042907;
+    u( 2, 3 ) = -0.254564;
+    u( 2, 4 ) = 1.42992;
+
+    u( 3, 0 ) = 228267.0;
+    u( 3, 1 ) = -36289.7;
+    u( 3, 2 ) = 10485.8;
+    u( 3, 3 ) = 11206.6;
+    u( 3, 4 ) = -15168.4;
+
+    Vector ds( settings->GetNStates() );
+    Vector u0( settings->GetNStates() );
+    for( unsigned l = 0; l < settings->GetNStates(); ++l ) {
+        u0[l] = u( l, 0 );
+    }
+    c->DS( ds, u0 );
+    for( unsigned l = 0; l < settings->GetNStates(); ++l ) {
+        lambda( l, 0 ) = ds[l];
+    }
+    std::cout << "initial lambda " << lambda << std::endl;
+    c->SolveClosure( lambda, u, settings->GetNTotal() - 1, settings->GetNQTotal() );
+    std::cout << "closure solved with " << lambda << std::endl;
+
+    MPI_Finalize();
+
+    return EXIT_SUCCESS;
+    // DEBUG END
+
+    // Mesh* mesh           = Mesh::Create( settings );
+    // Problem* problem     = Problem::Create( settings );
+    // MomentSolver* solver = new MomentSolver( settings, mesh, problem );
+
+    // solver->Solve();
 
     log->info( "" );
     log->info( "Process exited normally on PE {:1d} .", settings->GetMyPE() );
 
-    delete solver;
-    delete problem;
-    delete mesh;
+    // delete solver;
+    // delete problem;
+    // delete mesh;
     delete settings;
 
     MPI_Finalize();
