@@ -5,11 +5,12 @@ ExplicitEuler::ExplicitEuler( Settings* settings, Mesh* mesh ) : TimeSolver( set
     _ghostCell( _settings->GetNStates(), _settings->GetNQuadPoints() );
 }
 
-void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
+void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector&, unsigned )> const& fluxFunc,
                              MatVec& uNew,
                              MatVec& u,
                              MatVec& uQ,
-                             double dt ) {
+                             double dt,
+                             const std::vector<unsigned>& refLevel ) {
     auto numCells = _mesh->GetNumCells();
 
 #pragma omp parallel for private( _ghostCell )
@@ -61,10 +62,12 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
         for( unsigned l = 0; l < neighbors.size(); ++l ) {
             if( ( _mesh->GetBoundaryType( j ) == BoundaryType::NOSLIP || _mesh->GetBoundaryType( j ) == BoundaryType::SWWALL ) &&
                 neighbors[l] == numCells ) {
-                fluxFunc( rhs, _ghostCell, _ghostCell, cell->GetUnitNormal( l ), cell->GetNormal( l ) );
+                fluxFunc(
+                    rhs, _ghostCell, _ghostCell, cell->GetUnitNormal( l ), cell->GetNormal( l ), _settings->GetNTotalforRefLevel( refLevel[j] ) );
             }
             else {
-                fluxFunc( rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ) );
+                fluxFunc(
+                    rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ), _settings->GetNTotalforRefLevel( refLevel[j] ) );
             }
         }
         uNew[j] = u[j] - ( dt / cell->GetArea() ) * rhs;

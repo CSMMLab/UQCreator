@@ -172,12 +172,13 @@ template <class T> inline void posv( VectorSpace::Matrix<T>& A, VectorSpace::Vec
 
 // multiplies PE part of A and x and saves result on b
 template <class T>
-void multOnPENoReset( const VectorSpace::Matrix<T>& X, const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& B, unsigned kStart, unsigned kEnd ) {
+void multOnPENoReset(
+    const VectorSpace::Matrix<T>& X, const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& B, unsigned kStart, unsigned kEnd, unsigned nTotal ) {
     // B.reset();
     for( unsigned s = 0; s < B.rows(); ++s ) {
-        for( unsigned j = 0; j < B.columns(); ++j ) {
+        for( unsigned i = 0; i < nTotal; ++i ) {
             for( unsigned k = kStart; k <= kEnd; ++k ) {
-                B( s, j ) += X( s, k - kStart ) * A( k, j );    // TODO do not choose PhiTiledeTrans but PhiTiled s.t. A( j,k ) can be used
+                B( s, i ) += X( s, k - kStart ) * A( k, i );    // TODO do not choose PhiTiledeTrans but PhiTiled s.t. A( j,k ) can be used
             }
         }
     }

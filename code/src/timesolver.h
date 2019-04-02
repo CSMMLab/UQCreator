@@ -28,11 +28,12 @@ class TimeSolver
     TimeSolver( Settings* settings, Mesh* mesh );
     virtual ~TimeSolver();
     static TimeSolver* Create( Settings* settings, Mesh* mesh );
-    virtual void Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
+    virtual void Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector&, unsigned )> const& fluxFunc,
                           MatVec& uNew,
                           MatVec& u,
                           MatVec& uQ,
-                          double dt ) = 0;
+                          double dt,
+                          const std::vector<unsigned>& refLevel ) = 0;
     double GetTimeStepSize();
     double GetNTimeSteps();
 };

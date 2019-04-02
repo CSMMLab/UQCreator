@@ -34,6 +34,12 @@ void MomentSolver::Solve() {
     std::vector<unsigned> refinementLevel;    // vector carries refinement level for each cell
     refinementLevel.resize( _nCells );        // koennnte auch cellIndexPE.size() sein bei MPI
     Matrix refinementIndicatorPlot( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+    std::vector<unsigned> nTotal = _settings->GetNTotalRefinementLevel();
+
+    // set initial refinement level for all cells
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        refinementLevel[j] = 3;
+    }
 
     auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
@@ -61,7 +67,8 @@ void MomentSolver::Solve() {
                                  std::placeholders::_2,
                                  std::placeholders::_3,
                                  std::placeholders::_4,
-                                 std::placeholders::_5 );
+                                 std::placeholders::_5,
+                                 std::placeholders::_6 );
 
     if( _settings->GetMyPE() == 0 ) log->info( "{:10}   {:10}", "t", "residual" );
 
@@ -74,23 +81,22 @@ void MomentSolver::Solve() {
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
         double residual = 0;
-
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-            _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], _nTotal, _nQTotal );
+            _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
         }
 
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             uOld[j] = u[j];    // save old Moments for residual computation
-            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
+            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * nTotal[refinementLevel[j]] ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
 
         // compute solution at quad points as well as partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
-            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j] ) );
+            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], nTotal[refinementLevel[j]] ) );
             u[j].reset();
-            multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd() );
+            multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd(), nTotal[refinementLevel[j]] );
         }
 
         // determine time step size
@@ -103,11 +109,17 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
         t += dt;
 
-        _time->Advance( numFluxPtr, uNew, u, uQ, dt );
+        _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
 
         // perform reduction to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
         for( unsigned j = 0; j < _nCells; ++j ) {
-            MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
+            MPI_Reduce( uNew[j].GetPointer(),
+                        u[j].GetPointer(),
+                        int( _nStates * nTotal[refinementLevel[j]] ),
+                        MPI_DOUBLE,
+                        MPI_SUM,
+                        PEforCell[j],
+                        MPI_COMM_WORLD );
         }
 
         // compute residual
@@ -123,7 +135,8 @@ void MomentSolver::Solve() {
         if( useAdaptivity && _settings->GetMyPE() == 0 ) {    // master determines refinement level for now
             for( unsigned j = 0; j < _nCells; ++j ) {
                 // for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-                refinementIndicatorPlot( 0, j ) = std::fabs( u[j]( 0, _nTotal - 1 ) ) + std::fabs( u[j]( 0, _nTotal - 2 ) );    // modify for multiD
+                refinementIndicatorPlot( 0, j ) = std::fabs( u[j]( 0, nTotal[refinementLevel[j]] - 1 ) ) +
+                                                  std::fabs( u[j]( 0, nTotal[refinementLevel[j]] - 2 ) );    // modify for multiD
             }
         }
     }
@@ -350,9 +363,9 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
     }
 }
 
-void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n ) {
+void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {
     // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
-    multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd() );
+    multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd(), nTotal );
 }
 
 void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
