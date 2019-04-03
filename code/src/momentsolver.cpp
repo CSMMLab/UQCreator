@@ -37,7 +37,7 @@ void MomentSolver::Solve() {
 
     // set initial refinement level for all cells
     for( unsigned j = 0; j < _nCells; ++j ) {
-        refinementLevel[j] = 3;
+        refinementLevel[j] = 0;
     }
 
     auto log                                  = spdlog::get( "event" );
@@ -111,9 +111,9 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
             double indicator = std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 1 ) ) +
                                std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 2 ) );
-            if( indicator > 0.1 && refinementLevel[cellIndexPE[j]] < _settings->GetNRefinementLevels() )
+            if( indicator > 0.1 && refinementLevel[cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
                 refinementLevel[cellIndexPE[j]] += 1;
-            else if( indicator < 0.1 && refinementLevel[cellIndexPE[j]] > 2 )
+            else if( indicator < 0.01 && refinementLevel[cellIndexPE[j]] > 0 )
                 refinementLevel[cellIndexPE[j]] -= 1;
         }
 
@@ -327,7 +327,6 @@ Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const 
 void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u ) {
     if( _settings->LoadLambda() ) {
         _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
-        return;
     }
     else {
         // compute dual states for given moment vector
@@ -354,36 +353,36 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             }
             prevClosure->SetMaxIterations( 1 );
         }
-        // for restart with increased number of moments reconstruct solution at finer quad points and compute moments for new truncation order
-        if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
-            MatVec uQFullProc      = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
-            unsigned maxIterations = _closure->GetMaxIterations();
-            if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
-            prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
-            Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
-            for( unsigned j = 0; j < _nCells; ++j ) {
-                _closure->U( uQFullProc[j], intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
+    }
+    // for restart with increased number of moments reconstruct solution at finer quad points and compute moments for new truncation order
+    if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+        MatVec uQFullProc      = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
+        unsigned maxIterations = _closure->GetMaxIterations();
+        if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
+        prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
+        Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            _closure->U( uQFullProc[j], intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
 
-                auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
-                u[j].resize( _nStates, _nTotal );
-                u[j] = uCurrent;    // new Moments of size new nMoments
+            auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
+            u[j].resize( _nStates, _nTotal );
+            u[j] = uCurrent;    // new Moments of size new nMoments
 
-                // compute lambda with size newMoments
-                Matrix lambdaOld = _lambda[j];
-                _lambda[j].resize( _nStates, _nTotal );
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    for( unsigned i = 0; i < prevSettings->GetNTotal(); ++i ) {
-                        _lambda[j]( s, i ) = lambdaOld( s, i );
-                    }
+            // compute lambda with size newMoments
+            Matrix lambdaOld = _lambda[j];
+            _lambda[j].resize( _nStates, _nTotal );
+            for( unsigned s = 0; s < _nStates; ++s ) {
+                for( unsigned i = 0; i < prevSettings->GetNTotal(); ++i ) {
+                    _lambda[j]( s, i ) = lambdaOld( s, i );
                 }
-                _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
             }
-            _closure->SetMaxIterations( maxIterations );
-            // delete reload closures and settings
-            delete intermediateClosure;
-            delete prevClosure;
-            delete prevSettings;
+            _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
         }
+        _closure->SetMaxIterations( maxIterations );
+        // delete reload closures and settings
+        delete intermediateClosure;
+        delete prevClosure;
+        delete prevSettings;
     }
 }
 
