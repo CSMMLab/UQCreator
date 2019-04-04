@@ -254,7 +254,7 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsign
     Vector uKinetic( _nStates, 0.0 );
     g.reset();
 
-    // std::cout << "Lambda = " << lambda * _phiTildeVec[_nQTotal - 1] << std::endl;
+    // std::cout << "Lambda = " << lambda * _phiTildeVec[nQTotal - 1] << std::endl;
 
     for( unsigned k = 0; k < nQTotal; ++k ) {
         U( uKinetic, EvaluateLambda( lambda, k, nTotal ) );
@@ -316,12 +316,12 @@ void Closure::SetAlpha( double alpha ) { _alpha = alpha; }
 void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
     int maxRefinements = 1000;
 
-    Matrix H( _nStates * _nTotal, _nStates * _nTotal );
-    Vector g( _nStates * _nTotal );
-    Vector dlambdaNew( _nStates * _nTotal );
+    Matrix H( _nStates * nTotal, _nStates * nTotal );
+    Vector g( _nStates * nTotal );
+    Vector dlambdaNew( _nStates * nTotal );
 
     Vector dlambda = -g;
-    Matrix lambdaNew( _nStates, _nTotal );
+    Matrix lambdaNew( _nStates, nTotal );
 
     // perform Newton iterations
     for( unsigned l = 0; l < _maxIterations; ++l ) {

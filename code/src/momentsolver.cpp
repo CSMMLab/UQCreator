@@ -325,6 +325,8 @@ Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const 
 }
 
 void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u ) {
+    unsigned maxIterations = _closure->GetMaxIterations();
+
     if( _settings->LoadLambda() ) {
         _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
     }
@@ -351,22 +353,23 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             for( unsigned j = 0; j < _nCells; ++j ) {
                 prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNTotal(), prevSettings->GetNQTotal() );
             }
-            prevClosure->SetMaxIterations( 1 );
+            prevClosure->SetMaxIterations( maxIterations );
         }
     }
+    std::cout << "init lambda " << _lambda[5] << std::endl;
+    std::cout << "init u " << u[5] << std::endl;
     // for restart with increased number of moments reconstruct solution at finer quad points and compute moments for new truncation order
     if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
-        MatVec uQFullProc      = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
-        unsigned maxIterations = _closure->GetMaxIterations();
+        MatVec uQFullProc = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
         if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
         prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
         Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
         for( unsigned j = 0; j < _nCells; ++j ) {
             _closure->U( uQFullProc[j], intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
-
             auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
             u[j].resize( _nStates, _nTotal );
             u[j] = uCurrent;    // new Moments of size new nMoments
+            if( j == 5 ) std::cout << "new u " << u[j]( 0, 1 ) << std::endl;
 
             // compute lambda with size newMoments
             Matrix lambdaOld = _lambda[j];
@@ -376,6 +379,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
                     _lambda[j]( s, i ) = lambdaOld( s, i );
                 }
             }
+            if( j == 0 ) std::cout << "nTotal = " << _settings->GetNTotal() << std::endl;
             _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
         }
         _closure->SetMaxIterations( maxIterations );
@@ -384,6 +388,8 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         delete prevClosure;
         delete prevSettings;
     }
+    std::cout << "end lambda " << _lambda[5] << std::endl;
+    std::cout << "end u " << u[5] << std::endl;
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {
