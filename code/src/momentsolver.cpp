@@ -111,9 +111,9 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
             double indicator = std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 1 ) ) +
                                std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 2 ) );
-            if( indicator > 0.1 && refinementLevel[cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
+            if( indicator > 0.01 && refinementLevel[cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
                 refinementLevel[cellIndexPE[j]] += 1;
-            else if( indicator < 0.01 && refinementLevel[cellIndexPE[j]] > 0 )
+            else if( indicator < 0.001 && refinementLevel[cellIndexPE[j]] > 0 )
                 refinementLevel[cellIndexPE[j]] -= 1;
         }
 
@@ -194,7 +194,7 @@ void MomentSolver::Solve() {
     for( unsigned j = 0; j < _nCells; ++j ) {
         // expected value
         for( unsigned k = 0; k < _nQTotal; ++k ) {
-            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotal ) );
+            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, nTotal[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
             }
@@ -202,7 +202,7 @@ void MomentSolver::Solve() {
 
         // variance
         for( unsigned k = 0; k < _nQTotal; ++k ) {
-            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotal ) );
+            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, nTotal[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
             }
