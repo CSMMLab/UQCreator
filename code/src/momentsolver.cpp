@@ -356,8 +356,33 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             prevClosure->SetMaxIterations( maxIterations );
         }
     }
-    std::cout << "init lambda " << _lambda[5] << std::endl;
-    std::cout << "init u " << u[5] << std::endl;
+    auto lambdaLoad = this->ImportPrevDuals( prevSettings->GetNTotal() );
+    Matrix tmp      = Matrix( _nStates, prevSettings->GetNTotal(), 0.0 );
+    double max      = 0.0;
+    unsigned cellIndex;
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        for( unsigned s = 0; s < _nStates; ++s ) {
+            for( unsigned i = 0; i < prevSettings->GetNTotal(); ++i ) {
+                if( std::fabs( lambdaLoad[j]( s, i ) - _lambda[j]( s, i ) ) > max ) {
+                    if( j == 14763 ) {
+                        std::cout << "Cell 14763 max: " << std::fabs( lambdaLoad[j]( s, i ) - _lambda[j]( s, i ) ) << std::endl;
+                        std::cout << "state " << s << " ; moment " << i << std::endl;
+                        std::cout << "lambda Load is  " << lambdaLoad[j]( s, i ) << std::endl;
+                        std::cout << "lambda calc is  " << _lambda[j]( s, i ) << std::endl;
+                    }
+                    max       = std::fabs( lambdaLoad[j]( s, i ) - _lambda[j]( s, i ) );
+                    cellIndex = j;
+                }
+                tmp( s, i ) = tmp( s, i ) + std::fabs( lambdaLoad[j]( s, i ) - _lambda[j]( s, i ) );
+            }
+        }
+        if( j == 14763 ) std::cout << "Cell 14763 diff: " << lambdaLoad[j] - _lambda[j] << std::endl;
+    }
+    std::cout << "difference is " << tmp << std::endl;
+    std::cout << "max error is " << max << " at cell " << cellIndex << std::endl;
+
+    std::cout << "init lambda " << _lambda[14763] << std::endl;
+    std::cout << "init u " << u[14763] << std::endl;
     // for restart with increased number of moments reconstruct solution at finer quad points and compute moments for new truncation order
     if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
         MatVec uQFullProc = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
@@ -369,7 +394,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
             u[j].resize( _nStates, _nTotal );
             u[j] = uCurrent;    // new Moments of size new nMoments
-            if( j == 5 ) std::cout << "new u " << u[j]( 0, 1 ) << std::endl;
+            if( j == 14763 ) std::cout << "new u " << u[j]( 0, 1 ) << std::endl;
 
             // compute lambda with size newMoments
             Matrix lambdaOld = _lambda[j];
@@ -388,8 +413,8 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         delete prevClosure;
         delete prevSettings;
     }
-    std::cout << "end lambda " << _lambda[5] << std::endl;
-    std::cout << "end u " << u[5] << std::endl;
+    std::cout << "end lambda " << _lambda[14763] << std::endl;
+    std::cout << "end u " << u[14763] << std::endl;
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {
