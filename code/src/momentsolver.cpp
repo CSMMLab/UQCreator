@@ -37,7 +37,7 @@ void MomentSolver::Solve() {
 
     // set initial refinement level for all cells
     for( unsigned j = 0; j < _nCells; ++j ) {
-        refinementLevel[j] = 0;
+        refinementLevel[j] = _settings->GetNRefinementLevels() - 1;
     }
 
     auto log                                  = spdlog::get( "event" );
@@ -268,6 +268,7 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             // for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
             refinementIndicatorPlot( 0, j ) = std::fabs( u[j]( 0, _nTotal - 1 ) ) + std::fabs( u[j]( 0, _nTotal - 2 ) );    // modify for multiD
+            refinementIndicatorPlot( 1, j ) = double( refinementLevel[j] );
         }
         _mesh->Export( refinementIndicatorPlot, "_refinementIndicator" );
     }

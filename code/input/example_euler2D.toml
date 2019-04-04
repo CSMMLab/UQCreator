@@ -14,7 +14,7 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "nacaCoarse.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "Ma2Euler2D"
+outputFile = "refinementRestart"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -23,13 +23,13 @@ timestepping = "explicitEuler"
 distribution = [["Legendre"],[0.5]]
 CFL = 0.9
 tEnd = 10.01
-residual = 1e-6
+residual = 1e-5
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "Euler2D"
 moments = 10
 quadPoints = 15
-maxIterations = 1000
+maxIterations = 1
 epsilon = 1e-7
 
