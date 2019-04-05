@@ -213,17 +213,18 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
                 if( totalDegree < _nMoments || _useMaxDegree ) ++_nTotal;
             }
             // set vector containing nMoments for each refinement level
-            _nRefinementLevels                             = 5;
+            _nRefinementLevels                             = 6;
             _nTotalRefinementLevel                         = VectorU( _nRefinementLevels );
             _nTotalRefinementLevel[_nRefinementLevels - 1] = 10;
-            _nTotalRefinementLevel[3]                      = 9;
+            _nTotalRefinementLevel[4]                      = 9;
+            _nTotalRefinementLevel[3]                      = 8;
             _nTotalRefinementLevel[2]                      = 7;
-            _nTotalRefinementLevel[1]                      = 5;
+            _nTotalRefinementLevel[1]                      = 6;
             //_nTotalRefinementLevel[_nRefinementLevels - 2] = 0;
             //_nTotalRefinementLevel[_nRefinementLevels - 3] = 10;
             //_nTotalRefinementLevel[3] = 8;
             //_nTotalRefinementLevel[4] = 10;
-            _nTotalRefinementLevel[0] = 3;
+            _nTotalRefinementLevel[0] = 5;
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
