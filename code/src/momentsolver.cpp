@@ -137,6 +137,7 @@ void MomentSolver::Solve() {
             if( dtCurrent < dtMinOnPE ) dtMinOnPE = dtCurrent;
         }
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
+        // std::cout << "dt = " << dt << std::endl;
         t += dt;
 
         _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
@@ -153,15 +154,6 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
-        }
-
-        // loop over all cells and check refinement indicator
-        if( useAdaptivity && _settings->GetMyPE() == 0 ) {    // master determines refinement level for now
-            for( unsigned j = 0; j < _nCells; ++j ) {
-                // for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-                refinementIndicatorPlot( 0, j ) = std::fabs( u[j]( 0, nTotal[refinementLevel[j]] - 1 ) ) +
-                                                  std::fabs( u[j]( 0, nTotal[refinementLevel[j]] - 2 ) );    // modify for multiD
-            }
         }
     }
 

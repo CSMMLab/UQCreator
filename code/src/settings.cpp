@@ -220,11 +220,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             _nTotalRefinementLevel[3]                      = 8;
             _nTotalRefinementLevel[2]                      = 7;
             _nTotalRefinementLevel[1]                      = 6;
-            //_nTotalRefinementLevel[_nRefinementLevels - 2] = 0;
-            //_nTotalRefinementLevel[_nRefinementLevels - 3] = 10;
-            //_nTotalRefinementLevel[3] = 8;
-            //_nTotalRefinementLevel[4] = 10;
-            _nTotalRefinementLevel[0] = 5;
+            _nTotalRefinementLevel[0]                      = 5;
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
