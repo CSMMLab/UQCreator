@@ -30,28 +30,10 @@ MomentSolver::~MomentSolver() {
 }
 
 void MomentSolver::Solve() {
-    bool useAdaptivity = true;             // flag for using adaptivity
-    VectorU refinementLevel( _nCells );    // vector carries refinement level for each cell
+    bool useAdaptivity = true;                                                    // flag for using adaptivity
+    VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels() - 1 );    // vector carries refinement level for each cell
     Matrix refinementIndicatorPlot( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     VectorU nTotal = _settings->GetNTotalRefinementLevel();
-
-    // set initial refinement level for all cells
-    Vector a_ref( 2 );
-    a_ref[0] = -0.05;
-    a_ref[1] = -0.5;
-    Vector b_ref( 2 );
-    b_ref[0] = 1.05;
-    b_ref[1] = 0.5;
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        if( _mesh->GetGrid()[j]->GetCenter()[0] > a_ref[0] && _mesh->GetGrid()[j]->GetCenter()[0] < b_ref[0] &&
-            _mesh->GetGrid()[j]->GetCenter()[1] > a_ref[1] && _mesh->GetGrid()[j]->GetCenter()[1] < b_ref[1] ) {
-            refinementLevel[j] = _settings->GetNRefinementLevels() - 1;
-        }
-        else {
-            refinementLevel[j] = 0;
-        }
-        refinementLevel[j] = _settings->GetNRefinementLevels() - 1;
-    }
 
     auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
@@ -96,14 +78,7 @@ void MomentSolver::Solve() {
         // std::cout << "Before SolveClosure" << std::endl;
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-            if( j == 1 && false ) {
-                std::cout << "lambda = " << _lambda[j] << std::endl;
-                std::cout << "u = " << u[j] << std::endl;
-                std::cout << "refinementLevel = " << refinementLevel[cellIndexPE[j]] << std::endl;
-                std::cout << "nTotal = " << nTotal[refinementLevel[cellIndexPE[j]]] << std::endl;
-            }
             _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
-            //_closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], _nTotal, _nQTotal );
         }
 
         // std::cout << "Before MPI_Bcast" << std::endl;
