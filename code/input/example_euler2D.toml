@@ -15,7 +15,7 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "nacaCoarse.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "rectangle_refinementRestart"
+outputFile = "refinementRestartLowOrder1"
 
 [problem]
 # available timesteppings: explicitEuler
