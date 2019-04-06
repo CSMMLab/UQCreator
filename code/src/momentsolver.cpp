@@ -36,7 +36,20 @@ void MomentSolver::Solve() {
     VectorU nTotal = _settings->GetNTotalRefinementLevel();
 
     // set initial refinement level for all cells
+    Vector a_ref( 2 );
+    a_ref[0] = -0.05;
+    a_ref[1] = -0.5;
+    Vector b_ref( 2 );
+    b_ref[0] = 1.05;
+    b_ref[1] = 0.5;
     for( unsigned j = 0; j < _nCells; ++j ) {
+        if( _mesh->GetGrid()[j]->GetCenter()[0] > a_ref[0] && _mesh->GetGrid()[j]->GetCenter()[0] < b_ref[0] &&
+            _mesh->GetGrid()[j]->GetCenter()[1] > a_ref[1] && _mesh->GetGrid()[j]->GetCenter()[1] < b_ref[1] ) {
+            refinementLevel[j] = _settings->GetNRefinementLevels() - 1;
+        }
+        else {
+            refinementLevel[j] = 0;
+        }
         refinementLevel[j] = _settings->GetNRefinementLevels() - 1;
     }
 
@@ -90,6 +103,7 @@ void MomentSolver::Solve() {
                 std::cout << "nTotal = " << nTotal[refinementLevel[cellIndexPE[j]]] << std::endl;
             }
             _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
+            //_closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], _nTotal, _nQTotal );
         }
 
         // std::cout << "Before MPI_Bcast" << std::endl;
@@ -111,9 +125,9 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
             double indicator = std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 1 ) ) +
                                std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 2 ) );
-            if( indicator > 0.01 && refinementLevel[cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
+            if( indicator > 0.001 && refinementLevel[cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
                 refinementLevel[cellIndexPE[j]] += 1;
-            else if( indicator < 0.001 && refinementLevel[cellIndexPE[j]] > 0 )
+            else if( indicator < 0.0001 && refinementLevel[cellIndexPE[j]] > 0 )
                 refinementLevel[cellIndexPE[j]] -= 1;
         }
 
