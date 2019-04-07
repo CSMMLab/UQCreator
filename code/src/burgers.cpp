@@ -67,18 +67,16 @@ Vector Burgers::IC( const Vector& x, const Vector& xi ) {
         }
     }
     else if( xi.size() == 2 ) {
-        _x0           = 0.3;
-        _x1           = 0.6;
-        double sigma0 = 0.2;    // 0.2
-        double sigma1 = 0.1;
-        _uL           = 12.0;
-        double uM     = 6.0;
-        _uR           = 1.0;
+        _x0       = 0.3;
+        _x1       = 0.6;
+        _uL       = 12.0;
+        double uM = 6.0;
+        _uR       = 1.0;
 
         if( x[0] < _x0 )
-            y[0] = _uL + sigma0 * xi[0];
+            y[0] = _uL + _sigma[0] * xi[0];
         else if( x[0] < _x1 )
-            y[0] = uM + sigma1 * xi[1];
+            y[0] = uM + _sigma[1] * xi[1];
         else
             y[0] = _uR;
         return y;

@@ -65,7 +65,7 @@ void Mesh::PlotInXi( const Matrix& u, unsigned state ) const {
         if( k != 0 && k % _settings->GetNQuadPoints() == 0 ) {
             out << std::endl;
         }
-        out << u( k, state ) << " " << std::endl;
+        out << u( k, state ) << " ";
     }
     out.close();
 }
