@@ -5,6 +5,7 @@ set border 4095 front lt black linewidth 1.000 dashtype solid
 set style circle radius graph 0.02, first 0.00000, 0.00000 
 set style ellipse size graph 0.05, 0.03, first 0.00000 angle 0 units xy
 set style textbox transparent margins  1.0,  1.0 border
+set cbrange[4:12.2]
 #unset logscale
 #set view map scale 1
 #set isosamples 100, 100
