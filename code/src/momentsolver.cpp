@@ -255,10 +255,17 @@ void MomentSolver::Solve() {
     }
 
     this->Export( uNew, _lambda );
-    /*
-        unsigned evalCell  = 300;    // 2404;
-        unsigned plotState = 0;
-        _mesh->PlotInXi( _closure->U( _closure->EvaluateLambda( _lambda[evalCell] ) ), plotState );*/
+
+    unsigned evalCell = 2404;
+    if( _settings->GetNumCells() > evalCell ) {
+        unsigned plotState  = 0;
+        unsigned nQFine     = 100;
+        unsigned nQOriginal = _settings->GetNQuadPoints();
+        _settings->SetNQuadPoints( nQFine );
+        Closure* closurePlot = Closure::Create( _settings );
+        _mesh->PlotInXi( closurePlot->U( closurePlot->EvaluateLambda( _lambda[evalCell] ) ), plotState );
+        _settings->SetNQuadPoints( nQOriginal );
+    }
 }
 
 MatVec MomentSolver::DetermineMoments( unsigned nTotal ) const {
