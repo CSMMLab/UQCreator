@@ -259,9 +259,9 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsign
     for( unsigned k = 0; k < nQTotal; ++k ) {
         U( uKinetic, EvaluateLambda( lambda, k, nTotal ) );
         // std::cout << "uKinetic = " << uKinetic << std::endl;
-        for( unsigned j = 0; j < nTotal; ++j ) {
+        for( unsigned i = 0; i < nTotal; ++i ) {
             for( unsigned l = 0; l < _nStates; ++l ) {
-                g[l * nTotal + j] += uKinetic[l] * _phiTildeWf( k, j );
+                g[l * nTotal + i] += uKinetic[l] * _phiTildeWf( k, i );
             }
         }
     }
