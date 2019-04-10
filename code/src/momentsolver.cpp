@@ -258,12 +258,37 @@ void MomentSolver::Solve() {
 
     unsigned evalCell = 2404;
     if( _settings->GetNumCells() > evalCell ) {
+        std::ofstream outXi( "../results/xiGrid" );
+
+        Vector xiEta( _settings->GetNDimXi() );
+        unsigned n;
+
         unsigned plotState  = 0;
         unsigned nQFine     = 100;
         unsigned nQOriginal = _settings->GetNQuadPoints();
         _settings->SetNQuadPoints( nQFine );
         Closure* closurePlot = Closure::Create( _settings );
+        std::cout << "lambda = " << _lambda[evalCell] << std::endl;
+        Matrix testLambda( _nStates, _nTotal, 0.0 );
+        testLambda( plotState, 1 ) = 1.0;
         _mesh->PlotInXi( closurePlot->U( closurePlot->EvaluateLambda( _lambda[evalCell] ) ), plotState );
+        std::vector<Polynomial*> quad = closurePlot->GetQuadrature();
+        testLambda                    = _lambda[evalCell];
+        auto uPlot                    = closurePlot->U( closurePlot->EvaluateLambda( testLambda ) );
+
+        for( unsigned k = 0; k < uPlot.columns(); ++k ) {
+            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                unsigned index = unsigned( ( k - k % unsigned( std::pow( nQFine, l ) ) ) / unsigned( std::pow( nQFine, l ) ) ) % nQFine;
+                xiEta[l]       = quad[n]->GetNodes()[index];
+                outXi << xiEta[l] << " ";
+            }
+            outXi << uPlot( 0, k ) << std::endl;
+        }
+
+        outXi.close();
+
         _settings->SetNQuadPoints( nQOriginal );
     }
 }
