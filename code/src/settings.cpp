@@ -212,6 +212,18 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
                 // if total degree is sufficiently small or max degree is used, indices are stored
                 if( totalDegree < _nMoments || _useMaxDegree ) ++_nTotal;
             }
+            // set vector containing nMoments for each refinement level
+            _nRefinementLevels                             = 8;
+            _nTotalRefinementLevel                         = VectorU( _nRefinementLevels );
+            _nTotalRefinementLevel[_nRefinementLevels - 1] = 10;
+            _nTotalRefinementLevel[6]                      = 9;
+            _nTotalRefinementLevel[5]                      = 8;
+            _nTotalRefinementLevel[4]                      = 7;
+            _nTotalRefinementLevel[3]                      = 6;
+            _nTotalRefinementLevel[2]                      = 5;
+            _nTotalRefinementLevel[1]                      = 4;
+            _nTotalRefinementLevel[0]                      = 3;
+            //_nTotalRefinementLevel[0]                      = 2;
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
@@ -569,6 +581,9 @@ unsigned Settings::GetMaxIterations() const { return _maxIterations; }
 void Settings::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxIterations; }
 double Settings::GetEpsilon() const { return _epsilon; }
 unsigned Settings::GetNTotal() const { return _nTotal; }
+VectorU Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLevel; }
+unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
+unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }
 
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }

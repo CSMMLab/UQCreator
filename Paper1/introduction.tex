@@ -8,19 +8,19 @@ A general hyperbolic set of equations with random initial data can be written as
 \bm{u}(t=0,\bm{x},&\bm{\xi}) = \bm{u}_{\text{IC}}(\bm{x},\bm{\xi}),
 \end{align}
 \end{subequations}
-where the solution $\bm u\in\mathbb{R}^p$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subseteq \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subseteq\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. The physical flux is given by $\bm{f}:\mathbb{R}^p\to\mathbb{R}^{d\times p}$. To simplify notation, we assume that only the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
+where the solution $\bm u\in\mathbb{R}^p$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subseteq \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subseteq\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. Hence, the probability density function of $\bm{\xi}$ is then given by $f_{\Xi}(\bm\xi):=\prod_{i=1}^s f_{\Xi,i}(\xi_i)$. The physical flux is given by $\bm{f}:\mathbb{R}^p\to\mathbb{R}^{d\times p}$. To simplify notation, we assume that only the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
 
 Due to the randomness of the solution, one is interested in determining the expectation value or the variance, i.e.
 \begin{align*}
 \text{E}[\bm{u}] = \langle \bm{u} \rangle,\qquad \text{Var}[\bm{u}] = \langle \left( \bm{u}-\text{E}[\bm{u}]\right)^2\rangle,
 \end{align*}
-where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot \prod_{i=1}^s f_{\Xi,i}(\xi_i)d\xi_1 \cdots d\xi_s$. More generally, one is interested in determining the moments of the solution for a given set of basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_s)$ we have $|i| \leq M$. Commonly one chooses orthonormal polynomials as basis functions \cite{xiu2002wiener}, i.e. $\langle \varphi_n \varphi_m \rangle = \delta_{nm}$.  The moments are then given by $\bm{\hat u_i} := \langle \bm{u}\varphi_i \rangle$. Besides facilitating the computation of the expectation value and variance, the moments can be used to span the solution in $\bm\xi$ \cite{wiener1938homogeneous}. \\
+where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot f_{\Xi}(\bm\xi)d\xi_1 \cdots d\xi_s$. More generally, one is interested in determining the moments of the solution for a given set of basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_s)$ we have $|i| \leq M$. Commonly one chooses orthonormal polynomials as basis functions \cite{xiu2002wiener}, i.e. $\langle \varphi_n \varphi_m \rangle = \delta_{nm}$.  The moments are then given by $\bm{\hat u_i} := \langle \bm{u}\varphi_i \rangle$. Besides facilitating the computation of the expectation value and variance, the moments can be used to span the solution in $\bm\xi$ \cite{wiener1938homogeneous}. \\
 
 Numerical methods for approximating the moment $\bm{\hat u_i}$ can be divided into intrusive and non-intrusive methods. A popular non-intrusive method is the stochastic-Collocation (SC) method, see e.g. \cite{xiu2005high,babuvska2007stochastic,loeven2008probabilistic}, which computes the moments with the help of a numerical quadrature rule: For a given set of $N_q$ quadrature weights $w_k$ and quadrature points $\bm{\xi}_k$, the moments are approximated by
 \begin{align*}
 \bm{\hat u_i} = \langle \bm{u}\varphi_i \rangle \approx \sum_{k = 1}^{N_q}w_k \bm{u}({t,\bm{x},\bm{\xi}_k})\varphi_i(\bm{\xi_k})f_{\Xi}(\bm{\xi}_k).
 \end{align*} 
-Since the solution at a fixed quadrature point can be computed by a standard deterministic solver, the SC method does not require a big implementation effort. Furthermore, SC is embarrassingly parallel, since the required computations can be carried out in parallel on different cores. A downside of collocation methods are aliasing effects, which stem from the inexact approximation of integrals. Furthermore, collocation methods require more runs of the deterministic solver than intrusive methods \cite{xiu2009fast,alekseev2011estimation}. Despite their easy implementation, collocation methods can become cumbersome for unsteady problems, since in this case, the solution needs to be written out, i.e. stored in an external file, at all quadrature points in every time step to compute the time evolution of the moments.
+Since the solution at a fixed quadrature point can be computed by a standard deterministic solver, the SC method does not require a big implementation effort. Furthermore, SC is embarrassingly parallel, since the required computations can be carried out in parallel on different cores. A downside of collocation methods are aliasing effects, which stem from the inexact approximation of integrals. Furthermore, collocation methods require more runs of the deterministic solver than intrusive methods \cite{xiu2009fast,alekseev2011estimation}. Despite their easy implementation, collocation methods can become cumbersome for unsteady problems, since in this case, the solution needs to be written out, i.e. stored in an external file, at all quadrature points in every time step to compute the time evolution of the moments. This contradicts modern HPC paradigms, which aim at reducing the amount of data produced by numerical methods.
 
 Intrusive methods do not suffer from this problem, since the computation is directly carried out on the moments, i.e. their time evolution can be recorded during the computation. Also for steady problems, the fact that the moments are known in each iteration enables the computation of the stochastic residual, which indicates when to stop the iteration towards the steady state solution. However intrusive methods are in general more difficult to implement and come along with higher numerical costs. The main idea of these methods is to derive a system of equations for the moments and then implementing a numerical solver for this system: Testing the initial problem \eqref{eq:hyperbolicProblem} with $\varphi_i$ for $|i|\leq M$ yields
 \begin{subequations}\label{eq:nonClosedMomentSystem}
@@ -33,7 +33,7 @@ To obtain a closed set of equations, one needs to derive a closure $\mathcal{U}$
 \begin{align*}
 \bm{u}(t,\bm x,\bm \xi) \approx \mathcal{U}(\bm{\hat u}_0,\cdots,\bm{\hat u}_N;\bm\xi).
 \end{align*}
-A commonly used closure is given by stochastic-Galerkin \cite{ghanem2003stochastic}, which represents the solution by a polynomial:
+A commonly used closure is given by stochastic-Galerkin (SG) \cite{ghanem2003stochastic}, which represents the solution by a polynomial:
 \begin{align*}
 \mathcal{U}_{\text{SG}}(\bm{\hat u}_0,\cdots,\bm{\hat u}_N;\bm\xi):= \sum_{i=0}^N \bm{\hat{u}}_i\varphi_i(\bm{\xi}) = \hat{\bm u}^T\bm{\varphi}(\bm\xi),
 \end{align*}
@@ -41,7 +41,7 @@ Here, we collect the moments for which $\vert i \vert \leq M$ holds in the momen
 \begin{align}\label{eq:primalProblem}
 \mathcal{U}(\bm{\hat u}) = \argmin_{\bm u} \langle s(\bm u) \rangle \enskip \text{ subject to } \bm{\hat u}_i = \langle \bm u \varphi_i \rangle \text{ for } i = 0,\cdots,N.
 \end{align}
-Rewritten in its dual form, the problem is given by
+Rewritten in its dual form, \eqref{eq:primalProblem} is transformed into an unconstraint optimization problem, given by
 \begin{align}\label{eq:dualProblem}
  \bm{\hat \lambda}(\bm{\hat u}) := \argmin_{\bm{\lambda} \in \mathbb{R}^{(N+1) \times p}}
   \left\{\langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i\right\},

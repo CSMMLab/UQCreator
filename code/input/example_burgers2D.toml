@@ -4,23 +4,23 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 1500
+numberOfCells = 6000
 a = 0
-b = 3
+b = 1
 outputFile = "burgers_shock"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.5]]
-CFL = 0.75
-tEnd = 0.12
+distribution = [["Legendre","Legendre"],[0.2,0.1]]
+CFL = 1.0
+tEnd = 0.01115
 
 [moment_system]
 # available closures: BoundedBarrier, LogSin, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
-closure = "LogSin"
-moments = 15
+closure = "BoundedBarrier"
+moments = 10
 quadPoints = 15
 maxIterations = 2000
 epsilon = 5e-5

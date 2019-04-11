@@ -61,11 +61,13 @@ BoundaryType Mesh::GetBoundaryType( unsigned i ) const { return _boundaryType[i]
 
 void Mesh::PlotInXi( const Matrix& u, unsigned state ) const {
     std::ofstream out( "../results/plotInXi" );
-    for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
-        if( k != 0 && k % _settings->GetNQuadPoints() == 0 ) {
+    unsigned nQ   = u.columns();
+    unsigned nQ1D = unsigned( std::pow( nQ, 1.0 / _settings->GetNDimXi() ) );
+    for( unsigned k = 0; k < nQ; ++k ) {
+        if( k != 0 && k % nQ1D == 0 ) {
             out << std::endl;
         }
-        out << u( k, state ) << " " << std::endl;
+        out << u( k, state ) << " ";
     }
     out.close();
 }

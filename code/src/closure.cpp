@@ -37,7 +37,7 @@ Closure::Closure( Settings* settings )
         }
     }
 
-    // setup map from i (0,...,_nTotal-1) to individual indices
+    // setup map from i (0,...,nTotal-1) to individual indices
     std::vector<unsigned> indexTest;
     indexTest.resize( _numDimXi );
     unsigned totalDegree;    // compute total degree of basis function i
@@ -146,50 +146,50 @@ Closure* Closure::Create( Settings* settings ) {
     }
 }
 
-void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
+void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
     int maxRefinements = 1000;
 
-    Vector g( _nStates * _nTotal );
+    Vector g( _nStates * nTotal );
 
     // check if initial guess is good enough
-    Gradient( g, lambda, u );
-    if( CalcNorm( g ) < _settings->GetEpsilon() ) {
+    Gradient( g, lambda, u, nTotal, nQTotal );
+    if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
-    Matrix H( _nStates * _nTotal, _nStates * _nTotal );
-    Vector dlambdaNew( _nStates * _nTotal );
+    Matrix H( _nStates * nTotal, _nStates * nTotal );
+    Vector dlambdaNew( _nStates * nTotal );
     // std::cout << "before first Hessian inversion..." << std::endl;
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
     // std::cout << g << std::endl;
-    Hessian( H, lambda );
+    Hessian( H, lambda, nTotal, nQTotal );
     posv( H, g );
     if( _maxIterations == 1 ) {
-        AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda );
+        AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda, nTotal );
         return;
     }
-    Matrix lambdaNew( _nStates, _nTotal );
-    AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew );
-    Gradient( dlambdaNew, lambdaNew, u );
+    Matrix lambdaNew( _nStates, nTotal );
+    AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew, nTotal );
+    Gradient( dlambdaNew, lambdaNew, u, nTotal, nQTotal );
     // perform Newton iterations
     for( unsigned l = 0; l < _maxIterations; ++l ) {
         double stepSize = 1.0;
         if( l != 0 ) {
-            Gradient( g, lambda, u );
+            Gradient( g, lambda, u, nTotal, nQTotal );
             dlambda = -g;
-            Hessian( H, lambda );
+            Hessian( H, lambda, nTotal, nQTotal );
             // std::cout << H << std::endl;
             posv( H, g );
-            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
-            Gradient( dlambdaNew, lambdaNew, u );
+            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
+            Gradient( dlambdaNew, lambdaNew, u, nTotal, nQTotal );
         }
         int refinementCounter = 0;
-        // std::cout << "Res is " << CalcNorm( dlambda ) << std::endl;
-        while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) ) {
+        // std::cout << "Res is " << CalcNorm( dlambda, nTotal ) << std::endl;
+        while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) ) {
             stepSize *= 0.5;
-            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
-            Gradient( dlambdaNew, lambdaNew, u );
-            if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
+            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
+            Gradient( dlambdaNew, lambdaNew, u, nTotal, nQTotal );
+            if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
                 lambda = lambdaNew;
                 return;
             }
@@ -199,7 +199,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
             }
         }
         lambda = lambdaNew;
-        if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
+        if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
             lambda = lambdaNew;
             return;
         }
@@ -208,31 +208,39 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u ) {
     exit( EXIT_FAILURE );
 }
 
-double Closure::CalcNorm( Vector& test ) {
+double Closure::CalcNorm( Vector& test, unsigned nTotal ) const {
     double out = 0.0;
     double tmp;
     for( unsigned l = 0; l < _nStates; ++l ) {
         tmp = 0.0;
-        for( unsigned i = 0; i < _nTotal; ++i ) {
-            tmp += pow( test[l * _nTotal + i], 2 );
+        for( unsigned i = 0; i < nTotal; ++i ) {
+            tmp += pow( test[l * nTotal + i], 2 );
         }
         out += sqrt( tmp );
     }
     return out;
 }
 
-Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k ) { return lambda * _phiTildeVec[k]; }
+Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k, unsigned nTotal ) {
+    Vector out( _nStates, 0.0 );
+    for( unsigned s = 0; s < _nStates; ++s ) {
+        for( unsigned i = 0; i < nTotal; ++i ) {
+            out[s] += lambda( s, i ) * _phiTildeVec[k][i];
+        }
+    }
+    return out;
+}
 
 Matrix Closure::EvaluateLambda( const Matrix& lambda ) const { return lambda * _phiTildeTrans; }
 
-Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda ) const {
+Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda, unsigned nTotal ) const {
     Matrix out( _settings->GetNStates(), _settings->GetNqPE(), 0.0 );
     unsigned kStart = _settings->GetKStart();
     unsigned kEnd   = _settings->GetKEnd();
 
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned k = kStart; k <= kEnd; ++k ) {
-            for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+            for( unsigned i = 0; i < nTotal; ++i ) {
                 out( s, k - kStart ) += lambda( s, i ) * _phiTildeTrans( i, k );
             }
         }
@@ -242,38 +250,38 @@ Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda ) const {
 
 void Closure::EvaluateLambda( Matrix& out, const Matrix& lambda ) const { out = lambda * _phiTildeTrans; }
 
-void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u ) {
+void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
     Vector uKinetic( _nStates, 0.0 );
     g.reset();
 
-    // std::cout << "Lambda = " << lambda * _phiTildeVec[_nQTotal - 1] << std::endl;
+    // std::cout << "Lambda = " << lambda * _phiTildeVec[nQTotal - 1] << std::endl;
 
-    for( unsigned k = 0; k < _nQTotal; ++k ) {
-        U( uKinetic, lambda * _phiTildeVec[k] );
+    for( unsigned k = 0; k < nQTotal; ++k ) {
+        U( uKinetic, EvaluateLambda( lambda, k, nTotal ) );
         // std::cout << "uKinetic = " << uKinetic << std::endl;
-        for( unsigned j = 0; j < _nTotal; ++j ) {
+        for( unsigned i = 0; i < nTotal; ++i ) {
             for( unsigned l = 0; l < _nStates; ++l ) {
-                g[l * _nTotal + j] += uKinetic[l] * _phiTildeWf( k, j );
+                g[l * nTotal + i] += uKinetic[l] * _phiTildeWf( k, i );
             }
         }
     }
     // std::cout << "uKinetic = " << uKinetic << std::endl;
     // std::cout << "g int = " << g << std::endl;
 
-    SubstractVectorMatrixOnVector( g, u );
+    SubstractVectorMatrixOnVector( g, u, nTotal );
 }
 
-void Closure::Hessian( Matrix& H, const Matrix& lambda ) {
+void Closure::Hessian( Matrix& H, const Matrix& lambda, unsigned nTotal, unsigned nQTotal ) {
     H.reset();
     Matrix dUdLambda( _nStates, _nStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
 
-    for( unsigned k = 0; k < _nQTotal; ++k ) {    // TODO: reorder to avoid cache misses
-        DU( dUdLambda, lambda * _phiTildeVec[k] );
+    for( unsigned k = 0; k < nQTotal; ++k ) {    // TODO: reorder to avoid cache misses
+        DU( dUdLambda, EvaluateLambda( lambda, k, nTotal ) );
         for( unsigned l = 0; l < _nStates; ++l ) {
             for( unsigned m = 0; m < _nStates; ++m ) {
-                for( unsigned j = 0; j < _nTotal; ++j ) {
-                    for( unsigned i = 0; i < _nTotal; ++i ) {
-                        H( m * _nTotal + j, l * _nTotal + i ) += _hPartial[k]( j, i ) * dUdLambda( l, m );
+                for( unsigned j = 0; j < nTotal; ++j ) {
+                    for( unsigned i = 0; i < nTotal; ++i ) {
+                        H( m * nTotal + j, l * nTotal + i ) += _hPartial[k]( j, i ) * dUdLambda( l, m );
                     }
                 }
             }
@@ -281,18 +289,18 @@ void Closure::Hessian( Matrix& H, const Matrix& lambda ) {
     }
 }
 
-void Closure::AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y ) const {
+void Closure::AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y, unsigned nTotal ) const {
     for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned j = 0; j < _nTotal; ++j ) {
-            y( l, j ) = A( l, j ) + b[l * _nTotal + j];
+        for( unsigned j = 0; j < nTotal; ++j ) {
+            y( l, j ) = A( l, j ) + b[l * nTotal + j];
         }
     }
 }
 
-void Closure::SubstractVectorMatrixOnVector( Vector& b, const Matrix& A ) const {
+void Closure::SubstractVectorMatrixOnVector( Vector& b, const Matrix& A, unsigned nTotal ) const {
     for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned j = 0; j < _nTotal; ++j ) {
-            b[l * _nTotal + j] = b[l * _nTotal + j] - A( l, j );
+        for( unsigned j = 0; j < nTotal; ++j ) {
+            b[l * nTotal + j] = b[l * nTotal + j] - A( l, j );
         }
     }
 }
@@ -305,32 +313,32 @@ std::vector<Polynomial*> Closure::GetQuadrature() { return _quad; }
 
 void Closure::SetAlpha( double alpha ) { _alpha = alpha; }
 
-void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u ) {
+void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
     int maxRefinements = 1000;
 
-    Matrix H( _nStates * _nTotal, _nStates * _nTotal );
-    Vector g( _nStates * _nTotal );
-    Vector dlambdaNew( _nStates * _nTotal );
+    Matrix H( _nStates * nTotal, _nStates * nTotal );
+    Vector g( _nStates * nTotal );
+    Vector dlambdaNew( _nStates * nTotal );
 
     Vector dlambda = -g;
-    Matrix lambdaNew( _nStates, _nTotal );
+    Matrix lambdaNew( _nStates, nTotal );
 
     // perform Newton iterations
     for( unsigned l = 0; l < _maxIterations; ++l ) {
         double stepSize = 1.0;
-        Gradient( g, lambda, u );
+        Gradient( g, lambda, u, nTotal, nQTotal );
         dlambda = -g;
-        Hessian( H, lambda );
+        Hessian( H, lambda, nTotal, nQTotal );
         posv( H, g );
-        AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
-        Gradient( dlambdaNew, lambdaNew, u );
+        AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
+        Gradient( dlambdaNew, lambdaNew, u, nTotal, nQTotal );
         int refinementCounter = 0;
         // std::cout << "Res " << CalcNorm( dlambdaNew ) << std::endl;
-        while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) || !std::isfinite( CalcNorm( dlambdaNew ) ) ) {
+        while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) || !std::isfinite( CalcNorm( dlambdaNew, nTotal ) ) ) {
             stepSize *= 0.5;
-            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
-            Gradient( dlambdaNew, lambdaNew, u );
-            if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
+            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
+            Gradient( dlambdaNew, lambdaNew, u, nTotal, nQTotal );
+            if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
                 lambda = lambdaNew;
                 return;
             }
@@ -340,7 +348,7 @@ void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u ) {
             }
         }
         lambda = lambdaNew;
-        if( CalcNorm( dlambdaNew ) < _settings->GetEpsilon() ) {
+        if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
             lambda = lambdaNew;
             return;
         }

@@ -8,6 +8,8 @@
 
 #include "cpptoml.h"
 
+#include "typedefs.h"
+
 enum ProblemType { P_BURGERS_1D, P_EULER_1D, P_EULER_2D, P_SHALLOWWATER_1D, P_SHALLOWWATER_2D };
 enum ClosureType {
     C_BOUNDEDBARRIER,
@@ -54,8 +56,10 @@ class Settings
     std::vector<unsigned> _cellIndexPE;    // vector of spatial cells for PE
     std::vector<int> _PEforCell;
 
-    unsigned _nMoments;    // number of moments in one dimension
-    unsigned _nTotal;      // number of moments in all dimensions
+    unsigned _nMoments;                // number of moments in one dimension
+    unsigned _nTotal;                  // number of moments in all dimensions
+    VectorU _nTotalRefinementLevel;    // vector of number of moments in all dimensions for each refinement level
+    unsigned _nRefinementLevels;
     bool _useMaxDegree;    // specifies moment hierarchy
 
     unsigned _maxIterations;
@@ -130,7 +134,11 @@ class Settings
     ClosureType GetClosureType() const;
     void SetClosureType( ClosureType cType );
     unsigned GetNMoments() const;
+
     unsigned GetNTotal() const;
+    VectorU GetNTotalRefinementLevel() const;
+    unsigned GetNRefinementLevels() const;
+    unsigned GetNTotalforRefLevel( unsigned level ) const;
     unsigned GetNQuadPoints() const;
     void SetNQuadPoints( unsigned nqNew );
     unsigned GetNQTotal() const;

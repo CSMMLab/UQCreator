@@ -4,7 +4,7 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 500
+numberOfCells = 100
 a = 0
 b = 1
 outputFile = "euler_shock"
@@ -13,14 +13,14 @@ outputFile = "euler_shock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = ["Legendre"]
-CFL = 5.0
-tEnd = 0.14
+distribution = [["Legendre"],[0.0]]
+CFL = 0.0000001
+tEnd = 0.01
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
 closure = "Euler"
-moments = 5
+moments = 10
 quadPoints = 30
 maxIterations = 200
 epsilon = 5e-5

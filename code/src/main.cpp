@@ -3,6 +3,7 @@
 #include <mpi.h>
 #include <omp.h>
 
+#include "closure.h"
 #include "mesh.h"
 #include "momentsolver.h"
 #include "problem.h"

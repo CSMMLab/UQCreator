@@ -41,7 +41,7 @@ class MomentSolver
      * @param unit normal of interface
      * @param normal of interface
      */
-    void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n );
+    void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal );
     /**
      * sets up moments for specified initial condition
      * @return output moment matrix

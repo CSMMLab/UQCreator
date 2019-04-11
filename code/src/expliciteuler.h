@@ -13,11 +13,12 @@ class ExplicitEuler : public TimeSolver
 
   public:
     ExplicitEuler( Settings* settings, Mesh* mesh );
-    virtual void Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector& )> const& fluxFunc,
+    virtual void Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector&, unsigned )> const& fluxFunc,
                           MatVec& uNew,
                           MatVec& u,
                           MatVec& uQ,
-                          double dt );
+                          double dt,
+                          const VectorU& refLevel );
 };
 
 #endif    // EXPLICITEULER_H
