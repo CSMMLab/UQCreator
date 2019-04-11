@@ -207,13 +207,26 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                         "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
             validConfig = false;
         }
-        auto nMoments = moment_system->get_array_of<int64_t>( "moments" );
-        if( nMoments ) {
-            _nMoments = unsigned( ( *nMoments )[nMoments->size() - 1] );
+        auto momentSettings = moment_system->get_array_of<cpptoml::array>( "moments" );
+
+        if( momentSettings ) {
+            auto momentArray = ( *momentSettings )[1]->get_array_of<int64_t>();
+            auto degreeType  = ( *momentSettings )[0]->get_array_of<std::string>();
+            _nMoments        = unsigned( ( *momentArray )[momentArray->size() - 1] );    // unsigned( ( *nMoments )[nMoments->size() - 1] );
             // compute nTotal
-            _useMaxDegree = false;
-            _nTotal       = 0;
+            if( degreeType->at( 0 ).compare( "maxDegree" ) == 0 ) {
+                _useMaxDegree = true;
+            }
+            else if( degreeType->at( 0 ).compare( "totalDegree" ) == 0 ) {
+                _useMaxDegree = false;
+            }
+            else {
+                log->error( "[inputfile] [moment_system] 'moments' is invalid!\nPlease set one of the following types: totalDegree, maxDegree" );
+                validConfig = false;
+            }
+            _nTotal = 0;
             unsigned totalDegree;    // compute total degree of basis function i
+
             for( unsigned i = 0; i < std::pow( _nMoments, _numDimXi ); ++i ) {
                 totalDegree = 0;
                 for( unsigned l = 0; l < _numDimXi; ++l ) {
@@ -223,9 +236,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 if( totalDegree < _nMoments || _useMaxDegree ) ++_nTotal;
             }
             // set vector containing nMoments for each refinement level
-            _nRefinementLevels     = unsigned( nMoments->size() );
+            _nRefinementLevels     = unsigned( momentArray->size() );
             _nTotalRefinementLevel = VectorU( _nRefinementLevels );
-            for( unsigned l = 0; l < _nRefinementLevels; ++l ) _nTotalRefinementLevel[l] = unsigned( ( *nMoments )[l] );
+            for( unsigned l = 0; l < _nRefinementLevels; ++l ) _nTotalRefinementLevel[l] = unsigned( ( *momentArray )[l] );
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
