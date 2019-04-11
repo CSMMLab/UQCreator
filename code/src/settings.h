@@ -88,7 +88,7 @@ class Settings
     double _gamma;
 
     Settings() = delete;
-    void Init( std::shared_ptr<cpptoml::table> file );
+    void Init( std::shared_ptr<cpptoml::table> file, bool restart );
 
   public:
     Settings( std::string inputFile );

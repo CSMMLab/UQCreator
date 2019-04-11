@@ -11,15 +11,15 @@ inline std::shared_ptr<table> parse_file( const std::istringstream& content ) {
 
 Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExactSolution( false ) {
     auto file = cpptoml::parse_file( _inputFile );
-    Init( file );
+    Init( file, false );
 }
 
 Settings::Settings( const std::istringstream& inputStream ) {
     auto file = cpptoml::parse_file( inputStream );
-    Init( file );
+    Init( file, true );
 }
 
-void Settings::Init( std::shared_ptr<cpptoml::table> file ) {
+void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
     auto log = spdlog::get( "event" );
 
     bool validConfig = true;
@@ -71,17 +71,20 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file ) {
         auto restartFile = general->get_as<std::string>( "restartFile" );
         if( restartFile ) {
             _restartFile = _inputDir.string() + "/" + *restartFile;
+            if( restart ) _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
         }
-        _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
+        if( !restart ) _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
 
         auto icFile = general->get_as<std::string>( "icFile" );
         if( icFile ) {
             _icFile = _inputDir.string() + "/" + *icFile;
         }
 
-        auto refFile = general->get_as<std::string>( "referenceSolution" );
-        if( refFile ) {
-            _referenceFile = _inputDir.string() + "/" + *refFile;
+        if( !restart ) {
+            auto refFile = general->get_as<std::string>( "referenceSolution" );
+            if( refFile ) {
+                _referenceFile = _inputDir.string() + "/" + *refFile;
+            }
         }
 
         // section mesh
