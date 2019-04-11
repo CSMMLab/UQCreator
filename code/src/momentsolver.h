@@ -113,6 +113,8 @@ class MomentSolver
      */
     Matrix CalculateErrorField( const Matrix& solution, unsigned LNorm ) const;
 
+    void WriteErrors( const VectorU& refinementLevel );
+
   public:
     /**
      * constructor
