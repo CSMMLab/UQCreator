@@ -196,10 +196,9 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
                         "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
             validConfig = false;
         }
-        auto nMoments = moment_system->get_as<unsigned>( "moments" );
+        auto nMoments = moment_system->get_array_of<int64_t>( "moments" );
         if( nMoments ) {
-            _nMoments = *nMoments;
-
+            _nMoments = unsigned( ( *nMoments )[nMoments->size() - 1] );
             // compute nTotal
             _useMaxDegree = false;
             _nTotal       = 0;
@@ -213,17 +212,9 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
                 if( totalDegree < _nMoments || _useMaxDegree ) ++_nTotal;
             }
             // set vector containing nMoments for each refinement level
-            _nRefinementLevels                             = 8;
-            _nTotalRefinementLevel                         = VectorU( _nRefinementLevels );
-            _nTotalRefinementLevel[_nRefinementLevels - 1] = 10;
-            _nTotalRefinementLevel[6]                      = 9;
-            _nTotalRefinementLevel[5]                      = 8;
-            _nTotalRefinementLevel[4]                      = 7;
-            _nTotalRefinementLevel[3]                      = 6;
-            _nTotalRefinementLevel[2]                      = 5;
-            _nTotalRefinementLevel[1]                      = 4;
-            _nTotalRefinementLevel[0]                      = 3;
-            //_nTotalRefinementLevel[0]                      = 2;
+            _nRefinementLevels     = unsigned( nMoments->size() );
+            _nTotalRefinementLevel = VectorU( _nRefinementLevels );
+            for( unsigned l = 0; l < _nRefinementLevels; ++l ) _nTotalRefinementLevel[l] = unsigned( ( *nMoments )[l] );
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
@@ -446,10 +437,10 @@ Settings::Settings( const std::istringstream& inputStream ) {
                         "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
             validConfig = false;
         }
-        auto nMoments = moment_system->get_as<unsigned>( "moments" );
-        if( nMoments ) {
-            _nMoments = *nMoments;
 
+        auto nMoments = moment_system->get_array_of<int64_t>( "moments" );
+        if( nMoments ) {
+            _nMoments = ( *nMoments )[nMoments->size() - 1];
             // compute nTotal
             _useMaxDegree = false;
             _nTotal       = 0;
