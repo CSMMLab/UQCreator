@@ -67,7 +67,8 @@ void MomentSolver::Solve() {
     if( _settings->GetMyPE() == 0 ) log->info( "{:10}   {:10}", "t", "residual" );
 
     // init time and residual
-    double t = _tStart;
+    double t      = _tStart;
+    int timeIndex = 0;
     double dt;
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
@@ -127,6 +128,7 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
         // std::cout << "dt = " << dt << std::endl;
         t += dt;
+        ++timeIndex;
 
         _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
 
@@ -142,7 +144,7 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
-            if( _settings->HasReferenceFile() ) this->WriteErrors( refinementLevel );
+            if( _settings->HasReferenceFile() && timeIndex % 1000 == 1 ) this->WriteErrors( refinementLevel );
         }
     }
 
@@ -340,6 +342,7 @@ Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const 
 
 void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u ) {
     unsigned maxIterations = _closure->GetMaxIterations();
+    unsigned nQSave        = prevSettings->GetNQTotal();    // DEBUG
 
     if( _settings->LoadLambda() ) {
         _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
@@ -362,6 +365,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         }
 
         std::cout << "Init Dual with N = " << prevSettings->GetNTotal() << ", Nq = " << prevSettings->GetNQTotal() << std::endl;
+
         // Converge initial condition entropy variables for One Shot IPM or if truncation order is increased
         if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
             prevClosure->SetMaxIterations( 10000 );
@@ -401,6 +405,8 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         delete prevClosure;
         delete prevSettings;
     }
+    std::cout << "Init Dual with N = " << prevSettings->GetNTotal() << ", Nq = " << nQSave << std::endl;
+    std::cout << "Second Dual with N = " << _settings->GetNTotal() << ", Nq = " << _settings->GetNQTotal() << std::endl;
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {
