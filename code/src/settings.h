@@ -21,7 +21,8 @@ enum ClosureType {
     C_SHALLOWWATER_2D,
     C_L2FILTER,
     C_LASSOFILTER,
-    C_REGULARIZED_EULER
+    C_REGULARIZED_EULER,
+    C_REGULARIZED_BOUNDED_BARRIER
 };
 enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };

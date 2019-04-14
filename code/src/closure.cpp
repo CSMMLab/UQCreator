@@ -6,6 +6,7 @@
 #include "lassofilter.h"
 #include "logsin.h"
 #include "mathtools.h"
+#include "regularizedboundedbarrier.h"
 #include "regularizedeuler.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
@@ -143,6 +144,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_REGULARIZED_EULER ) {
         return new RegularizedEuler( settings );
+    }
+    else if( closureType == ClosureType::C_REGULARIZED_BOUNDED_BARRIER ) {
+        return new RegularizedBoundedBarrier( settings );
     }
     else {
         log->error( "[closure]: Invalid closure type" );

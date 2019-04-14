@@ -188,6 +188,9 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             else if( closureTypeString->compare( "RegularizedEuler" ) == 0 ) {
                 _closureType = ClosureType::C_REGULARIZED_EULER;
             }
+            else if( closureTypeString->compare( "RegularizedBoundedBarrier" ) == 0 ) {
+                _closureType = ClosureType::C_REGULARIZED_BOUNDED_BARRIER;
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogSin, "
                             "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );

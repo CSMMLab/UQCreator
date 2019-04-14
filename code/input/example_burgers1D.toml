@@ -4,7 +4,7 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 1500
+numberOfCells = 500
 a = 0
 b = 3
 outputFile = "burgers_shock"
@@ -18,9 +18,9 @@ CFL = 0.75
 tEnd = 0.12
 
 [moment_system]
-# available closures: BoundedBarrier, LogSin, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
-closure = "LogSin"
-moments = 15
-quadPoints = 15
+# available closures: BoundedBarrier, LogSin, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedBoundedBarrier
+closure = "RegularizedBoundedBarrier"
+moments = 10
+quadPoints = 30
 maxIterations = 2000
 epsilon = 5e-5
