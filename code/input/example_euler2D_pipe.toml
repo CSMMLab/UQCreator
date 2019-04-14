@@ -1,0 +1,27 @@
+[general]
+problem = "Euler2D"
+outputDir = "../results"
+
+[mesh]
+dimension = 2
+format = "SU2"
+SU2MeshFile = "pipe.su2"
+SU2BC = [["inlet","dirichlet"],["outlet","dirichlet"], ["walls", "noslip"]]
+outputFile = "pipeOutput"
+
+[problem]
+# available timesteppings: explicitEuler
+timestepping = "explicitEuler"
+# available distributions: Legendre, Hermite
+distribution = [["Legendre"],[0.2]]
+CFL = 0.9
+tEnd = 0.0035
+residual = 1e-6
+
+[moment_system]
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
+closure = "RegularizedEuler"
+moments = 5
+quadPoints = 10
+maxIterations = 1000
+epsilon = 1e-7
