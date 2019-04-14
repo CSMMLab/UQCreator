@@ -30,8 +30,8 @@ class Closure
     unsigned _nQTotal;
     unsigned _nTotal;
     unsigned _maxIterations;
-    void Hessian( Matrix& H, const Matrix& lambda, unsigned nTotal, unsigned nQTotal );
-    void Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
+    virtual void Hessian( Matrix& H, const Matrix& lambda, unsigned nTotal, unsigned nQTotal );
+    virtual void Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
     std::shared_ptr<spdlog::logger> _log;
     Matrix _dUdLambda;    // preallocated memory dor computation of Hessian
   public:

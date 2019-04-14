@@ -6,6 +6,7 @@
 #include "lassofilter.h"
 #include "logsin.h"
 #include "mathtools.h"
+#include "regularizedeuler.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
 #include "stochasticgalerkin.h"
@@ -139,6 +140,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_LASSOFILTER ) {
         return new LassoFilter( settings );
+    }
+    else if( closureType == ClosureType::C_REGULARIZED_EULER ) {
+        return new RegularizedEuler( settings );
     }
     else {
         log->error( "[closure]: Invalid closure type" );
