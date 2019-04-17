@@ -342,7 +342,7 @@ Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const 
 
 void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u ) {
     unsigned maxIterations = _closure->GetMaxIterations();
-    unsigned nQSave        = prevSettings->GetNQTotal();    // DEBUG
+    // unsigned nQSave        = prevSettings->GetNQTotal();    // DEBUG
 
     if( _settings->LoadLambda() ) {
         _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
