@@ -179,13 +179,22 @@ int main( int argc, char* argv[] ) {
         return EXIT_FAILURE;
     }
 
-    std::string logfilename = initLogger( spdlog::level::info, spdlog::level::info, configFile );
+    int PEid;
+    std::string logfilename;
+    MPI_Comm_rank( MPI_COMM_WORLD, &PEid );
+    if( PEid == 0 ) {
+        logfilename = initLogger( spdlog::level::info, spdlog::level::info, configFile );
+    }
+    MPI_Barrier( MPI_COMM_WORLD );
 
     auto log = spdlog::get( "event" );
 
     Settings* settings = new Settings( configFile );
-    if( settings->GetMyPE() == 0 ) PrintInit( configFile );
-    if( settings->HasReferenceFile() ) initErrorLogger( configFile, logfilename );
+    if( settings->GetMyPE() == 0 ) {
+        PrintInit( configFile );
+        if( settings->HasReferenceFile() ) initErrorLogger( configFile, logfilename );
+    }
+    MPI_Barrier( MPI_COMM_WORLD );
     Mesh* mesh           = Mesh::Create( settings );
     Problem* problem     = Problem::Create( settings );
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );

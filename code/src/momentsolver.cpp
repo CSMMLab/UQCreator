@@ -270,7 +270,7 @@ void MomentSolver::Solve() {
         unsigned nQOriginal = _settings->GetNQuadPoints();
         _settings->SetNQuadPoints( nQFine );
         Closure* closurePlot = Closure::Create( _settings );
-        std::cout << "lambda = " << _lambda[evalCell] << std::endl;
+        // std::cout << "lambda = " << _lambda[evalCell] << std::endl;
         Matrix testLambda( _nStates, _nTotal, 0.0 );
         testLambda( plotState, 1 ) = 1.0;
         _mesh->PlotInXi( closurePlot->U( closurePlot->EvaluateLambda( _lambda[evalCell] ) ), plotState );
@@ -364,7 +364,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             }
         }
 
-        std::cout << "Init Dual with N = " << prevSettings->GetNTotal() << ", Nq = " << prevSettings->GetNQTotal() << std::endl;
+        // std::cout << "Init Dual with N = " << prevSettings->GetNTotal() << ", Nq = " << prevSettings->GetNQTotal() << std::endl;
 
         // Converge initial condition entropy variables for One Shot IPM or if truncation order is increased
         if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
@@ -381,7 +381,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
         prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
         Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
-        std::cout << "Second Dual with N = " << _settings->GetNTotal() << ", Nq = " << _settings->GetNQTotal() << std::endl;
+        // std::cout << "Second Dual with N = " << _settings->GetNTotal() << ", Nq = " << _settings->GetNQTotal() << std::endl;
         for( unsigned j = 0; j < _nCells; ++j ) {
             _closure->U( uQFullProc[j], intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
             auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
@@ -396,7 +396,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
                     _lambda[j]( s, i ) = lambdaOld( s, i );
                 }
             }
-            std::cout << "lambda = " << _lambda[j] << ", u = " << u[j] << std::endl;
+            // std::cout << "lambda = " << _lambda[j] << ", u = " << u[j] << std::endl;
             _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
         }
         _closure->SetMaxIterations( maxIterations );
@@ -405,8 +405,8 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         delete prevClosure;
         delete prevSettings;
     }
-    std::cout << "Init Dual with N = " << prevSettings->GetNTotal() << ", Nq = " << nQSave << std::endl;
-    std::cout << "Second Dual with N = " << _settings->GetNTotal() << ", Nq = " << _settings->GetNQTotal() << std::endl;
+    // std::cout << "Init Dual with N = " << prevSettings->GetNTotal() << ", Nq = " << nQSave << std::endl;
+    // std::cout << "Second Dual with N = " << _settings->GetNTotal() << ", Nq = " << _settings->GetNQTotal() << std::endl;
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {
@@ -491,8 +491,7 @@ Settings* MomentSolver::ImportPrevSettings() const {
     while( std::getline( file, line ) ) {
         if( line.find( "Config file" ) != std::string::npos ) {
             configSection = true;
-            std::getline( file, line );
-            std::getline( file, line );
+            for( unsigned i = 0; i < 4; ++i ) std::getline( file, line );
         }
         else if( configSection && line.find( "==================================" ) != std::string::npos ) {
             break;
