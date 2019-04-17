@@ -72,6 +72,20 @@ void MomentSolver::Solve() {
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
 
+    // initial dual solve
+#pragma omp parallel for schedule( dynamic, 10 )
+    for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
+        _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
+    }
+
+    // compute partial moment vectors on each PE (for inexact dual variables)
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
+        uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], nTotal[refinementLevel[j]] ) );
+        uNew[j].reset();
+        multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), uNew[j], _settings->GetKStart(), _settings->GetKEnd(), nTotal[refinementLevel[j]] );
+    }
+
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
         double residual = 0;
@@ -112,10 +126,9 @@ void MomentSolver::Solve() {
             MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
         }
 
-        // compute partial moment vectors on each PE (for inexact dual variables)
+        // store partial moment vectors on u (for exact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
-            u[j].reset();
-            multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd(), nTotal[refinementLevel[j]] );
+            u[j] = uNew[j];
         }
 
         // determine time step size

@@ -1,106 +1,21 @@
 #include "regularizedeuler.h"
 
-RegularizedEuler::RegularizedEuler( Settings* settings ) : Closure( settings ), _gamma( -settings->GetGamma() ), _eta( 1e-5 ) { _alpha = 1.0; }
+RegularizedEuler::RegularizedEuler( Settings* settings ) : EulerClosure2D( settings ), _eta( 1e-9 ), _lambda( 0.00015 ) {
+    unsigned nMoments = _settings->GetNMoments();
+    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
+    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                unsigned index = unsigned( ( i - i % unsigned( std::pow( nMoments, l ) ) ) / unsigned( std::pow( nMoments, l ) ) ) % nMoments;
+                _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
+            }
+        }
+    }
+}
 
 RegularizedEuler::~RegularizedEuler() {}
-
-void RegularizedEuler::U( Vector& out, const Vector& Lambda ) {
-    double v1      = Lambda[0];
-    double v2      = Lambda[1];
-    double v3      = Lambda[2];
-    double v4      = Lambda[3];
-    double expTerm = exp( 1.0 / ( 1.0 + _gamma ) * ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) *
-                     pow( -v4, 1.0 / ( 1.0 + _gamma ) );
-    out[0] = expTerm;
-    out[1] = -( ( v2 * expTerm ) / v4 );
-    out[2] = -( ( v3 * expTerm ) / v4 );
-    out[3] = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
-}
-
-void RegularizedEuler::U( Matrix& out, const Matrix& Lambda ) {
-    double expTerm, v1, v2, v3, v4;
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        v1      = Lambda( 0, k );
-        v2      = Lambda( 1, k );
-        v3      = Lambda( 2, k );
-        v4      = Lambda( 3, k );
-        expTerm = pow( -exp( ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) );
-        out( 0, k ) = expTerm;
-        out( 1, k ) = -( ( v2 * expTerm ) / v4 );
-        out( 2, k ) = -( ( v3 * expTerm ) / v4 );
-        out( 3, k ) = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
-    }
-}
-
-Matrix RegularizedEuler::U( const Matrix& Lambda ) {
-    double expTerm, v1, v2, v3, v4;
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        v1      = Lambda( 0, k );
-        v2      = Lambda( 1, k );
-        v3      = Lambda( 2, k );
-        v4      = Lambda( 3, k );
-        expTerm = pow( -exp( ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) );
-
-        y( 0, k ) = expTerm;
-        y( 1, k ) = -( ( v2 * expTerm ) / v4 );
-        y( 2, k ) = -( ( v3 * expTerm ) / v4 );
-        y( 3, k ) = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
-    }
-
-    return y;
-}
-
-void RegularizedEuler::DU( Matrix& y, const Vector& Lambda ) {
-    double v1        = Lambda[0];
-    double v2        = Lambda[1];
-    double v3        = Lambda[2];
-    double v4        = Lambda[3];
-    double v4pow3    = pow( v4, 3 );
-    double v4pow2    = pow( v4, 2 );
-    double v4pow2Inv = 1.0 / v4pow2;
-    double v3pow2    = pow( v3, 2 );
-    double v2pow2    = pow( v2, 2 );
-    // double expTerm =
-    //    pow( -exp( ( ( v2pow2 + v3pow2 - 2.0 * v4 * ( v1 + _gamma ) ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) ) * 1.0 / ( 1.0 + _gamma );
-
-    double expTerm = exp( 1.0 / ( 1.0 + _gamma ) * ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) *
-                     pow( -v4, 1.0 / ( 1.0 + _gamma ) ) / ( 1.0 + _gamma );
-    double vTerm = expTerm * ( v2pow2 + v3pow2 + 2.0 * v4 * _gamma ) / ( 2 * v4pow3 );
-    y( 0, 0 )    = -( expTerm );
-    y( 0, 1 )    = ( v2 * expTerm ) / ( v4 );
-    y( 0, 2 )    = ( v3 * expTerm ) / ( v4 );
-    y( 0, 3 )    = -( 0.5 * ( ( v2pow2 + v3pow2 - 2.0 * v4 ) * expTerm ) * v4pow2Inv );
-    y( 1, 0 )    = y( 0, 1 );
-    y( 1, 1 )    = -( ( expTerm * ( v2pow2 + ( _gamma + 1.0 ) * v4 ) ) * v4pow2Inv );
-    y( 1, 2 )    = -( ( v2 * v3 * expTerm ) * v4pow2Inv );
-    y( 1, 3 )    = v2 * vTerm;
-    y( 2, 0 )    = y( 0, 2 );
-    y( 2, 1 )    = y( 1, 2 );
-    y( 2, 2 )    = -( ( expTerm * ( v3pow2 + ( _gamma + 1.0 ) * v4 ) ) * v4pow2Inv );
-    y( 2, 3 )    = v3 * vTerm;
-    y( 3, 0 )    = y( 0, 3 );
-    y( 3, 1 )    = y( 1, 3 );
-    y( 3, 2 )    = y( 2, 3 );
-    y( 3, 3 )    = -( expTerm * ( pow( v2, 4 ) + pow( v3, 4 ) + 4.0 * v3pow2 * v4 * _gamma - 4.0 * v4pow2 * _gamma +
-                               2.0 * v2pow2 * ( v3pow2 + 2.0 * v4 * _gamma ) ) ) /
-                ( 4.0 * pow( v4, 4 ) );
-}
-
-void RegularizedEuler::DS( Vector& ds, const Vector& u ) const {
-    double gamma = _gamma;
-    double rho   = u[0];
-    double rhoU  = u[1];
-    double rhoV  = u[2];
-    double rhoV2 = pow( rhoV, 2 );
-    double rhoU2 = pow( rhoU, 2 );
-    double rhoE  = u[3];
-    ds[0]        = ( rhoU2 + rhoV2 + gamma * ( 2 * rho * rhoE - rhoU2 - rhoV2 ) ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) -
-            std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
-    ds[1] = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-    ds[2] = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-    ds[3] = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
-}
 
 void RegularizedEuler::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
     Vector uKinetic( _nStates, 0.0 );
@@ -145,4 +60,72 @@ void RegularizedEuler::Hessian( Matrix& H, const Matrix& lambda, unsigned nTotal
             H( l * nTotal + i, l * nTotal + i ) += _eta;
         }
     }
+}
+
+void RegularizedEuler::SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
+    Matrix uF( _settings->GetNStates(), nTotal );
+    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        for( unsigned i = 0; i < nTotal; ++i ) {
+            uF( s, i ) = _filterFunction[i] * u( s, i );
+        }
+    }
+    int maxRefinements = 1000;
+
+    Vector g( _nStates * nTotal );
+
+    // check if initial guess is good enough
+    Gradient( g, lambda, uF, nTotal, nQTotal );
+    if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
+        return;
+    }
+    Matrix H( _nStates * nTotal, _nStates * nTotal );
+    Vector dlambdaNew( _nStates * nTotal );
+    // std::cout << "before first Hessian inversion..." << std::endl;
+    // calculate initial Hessian and gradient
+    Vector dlambda = -g;
+    // std::cout << g << std::endl;
+    Hessian( H, lambda, nTotal, nQTotal );
+    posv( H, g );
+    if( _maxIterations == 1 ) {
+        AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda, nTotal );
+        return;
+    }
+    Matrix lambdaNew( _nStates, nTotal );
+    AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew, nTotal );
+    Gradient( dlambdaNew, lambdaNew, uF, nTotal, nQTotal );
+    // perform Newton iterations
+    for( unsigned l = 0; l < _maxIterations; ++l ) {
+        double stepSize = 1.0;
+        if( l != 0 ) {
+            Gradient( g, lambda, uF, nTotal, nQTotal );
+            dlambda = -g;
+            Hessian( H, lambda, nTotal, nQTotal );
+            // std::cout << H << std::endl;
+            posv( H, g );
+            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
+            Gradient( dlambdaNew, lambdaNew, uF, nTotal, nQTotal );
+        }
+        int refinementCounter = 0;
+        // std::cout << "Res is " << CalcNorm( dlambda, nTotal ) << std::endl;
+        while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) ) {
+            stepSize *= 0.5;
+            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
+            Gradient( dlambdaNew, lambdaNew, uF, nTotal, nQTotal );
+            if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
+                lambda = lambdaNew;
+                return;
+            }
+            else if( ++refinementCounter > maxRefinements ) {
+                _log->error( "[closure] Newton needed too many refinement steps!" );
+                exit( EXIT_FAILURE );
+            }
+        }
+        lambda = lambdaNew;
+        if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
+            lambda = lambdaNew;
+            return;
+        }
+    }
+    _log->error( "[closure] Newton did not converge!" );
+    exit( EXIT_FAILURE );
 }

@@ -7,7 +7,7 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "pipe.su2"
 SU2BC = [["inlet","dirichlet"],["outlet","dirichlet"], ["walls", "noslip"]]
-outputFile = "pipeOutput"
+outputFile = "pipeRegularized1e-9Lambda1-5e-4"
 
 [problem]
 # available timesteppings: explicitEuler

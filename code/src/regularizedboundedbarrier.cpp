@@ -1,6 +1,6 @@
 #include "regularizedboundedbarrier.h"
 
-RegularizedBoundedBarrier::RegularizedBoundedBarrier( Settings* settings ) : BoundedBarrier( settings ), _eta( 1e-9 ), _lambda( 5e-7 ) {
+RegularizedBoundedBarrier::RegularizedBoundedBarrier( Settings* settings ) : BoundedBarrier( settings ), _eta( 1e-7 ), _lambda( 4e-6 ) {
     _alpha            = 1.0;    // unsigned n;
     unsigned nMoments = _settings->GetNMoments();
     _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
