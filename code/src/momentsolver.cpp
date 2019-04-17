@@ -331,7 +331,7 @@ Settings* MomentSolver::DeterminePreviousSettings() const {
 
 Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const {
     Closure* prevClosure;
-    if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+    if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) {
         prevClosure = Closure::Create( prevSettings );
     }
     else {
@@ -349,7 +349,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
     }
     else {
         // compute dual states for given moment vector
-        _lambda = MatVec( _nCells, Matrix( _nStates, prevSettings->GetNTotal() ) );
+        _lambda = MatVec( _nCells, Matrix( _nStates, prevSettings->GetNTotal(), 0.0 ) );
 
         // compute first initial guess
         Vector ds( _nStates );
@@ -402,9 +402,9 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         _closure->SetMaxIterations( maxIterations );
         // delete reload closures and settings
         delete intermediateClosure;
-        delete prevClosure;
         delete prevSettings;
     }
+    if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete prevClosure;
     std::cout << "Init Dual with N = " << prevSettings->GetNTotal() << ", Nq = " << nQSave << std::endl;
     std::cout << "Second Dual with N = " << _settings->GetNTotal() << ", Nq = " << _settings->GetNQTotal() << std::endl;
 }

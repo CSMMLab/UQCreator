@@ -333,7 +333,7 @@ void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned nTotal
         AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
         Gradient( dlambdaNew, lambdaNew, u, nTotal, nQTotal );
         int refinementCounter = 0;
-        // std::cout << "Res " << CalcNorm( dlambdaNew ) << std::endl;
+        // std::cout << "Res " << CalcNorm( dlambdaNew, nTotal ) << std::endl;
         while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) || !std::isfinite( CalcNorm( dlambdaNew, nTotal ) ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
