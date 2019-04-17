@@ -392,9 +392,6 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             Matrix lambdaOld = _lambda[j];
             _lambda[j].resize( _nStates, _nTotal );
             for( unsigned s = 0; s < _nStates; ++s ) {
-                for( unsigned i = 0; i < prevSettings->GetNTotal(); ++i ) {
-                    _lambda[j]( s, i ) = lambdaOld( s, i );
-                }
                 for( unsigned i = prevSettings->GetNTotal(); i < _settings->GetNTotal(); ++i ) {
                     _lambda[j]( s, i ) = 0.0;
                 }
