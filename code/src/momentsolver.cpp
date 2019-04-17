@@ -395,6 +395,9 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
                 for( unsigned i = 0; i < prevSettings->GetNTotal(); ++i ) {
                     _lambda[j]( s, i ) = lambdaOld( s, i );
                 }
+                for( unsigned i = prevSettings->GetNTotal(); i < _settings->GetNTotal(); ++i ) {
+                    _lambda[j]( s, i ) = 0.0;
+                }
             }
             std::cout << "lambda = " << _lambda[j] << ", u = " << u[j] << std::endl;
             _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
