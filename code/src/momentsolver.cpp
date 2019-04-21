@@ -144,9 +144,12 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
-            if( _settings->HasReferenceFile() && timeIndex % 1000 == 1 ) this->WriteErrors( refinementLevel );
+            if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
         }
     }
+
+    // write final error
+    if( _settings->HasReferenceFile() ) this->WriteErrors( refinementLevel );
 
     // MPI Broadcast final moment vectors to all PEs
     for( unsigned j = 0; j < _nCells; ++j ) {
@@ -270,7 +273,6 @@ void MomentSolver::Solve() {
         unsigned nQOriginal = _settings->GetNQuadPoints();
         _settings->SetNQuadPoints( nQFine );
         Closure* closurePlot = Closure::Create( _settings );
-        std::cout << "lambda = " << _lambda[evalCell] << std::endl;
         Matrix testLambda( _nStates, _nTotal, 0.0 );
         testLambda( plotState, 1 ) = 1.0;
         _mesh->PlotInXi( closurePlot->U( closurePlot->EvaluateLambda( _lambda[evalCell] ) ), plotState );
@@ -342,7 +344,6 @@ Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const 
 
 void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u ) {
     unsigned maxIterations = _closure->GetMaxIterations();
-    unsigned nQSave        = prevSettings->GetNQTotal();    // DEBUG
 
     if( _settings->LoadLambda() ) {
         _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
@@ -364,8 +365,6 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             }
         }
 
-        std::cout << "Init Dual with N = " << prevSettings->GetNTotal() << ", Nq = " << prevSettings->GetNQTotal() << std::endl;
-
         // Converge initial condition entropy variables for One Shot IPM or if truncation order is increased
         if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
             prevClosure->SetMaxIterations( 10000 );
@@ -381,7 +380,6 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
         prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
         Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
-        std::cout << "Second Dual with N = " << _settings->GetNTotal() << ", Nq = " << _settings->GetNQTotal() << std::endl;
         for( unsigned j = 0; j < _nCells; ++j ) {
             _closure->U( uQFullProc[j], intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
             auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
@@ -396,7 +394,6 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
                     _lambda[j]( s, i ) = 0.0;
                 }
             }
-            std::cout << "lambda = " << _lambda[j] << ", u = " << u[j] << std::endl;
             _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
         }
         _closure->SetMaxIterations( maxIterations );
@@ -405,8 +402,6 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         delete prevSettings;
     }
     if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete prevClosure;
-    std::cout << "Init Dual with N = " << prevSettings->GetNTotal() << ", Nq = " << nQSave << std::endl;
-    std::cout << "Second Dual with N = " << _settings->GetNTotal() << ", Nq = " << _settings->GetNQTotal() << std::endl;
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {

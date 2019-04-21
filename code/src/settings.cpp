@@ -81,7 +81,8 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
         }
 
         if( !restart ) {
-            auto refFile = general->get_as<std::string>( "referenceSolution" );
+            auto refFile    = general->get_as<std::string>( "referenceSolution" );
+            _writeFrequency = general->get_as<int64_t>( "writeFrequency" ).value_or( 1000 );
             if( refFile ) {
                 _referenceFile = _inputDir.string() + "/" + *refFile;
             }
@@ -289,6 +290,7 @@ void Settings::SetNStates( unsigned n ) { _nStates = n; }
 std::string Settings::GetInputFile() const { return _inputFile; }
 std::string Settings::GetInputDir() const { return _inputDir; }
 std::string Settings::GetOutputDir() const { return _outputDir; }
+int Settings::GetWriteFrequency() const { return _writeFrequency; }
 
 // mesh
 unsigned Settings::GetMeshDimension() const { return _meshDimension; }
