@@ -67,7 +67,8 @@ void MomentSolver::Solve() {
     if( _settings->GetMyPE() == 0 ) log->info( "{:10}   {:10}", "t", "residual" );
 
     // init time and residual
-    double t = _tStart;
+    double t      = _tStart;
+    int timeIndex = 0;
     double dt;
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
@@ -75,7 +76,6 @@ void MomentSolver::Solve() {
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
         double residual = 0;
-        // std::cout << "Before SolveClosure" << std::endl;
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
             _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
@@ -128,6 +128,7 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
         // std::cout << "dt = " << dt << std::endl;
         t += dt;
+        ++timeIndex;
 
         _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
 
@@ -143,8 +144,12 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
+            if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
         }
     }
+
+    // write final error
+    if( _settings->HasReferenceFile() ) this->WriteErrors( refinementLevel );
 
     // MPI Broadcast final moment vectors to all PEs
     for( unsigned j = 0; j < _nCells; ++j ) {
@@ -268,7 +273,6 @@ void MomentSolver::Solve() {
         unsigned nQOriginal = _settings->GetNQuadPoints();
         _settings->SetNQuadPoints( nQFine );
         Closure* closurePlot = Closure::Create( _settings );
-        std::cout << "lambda = " << _lambda[evalCell] << std::endl;
         Matrix testLambda( _nStates, _nTotal, 0.0 );
         testLambda( plotState, 1 ) = 1.0;
         _mesh->PlotInXi( closurePlot->U( closurePlot->EvaluateLambda( _lambda[evalCell] ) ), plotState );
@@ -329,7 +333,7 @@ Settings* MomentSolver::DeterminePreviousSettings() const {
 
 Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const {
     Closure* prevClosure;
-    if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+    if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) {
         prevClosure = Closure::Create( prevSettings );
     }
     else {
@@ -346,7 +350,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
     }
     else {
         // compute dual states for given moment vector
-        _lambda = MatVec( _nCells, Matrix( _nStates, prevSettings->GetNTotal() ) );
+        _lambda = MatVec( _nCells, Matrix( _nStates, prevSettings->GetNTotal(), 0.0 ) );
 
         // compute first initial guess
         Vector ds( _nStates );
@@ -386,8 +390,8 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             Matrix lambdaOld = _lambda[j];
             _lambda[j].resize( _nStates, _nTotal );
             for( unsigned s = 0; s < _nStates; ++s ) {
-                for( unsigned i = 0; i < prevSettings->GetNTotal(); ++i ) {
-                    _lambda[j]( s, i ) = lambdaOld( s, i );
+                for( unsigned i = prevSettings->GetNTotal(); i < _settings->GetNTotal(); ++i ) {
+                    _lambda[j]( s, i ) = 0.0;
                 }
             }
             _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
@@ -395,9 +399,9 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         _closure->SetMaxIterations( maxIterations );
         // delete reload closures and settings
         delete intermediateClosure;
-        delete prevClosure;
         delete prevSettings;
     }
+    if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete prevClosure;
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {
@@ -482,8 +486,7 @@ Settings* MomentSolver::ImportPrevSettings() const {
     while( std::getline( file, line ) ) {
         if( line.find( "Config file" ) != std::string::npos ) {
             configSection = true;
-            std::getline( file, line );
-            std::getline( file, line );
+            for( unsigned i = 0; i < 4; ++i ) std::getline( file, line );
         }
         else if( configSection && line.find( "==================================" ) != std::string::npos ) {
             break;
@@ -601,4 +604,62 @@ Vector MomentSolver::CalculateError( const Matrix& solution, unsigned LNorm, con
         error[s] = std::pow( error[s] / refNorm[s], 1.0 / double( LNorm ) );
     }
     return error;
+}
+
+void MomentSolver::WriteErrors( const VectorU& refinementLevel ) {
+    // define rectangle for error computation
+    Vector a( 2 );
+    a[0] = -0.05;
+    a[1] = -0.5;
+    Vector b( 2 );
+    b[0]                = 1.05;
+    b[1]                = 0.5;
+    auto l1ErrorMeanLog = spdlog::get( "l1ErrorMean" );
+    auto l2ErrorMeanLog = spdlog::get( "l2ErrorMean" );
+    // auto lInfErrorMeanLog = spdlog::get( "lInfErrorMean" );
+    auto l1ErrorVarLog = spdlog::get( "l1ErrorVar" );
+    auto l2ErrorVarLog = spdlog::get( "l2ErrorVar" );
+    // auto lInfErrorVarLog  = spdlog::get( "lInfErrorVar" );
+
+    Matrix meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+    Matrix phiTildeWf = _closure->GetPhiTildeWf();
+    Vector tmp( _nStates, 0.0 );
+    VectorU nTotal = _settings->GetNTotalRefinementLevel();
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        // expected value
+        for( unsigned k = 0; k < _nQTotal; ++k ) {
+            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, nTotal[refinementLevel[j]] ) );
+            for( unsigned i = 0; i < _nStates; ++i ) {
+                meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
+            }
+        }
+
+        // variance
+        for( unsigned k = 0; k < _nQTotal; ++k ) {
+            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, nTotal[refinementLevel[j]] ) );
+            for( unsigned i = 0; i < _nStates; ++i ) {
+                meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
+            }
+        }
+    }
+    auto l1Error = this->CalculateError( meanAndVar, 1, a, b );
+    auto l2Error = this->CalculateError( meanAndVar, 2, a, b );
+    // auto lInfError = this->CalculateError( meanAndVar, 0, a, b );
+
+    std::ostringstream osL1ErrorMean, osL2ErrorMean, osLInfErrorMean, osL1ErrorVar, osL2ErrorVar, osLInfErrorVar;
+    for( unsigned i = 0; i < _nStates; ++i ) {
+        osL1ErrorMean << std::scientific << l1Error[i] << "\t";
+        osL2ErrorMean << std::scientific << l2Error[i] << "\t";
+        // osLInfErrorMean << std::scientific << lInfError[i] << "\t";
+        osL1ErrorVar << std::scientific << l1Error[i + _nStates] << "\t";
+        osL2ErrorVar << std::scientific << l2Error[i + _nStates] << "\t";
+        // osLInfErrorVar << std::scientific << lInfError[i + _nStates] << "\t";
+    }
+
+    l1ErrorMeanLog->info( osL1ErrorMean.str() );
+    l2ErrorMeanLog->info( osL2ErrorMean.str() );
+    // lInfErrorMeanLog->info( osLInfErrorMean.str() );
+    l1ErrorVarLog->info( osL1ErrorVar.str() );
+    l2ErrorVarLog->info( osL2ErrorVar.str() );
+    // lInfErrorVarLog->info( osLInfErrorVar.str() );
 }

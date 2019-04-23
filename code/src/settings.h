@@ -40,6 +40,8 @@ class Settings
     std::filesystem::path _referenceFile;
     bool _loadLambda;
 
+    int _writeFrequency;    // number of time steps until error to reference solution is computed
+
     // requied settings
     unsigned _meshDimension;
     unsigned _numCells;
@@ -88,6 +90,7 @@ class Settings
     double _gamma;
 
     Settings() = delete;
+    void Init( std::shared_ptr<cpptoml::table> file, bool restart );
 
   public:
     Settings( std::string inputFile );
@@ -100,6 +103,7 @@ class Settings
     std::string GetInputFile() const;
     std::string GetInputDir() const;
     std::string GetOutputDir() const;
+    int GetWriteFrequency() const;
 
     // mesh
     unsigned GetMeshDimension() const;

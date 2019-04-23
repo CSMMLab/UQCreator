@@ -20,7 +20,7 @@ tEnd = 0.01115
 [moment_system]
 # available closures: BoundedBarrier, LogSin, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "BoundedBarrier"
-moments = 10
+moments = [["totalDegree"],[10]]
 quadPoints = 15
 maxIterations = 2000
 epsilon = 5e-5
