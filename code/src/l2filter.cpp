@@ -1,6 +1,6 @@
 #include "l2filter.h"
 
-L2Filter::L2Filter( Settings* settings ) : Closure( settings ), _lambda( 0.00001 ) {
+L2Filter::L2Filter( Settings* settings ) : Closure( settings ), _lambda( 0.0000015 ) {
     _alpha            = 1.0;    // unsigned n;
     unsigned nMoments = _settings->GetNMoments();
     _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
