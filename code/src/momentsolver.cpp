@@ -49,6 +49,20 @@ void MomentSolver::Solve() {
     std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
     std::vector<int> PEforCell        = _settings->GetPEforCell();
 
+    // dirty fix: compute filter function inside momentsolver
+    Vector filterFunction( _settings->GetNTotal(), 1.0 );
+    double strength = 0.0000015;
+    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                unsigned index = unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
+                filterFunction[i] *= 1.0 / ( 1.0 + strength * pow( index, 2 ) * pow( index + 1, 2 ) );
+            }
+        }
+    }
+
     // log->info( "PE {0}: kStart {1}, kEnd {2}", _settings->GetMyPE(), _settings->GetKStart(), _settings->GetKEnd() );
 
     MatVec uNew = u;
@@ -128,7 +142,17 @@ void MomentSolver::Solve() {
 
         // store partial moment vectors on u (for exact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
-            u[j] = uNew[j];
+            if( _settings->GetClosureType() == C_REGULARIZED_EULER || _settings->GetClosureType() == C_REGULARIZED_BOUNDED_BARRIER ) {
+                for( unsigned s = 0; s < _nStates; ++s ) {
+                    for( unsigned i = 0; i < _nMoments; ++i ) {
+                        u[j]( s, i ) = filterFunction[i] * uNew[j]( s, i );    // TODO: for regularized Euler/BB this is not filtered but should be
+                    }
+                }
+            }
+            else {
+                u[j].reset();
+                multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd(), nTotal[refinementLevel[j]] );
+            }
         }
 
         // determine time step size
