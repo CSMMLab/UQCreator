@@ -136,7 +136,7 @@ double Euler2D::ComputeDt( const Matrix& u, double dx ) const {
 Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
     _sigma            = _settings->GetSigma();
-    bool pipeTestCase = false;
+    bool pipeTestCase = true;
     if( pipeTestCase ) {    // pipe testcase
         double gamma = 1.4;
         double R     = 287.87;
