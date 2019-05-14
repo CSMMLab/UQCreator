@@ -51,7 +51,7 @@ void MomentSolver::Solve() {
 
     // dirty fix: compute filter function inside momentsolver
     Vector filterFunction( _settings->GetNTotal(), 1.0 );
-    double strength = 0.0000015;
+    double strength = 0.00001;
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {

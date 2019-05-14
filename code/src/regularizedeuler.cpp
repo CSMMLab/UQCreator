@@ -1,6 +1,6 @@
 #include "regularizedeuler.h"
 
-RegularizedEuler::RegularizedEuler( Settings* settings ) : EulerClosure2D( settings ), _eta( 1e-9 ), _lambda( 0.0000015 ) {
+RegularizedEuler::RegularizedEuler( Settings* settings ) : EulerClosure2D( settings ), _eta( 1e-9 ), _lambda( 0.00001 ) {
     unsigned nMoments = _settings->GetNMoments();
     _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {

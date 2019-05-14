@@ -159,11 +159,12 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
         y[3]                  = kineticEnergyL + innerEnergyL;
 
+        double scaling = 0.1;
         if( x[1] < 1.1 + _sigma[0] * xi[0] ) {
-            y[0] = 0.5 * rhoFarfield;
+            y[0] = scaling * rhoFarfield;
             y[1] = rhoFarfield * uF;
             y[2] = rhoFarfield * vF;
-            y[3] = 0.5 * ( kineticEnergyL + innerEnergyL );
+            y[3] = scaling * ( kineticEnergyL + innerEnergyL );
         }
         /*
          if( x[1] < 1.1 + sigma && x[1] < 1.1 - sigma ) {

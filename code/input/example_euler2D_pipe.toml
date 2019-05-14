@@ -7,7 +7,7 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "pipe.su2"
 SU2BC = [["inlet","dirichlet"],["outlet","dirichlet"], ["walls", "noslip"]]
-outputFile = "pipeCriticalSettingSG"
+outputFile = "pipeCriticalSettingSigma0-2IPMLambda0-00001"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -16,11 +16,11 @@ timestepping = "explicitEuler"
 distribution = [["Legendre"],[0.2]]
 CFL = 0.9
 tEnd = 0.0035
-residual = 1e-6
+residual = 0.0
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
-closure = "StochasticGalerkin"
+closure = "RegularizedEuler"
 moments = 5
 quadPoints = 10
 maxIterations = 1000
