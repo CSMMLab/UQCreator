@@ -9,6 +9,15 @@ void EulerClosure::U( Vector& out, const Vector& Lambda ) {
                   ( 2.0 * Lambda[2] * ( _gamma - 1.0 ) ) );
     out[1] = -( Lambda[1] / Lambda[2] ) * out[0];
     out[2] = ( ( pow( Lambda[1], 2.0 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2.0 ) ) ) * out[0];
+
+    double v1 = Lambda[0];
+    double v2 = Lambda[1];
+    double v3 = Lambda[2];
+    Vector outCheck( 3 );
+    outCheck[0] = exp( ( 2 * v1 * v3 - 2 * v3 * log( -v3 ) - 2 * v3 * _gamma - pow( v2, 2 ) ) / ( 2 * v3 * ( _gamma - 1 ) ) );
+    outCheck[1] = -( v2 / v3 ) * outCheck[0];
+    outCheck[2] = ( ( pow( v2, 2 ) - 2 * v3 ) / ( 2 * pow( v3, 2 ) ) ) * outCheck[0];
+    std::cout << out - outCheck << std::endl;
 }
 
 void EulerClosure::U( Matrix& out, const Matrix& Lambda ) {
@@ -54,6 +63,27 @@ void EulerClosure::DU( Matrix& y, const Vector& Lambda ) {
                 ( 2.0 * Lambda[1] / ( 2.0 * pow( Lambda[2], 2 ) ) ) * E;
     y( 2, 2 ) = ( pow( Lambda[1], 2 ) / ( pow( Lambda[2], -3 ) ) + pow( Lambda[2], -2 ) ) * E +
                 ( ( pow( Lambda[1], 2 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2 ) ) ) * dEdv3;
+
+    Matrix yCheck( 3, 3 );
+    double v1 = Lambda[0];
+    double v2 = Lambda[1];
+    double v3 = Lambda[2];
+    E         = exp( ( 2 * v1 * v3 - 2 * v3 * log( -v3 ) - 2 * v3 * _gamma - pow( v2, 2 ) ) / ( 2 * v3 * ( _gamma - 1 ) ) );
+    dEdv1     = ( 1 / ( _gamma - 1 ) ) * E;
+    dEdv2     = -( v2 / ( v3 * ( _gamma - 1 ) ) ) * E;
+    dEdv3     = ( ( -2 * _gamma + 2 * v1 - 2 * log( -v3 ) - 2 ) / ( 2 * ( _gamma - 1 ) * v3 ) -
+              ( -2 * _gamma * v3 + 2 * v1 * v3 - pow( v2, 2 ) - 2 * v3 * log( -v3 ) ) / ( 2 * ( _gamma - 1 ) * pow( v3, 2 ) ) ) *
+            E;
+    yCheck( 0, 0 ) = dEdv1;
+    yCheck( 0, 1 ) = dEdv2;
+    yCheck( 0, 2 ) = dEdv3;
+    yCheck( 1, 0 ) = -( v2 / v3 ) * dEdv1;
+    yCheck( 1, 1 ) = -( 1 / v3 ) * E - ( v2 / v3 ) * dEdv2;
+    yCheck( 1, 2 ) = ( v2 / ( pow( v3, 2 ) ) ) * E - ( v2 / v3 ) * dEdv3;
+    yCheck( 2, 0 ) = ( ( pow( v2, 2 ) - 2 * v3 ) / ( 2 * pow( v3, 2 ) ) ) * dEdv1;
+    yCheck( 2, 1 ) = ( ( pow( v2, 2 ) - 2 * v3 ) / ( 2 * pow( v3, 2 ) ) ) * dEdv2 + ( 2 * v2 / ( 2 * pow( v3, 2 ) ) ) * E;
+    yCheck( 2, 2 ) = ( ( pow( v2, 2 ) ) / ( pow( v3, -3 ) ) + pow( v3, -2 ) ) * E + ( ( pow( v2, 2 ) - 2 * v3 ) / ( 2 * pow( v3, 2 ) ) ) * dEdv3;
+    std::cout << y - yCheck << std::endl;
 }
 
 void EulerClosure::DS( Vector& ds, const Vector& u ) const {
