@@ -8,6 +8,7 @@
 #include "mathtools.h"
 #include "regularizedboundedbarrier.h"
 #include "regularizedeuler.h"
+#include "regularizedeuler1d.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
 #include "stochasticgalerkin.h"
@@ -106,7 +107,7 @@ Closure::Closure( Settings* settings )
 }
 
 Closure::~Closure() {
-    for( unsigned l; l < _basis.size(); ++l ) {
+    for( unsigned l = 0; l < _basis.size(); ++l ) {
         delete _basis[l];
         delete _quad[l];
     }
@@ -144,6 +145,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_REGULARIZED_EULER ) {
         return new RegularizedEuler( settings );
+    }
+    else if( closureType == ClosureType::C_REGULARIZED_EULER_1D ) {
+        return new RegularizedEuler1D( settings );
     }
     else if( closureType == ClosureType::C_REGULARIZED_BOUNDED_BARRIER ) {
         return new RegularizedBoundedBarrier( settings );

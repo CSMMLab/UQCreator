@@ -1,8 +1,7 @@
-#include "regularizedboundedbarrier.h"
+#include "regularizedeuler1d.h"
 
-RegularizedBoundedBarrier::RegularizedBoundedBarrier( Settings* settings )
-    : BoundedBarrier( settings ), _eta( _settings->GetRegularizationStrength() ), _lambda( _settings->GetFilterStrength() ) {
-    _alpha            = 1.0;    // unsigned n;
+RegularizedEuler1D::RegularizedEuler1D( Settings* settings )
+    : EulerClosure( settings ), _eta( _settings->GetRegularizationStrength() ), _lambda( _settings->GetFilterStrength() ) {
     unsigned nMoments = _settings->GetNMoments();
     _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
@@ -17,9 +16,31 @@ RegularizedBoundedBarrier::RegularizedBoundedBarrier( Settings* settings )
     }
 }
 
-RegularizedBoundedBarrier::~RegularizedBoundedBarrier() {}
+RegularizedEuler1D::~RegularizedEuler1D() {}
 
-void RegularizedBoundedBarrier::Hessian( Matrix& H, const Matrix& lambda, unsigned nTotal, unsigned nQTotal ) {
+void RegularizedEuler1D::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
+    Vector uKinetic( _nStates, 0.0 );
+    g.reset();
+
+    for( unsigned k = 0; k < nQTotal; ++k ) {
+        U( uKinetic, EvaluateLambda( lambda, k, nTotal ) );
+        for( unsigned i = 0; i < nTotal; ++i ) {
+            for( unsigned l = 0; l < _nStates; ++l ) {
+                g[l * nTotal + i] += uKinetic[l] * _phiTildeWf( k, i );
+            }
+        }
+    }
+
+    for( unsigned i = 0; i < nTotal; ++i ) {
+        for( unsigned l = 0; l < _nStates; ++l ) {
+            g[l * nTotal + i] += _eta * lambda( l, i );
+        }
+    }
+
+    SubstractVectorMatrixOnVector( g, u, nTotal );
+}
+
+void RegularizedEuler1D::Hessian( Matrix& H, const Matrix& lambda, unsigned nTotal, unsigned nQTotal ) {
     H.reset();
     Matrix dUdLambda( _nStates, _nStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
 
@@ -42,29 +63,7 @@ void RegularizedBoundedBarrier::Hessian( Matrix& H, const Matrix& lambda, unsign
     }
 }
 
-void RegularizedBoundedBarrier::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
-    Vector uKinetic( _nStates, 0.0 );
-    g.reset();
-
-    for( unsigned k = 0; k < nQTotal; ++k ) {
-        U( uKinetic, EvaluateLambda( lambda, k, nTotal ) );
-        for( unsigned i = 0; i < nTotal; ++i ) {
-            for( unsigned l = 0; l < _nStates; ++l ) {
-                g[l * nTotal + i] += uKinetic[l] * _phiTildeWf( k, i );
-            }
-        }
-    }
-
-    for( unsigned i = 0; i < nTotal; ++i ) {
-        for( unsigned l = 0; l < _nStates; ++l ) {
-            g[l * nTotal + i] += _eta * lambda( l, i );
-        }
-    }
-
-    SubstractVectorMatrixOnVector( g, u, nTotal );
-}
-
-void RegularizedBoundedBarrier::SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
+void RegularizedEuler1D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
     Matrix uF( _settings->GetNStates(), nTotal );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < nTotal; ++i ) {

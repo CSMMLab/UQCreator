@@ -22,6 +22,7 @@ enum ClosureType {
     C_L2FILTER,
     C_LASSOFILTER,
     C_REGULARIZED_EULER,
+    C_REGULARIZED_EULER_1D,
     C_REGULARIZED_BOUNDED_BARRIER
 };
 enum LimiterType { L_MINMOD, L_NONE };
@@ -89,6 +90,10 @@ class Settings
     // problem specific settings
     double _gamma;
 
+    // filter, regularization settings
+    double _filterStrength;
+    double _regularizationStrength;
+
     Settings() = delete;
 
   public:
@@ -149,6 +154,10 @@ class Settings
     unsigned GetMaxIterations() const;
     void SetMaxIterations( unsigned maxIterations );
     double GetEpsilon() const;
+    double GetFilterStrength() const;
+    void SetFilterStrength( double filterStrength );
+    double GetRegularizationStrength() const;
+    void SetRegularizationStrength( double regularizationStrength );
 
     // plot
     bool GetPlotEnabled() const;

@@ -186,7 +186,12 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
                 _closureType = ClosureType::C_LASSOFILTER;
             }
             else if( closureTypeString->compare( "RegularizedEuler" ) == 0 ) {
-                _closureType = ClosureType::C_REGULARIZED_EULER;
+                if( _meshDimension == 1 ) {
+                    _closureType = ClosureType::C_REGULARIZED_EULER_1D;
+                }
+                if( _meshDimension == 2 ) {
+                    _closureType = ClosureType::C_REGULARIZED_EULER;
+                }
             }
             else if( closureTypeString->compare( "RegularizedBoundedBarrier" ) == 0 ) {
                 _closureType = ClosureType::C_REGULARIZED_BOUNDED_BARRIER;
@@ -261,8 +266,10 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             log->error( "[inputfile] [moment_system] 'quadPoints' not set!" );
             validConfig = false;
         }
-        _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
-        _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
+        _maxIterations          = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
+        _epsilon                = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
+        _filterStrength         = moment_system->get_as<double>( "filterStrength" ).value_or( 0.000005 );
+        _regularizationStrength = moment_system->get_as<double>( "regularizationStrength" ).value_or( 1e-9 );
     } catch( const cpptoml::parse_exception& e ) {
         log->error( "Failed to parse {0}: {1}", _inputFile.c_str(), e.what() );
         exit( EXIT_FAILURE );
@@ -605,3 +612,9 @@ unsigned Settings::GetNqPE() const { return _nQPE; }
 unsigned Settings::GetNxPE() const { return _nXPE; }
 std::vector<unsigned> Settings::GetCellIndexPE() const { return _cellIndexPE; }
 std::vector<int> Settings::GetPEforCell() const { return _PEforCell; }
+
+// filter and regularization
+double Settings::GetFilterStrength() const { return _filterStrength; }
+void Settings::SetFilterStrength( double filterStrength ) { _filterStrength = filterStrength; }
+double Settings::GetRegularizationStrength() const { return _regularizationStrength; }
+void Settings::SetRegularizationStrength( double regularizationStrength ) { _regularizationStrength = regularizationStrength; }

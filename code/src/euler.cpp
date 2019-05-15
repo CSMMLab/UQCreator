@@ -76,6 +76,8 @@ double Euler::ComputeDt( const Matrix& u, double dx ) const {
     double dtMin;
     double rhoInv, v, p, a, cfl;
 
+    std::cout << dx << std::endl;
+
     cfl = _settings->GetCFL();
 
     for( unsigned k = 0; k < u.columns(); ++k ) {
@@ -84,7 +86,7 @@ double Euler::ComputeDt( const Matrix& u, double dx ) const {
         p      = ( _gamma - 1.0 ) * ( u( 2, k ) - 0.5 * u( 0, k ) * pow( v, 2 ) );
         a      = sqrt( _gamma * p * rhoInv );
 
-        dtMin      = ( cfl / dx ) * std::min( std::fabs( 1.0 / ( v - a ) ), std::fabs( 1.0 / ( v + a ) ) );
+        dtMin      = ( cfl * dx ) * std::min( std::fabs( 1.0 / ( v - a ) ), std::fabs( 1.0 / ( v + a ) ) );
         dtMinTotal = std::min( dtMin, dtMinTotal );
     }
 
