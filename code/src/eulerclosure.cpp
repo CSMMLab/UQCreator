@@ -1,6 +1,6 @@
 #include "eulerclosure.h"
 
-EulerClosure::EulerClosure( Settings* settings ) : Closure( settings ), _gamma( _settings->GetGamma() ) { _alpha = 1.0; }
+EulerClosure::EulerClosure( Settings* settings ) : Closure( settings ), _gamma( _settings->GetGamma() ) { _alpha = 0.9; }
 
 EulerClosure::~EulerClosure() {}
 

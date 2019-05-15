@@ -76,8 +76,6 @@ double Euler::ComputeDt( const Matrix& u, double dx ) const {
     double dtMin;
     double rhoInv, v, p, a, cfl;
 
-    std::cout << dx << std::endl;
-
     cfl = _settings->GetCFL();
 
     for( unsigned k = 0; k < u.columns(); ++k ) {
