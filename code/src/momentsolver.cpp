@@ -78,24 +78,25 @@ void MomentSolver::Solve() {
         double residual = 0;
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
+            std::cout << "Solving Closure for u = " << u[cellIndexPE[j]] << std::endl;
             _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
         }
 
-        // std::cout << "Before MPI_Bcast" << std::endl;
+        std::cout << "Before MPI_Bcast" << std::endl;
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             uOld[j] = u[j];    // save old Moments for residual computation
             MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
 
-        // std::cout << "Before uQ Computation" << std::endl;
+        std::cout << "Before uQ Computation" << std::endl;
         // for nQ refinement: here we need new refinement level for nQTotal and old level for nTotal
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], nTotal[refinementLevel[j]] ) );
         }
 
-        // std::cout << "Before refinement Computation" << std::endl;
+        std::cout << "Before refinement Computation" << std::endl;
         // determine refinement level of cells on current PE
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
             double indicator = std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 1 ) ) +
@@ -106,7 +107,7 @@ void MomentSolver::Solve() {
                 refinementLevel[cellIndexPE[j]] -= 1;
         }
 
-        // std::cout << "Before MPI_Bcast" << std::endl;
+        std::cout << "Before MPI_Bcast" << std::endl;
         // broadcast refinemt level to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
