@@ -210,15 +210,12 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, un
 
 double Closure::CalcNorm( Vector& test, unsigned nTotal ) const {
     double out = 0.0;
-    double tmp;
     for( unsigned l = 0; l < _nStates; ++l ) {
-        tmp = 0.0;
         for( unsigned i = 0; i < nTotal; ++i ) {
-            tmp += pow( test[l * nTotal + i], 2 );
+            out += pow( test[l * nTotal + i], 2 );
         }
-        out += sqrt( tmp );
     }
-    return out;
+    return sqrt( out );
 }
 
 Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k, unsigned nTotal ) {
