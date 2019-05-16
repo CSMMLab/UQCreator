@@ -193,6 +193,9 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
                     _closureType = ClosureType::C_REGULARIZED_EULER;
                 }
             }
+            else if( closureTypeString->compare( "RegularizedLassoEuler" ) == 0 ) {
+                _closureType = ClosureType::C_REGULARIZED_LASSO_EULER;
+            }
             else if( closureTypeString->compare( "RegularizedBoundedBarrier" ) == 0 ) {
                 _closureType = ClosureType::C_REGULARIZED_BOUNDED_BARRIER;
             }

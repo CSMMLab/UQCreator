@@ -110,6 +110,7 @@ class Closure
 
     std::vector<Polynomial*> GetBasis();
     std::vector<Polynomial*> GetQuadrature();
+    Matrix GetPhiTildeWf() const { return _phiTildeWf; }
 };
 
 #endif    // CLOSURE_H

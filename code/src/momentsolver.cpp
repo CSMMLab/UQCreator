@@ -63,6 +63,26 @@ void MomentSolver::Solve() {
         }
     }
 
+    unsigned nMoments = _settings->GetNMoments();
+    Vector _filterParam( _settings->GetNTotal(), 1.0 );
+    Vector _l1Norms( _settings->GetNTotal(), 0.0 );
+    Matrix phiTildeWf = _closure->GetPhiTildeWf();
+
+    for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+        for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
+            _l1Norms[i] += std::fabs( phiTildeWf( k, i ) );
+        }
+    }
+
+    for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+        for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+            // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+            // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+            unsigned index = unsigned( ( i - i % unsigned( std::pow( nMoments, l ) ) ) / unsigned( std::pow( nMoments, l ) ) ) % nMoments;
+            _filterParam[i] *= index * ( index + 1 );
+        }
+    }
+
     // log->info( "PE {0}: kStart {1}, kEnd {2}", _settings->GetMyPE(), _settings->GetKStart(), _settings->GetKEnd() );
 
     MatVec uNew = u;
@@ -137,10 +157,27 @@ void MomentSolver::Solve() {
 
         // store partial moment vectors on u (for exact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
-            if( _settings->GetClosureType() == C_REGULARIZED_EULER || _settings->GetClosureType() == C_REGULARIZED_BOUNDED_BARRIER ) {
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    for( unsigned i = 0; i < _nMoments; ++i ) {
-                        u[j]( s, i ) = filterFunction[i] * uNew[j]( s, i );    // TODO: for regularized Euler/BB this is not filtered but should be
+            if( _settings->GetClosureType() == C_REGULARIZED_EULER || _settings->GetClosureType() == C_REGULARIZED_BOUNDED_BARRIER ||
+                _settings->GetClosureType() == C_REGULARIZED_LASSO_EULER ) {
+                if( _settings->GetClosureType() == C_REGULARIZED_LASSO_EULER ) {
+                    double scL1, filterStrength;
+                    unsigned nMax = _settings->GetNTotal() - 1;
+
+                    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+                        filterStrength = std::fabs( uNew[j]( s, nMax ) ) / ( _filterParam[nMax] * _l1Norms[nMax] );
+                        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+                            scL1 = 1.0 - filterStrength * _filterParam[i] * _l1Norms[i] / std::fabs( uNew[j]( s, i ) );
+                            if( scL1 < 0 || std::fabs( uNew[j]( s, i ) ) < 1e-7 ) scL1 = 0.0;
+                            u[j]( s, i ) = scL1 * uNew[j]( s, i );
+                        }
+                    }
+                }
+                else {
+                    for( unsigned s = 0; s < _nStates; ++s ) {
+                        for( unsigned i = 0; i < _nMoments; ++i ) {
+                            u[j]( s, i ) =
+                                filterFunction[i] * uNew[j]( s, i );    // TODO: for regularized Euler/BB this is not filtered but should be
+                        }
                     }
                 }
             }
@@ -202,7 +239,6 @@ void MomentSolver::Solve() {
     else {
         meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     }
-    Matrix phiTildeWf = _closure->GetPhiTildeWf();
     Vector tmp( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
         // expected value

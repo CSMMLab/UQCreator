@@ -9,6 +9,7 @@
 #include "regularizedboundedbarrier.h"
 #include "regularizedeuler.h"
 #include "regularizedeuler1d.h"
+#include "regularizedlassoeuler.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
 #include "stochasticgalerkin.h"
@@ -145,6 +146,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_REGULARIZED_EULER ) {
         return new RegularizedEuler( settings );
+    }
+    else if( closureType == ClosureType::C_REGULARIZED_LASSO_EULER ) {
+        return new RegularizedLassoEuler( settings );
     }
     else if( closureType == ClosureType::C_REGULARIZED_EULER_1D ) {
         return new RegularizedEuler1D( settings );
