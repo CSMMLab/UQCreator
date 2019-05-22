@@ -92,7 +92,7 @@ double Euler::ComputeDt( const Matrix& u, double dx ) const {
 }
 
 Vector Euler::IC( const Vector& x, const Vector& xi ) {
-    double x0    = 0.3;
+    double x0    = 0.5;
     double gamma = 1.4;
 
     double rhoL = 1.0;

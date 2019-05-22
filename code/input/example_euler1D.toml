@@ -13,16 +13,16 @@ outputFile = "euler_shock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.075]]
-CFL = 0.9
-tEnd = 0.2
+distribution = [["Legendre"],[0.05]]
+CFL = 0.5
+tEnd = 0.14
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
-closure = "RegularizedEuler"
-moments = 5
-quadPoints = 10
+closure = "StochasticGalerkin"
+moments = 30
+quadPoints = 30
 maxIterations = 2000
-epsilon = 5e-5
-filterStrength = 0.00002
-regularizationStrength = 1e-4#1e-5
+epsilon = 1e-5
+filterStrength = 0.00001
+regularizationStrength = 1e-6#1e-5

@@ -20,7 +20,9 @@ tEnd = 0.12
 [moment_system]
 # available closures: BoundedBarrier, LogSin, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedBoundedBarrier
 closure = "RegularizedBoundedBarrier"
-moments = 10
-quadPoints = 30
+moments = 5
+quadPoints = 10
 maxIterations = 2000
 epsilon = 5e-5
+filterStrength = 0.0002
+regularizationStrength = 1e-4

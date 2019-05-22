@@ -19,11 +19,11 @@ tEnd = 0.005
 residual = 0.0
 
 [moment_system]
-# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
-closure = "StochasticGalerkin"
-moments = 5
-quadPoints = 5
-maxIterations = 1000
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RegularizedLassoEuler
+closure = "RegularizedLassoEuler"
+moments = 10
+quadPoints = 15
+maxIterations = 10000
 epsilon = 1e-7
 filterStrength = 0.000005
-regularizationStrength = 1e-9
+regularizationStrength = 0.01

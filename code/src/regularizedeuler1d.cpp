@@ -40,6 +40,21 @@ void RegularizedEuler1D::Gradient( Vector& g, const Matrix& lambda, const Matrix
     SubstractVectorMatrixOnVector( g, u, nTotal );
 }
 
+void RegularizedEuler1D::GradientNoRegularization( Vector& g, const Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
+    Vector uKinetic( _nStates, 0.0 );
+    g.reset();
+
+    for( unsigned k = 0; k < nQTotal; ++k ) {
+        U( uKinetic, EvaluateLambda( lambda, k, nTotal ) );
+        for( unsigned i = 0; i < nTotal; ++i ) {
+            for( unsigned l = 0; l < _nStates; ++l ) {
+                g[l * nTotal + i] += uKinetic[l] * _phiTildeWf( k, i );
+            }
+        }
+    }
+    SubstractVectorMatrixOnVector( g, u, nTotal );
+}
+
 void RegularizedEuler1D::Hessian( Matrix& H, const Matrix& lambda, unsigned nTotal, unsigned nQTotal ) {
     H.reset();
     Matrix dUdLambda( _nStates, _nStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
@@ -75,10 +90,11 @@ void RegularizedEuler1D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned
     Vector g( _nStates * nTotal );
 
     // check if initial guess is good enough
-    Gradient( g, lambda, uF, nTotal, nQTotal );
+    GradientNoRegularization( g, lambda, uF, nTotal, nQTotal );
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
+    Gradient( g, lambda, uF, nTotal, nQTotal );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
     // std::cout << "before first Hessian inversion..." << std::endl;
