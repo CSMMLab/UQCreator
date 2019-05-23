@@ -9,6 +9,7 @@
 #include "regularizedboundedbarrier.h"
 #include "regularizedeuler.h"
 #include "regularizedeuler1d.h"
+#include "regularizedexpeuler1d.h"
 #include "regularizedlassoeuler.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
@@ -155,6 +156,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_REGULARIZED_BOUNDED_BARRIER ) {
         return new RegularizedBoundedBarrier( settings );
+    }
+    else if( closureType == ClosureType::C_REGULARIZED_EXP_EULER_1D ) {
+        return new RegularizedExpEuler1D( settings );
     }
     else {
         log->error( "[closure]: Invalid closure type" );

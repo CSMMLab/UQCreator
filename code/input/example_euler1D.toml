@@ -18,11 +18,11 @@ CFL = 0.5
 tEnd = 0.14
 
 [moment_system]
-# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
-closure = "StochasticGalerkin"
-moments = 30
-quadPoints = 30
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RegularizedExpEuler
+closure = "RegularizedExpEuler"
+moments = 5
+quadPoints = 20
 maxIterations = 2000
 epsilon = 1e-5
-filterStrength = 0.00001
+filterStrength = 0.00005
 regularizationStrength = 1e-6#1e-5

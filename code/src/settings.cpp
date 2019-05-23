@@ -193,6 +193,14 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
                     _closureType = ClosureType::C_REGULARIZED_EULER;
                 }
             }
+            else if( closureTypeString->compare( "RegularizedExpEuler" ) == 0 ) {
+                if( _meshDimension == 1 ) {
+                    _closureType = ClosureType::C_REGULARIZED_EXP_EULER_1D;
+                }
+                if( _meshDimension == 2 ) {
+                    _closureType = ClosureType::C_REGULARIZED_EXP_EULER_1D;    // TODO 2D
+                }
+            }
             else if( closureTypeString->compare( "RegularizedLassoEuler" ) == 0 ) {
                 _closureType = ClosureType::C_REGULARIZED_LASSO_EULER;
             }
