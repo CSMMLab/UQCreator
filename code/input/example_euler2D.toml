@@ -2,7 +2,7 @@
 problem = "Euler2D"
 outputDir = "../results"
 restartFile = "../../result_sync/plots/l1_error_box_new/logs/2019-04-16_20:23:24"
-referenceSolution = "../../result_sync/SC/euler2D_nacaCoarse_sc_n100_s05_aoa_r1e-06/euler2D_nacaCoarse_sc_n100_s05_aoa_r1e-06.vtk"
+referenceSolution = "../../result_sync/SC/unknown/euler2D_nacaCoarse_sc_n100_s05_aoa_r1e-06/euler2D_nacaCoarse_sc_n100_s05_aoa_r1e-06.vtk"
 
 [mesh]
 dimension = 2
