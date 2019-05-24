@@ -90,11 +90,12 @@ void RegularizedEuler1D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned
     Vector g( _nStates * nTotal );
 
     // check if initial guess is good enough
-    GradientNoRegularization( g, lambda, uF, nTotal, nQTotal );
+    Gradient( g, lambda, uF, nTotal, nQTotal );
+    // GradientNoRegularization( g, lambda, uF, nTotal, nQTotal );
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
-    Gradient( g, lambda, uF, nTotal, nQTotal );
+    // Gradient( g, lambda, uF, nTotal, nQTotal );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
     // std::cout << "before first Hessian inversion..." << std::endl;

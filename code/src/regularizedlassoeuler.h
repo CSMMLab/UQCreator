@@ -1,9 +1,9 @@
 #ifndef REGULARIZEDLASSOEULER_H
 #define REGULARIZEDLASSOEULER_H
 
-#include "eulerclosure2d.h"
+#include "eulerclosure.h"
 
-class RegularizedLassoEuler : public EulerClosure2D
+class RegularizedLassoEuler : public EulerClosure
 {
   private:
     double _gamma;
@@ -24,4 +24,4 @@ class RegularizedLassoEuler : public EulerClosure2D
     virtual ~RegularizedLassoEuler();
 };
 
-#endif // REGULARIZEDLASSOEULER_H
+#endif    // REGULARIZEDLASSOEULER_H

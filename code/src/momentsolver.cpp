@@ -109,6 +109,10 @@ void MomentSolver::Solve() {
     // initial dual solve
 #pragma omp parallel for schedule( dynamic, 10 )
     for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
+        // j = 542;
+        // std::cout << "-----------------------------------------------------" << std::endl;
+        // std::cout << "Solving closure in cell " << j << " with u = " << u[cellIndexPE[j]] << "; init lambda = " << _lambda[cellIndexPE[j]]
+        //<< std::endl;
         _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
     }
 
@@ -246,7 +250,8 @@ void MomentSolver::Solve() {
         for( unsigned k = 0; k < _nQTotal; ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, nTotal[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
-                meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
+                // meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
+                meanAndVar( i, j ) = u[j]( i, 0 );
             }
         }
 
@@ -255,30 +260,9 @@ void MomentSolver::Solve() {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, nTotal[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
-            }
-        }
-        if( _settings->HasExactSolution() ) {
-            Vector xiEta( _settings->GetNDimXi() );
-            std::vector<Polynomial*> quad = _closure->GetQuadrature();
-            unsigned n;
-
-            for( unsigned k = 0; k < _nQTotal; ++k ) {
-                for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                    if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                    if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                    unsigned index =
-                        unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
-                    xiEta[l] = quad[n]->GetNodes()[index];
-                }
-                tmp = _problem->ExactSolution( t, _mesh->GetCenterPos( j ), xiEta );
-                // expected value exact
-                for( unsigned i = 0; i < _nStates; ++i ) {
-                    meanAndVar( 2 * _nStates + i, j ) += tmp[i] * phiTildeWf( k, 0 );
-                }
-                // variance exact
-                for( unsigned i = 0; i < _nStates; ++i ) {
-                    meanAndVar( 3 * _nStates + i, j ) += pow( tmp[i] - meanAndVar( 2 * _nStates + i, j ), 2 ) * phiTildeWf( k, 0 );
-                }
+                // for( unsigned l = 1; l < _nTotal; ++l ) {
+                //    meanAndVar( i + _nStates, j ) += std::pow( u[j]( i, l ), 2 );
+                //}
             }
         }
     }
@@ -320,7 +304,7 @@ void MomentSolver::Solve() {
             refinementIndicatorPlot( 0, j ) = std::fabs( u[j]( 0, _nTotal - 1 ) ) + std::fabs( u[j]( 0, _nTotal - 2 ) );    // modify for multiD
             refinementIndicatorPlot( 1, j ) = double( refinementLevel[j] );
         }
-        _mesh->Export( refinementIndicatorPlot, "_refinementIndicator" );
+        if( _settings->GetNRefinementLevels() > 1 ) _mesh->Export( refinementIndicatorPlot, "_refinementIndicator" );
     }
 
     this->Export( uNew, _lambda );
@@ -337,7 +321,6 @@ void MomentSolver::Solve() {
         unsigned nQOriginal = _settings->GetNQuadPoints();
         _settings->SetNQuadPoints( nQFine );
         Closure* closurePlot = Closure::Create( _settings );
-        std::cout << "lambda = " << _lambda[evalCell] << std::endl;
         Matrix testLambda( _nStates, _nTotal, 0.0 );
         testLambda( plotState, 1 ) = 1.0;
         _mesh->PlotInXi( closurePlot->U( closurePlot->EvaluateLambda( _lambda[evalCell] ) ), plotState );
