@@ -43,7 +43,9 @@ void MomentSolver::Solve() {
     Closure* prevClosure   = DeterminePreviousClosure( prevSettings );
     if( _settings->HasRestartFile() ) _tStart = prevSettings->GetTEnd();
     MatVec u = DetermineMoments( prevSettings->GetNTotal() );
+    std::cout << "Before Set duals" << std::endl;
     SetDuals( prevSettings, prevClosure, u );
+    std::cout << "After Set duals" << std::endl;
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
 
     std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
@@ -110,10 +112,12 @@ void MomentSolver::Solve() {
 #pragma omp parallel for schedule( dynamic, 10 )
     for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
         // j = 542;
-        // std::cout << "-----------------------------------------------------" << std::endl;
-        // std::cout << "Solving closure in cell " << j << " with u = " << u[cellIndexPE[j]] << "; init lambda = " << _lambda[cellIndexPE[j]]
-        //<< std::endl;
-        _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
+
+        std::cout << "-----------------------------------------------------" << std::endl;
+        std::cout << "Solving closure in cell " << j << " with u = " << u[cellIndexPE[j]] << "; init lambda = " << _lambda[cellIndexPE[j]]
+                  << std::endl;
+
+        _closure->SolveClosureSafe( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
     }
 
     // compute partial moment vectors on each PE (for inexact dual variables)
@@ -129,7 +133,8 @@ void MomentSolver::Solve() {
         double residual = 0;
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-            if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
+            // std::cout << "Solve dual cell" << j << ": u = " << u[cellIndexPE[j]] << ", lambda = " << _lambda[cellIndexPE[j]] << std::endl;
+            if( _mesh->GetBoundaryType( cellIndexPE[j] ) == BoundaryType::DIRICHLET ) continue;
             _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
         }
 
@@ -348,7 +353,9 @@ void MomentSolver::Solve() {
 MatVec MomentSolver::DetermineMoments( unsigned nTotal ) const {
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     if( _settings->HasRestartFile() ) {
+        std::cout << "import prev moments..." << std::endl;
         u = this->ImportPrevMoments( nTotal );
+        std::cout << "import prev moments done" << std::endl;
 
         // if cells are Dirichlet cells and we increase nTotal on restart, we should use moments from initial condition:
         // if we use old moments we have inexact BCs for new truncation order
@@ -369,6 +376,7 @@ Settings* MomentSolver::DeterminePreviousSettings() const {
     Settings* prevSettings;
     if( _settings->HasRestartFile() ) {
         prevSettings = this->ImportPrevSettings();
+        std::cout << "After inner import" << std::endl;
         prevSettings->SetNStates( _settings->GetNStates() );
         prevSettings->SetGamma( _settings->GetGamma() );
         prevSettings->SetClosureType( _settings->GetClosureType() );
@@ -389,16 +397,17 @@ Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const 
     }
     return prevClosure;
 }
-
 void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u ) {
     unsigned maxIterations = _closure->GetMaxIterations();
 
     if( _settings->LoadLambda() ) {
+        std::cout << "Before Load Lambda" << std::endl;
         _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
+        std::cout << "after Load Lambda" << std::endl;
     }
     else {
         // compute dual states for given moment vector
-        _lambda = MatVec( _nCells, Matrix( _nStates, prevSettings->GetNTotal() ) );
+        _lambda = MatVec( _nCells, Matrix( _nStates, prevSettings->GetNTotal(), 0.0 ) );
 
         // compute first initial guess
         Vector ds( _nStates );
@@ -422,9 +431,9 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             prevClosure->SetMaxIterations( maxIterations );
         }
     }
-
     // for restart with increased number of moments reconstruct solution at finer quad points and compute moments for new truncation order
     if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+        std::cout << "NOld != N" << std::endl;
         MatVec uQFullProc = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
         if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
         prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
@@ -439,8 +448,8 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
             Matrix lambdaOld = _lambda[j];
             _lambda[j].resize( _nStates, _nTotal );
             for( unsigned s = 0; s < _nStates; ++s ) {
-                for( unsigned i = 0; i < prevSettings->GetNTotal(); ++i ) {
-                    _lambda[j]( s, i ) = lambdaOld( s, i );
+                for( unsigned i = prevSettings->GetNTotal(); i < _settings->GetNTotal(); ++i ) {
+                    _lambda[j]( s, i ) = 0.0;
                 }
             }
             _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
@@ -448,11 +457,10 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         _closure->SetMaxIterations( maxIterations );
         // delete reload closures and settings
         delete intermediateClosure;
-        delete prevClosure;
         delete prevSettings;
     }
+    if( prevSettings->GetNMoments() != _settings->GetNMoments() ) delete prevClosure;
 }
-
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {
     // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
     multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd(), nTotal );
@@ -529,14 +537,14 @@ void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {
 
 Settings* MomentSolver::ImportPrevSettings() const {
     auto file = std::ifstream( _settings->GetRestartFile() );
+    std::cout << "ifstrem done" << std::endl;
     std::string line;
     std::stringstream prevSettingsStream;
     bool configSection = false;
     while( std::getline( file, line ) ) {
         if( line.find( "Config file" ) != std::string::npos ) {
             configSection = true;
-            std::getline( file, line );
-            std::getline( file, line );
+            for( unsigned i = 0; i < 4; ++i ) std::getline( file, line );
         }
         else if( configSection && line.find( "==================================" ) != std::string::npos ) {
             break;
@@ -546,9 +554,11 @@ Settings* MomentSolver::ImportPrevSettings() const {
             prevSettingsStream << line << std::endl;
         }
     }
+    std::cout << "stream done" << std::endl;
     std::istringstream inputStream( prevSettingsStream.str() );
+    std::cout << "inputstream created" << std::endl;
     Settings* prevSettings = new Settings( inputStream );
-
+    std::cout << "prevSettings created" << std::endl;
     return prevSettings;
 }
 
