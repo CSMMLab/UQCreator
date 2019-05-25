@@ -113,9 +113,9 @@ void MomentSolver::Solve() {
     for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
         // j = 542;
 
-        std::cout << "-----------------------------------------------------" << std::endl;
-        std::cout << "Solving closure in cell " << j << " with u = " << u[cellIndexPE[j]] << "; init lambda = " << _lambda[cellIndexPE[j]]
-                  << std::endl;
+        // std::cout << "-----------------------------------------------------" << std::endl;
+        // std::cout << "Solving closure in cell " << j << " with u = " << u[cellIndexPE[j]] << "; init lambda = " << _lambda[cellIndexPE[j]]
+        //          << std::endl;
 
         _closure->SolveClosureSafe( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
     }
