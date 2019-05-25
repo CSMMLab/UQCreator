@@ -78,7 +78,7 @@ void MomentSolver::Solve() {
         double residual = 0;
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-            if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            if( _mesh->GetBoundaryType( cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
         }
 
