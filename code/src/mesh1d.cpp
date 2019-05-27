@@ -199,14 +199,21 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
 
     std::ofstream out( _settings->GetOutputFile() + "ExpectedValue" + append );
     for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
-        out << GetCenterPos( j )[0] << " " << results( 0, j );
-        if( _settings->HasExactSolution() ) out << " " << results( 2 * _settings->GetNStates(), j );
+        out << GetCenterPos( j )[0];
+        for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+            out << " " << results( s, j );
+            if( _settings->HasExactSolution() ) out << " " << results( 2 * _settings->GetNStates(), j );
+        }
         out << std::endl;
     }
     out.close();
     std::ofstream outV( _settings->GetOutputFile() + "Variance" + append );
     for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
-        outV << GetCenterPos( j )[0] << " " << results( 0 + _settings->GetNStates(), j ) << std::endl;
+        outV << GetCenterPos( j )[0];
+        for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+            outV << " " << results( s + _settings->GetNStates(), j );
+        }
+        outV << std::endl;
     }
     outV.close();
 }
