@@ -7,7 +7,7 @@ dimension = 1
 numberOfCells = 1000
 a = 0
 b = 1
-outputFile = "N6Nq20sod_IPMLambda5e-6Eta1e-5FullVarianceFull"
+outputFile = "N6Nq20sod_IPMLambda1e-4Eta0Full"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -19,10 +19,10 @@ tEnd = 0.14
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RegularizedExpEuler, RegularizedLassoEuler
-closure = "RegularizedEuler"
+closure = "RegularizedExpEuler"
 moments = 6
 quadPoints = 20
 maxIterations = 2000
 epsilon = 1e-5
-filterStrength = 5e-6
-regularizationStrength = 1e-5
+filterStrength = 1e-4
+regularizationStrength = 0

@@ -60,7 +60,9 @@ void MomentSolver::Solve() {
                 // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                 // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
                 unsigned index = unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
-                filterFunction[i] *= 1.0 / ( 1.0 + strength * pow( index, 2 ) * pow( index + 1, 2 ) );
+                if( _settings->GetClosureType() == C_REGULARIZED_EULER_1D )
+                    filterFunction[i] *= 1.0 / ( 1.0 + strength * pow( index, 2 ) * pow( index + 1, 2 ) );
+                if( _settings->GetClosureType() == C_REGULARIZED_EXP_EULER_1D ) filterFunction[i] *= std::exp( -strength * index * ( index + 1 ) );
             }
         }
     }
@@ -168,7 +170,7 @@ void MomentSolver::Solve() {
         // store partial moment vectors on u (for exact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
             if( _settings->GetClosureType() == C_REGULARIZED_EULER || _settings->GetClosureType() == C_REGULARIZED_BOUNDED_BARRIER ||
-                _settings->GetClosureType() == C_REGULARIZED_LASSO_EULER ) {
+                _settings->GetClosureType() == C_REGULARIZED_LASSO_EULER || _settings->GetClosureType() == C_REGULARIZED_EXP_EULER_1D ) {
                 if( _settings->GetClosureType() == C_REGULARIZED_LASSO_EULER ) {
                     double scL1, filterStrength;
                     unsigned nMax = _settings->GetNTotal() - 1;
@@ -314,7 +316,7 @@ void MomentSolver::Solve() {
 
     this->Export( uNew, _lambda );
 
-    unsigned evalCell = 2404;
+    unsigned evalCell = 750;
     if( _settings->GetNumCells() > evalCell ) {
         std::ofstream outXi( "../results/xiGrid" );
 

@@ -7,7 +7,7 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "pipe.su2"
 SU2BC = [["inlet","dirichlet"],["outlet","dirichlet"], ["walls", "noslip"]]
-outputFile = "pipeCriticalSettingSigma0-2IPMRegularizedLambda2e-6Gamma1e-5N6"
+outputFile = "pipeCriticalSettingSigma0-2IPMRegularizedLambda2e-6Gamma1e-5N6T0-003"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -15,7 +15,7 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.2]]
 CFL = 0.9
-tEnd = 0.005
+tEnd = 0.003 #0.005
 residual = 0.0
 
 [moment_system]
