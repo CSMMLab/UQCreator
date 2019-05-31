@@ -93,8 +93,12 @@ template <class T> void Matrix<T>::operator=( const Matrix<T>& other ) {
         _data    = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
     }
 
-    for( unsigned j = 0; j < _columns; ++j ) {
-        for( unsigned i = 0; i < _rows; ++i ) {
+    // ensure that only allocated data is written when sizes differ (due to adaptivity)
+    unsigned columns = std::min( _columns, other._columns );
+    unsigned rows    = std::min( _rows, other._rows );
+
+    for( unsigned j = 0; j < columns; ++j ) {
+        for( unsigned i = 0; i < rows; ++i ) {
             ( *this )( i, j ) = other( i, j );
         }
     }
