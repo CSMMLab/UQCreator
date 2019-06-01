@@ -211,9 +211,11 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
         auto momentSettings = moment_system->get_array_of<cpptoml::array>( "moments" );
 
         if( momentSettings ) {
-            auto momentArray = ( *momentSettings )[1]->get_array_of<int64_t>();
-            auto degreeType  = ( *momentSettings )[0]->get_array_of<std::string>();
-            _nMoments        = unsigned( ( *momentArray )[momentArray->size() - 1] );    // unsigned( ( *nMoments )[nMoments->size() - 1] );
+            auto momentArray       = ( *momentSettings )[1]->get_array_of<int64_t>();
+            auto degreeType        = ( *momentSettings )[0]->get_array_of<std::string>();
+            _nRefinementLevels     = unsigned( momentArray->size() );
+            _nTotalRefinementLevel = VectorU( _nRefinementLevels );
+            _nMoments              = unsigned( ( *momentArray )[momentArray->size() - 1] );    // unsigned( ( *nMoments )[nMoments->size() - 1] );
             // compute nTotal
             if( degreeType->at( 0 ).compare( "maxDegree" ) == 0 ) {
                 _useMaxDegree = true;
@@ -234,12 +236,22 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                     totalDegree += unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
                 }
                 // if total degree is sufficiently small or max degree is used, indices are stored
-                if( totalDegree < _nMoments || _useMaxDegree ) ++_nTotal;
+                if( totalDegree < _nMoments || _useMaxDegree ) {
+                    std::cout << "total degree is " << totalDegree << std::endl;
+                    ++_nTotal;
+                    // count up truncation index if total degree of current basis fct lies below total degree of level l
+                    for( int l = int( _nRefinementLevels ) - 1; l >= 0; --l ) {
+                        if( unsigned( ( *momentArray )[unsigned( l )] ) >= totalDegree )
+                            _nTotalRefinementLevel[l] = _nTotalRefinementLevel[l] + 1;
+                        else
+                            break;
+                    }
+                }
             }
-            // set vector containing nMoments for each refinement level
-            _nRefinementLevels     = unsigned( momentArray->size() );
-            _nTotalRefinementLevel = VectorU( _nRefinementLevels );
-            for( unsigned l = 0; l < _nRefinementLevels; ++l ) _nTotalRefinementLevel[l] = unsigned( ( *momentArray )[l] );
+            for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
+                std::cout << "number Moments at level " << l << ": " << _nTotalRefinementLevel[l] << std::endl;
+            }
+            std::cout << "nTotal is " << _nTotal << std::endl;
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
