@@ -194,16 +194,18 @@ void MomentSolver::Solve() {
     }
     if( _settings->HasExactSolution() ) {
         Vector xiEta( _settings->GetNDimXi() );
-        std::vector<Polynomial*> quad = _closure->GetQuadrature();
+        std::vector<Polynomial*> quad( 2 );
+        unsigned nQuadFine = 100;
+        quad[0]            = Polynomial::Create( _settings, nQuadFine, DistributionType::D_LEGENDRE );
+        quad[1]            = Polynomial::Create( _settings, nQuadFine, DistributionType::D_HERMITE );
         unsigned n;
 
-        for( unsigned k = 0; k < _nQTotal; ++k ) {
+        for( unsigned k = 0; k < nQuadFine; ++k ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
                 if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                 if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                unsigned index =
-                    unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
-                xiEta[l] = quad[n]->GetNodes()[index];
+                unsigned index = unsigned( ( k - k % unsigned( std::pow( nQuadFine, l ) ) ) / unsigned( std::pow( nQuadFine, l ) ) ) % nQuadFine;
+                xiEta[l]       = quad[n]->GetNodes()[index];
             }
             // store xGrid on vector
             Matrix xGrid( _nCells, _settings->GetMeshDimension() );
@@ -215,13 +217,19 @@ void MomentSolver::Solve() {
             }
             Matrix exactSolOnMesh = _problem->ExactSolution( t, xGrid, xiEta );
             for( unsigned j = 0; j < _nCells; ++j ) {
-                // expected value exact
+
                 for( unsigned i = 0; i < _nStates; ++i ) {
-                    meanAndVar( 2 * _nStates + i, j ) += exactSolOnMesh( j, i ) * phiTildeWf( k, 0 );
-                }
-                // variance exact
-                for( unsigned i = 0; i < _nStates; ++i ) {
-                    meanAndVar( 3 * _nStates + i, j ) += pow( exactSolOnMesh( j, i ) - meanAndVar( 2 * _nStates + i, j ), 2 ) * phiTildeWf( k, 0 );
+                    double fXi = 1.0;
+                    for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                        if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                        if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                        fXi *= quad[n]->fXi( quad[n]->GetNodes()[k] );
+                    }
+                    // expected value exact
+                    meanAndVar( 2 * _nStates + i, j ) += exactSolOnMesh( j, i ) * quad[n]->GetWeights()[k] * fXi;
+                    // variance exact
+                    meanAndVar( 3 * _nStates + i, j ) +=
+                        pow( exactSolOnMesh( j, i ) - meanAndVar( 2 * _nStates + i, j ), 2 ) * quad[n]->GetWeights()[k] * fXi;
                 }
             }
         }
