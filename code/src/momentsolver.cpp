@@ -82,21 +82,18 @@ void MomentSolver::Solve() {
             _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
         }
 
-        // std::cout << "Before MPI_Bcast" << std::endl;
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             uOld[j] = u[j];    // save old Moments for residual computation
             MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
 
-        // std::cout << "Before uQ Computation" << std::endl;
         // for nQ refinement: here we need new refinement level for nQTotal and old level for nTotal
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], nTotal[refinementLevel[j]] ) );
         }
 
-        // std::cout << "Before refinement Computation" << std::endl;
         // determine refinement level of cells on current PE
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
             double indicator = std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 1 ) ) +
@@ -194,27 +191,37 @@ void MomentSolver::Solve() {
                 meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
             }
         }
-        if( _settings->HasExactSolution() ) {
-            Vector xiEta( _settings->GetNDimXi() );
-            std::vector<Polynomial*> quad = _closure->GetQuadrature();
-            unsigned n;
+    }
+    if( _settings->HasExactSolution() ) {
+        Vector xiEta( _settings->GetNDimXi() );
+        std::vector<Polynomial*> quad = _closure->GetQuadrature();
+        unsigned n;
 
-            for( unsigned k = 0; k < _nQTotal; ++k ) {
-                for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                    if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                    if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                    unsigned index =
-                        unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
-                    xiEta[l] = quad[n]->GetNodes()[index];
+        for( unsigned k = 0; k < _nQTotal; ++k ) {
+            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                unsigned index =
+                    unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
+                xiEta[l] = quad[n]->GetNodes()[index];
+            }
+            // store xGrid on vector
+            Matrix xGrid( _nCells, _settings->GetMeshDimension() );
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                Vector midPj = _mesh->GetCenterPos( j );
+                for( unsigned s = 0; s < _settings->GetMeshDimension(); ++s ) {
+                    xGrid( j, s ) = midPj[s];
                 }
-                tmp = _problem->ExactSolution( t, _mesh->GetCenterPos( j ), xiEta );
+            }
+            Matrix exactSolOnMesh = _problem->ExactSolution( t, xGrid, xiEta );
+            for( unsigned j = 0; j < _nCells; ++j ) {
                 // expected value exact
                 for( unsigned i = 0; i < _nStates; ++i ) {
-                    meanAndVar( 2 * _nStates + i, j ) += tmp[i] * phiTildeWf( k, 0 );
+                    meanAndVar( 2 * _nStates + i, j ) += exactSolOnMesh( j, i ) * phiTildeWf( k, 0 );
                 }
                 // variance exact
                 for( unsigned i = 0; i < _nStates; ++i ) {
-                    meanAndVar( 3 * _nStates + i, j ) += pow( tmp[i] - meanAndVar( 2 * _nStates + i, j ), 2 ) * phiTildeWf( k, 0 );
+                    meanAndVar( 3 * _nStates + i, j ) += pow( exactSolOnMesh( j, i ) - meanAndVar( 2 * _nStates + i, j ), 2 ) * phiTildeWf( k, 0 );
                 }
             }
         }

@@ -200,13 +200,19 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
     std::ofstream out( "../results/expectedvalue" + append );
     for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
         out << GetCenterPos( j )[0] << " " << results( 0, j );
-        if( _settings->HasExactSolution() ) out << " " << results( 2 * _settings->GetNStates(), j );
+        if( _settings->HasExactSolution() ) {
+            out << " " << results( 2 * _settings->GetNStates(), j );
+        }
         out << std::endl;
     }
     out.close();
     std::ofstream outV( "../results/variance" + append );
     for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
-        outV << GetCenterPos( j )[0] << " " << results( 0 + _settings->GetNStates(), j ) << std::endl;
+        outV << GetCenterPos( j )[0] << " " << results( 0 + _settings->GetNStates(), j );
+        if( _settings->HasExactSolution() ) {
+            out << " " << results( 3 * _settings->GetNStates(), j );
+        }
+        out << std::endl;
     }
     outV.close();
 }

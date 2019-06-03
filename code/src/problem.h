@@ -30,7 +30,7 @@ class Problem
     virtual double ComputeDt( const Matrix& u, double dx ) const;
     virtual Vector IC( const Vector& x, const Vector& xi )     = 0;
     virtual Vector LoadIC( const Vector& x, const Vector& xi ) = 0;
-    virtual Vector ExactSolution( double t, const Vector& x, const Vector& xi ) const;
+    virtual Matrix ExactSolution( double t, const Matrix& x, const Vector& xi ) const;
 };
 
 #endif    // PROBLEM_H

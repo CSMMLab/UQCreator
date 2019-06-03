@@ -27,7 +27,7 @@ class Burgers : public Problem
     virtual double ComputeDt( const Matrix& u, double dx ) const;
     virtual Vector IC( const Vector& x, const Vector& xi );
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
-    Vector ExactSolution( double t, const Vector& x, const Vector& xi ) const;
+    virtual Matrix ExactSolution( double t, const Matrix& x, const Vector& xi ) const;
 };
 
 #endif    // BURGERS_H
