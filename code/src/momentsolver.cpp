@@ -193,49 +193,86 @@ void MomentSolver::Solve() {
         }
     }
     if( _settings->HasExactSolution() ) {
+        // store xGrid on vector
+        Matrix xGrid( _nCells, _settings->GetMeshDimension() );
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            Vector midPj = _mesh->GetCenterPos( j );
+            for( unsigned s = 0; s < _settings->GetMeshDimension(); ++s ) {
+                xGrid( j, s ) = midPj[s];
+            }
+        }
         Vector xiEta( _settings->GetNDimXi() );
         std::vector<Polynomial*> quad( 2 );
-        unsigned nQuadFine = 100;
+        unsigned nQuadFine = 5 * _settings->GetNQuadPoints();    // define fine quadrature for exact solution
         quad[0]            = Polynomial::Create( _settings, nQuadFine, DistributionType::D_LEGENDRE );
         quad[1]            = Polynomial::Create( _settings, nQuadFine, DistributionType::D_HERMITE );
         unsigned n;
 
-        for( unsigned k = 0; k < nQuadFine; ++k ) {
+        // compute indices for quad points
+        std::vector<std::vector<unsigned>> indicesQ;
+        unsigned nQTotal = pow( nQuadFine, _settings->GetNDimXi() );
+        indicesQ.resize( nQTotal );
+        for( unsigned k = 0; k < nQTotal; ++k ) {
+            indicesQ[k].resize( _settings->GetNDimXi() );
+            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                indicesQ[k][l] = unsigned( ( k - k % unsigned( std::pow( nQuadFine, l ) ) ) / unsigned( std::pow( nQuadFine, l ) ) ) % nQuadFine;
+            }
+        }
+
+        for( unsigned k = 0; k < nQTotal; ++k ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
                 if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                 if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                unsigned index = unsigned( ( k - k % unsigned( std::pow( nQuadFine, l ) ) ) / unsigned( std::pow( nQuadFine, l ) ) ) % nQuadFine;
-                xiEta[l]       = quad[n]->GetNodes()[index];
-            }
-            // store xGrid on vector
-            Matrix xGrid( _nCells, _settings->GetMeshDimension() );
-            for( unsigned j = 0; j < _nCells; ++j ) {
-                Vector midPj = _mesh->GetCenterPos( j );
-                for( unsigned s = 0; s < _settings->GetMeshDimension(); ++s ) {
-                    xGrid( j, s ) = midPj[s];
-                }
+                xiEta[l] = quad[n]->GetNodes()[indicesQ[k][l]];
             }
             Matrix exactSolOnMesh = _problem->ExactSolution( t, xGrid, xiEta );
             for( unsigned j = 0; j < _nCells; ++j ) {
-
+                // expected value exact
                 for( unsigned i = 0; i < _nStates; ++i ) {
-                    double fXi = 1.0;
+                    double wfXi = 1.0;
                     for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
                         if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                         if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                        fXi *= quad[n]->fXi( quad[n]->GetNodes()[k] );
+                        wfXi *= quad[n]->fXi( quad[n]->GetNodes()[indicesQ[k][l]] ) * quad[n]->GetWeights()[indicesQ[k][l]];
                     }
-                    // expected value exact
-                    meanAndVar( 2 * _nStates + i, j ) += exactSolOnMesh( j, i ) * quad[n]->GetWeights()[k] * fXi;
-                    // variance exact
-                    meanAndVar( 3 * _nStates + i, j ) +=
-                        pow( exactSolOnMesh( j, i ) - meanAndVar( 2 * _nStates + i, j ), 2 ) * quad[n]->GetWeights()[k] * fXi;
+
+                    meanAndVar( 2 * _nStates + i, j ) += exactSolOnMesh( j, i ) * wfXi;
                 }
+            }
+        }
+        // variance exact
+        for( unsigned k = 0; k < nQTotal; ++k ) {
+            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                xiEta[l] = quad[n]->GetNodes()[indicesQ[k][l]];
+            }
+
+            Matrix exactSolOnMesh = _problem->ExactSolution( t, xGrid, xiEta );
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                // expected value exact
+                for( unsigned i = 0; i < _nStates; ++i ) {
+                    double wfXi = 1.0;
+                    for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                        if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                        if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                        wfXi *= quad[n]->fXi( quad[n]->GetNodes()[indicesQ[k][l]] ) * quad[n]->GetWeights()[indicesQ[k][l]];
+                    }
+                    meanAndVar( 3 * _nStates + i, j ) += pow( exactSolOnMesh( j, i ) - meanAndVar( 2 * _nStates + i, j ), 2 ) * wfXi;
+                }
+            }
+        }
+        // write solution on reference field
+        _referenceSolution.resize( _nCells );
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            _referenceSolution[j].resize( 2 * _nStates );
+            for( unsigned s = 2 * _nStates; s < 4 * _nStates; ++s ) {
+                _referenceSolution[j][s - 2 * _nStates] = meanAndVar( s, j );
             }
         }
     }
 
-    if( _settings->HasReferenceFile() ) {
+    if( _settings->HasReferenceFile() || _settings->HasExactSolution() ) {
         Vector a( 2 );
         a[0] = -0.05;
         a[1] = -0.5;
@@ -594,10 +631,32 @@ Matrix MomentSolver::CalculateErrorField( const Matrix& solution, unsigned LNorm
 Vector MomentSolver::CalculateError( const Matrix& solution, unsigned LNorm, const Vector& a, const Vector& b ) const {
     Vector error( 2 * _nStates, 0.0 );
     Vector refNorm( 2 * _nStates, 0.0 );
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        if( _mesh->GetGrid()[j]->GetCenter()[0] > a[0] && _mesh->GetGrid()[j]->GetCenter()[0] < b[0] && _mesh->GetGrid()[j]->GetCenter()[1] > a[1] &&
-            _mesh->GetGrid()[j]->GetCenter()[1] < b[1] ) {
+    if( _settings->GetMeshDimension() == 2 ) {
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            if( _mesh->GetGrid()[j]->GetCenter()[0] > a[0] && _mesh->GetGrid()[j]->GetCenter()[0] < b[0] &&
+                _mesh->GetGrid()[j]->GetCenter()[1] > a[1] && _mesh->GetGrid()[j]->GetCenter()[1] < b[1] ) {
 
+                switch( LNorm ) {
+                    case 1:
+                        for( unsigned s = 0; s < 2 * _nStates; ++s ) {
+                            error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
+                            refNorm[s] += std::fabs( _referenceSolution[j][s] ) * _mesh->GetArea( j );
+                        }
+                        break;
+                    case 2:
+                        for( unsigned s = 0; s < 2 * _nStates; ++s ) {
+                            error[s] += std::pow( ( solution( s, j ) - _referenceSolution[j][s] ), 2 ) * _mesh->GetArea( j );
+                            refNorm[s] += std::pow( _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
+                        }
+
+                        break;
+                    default: exit( EXIT_FAILURE );
+                }
+            }
+        }
+    }
+    else {
+        for( unsigned j = 0; j < _nCells; ++j ) {
             switch( LNorm ) {
                 case 1:
                     for( unsigned s = 0; s < 2 * _nStates; ++s ) {

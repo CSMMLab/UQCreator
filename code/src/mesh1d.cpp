@@ -210,9 +210,9 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
     for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
         outV << GetCenterPos( j )[0] << " " << results( 0 + _settings->GetNStates(), j );
         if( _settings->HasExactSolution() ) {
-            out << " " << results( 3 * _settings->GetNStates(), j );
+            outV << " " << results( 3 * _settings->GetNStates(), j );
         }
-        out << std::endl;
+        outV << std::endl;
     }
     outV.close();
 }
