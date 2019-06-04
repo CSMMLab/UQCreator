@@ -15,7 +15,7 @@ If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\
 \bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}  - \frac{\Delta t}{\Delta x}\left( \bm{G}(\bm{\hat u}_{j}^{n},\bm{\hat u}_{j+1}^{n})- \bm{G}(\bm{\hat u}_{j-1}^{n},\bm{\hat u}_{j}^{n})\right)
 \end{align}
 for $j = 1,\cdots,N_x$ and $n = 0,\cdots,N_t$, where $N_x$ is the number of spatial cells and $N_t$ is the number of time steps.
-The numerical flux is assumed to be consistent, i.e., that $\bm{G}(\hat{\bm{u}},\hat{\bm{u}})=\bm{F}(\hat{\bm{u}})$.
+The numerical flux is assumed to be consistent, i.e. $\bm{G}(\hat{\bm{u}},\hat{\bm{u}})=\bm{F}(\hat{\bm{u}})$.
 
 When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the original problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take
 \begin{align*}
@@ -92,4 +92,8 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 \label{alg:IPM}
 \end{algorithm}
 
+TODO: Extension to 2D $\rightarrow$ triangular meshes
+
 \subsection{Code framework}
+
+TODO: Code structure, why is it easy to include different equations?
