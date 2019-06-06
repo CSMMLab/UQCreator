@@ -49,6 +49,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( problemTypeString->compare( "ShallowWater2D" ) == 0 ) {
                 _problemType = ProblemType::P_SHALLOWWATER_2D;
             }
+            else if( problemTypeString->compare( "PNEquations2D" ) == 0 ) {
+                _problemType = ProblemType::P_PNEQUATIONS_2D;
+            }
             else {
                 log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers1D, Euler1D, "
                             "Euler2D,ShallowWater1D,ShallowWater2D" );

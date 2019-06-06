@@ -1,7 +1,7 @@
 #include "pnequations.h"
 
 PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 2 ) {
-    _nStates = 4;
+    _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
     _settings->SetNStates( _nStates );
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
@@ -16,17 +16,29 @@ PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 2 ) {
 
 PNEquations::~PNEquations() {}
 
-double PNEquations::AParam( int l, int k ) const { return std::sqrt( ( l - k + 1 ) * ( l + k + 1 ) / ( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) ); }
+double PNEquations::AParam( int l, int k ) const {
+    return std::sqrt( double( ( l - k + 1 ) * ( l + k + 1 ) ) / double( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) );
+}
 
-double PNEquations::BParam( int l, int k ) const { return std::sqrt( ( l - k ) * ( l + k ) / ( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ); }
+double PNEquations::BParam( int l, int k ) const {
+    return std::sqrt( double( ( l - k ) * ( l + k ) ) / double( ( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ) );
+}
 
-double PNEquations::CParam( int l, int k ) const { return std::sqrt( ( l + k + 1 ) * ( l + k + 2 ) / ( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) ); }
+double PNEquations::CParam( int l, int k ) const {
+    return std::sqrt( double( ( l + k + 1 ) * ( l + k + 2 ) ) / double( ( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) ) );
+}
 
-double PNEquations::DParam( int l, int k ) const { return std::sqrt( ( l - k ) * ( l - k - 1 ) / ( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ); }
+double PNEquations::DParam( int l, int k ) const {
+    return std::sqrt( double( ( l - k ) * ( l - k - 1 ) ) / double( ( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ) );
+}
 
-double PNEquations::EParam( int l, int k ) const { return std::sqrt( ( l - k + 1 ) * ( l - k + 2 ) / ( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) ); }
+double PNEquations::EParam( int l, int k ) const {
+    return std::sqrt( double( ( l - k + 1 ) * ( l - k + 2 ) ) / double( ( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) ) );
+}
 
-double PNEquations::FParam( int l, int k ) const { return std::sqrt( ( l + k ) * ( l + k - 1 ) / ( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ); }
+double PNEquations::FParam( int l, int k ) const {
+    return std::sqrt( double( ( l + k ) * ( l + k - 1 ) ) / double( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) );
+}
 
 double PNEquations::CTilde( int l, int k ) const {
     if( k < 0 ) return 0.0;
@@ -54,8 +66,9 @@ double PNEquations::ETilde( int l, int k ) const {
 double PNEquations::FTilde( int l, int k ) const {
     if( k == 1 )
         return std::sqrt( 2 ) * FParam( l, k );
-    else
+    else {
         return FParam( l, k );
+    }
 }
 
 int PNEquations::Sgn( int k ) const {
@@ -65,9 +78,9 @@ int PNEquations::Sgn( int k ) const {
         return -1;
 }
 
-unsigned PNEquations::GlobalIndex( int l, int k ) const {
-    unsigned numIndicesPrevLevel  = unsigned( l * l );    // number of previous indices untill level l-1
-    unsigned prevIndicesThisLevel = unsigned( k + l );    // number of previous indices in current level
+int PNEquations::GlobalIndex( int l, int k ) const {
+    int numIndicesPrevLevel  = l * l;    // number of previous indices untill level l-1
+    int prevIndicesThisLevel = k + l;    // number of previous indices in current level
     return numIndicesPrevLevel + prevIndicesThisLevel;
 }
 
@@ -76,61 +89,76 @@ int PNEquations::kPlus( int k ) const { return k + Sgn( k ); }
 int PNEquations::kMinus( int k ) const { return k - Sgn( k ); }
 
 void PNEquations::SetupSystemMatrices() {
-    unsigned nTotalEntries = GlobalIndex( _N, _N ) + 1;    // total number of entries for sytem matrix
-    _Ax                    = Matrix( nTotalEntries, nTotalEntries );
-    _Ay                    = Matrix( nTotalEntries, nTotalEntries );
+    int j;
+    unsigned i;
+    unsigned nTotalEntries = unsigned( GlobalIndex( _N, _N ) + 1 );    // total number of entries for sytem matrix
+    std::cout << "Setting Up System Matrix with dimension " << nTotalEntries << std::endl;
+    _Ax = Matrix( nTotalEntries, nTotalEntries );
+    _Ay = Matrix( nTotalEntries, nTotalEntries );
+    _Az = Matrix( nTotalEntries, nTotalEntries );
     // loop over columns of A
-    for( int l = 0; l < _N; ++l ) {
+    for( int l = 0; l <= _N; ++l ) {
         for( int k = -l; k <= l; ++k ) {
+            i = unsigned( GlobalIndex( l, k ) );
+            std::cout << "i = " << i << std::endl;
+
             // flux matrix in direction x
             if( k != -1 ) {
-                _Ax( GlobalIndex( l, k ), GlobalIndex( l - 1, kMinus( k ) ) ) = 0.5 * CTilde( l - 1, std::abs( k ) - 1 );
-                _Ax( GlobalIndex( l, k ), GlobalIndex( l + 1, kMinus( k ) ) ) = -0.5 * DTilde( l + 1, std::abs( k ) - 1 );
+                j = GlobalIndex( l - 1, kMinus( k ) );
+                if( j >= 0 && j < int( nTotalEntries ) ) _Ax( i, unsigned( j ) ) = 0.5 * CTilde( l - 1, std::abs( k ) - 1 );
+
+                j = GlobalIndex( l + 1, kMinus( k ) );
+                if( j >= 0 && j < int( nTotalEntries ) ) _Ax( i, unsigned( j ) ) = -0.5 * DTilde( l + 1, std::abs( k ) - 1 );
             }
-            _Ax( GlobalIndex( l, k ), GlobalIndex( l - 1, kPlus( k ) ) ) = -0.5 * ETilde( l - 1, std::abs( k ) + 1 );
-            _Ax( GlobalIndex( l, k ), GlobalIndex( l + 1, kPlus( k ) ) ) = 0.5 * FTilde( l + 1, std::abs( k ) + 1 );
+
+            j = GlobalIndex( l - 1, kPlus( k ) );
+            if( j >= 0 && j < int( nTotalEntries ) ) _Ax( i, unsigned( j ) ) = -0.5 * ETilde( l - 1, std::abs( k ) + 1 );
+
+            j = GlobalIndex( l + 1, kPlus( k ) );
+            // if( i == 1 ) std::cout << "j = " << j << std::endl;
+            if( j >= 0 && j < int( nTotalEntries ) ) _Ax( i, unsigned( j ) ) = 0.5 * FTilde( l + 1, std::abs( k ) + 1 );
+
+            //
             // flux matrix in direction y
             if( k != 1 ) {
-                _Ay( GlobalIndex( l, k ), GlobalIndex( l - 1, -kMinus( k ) ) ) = -0.5 * CTilde( l - 1, std::abs( k ) - 1 );
-                _Ay( GlobalIndex( l, k ), GlobalIndex( l + 1, -kMinus( k ) ) ) = 0.5 * DTilde( l + 1, std::abs( k ) - 1 );
+                j = GlobalIndex( l - 1, -kMinus( k ) );
+                if( j >= 0 && j < int( nTotalEntries ) ) _Ay( i, unsigned( j ) ) = -0.5 * Sgn( k ) * CTilde( l - 1, std::abs( k ) - 1 );
+
+                j = GlobalIndex( l + 1, -kMinus( k ) );
+                if( j >= 0 && j < int( nTotalEntries ) ) _Ay( i, unsigned( j ) ) = 0.5 * Sgn( k ) * DTilde( l + 1, std::abs( k ) - 1 );
             }
-            _Ay( GlobalIndex( l, k ), GlobalIndex( l - 1, -kPlus( k ) ) ) = -0.5 * ETilde( l - 1, std::abs( k ) + 1 );
-            _Ay( GlobalIndex( l, k ), GlobalIndex( l + 1, -kPlus( k ) ) ) = 0.5 * FTilde( l + 1, std::abs( k ) + 1 );
+
+            j = GlobalIndex( l - 1, -kPlus( k ) );
+            if( j >= 0 && j < int( nTotalEntries ) ) _Ay( i, unsigned( j ) ) = -0.5 * Sgn( k ) * ETilde( l - 1, std::abs( k ) + 1 );
+
+            j = GlobalIndex( l + 1, -kPlus( k ) );
+            if( j >= 0 && j < int( nTotalEntries ) ) _Ay( i, unsigned( j ) ) = 0.5 * Sgn( k ) * FTilde( l + 1, std::abs( k ) + 1 );
+
+            //
+            // flux matrix in direction z
+            j = GlobalIndex( l - 1, k );
+            if( j >= 0 && j < int( nTotalEntries ) ) _Az( i, unsigned( j ) ) = AParam( l - 1, k );
+
+            j = GlobalIndex( l + 1, k );
+            if( i == 0 ) {
+                std::cout << "j = " << j << std::endl;
+                std::cout << "B_" << l + 1 << "^" << k << " = " << BParam( l + 1, k ) << std::endl;
+            }
+            if( j >= 0 && j < int( nTotalEntries ) ) _Az( i, unsigned( j ) ) = BParam( l + 1, k );
         }
     }
+    std::cout << "System Matrix Set UP!" << std::endl;
+    std::cout << "A_x =" << _Ax << std::endl;
+    std::cout << "A_y =" << _Ay << std::endl;
+    std::cout << "A_z =" << _Az << std::endl;
 }
 
 Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
 
     Vector uMean = 0.5 * ( u + v );
+    double dt    = _settings->GetDT();
 
-    return F( uMean ) * n - ( v - u ) * norm( n );
-    double rhoInv = 1.0 / u[0];
-    double uU     = u[1] * rhoInv;
-    double vU     = u[2] * rhoInv;
-    double p      = ( _gamma - 1.0 ) * ( u[3] - 0.5 * u[0] * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
-    double aU     = sqrt( _gamma * p * rhoInv );
-
-    rhoInv    = 1.0 / v[0];
-    double uV = v[1] * rhoInv;
-    double vV = v[2] * rhoInv;
-    p         = ( _gamma - 1.0 ) * ( v[3] - 0.5 * v[0] * ( pow( uV, 2 ) + pow( vV, 2 ) ) );
-    double aV = sqrt( _gamma * p * rhoInv );
-
-    double uUProjected = nUnit[0] * uU + nUnit[1] * vU;
-    double uVProjected = nUnit[0] * uV + nUnit[1] * vV;
-
-    double lambdaMin = uUProjected - aU;
-    double lambdaMax = uVProjected + aV;
-
-    if( lambdaMin >= 0 )
-        return F( u ) * n;
-    else if( lambdaMax <= 0 )
-        return F( v ) * n;
-    else {
-        return ( 1.0 / ( lambdaMax - lambdaMin ) ) *
-               ( lambdaMax * F( u ) * n - lambdaMin * F( v ) * n + lambdaMax * lambdaMin * ( v - u ) * norm( n ) );
-    }
+    return F( uMean ) * n - 0.5 * ( v - u ) * norm( n );    // - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
 }
 
 Matrix PNEquations::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
@@ -148,6 +176,7 @@ Matrix PNEquations::F( const Vector& u ) {
 
     column( flux, 0 ) = _Ax * u;
     column( flux, 1 ) = _Ay * u;
+    // column( flux, 1 ) = _Az * u;
 
     return flux;
 }
@@ -162,85 +191,22 @@ double PNEquations::ComputeDt( const Matrix& u, double dx ) const {
 
     double cfl = _settings->GetCFL();
 
-    double maxVelocity = maxVelocity;
+    double maxVelocity = 0.1;
 
-    return ( cfl / dx ) * 1 / maxVelocity;
+    return ( cfl / dx ) / maxVelocity;
 }
 
 Vector PNEquations::IC( const Vector& x, const Vector& xi ) {
-    Vector y( _nStates );
-    _sigma            = _settings->GetSigma();
-    bool pipeTestCase = true;
-    if( pipeTestCase ) {    // pipe testcase
-        double gamma = 1.4;
-        double R     = 287.87;
-        double T     = 273.15;
-        double p     = 101325.0;
-        double Ma    = 0.0;
-        double a     = sqrt( gamma * R * T );
+    Vector y( _nStates, 0.0 );
+    double x0    = 0.0;
+    double y0    = 0.0;
+    double s2    = std::pow( 0.06, 2 );    // std::pow( 0.03, 2 );
+    double floor = 1e-4;
+    _sigma       = _settings->GetSigma();
 
-        double uMax  = Ma * a;
-        double angle = ( 1.25 + _sigma[0] * 0.0 ) * ( 2.0 * M_PI ) / 360.0;
-        double uF    = uMax * cos( angle );
-        double vF    = uMax * sin( angle );
+    y[0] = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2 ) );
 
-        double rhoFarfield = p / ( R * T );
-
-        y[0] = rhoFarfield;
-        if( xi.size() > 1 ) {
-            y[0] += _sigma[1] * xi[1];
-        }
-        y[1]                  = rhoFarfield * uF;
-        y[2]                  = rhoFarfield * vF;
-        double kineticEnergyL = 0.5 * y[0] * ( pow( uF, 2 ) + pow( vF, 2 ) );
-        double innerEnergyL   = ( p / ( y[0] * ( gamma - 1 ) ) ) * y[0];
-        y[3]                  = kineticEnergyL + innerEnergyL;
-
-        if( x[1] < 1.1 + _sigma[0] * xi[0] ) {
-            y[0] = 0.5 * rhoFarfield;
-            if( xi.size() > 2 ) y[0] += _sigma[2] * xi[2];
-            y[1]           = rhoFarfield * uF;
-            y[2]           = rhoFarfield * vF;
-            kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
-            innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-            y[3]           = 0.5 * ( kineticEnergyL + innerEnergyL );
-        }
-        /*
-         if( x[1] < 1.1 + sigma && x[1] < 1.1 - sigma ) {
-             y[0] = 0;
-         }
-         if( x[1] < 1.1 + sigma && x[1] > 1.1 - sigma ) {
-             y[0] = 1;
-         }
-         if( x[1] > 1.1 + sigma && x[1] > 1.1 - sigma ) {
-             y[0] = 2;
-         }*/
-        return y;
-    }
-    else {
-        double gamma = 1.4;
-        double R     = 287.87;
-        double T     = 273.15;
-        double p     = 101325.0;
-        double Ma    = 0.8;
-        if( xi.size() == 2 ) {
-            Ma = Ma + xi[1] * _sigma[1];
-        }
-        double a = sqrt( gamma * R * T );
-
-        double uMax  = Ma * a;
-        double angle = ( 1.25 + _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
-        double uF    = uMax * cos( angle );
-        double vF    = uMax * sin( angle );
-
-        double rhoFarfield = p / ( R * T );
-
-        y[0]                  = rhoFarfield;
-        y[1]                  = rhoFarfield * uF;
-        y[2]                  = rhoFarfield * vF;
-        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
-        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-        y[3]                  = kineticEnergyL + innerEnergyL;
-        return y;
-    }
+    return y;
 }
+
+Vector PNEquations::LoadIC( const Vector& x, const Vector& xi ) { return Vector( 1 ); }

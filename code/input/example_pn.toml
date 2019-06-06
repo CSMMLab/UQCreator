@@ -1,0 +1,27 @@
+[general]
+problem = "PNEquations2D"
+outputDir = "../results"
+
+[mesh]
+dimension = 2
+format = "SU2"
+SU2MeshFile = "square.su2"
+SU2BC = [["OuterBoundary","dirichlet"]]
+outputFile = "pnTest"
+
+[problem]
+# available timesteppings: explicitEuler
+timestepping = "explicitEuler"
+# available distributions: Legendre, Hermite
+distribution = [["Legendre"],[0.0]]
+CFL = 0.01
+tEnd = 0.4
+residual = -1.0
+
+[moment_system]
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
+closure = "StochasticGalerkin"
+moments = [["totalDegree"],[1]]
+quadPoints = 1
+maxIterations = 1000
+epsilon = 1e-7

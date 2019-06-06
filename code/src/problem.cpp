@@ -3,6 +3,7 @@
 #include "burgers.h"
 #include "euler.h"
 #include "euler2d.h"
+#include "pnequations.h"
 #include "problem.h"
 #include "shallowwater.h"
 #include "shallowwater2d.h"
@@ -30,6 +31,9 @@ Problem* Problem::Create( Settings* settings ) {
     }
     else if( settings->GetProblemType() == ProblemType::P_SHALLOWWATER_2D ) {
         return new ShallowWater2D( settings );
+    }
+    else if( settings->GetProblemType() == ProblemType::P_PNEQUATIONS_2D ) {
+        return new PNEquations( settings );
     }
     else {
         log->error( "[Problem] Invalid problem type!" );
