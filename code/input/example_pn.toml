@@ -5,7 +5,7 @@ outputDir = "../results"
 [mesh]
 dimension = 2
 format = "SU2"
-SU2MeshFile = "square.su2"
+SU2MeshFile = "squareCoarse.su2"
 SU2BC = [["OuterBoundary","dirichlet"]]
 outputFile = "pnTest"
 

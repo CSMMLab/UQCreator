@@ -130,6 +130,10 @@ void MomentSolver::Solve() {
 
         _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
 
+        if( _settings->HasSource() ) {
+            this->Source( uNew, uQ, dt, refinementLevel );
+        }
+
         // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
@@ -350,6 +354,25 @@ void MomentSolver::Solve() {
     }
 }
 
+void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const VectorU& refLevel ) const {
+    Matrix out( _nStates, _nTotal, 0.0 );    // could also be allocated before and then stored in class, be careful with openmp!!!
+#pragma omp parallel for
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        multOnPENoReset( _problem->Source( uQ[j] ),
+                         _closure->GetPhiTildeWf(),
+                         out,
+                         _settings->GetKStart(),
+                         _settings->GetKEnd(),
+                         _settings->GetNTotalforRefLevel( refLevel[j] ) );
+        uNew[j] = uNew[j] + dt * _mesh->GetArea( j ) * out;
+    }
+}
+
+void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {
+    // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
+    multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd(), nTotal );
+}
+
 MatVec MomentSolver::DetermineMoments( unsigned nTotal ) const {
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     if( _settings->HasRestartFile() ) {
@@ -455,11 +478,6 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         delete prevSettings;
     }
     if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete prevClosure;
-}
-
-void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {
-    // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
-    multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd(), nTotal );
 }
 
 void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {

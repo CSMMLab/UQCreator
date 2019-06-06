@@ -3,6 +3,7 @@
 PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 2 ) {
     _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
     _settings->SetNStates( _nStates );
+    _settings->SetSource( true );
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
 
@@ -185,6 +186,23 @@ Matrix PNEquations::F( const Matrix& u ) {
     _log->error( "[euler2d] Flux not implemented" );
     exit( EXIT_FAILURE );
     return 0.5 * pow( u, 2 );
+}
+
+Matrix PNEquations::Source( const Matrix& uQ ) const {
+    unsigned nStates = static_cast<unsigned>( uQ.rows() );
+    unsigned Nq      = static_cast<unsigned>( uQ.columns() );
+    double sigmaA    = 0.0;    // absorption coefficient
+    double sigmaS    = 1.0;    // scattering coefficient
+    double sigmaT    = sigmaA + sigmaS;
+    Vector g( nStates, 0.0 );
+    g[0] = 2 * M_PI;
+    Matrix y( nStates, Nq, 0.0 );
+    for( unsigned k = 0; k < Nq; ++k ) {
+        for( unsigned s = 0; s < nStates; ++s ) {
+            y( s, k ) = sigmaT * uQ( s, k ) - sigmaS * g[s] * uQ( s, k );
+        }
+    }
+    return y;
 }
 
 double PNEquations::ComputeDt( const Matrix& u, double dx ) const {

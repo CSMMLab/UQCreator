@@ -47,3 +47,5 @@ Matrix Problem::ExactSolution( double t, const Matrix& x, const Vector& xi ) con
     _log->error( "[Problem]: No exact solution specified" );
     exit( EXIT_FAILURE );
 }
+
+Matrix Problem::Source( const Matrix& uQ ) const {}

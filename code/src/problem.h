@@ -31,6 +31,7 @@ class Problem
     virtual Vector IC( const Vector& x, const Vector& xi )     = 0;
     virtual Vector LoadIC( const Vector& x, const Vector& xi ) = 0;
     virtual Matrix ExactSolution( double t, const Matrix& x, const Vector& xi ) const;
+    virtual Matrix Source( const Matrix& uQ ) const;
 };
 
 #endif    // PROBLEM_H

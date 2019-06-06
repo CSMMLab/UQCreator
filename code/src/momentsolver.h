@@ -43,6 +43,14 @@ class MomentSolver
      */
     void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal );
     /**
+     * source term for moment system
+     * @param Moments for in- and output
+     * @param solution at quadrature points
+     * @param time step size
+     * @param refinement level
+     */
+    void Source( MatVec& uNew, const MatVec& uQ, double dt, const VectorU& refLevel ) const;
+    /**
      * sets up moments for specified initial condition
      * @return output moment matrix
      */

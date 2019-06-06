@@ -88,6 +88,7 @@ class Settings
 
     // problem specific settings
     double _gamma;
+    bool _hasSource;
 
     Settings() = delete;
     void Init( std::shared_ptr<cpptoml::table> file, bool restart );
@@ -133,6 +134,8 @@ class Settings
     void SetGamma( double gamma );
     void SetExactSolution( bool hasExactSolution );
     bool HasExactSolution() const;
+    bool HasSource() const;
+    void SetSource( bool hasSource );
 
     // moment_system
     ClosureType GetClosureType() const;
