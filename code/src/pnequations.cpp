@@ -1,6 +1,6 @@
 #include "pnequations.h"
 
-PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 2 ) {
+PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 7 ) {
     _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
     _settings->SetNStates( _nStates );
     _settings->SetSource( true );
@@ -101,7 +101,6 @@ void PNEquations::SetupSystemMatrices() {
     for( int l = 0; l <= _N; ++l ) {
         for( int k = -l; k <= l; ++k ) {
             i = unsigned( GlobalIndex( l, k ) );
-            std::cout << "i = " << i << std::endl;
 
             // flux matrix in direction x
             if( k != -1 ) {
@@ -141,10 +140,6 @@ void PNEquations::SetupSystemMatrices() {
             if( j >= 0 && j < int( nTotalEntries ) ) _Az( i, unsigned( j ) ) = AParam( l - 1, k );
 
             j = GlobalIndex( l + 1, k );
-            if( i == 0 ) {
-                std::cout << "j = " << j << std::endl;
-                std::cout << "B_" << l + 1 << "^" << k << " = " << BParam( l + 1, k ) << std::endl;
-            }
             if( j >= 0 && j < int( nTotalEntries ) ) _Az( i, unsigned( j ) ) = BParam( l + 1, k );
         }
     }
@@ -218,7 +213,7 @@ Vector PNEquations::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
     double x0    = 0.0;
     double y0    = 0.0;
-    double s2    = std::pow( 0.06, 2 );    // std::pow( 0.03, 2 );
+    double s2    = std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
     double floor = 1e-4;
     _sigma       = _settings->GetSigma();
 

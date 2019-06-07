@@ -260,10 +260,24 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
             validConfig = false;
         }
-        auto nQuadPoints = moment_system->get_as<unsigned>( "quadPoints" );
-        if( nQuadPoints ) {
-            _nQuadPoints = *nQuadPoints;
-            _nQTotal     = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
+
+        auto quadratureSettings = moment_system->get_array_of<cpptoml::array>( "quadPoints" );
+
+        if( quadratureSettings ) {
+            auto nQArray        = ( *quadratureSettings )[1]->get_array_of<int64_t>();
+            auto quadratureType = ( *quadratureSettings )[0]->get_array_of<std::string>();
+            _nQuadPoints        = unsigned( ( *nQArray )[nQArray->size() - 1] );
+
+            // computing Nq Total
+            if( quadratureType->at( 0 ).compare( "sparseGrid" ) == 0 ) {
+                _gridType = G_SPARSEGRID;
+                _nQTotal  = unsigned( std::pow( 2, _nQuadPoints ) ) + 1u;
+                _nQTotal  = 13;
+            }
+            else {    // tensorizedGrid
+                _gridType = G_TENSORIZEDGRID;
+                _nQTotal  = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
+            }
             /*
             // determine size of quad array on PE
             int nQPE = int( ( int( _nQTotal ) - 1 ) / _npes ) + 1;
@@ -381,6 +395,7 @@ unsigned Settings::GetNTotal() const { return _nTotal; }
 VectorU Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLevel; }
 unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
 unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }
+GridType Settings::GetGridType() const { return _gridType; }
 
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }

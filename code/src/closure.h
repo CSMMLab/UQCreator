@@ -8,6 +8,8 @@
 #include "settings.h"
 #include "typedefs.h"
 
+#include "quadraturegrid.h"
+
 class Closure
 {
   private:
@@ -17,6 +19,9 @@ class Closure
     Settings* _settings;
     std::vector<Polynomial*> _basis;
     std::vector<Polynomial*> _quad;
+    QuadratureGrid* _quadGrid;
+    std::vector<Vector> _xiGrid;
+    std::vector<Vector> _quadNodes;
     Matrix _phiTilde;         // stores scaled basis functions evaluated at quadrature points
     Matrix _phiTildeTrans;    // stores scaled basis functions evaluated at quadrature points
     Matrix _phiTildeWf;       // stores scaled basis functions evaluated at quadrature points times weight and pdf
@@ -110,6 +115,7 @@ class Closure
 
     std::vector<Polynomial*> GetBasis();
     std::vector<Polynomial*> GetQuadrature();
+    QuadratureGrid* GetQuadratureGrid();
 };
 
 #endif    // CLOSURE_H

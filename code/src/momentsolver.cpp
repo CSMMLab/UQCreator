@@ -79,6 +79,8 @@ void MomentSolver::Solve() {
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
             if( _mesh->GetBoundaryType( cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            // std::cout << "Cell " << j << ": Solving Closure with lambda = " << _lambda[cellIndexPE[j]] << ", u = " << u[cellIndexPE[j]] <<
+            // std::endl;
             _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
         }
 
@@ -491,12 +493,18 @@ void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
 }
 
 MatVec MomentSolver::SetupIC() const {
+    std::cout << "Entered SetupIC" << std::endl;
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     std::vector<Polynomial*> quad = _closure->GetQuadrature();
     Vector xiEta( _settings->GetNDimXi() );
     Matrix uIC( _nStates, _nQTotal );
     Matrix phiTildeWf = _closure->GetPhiTildeWf();
     std::vector<Vector> IC;
+    std::cout << "Getting the nodes" << std::endl;
+    auto grid = _closure->GetQuadratureGrid();
+    std::cout << "Got Grid" << std::endl;
+    auto xiQuad = grid->GetNodes();
+    std::cout << "Got the nodes" << std::endl;
     if( _settings->HasICFile() ) {
         IC = _mesh->Import();
     }
@@ -510,6 +518,10 @@ MatVec MomentSolver::SetupIC() const {
                     unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
                 xiEta[l] = quad[n]->GetNodes()[index];
             }
+            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                xiEta[l] = xiQuad[k][l];
+            }
+            // std::cout << "Quad Point " << xiEta << std::endl;
 
             if( _settings->HasICFile() ) {
                 column( uIC, k ) = _problem->LoadIC( IC[j], xiEta );
@@ -519,8 +531,23 @@ MatVec MomentSolver::SetupIC() const {
             }
         }
 
+        if( j < 4 ) {
+            std::cout << "-------------------------" << std::endl;
+            std::cout << "nQTotal in settings = " << _settings->GetNQTotal() << std::endl;
+            std::cout << "nQTotal = " << _nQTotal << std::endl;
+            std::cout << "nQTotal really = " << _closure->GetQuadratureGrid()->GetNodeCount() << std::endl;
+            std::cout << "Cell " << j << std::endl;
+            std::cout << "uIC = " << uIC << std::endl;
+            std::cout << "phiTildeWf = " << phiTildeWf << std::endl;
+        }
+
         u[j] = uIC * phiTildeWf;
+        if( j < 4 ) {
+            std::cout << "moments = " << u[j] << std::endl;
+        }
     }
+    std::cout << "Setup IC done" << std::endl;
+    // exit( EXIT_FAILURE );
     return u;
 }
 

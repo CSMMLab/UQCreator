@@ -25,6 +25,7 @@ enum ClosureType {
 enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };
 enum DistributionType { D_LEGENDRE, D_HERMITE };
+enum GridType { G_SPARSEGRID, G_TENSORIZEDGRID };
 
 class Settings
 {
@@ -81,6 +82,7 @@ class Settings
     ClosureType _closureType;
     ProblemType _problemType;
     TimesteppingType _timesteppingType;
+    GridType _gridType;
     std::vector<DistributionType> _distributionType;
     std::vector<double> _sigma;
 
@@ -154,6 +156,7 @@ class Settings
     unsigned GetMaxIterations() const;
     void SetMaxIterations( unsigned maxIterations );
     double GetEpsilon() const;
+    GridType GetGridType() const;
 
     // plot
     bool GetPlotEnabled() const;
