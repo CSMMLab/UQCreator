@@ -396,7 +396,14 @@ VectorU Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLev
 unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
 unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }
 GridType Settings::GetGridType() const { return _gridType; }
-void Settings::SetNQTotal( unsigned nqTotalNew ) { _nQTotal = nqTotalNew; }
+void Settings::SetNQTotal( unsigned nqTotalNew ) {
+    _nQTotal = nqTotalNew;
+    // if number of quadrature points is updated, the MPI bounds need to be updated as well
+    _kEnd   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotal / double( _npes ) ) ) );
+    _kStart = unsigned( std::ceil( double( _mype ) * ( double( _nQTotal ) / double( _npes ) ) ) );
+    if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotal ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
+    _nQPE = _kEnd - _kStart + 1;
+}
 
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }
