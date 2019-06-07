@@ -252,7 +252,6 @@ int SparseGrid::choose( int n, int k ) {
 unsigned SparseGrid::GetNodeCount() { return _nodeCount; }
 
 std::vector<Vector> SparseGrid::GetNodes() {
-    std::cout << "Getting " << _nodeCount << " nodes" << std::endl;
     std::vector<Vector> nodes;
     for( unsigned i = 0; i < _nodeCount; ++i ) {
         Vector tmp( _dim, 0.0 );

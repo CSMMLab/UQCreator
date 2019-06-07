@@ -396,6 +396,7 @@ VectorU Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLev
 unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
 unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }
 GridType Settings::GetGridType() const { return _gridType; }
+void Settings::SetNQTotal( unsigned nqTotalNew ) { _nQTotal = nqTotalNew; }
 
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }

@@ -55,20 +55,6 @@ Closure::Closure( Settings* settings )
     // set total number of quadrature points
     _nQTotal = _quadGrid->GetNodeCount();
 
-    std::cout << "xiGrid" << std::endl;
-    for( unsigned k = 0; k < _nQTotal; ++k ) {
-        for( unsigned l = 0; l < _numDimXi; ++l ) {
-            std::cout << _xiGrid[k][l] << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << "wGrid" << std::endl;
-    for( unsigned k = 0; k < _nQTotal; ++k ) {
-        std::cout << wGrid[k] << " ";
-    }
-    std::cout << std::endl;
-    // exit( EXIT_FAILURE );
-
     // compute basis functions evaluated at the quadrature points
     _phiTilde    = Matrix( _nQTotal, _nTotal, 1.0 );
     _phiTildeWf  = Matrix( _nQTotal, _nTotal, 1.0 );
@@ -98,20 +84,17 @@ Closure::Closure( Settings* settings )
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         _hPartial[k] = outer( column( _phiTildeTrans, k ), column( phiTildeWfTrans, k ) );    // TODO
     }
-
-    // Test if polynomials are orthonormal
-    Matrix testQuad( _nTotal, _nTotal, 0.0 );
-    for( unsigned i = 0; i < _nTotal; ++i ) {
-        for( unsigned j = 0; j < _nTotal; ++j ) {
-            for( unsigned k = 0; k < _nQTotal; ++k ) {
-                testQuad( i, j ) += _phiTilde( k, i ) * _phiTildeWf( k, j );
+    /*
+        // Test if polynomials are orthonormal
+        Matrix testQuad( _nTotal, _nTotal, 0.0 );
+        for( unsigned i = 0; i < _nTotal; ++i ) {
+            for( unsigned j = 0; j < _nTotal; ++j ) {
+                for( unsigned k = 0; k < _nQTotal; ++k ) {
+                    testQuad( i, j ) += _phiTilde( k, i ) * _phiTildeWf( k, j );
+                }
             }
         }
-    }
-    std::cout << "test I " << testQuad << std::endl;
-    std::cout << "phiTildeWf " << _phiTildeWf << std::endl;
-    std::cout << "phiTilde " << _phiTilde << std::endl;
-    // exit( EXIT_FAILURE );
+        std::cout << "test I " << testQuad << std::endl;*/
 }
 
 Closure::~Closure() {
