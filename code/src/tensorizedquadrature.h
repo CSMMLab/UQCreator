@@ -17,9 +17,11 @@ class TensorizedQuadrature : public QuadratureGrid
     unsigned _nQTotal;
     double** _nodes;
     double* _weights;
+    void CreateGrid();
 
   public:
     TensorizedQuadrature( Settings* settings );
+    TensorizedQuadrature( Settings* settings, unsigned numDimXi, unsigned nQuadPoints );
     ~TensorizedQuadrature();
     std::vector<Vector> GetNodes();
     Vector GetWeights();

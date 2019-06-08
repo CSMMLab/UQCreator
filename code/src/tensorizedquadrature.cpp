@@ -6,7 +6,25 @@ TensorizedQuadrature::TensorizedQuadrature( Settings* settings ) : _settings( se
     // compute total number of quad points
     _numDimXi = _settings->GetNDimXi();
     _nQTotal  = unsigned( std::pow( _settings->GetNQuadPoints(), _numDimXi ) );
+    CreateGrid();
+}
 
+TensorizedQuadrature::TensorizedQuadrature( Settings* settings, unsigned numDimXi, unsigned nQuadPoints )
+    : _settings( settings ), _nQuadPoints( nQuadPoints ) {
+    // compute total number of quad points
+    _numDimXi = numDimXi;
+    _nQTotal  = unsigned( std::pow( _settings->GetNQuadPoints(), _numDimXi ) );
+    CreateGrid();
+}
+
+TensorizedQuadrature::~TensorizedQuadrature() {
+    for( unsigned i = 0; i < _numDimXi; i++ ) delete[] _nodes[i];
+    delete[] _nodes;
+
+    delete[] _weights;
+}
+
+void TensorizedQuadrature::CreateGrid() {
     // allocate nodes and weights
     _nodes = new double*[_numDimXi];
     for( unsigned i = 0; i < _numDimXi; i++ ) {
@@ -26,8 +44,6 @@ TensorizedQuadrature::TensorizedQuadrature( Settings* settings ) : _settings( se
     _quad[0] = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_LEGENDRE );
     _quad[1] = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_HERMITE );
 
-    std::cout << "Polys done" << std::endl;
-
     // setup map from k (0,...,_nQTotal-1) to individual indices
     std::vector<std::vector<unsigned>> indicesQ;
     indicesQ.resize( _nQTotal );
@@ -37,7 +53,6 @@ TensorizedQuadrature::TensorizedQuadrature( Settings* settings ) : _settings( se
             indicesQ[k][l] = unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
         }
     }
-    std::cout << "Indices done" << std::endl;
 
     // store quad points and weights for individual distributions
     std::vector<Vector> xi;
@@ -49,29 +64,16 @@ TensorizedQuadrature::TensorizedQuadrature( Settings* settings ) : _settings( se
         w[l]  = _quad[l]->GetWeights();
     }
 
-    std::cout << "xi,w done" << std::endl;
-
     // setup weights and nodes
     unsigned n = 0;
     for( unsigned k = 0; k < _nQTotal; ++k ) {
-        std::cout << "node " << k << ": ";
         for( unsigned l = 0; l < _numDimXi; ++l ) {
             if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
             if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
             _nodes[l][k] = xi[n][indicesQ[k][l]];
-            std::cout << _nodes[l][k] << " ";
             _weights[k] *= w[n][indicesQ[k][l]];
         }
-        std::cout << std::endl;
     }
-    std::cout << "done" << std::endl;
-}
-
-TensorizedQuadrature::~TensorizedQuadrature() {
-    for( unsigned i = 0; i < _numDimXi; i++ ) delete[] _nodes[i];
-    delete[] _nodes;
-
-    delete[] _weights;
 }
 
 std::vector<Vector> TensorizedQuadrature::GetNodes() {

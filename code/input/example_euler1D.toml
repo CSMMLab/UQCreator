@@ -4,7 +4,7 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 1000
+numberOfCells = 500
 a = 0
 b = 1
 outputFile = "euler_shock"
@@ -20,8 +20,8 @@ tEnd = 0.2
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
 closure = "StochasticGalerkin"
-moments = [["totalDegree"],[4]]
-#quadPoints = [["sparseGrid"],[ 3]]
-quadPoints = [["tensorizedGrid"],[ 5 ]]
+moments = [["totalDegree"],[3]]
+quadPoints = [["sparseGrid"],[6]]
+#quadPoints = [["tensorizedGrid"],[ 7 ]]
 maxIterations = 200
 epsilon = 5e-5
