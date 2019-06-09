@@ -2,7 +2,24 @@
 
 #include "settings.h"
 
+namespace cpptoml {
+inline std::shared_ptr<table> parse_file( const std::istringstream& content ) {
+    parser p{const_cast<std::istringstream&>( content )};
+    return p.parse();
+}
+}    // namespace cpptoml
+
 Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExactSolution( false ) {
+    auto file = cpptoml::parse_file( _inputFile );
+    Init( file, false );
+}
+
+Settings::Settings( const std::istringstream& inputStream ) {
+    auto file = cpptoml::parse_file( inputStream );
+    Init( file, true );
+}
+
+void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
     auto log = spdlog::get( "event" );
 
     bool validConfig = true;
@@ -11,8 +28,6 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
         MPI_Comm_size( MPI_COMM_WORLD, &_npes );
         _cwd      = std::filesystem::current_path();
         _inputDir = std::experimental::filesystem::path( _inputFile.parent_path() );
-
-        auto file = cpptoml::parse_file( _inputFile );
 
         // section general
         auto general           = file->get_table( "general" );
@@ -33,6 +48,9 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             }
             else if( problemTypeString->compare( "ShallowWater2D" ) == 0 ) {
                 _problemType = ProblemType::P_SHALLOWWATER_2D;
+            }
+            else if( problemTypeString->compare( "PNEquations2D" ) == 0 ) {
+                _problemType = ProblemType::P_PNEQUATIONS_2D;
             }
             else {
                 log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers1D, Euler1D, "
@@ -56,11 +74,21 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
         auto restartFile = general->get_as<std::string>( "restartFile" );
         if( restartFile ) {
             _restartFile = _inputDir.string() + "/" + *restartFile;
+            if( restart ) _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
         }
+        if( !restart ) _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
 
         auto icFile = general->get_as<std::string>( "icFile" );
         if( icFile ) {
             _icFile = _inputDir.string() + "/" + *icFile;
+        }
+
+        if( !restart ) {
+            auto refFile    = general->get_as<std::string>( "referenceSolution" );
+            _writeFrequency = general->get_as<int64_t>( "writeFrequency" ).value_or( 1000 );
+            if( refFile ) {
+                _referenceFile = _inputDir.string() + "/" + *refFile;
+            }
         }
 
         // section mesh
@@ -148,6 +176,9 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
             if( closureTypeString->compare( "BoundedBarrier" ) == 0 ) {
                 _closureType = ClosureType::C_BOUNDEDBARRIER;
             }
+            else if( closureTypeString->compare( "LogSin" ) == 0 ) {
+                _closureType = ClosureType::C_LOGSIN;
+            }
             else if( closureTypeString->compare( "StochasticGalerkin" ) == 0 ) {
                 _closureType = ClosureType::C_STOCHASTICGALERKIN;
             }
@@ -170,41 +201,83 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
                 _closureType = ClosureType::C_LASSOFILTER;
             }
             else {
-                log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, "
+                log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogSin, "
                             "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
                 validConfig = false;
             }
         }
         else {
-            log->error( "[inputfile] [moment_system] 'closure' not set!\n Please set one of the following types: BoundedBarrier, "
+            log->error( "[inputfile] [moment_system] 'closure' not set!\n Please set one of the following types: BoundedBarrier, LogSin, "
                         "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
             validConfig = false;
         }
-        auto nMoments = moment_system->get_as<unsigned>( "moments" );
-        if( nMoments ) {
-            _nMoments = *nMoments;
+        auto momentSettings = moment_system->get_array_of<cpptoml::array>( "moments" );
 
+        if( momentSettings ) {
+            auto momentArray       = ( *momentSettings )[1]->get_array_of<int64_t>();
+            auto degreeType        = ( *momentSettings )[0]->get_array_of<std::string>();
+            _nRefinementLevels     = unsigned( momentArray->size() );
+            _nTotalRefinementLevel = VectorU( _nRefinementLevels );
+            _nMoments              = unsigned( ( *momentArray )[momentArray->size() - 1] );    // unsigned( ( *nMoments )[nMoments->size() - 1] );
             // compute nTotal
-            _useMaxDegree = false;
-            _nTotal       = 0;
+            if( degreeType->at( 0 ).compare( "maxDegree" ) == 0 ) {
+                _useMaxDegree = true;
+            }
+            else if( degreeType->at( 0 ).compare( "totalDegree" ) == 0 ) {
+                _useMaxDegree = false;
+            }
+            else {
+                log->error( "[inputfile] [moment_system] 'moments' is invalid!\nPlease set one of the following types: totalDegree, maxDegree" );
+                validConfig = false;
+            }
+            _nTotal = 0;
             unsigned totalDegree;    // compute total degree of basis function i
+
             for( unsigned i = 0; i < std::pow( _nMoments, _numDimXi ); ++i ) {
                 totalDegree = 0;
                 for( unsigned l = 0; l < _numDimXi; ++l ) {
                     totalDegree += unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
                 }
                 // if total degree is sufficiently small or max degree is used, indices are stored
-                if( totalDegree < _nMoments || _useMaxDegree ) ++_nTotal;
+                if( totalDegree < _nMoments || _useMaxDegree ) {
+                    std::cout << "total degree is " << totalDegree << std::endl;
+                    ++_nTotal;
+                    // count up truncation index if total degree of current basis fct lies below total degree of level l
+                    for( int l = int( _nRefinementLevels ) - 1; l >= 0; --l ) {
+                        if( unsigned( ( *momentArray )[unsigned( l )] ) >= totalDegree )
+                            _nTotalRefinementLevel[l] = _nTotalRefinementLevel[l] + 1;
+                        else
+                            break;
+                    }
+                }
             }
+            for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
+                std::cout << "number Moments at level " << l << ": " << _nTotalRefinementLevel[l] << std::endl;
+            }
+            std::cout << "nTotal is " << _nTotal << std::endl;
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
             validConfig = false;
         }
-        auto nQuadPoints = moment_system->get_as<unsigned>( "quadPoints" );
-        if( nQuadPoints ) {
-            _nQuadPoints = *nQuadPoints;
-            _nQTotal     = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
+
+        auto quadratureSettings = moment_system->get_array_of<cpptoml::array>( "quadPoints" );
+
+        if( quadratureSettings ) {
+            auto nQArray        = ( *quadratureSettings )[1]->get_array_of<int64_t>();
+            auto quadratureType = ( *quadratureSettings )[0]->get_array_of<std::string>();
+            _nQuadPoints        = unsigned( ( *nQArray )[nQArray->size() - 1] );
+
+            // computing Nq Total
+            if( quadratureType->at( 0 ).compare( "sparseGrid" ) == 0 ) {
+                _gridType = G_SPARSEGRID;
+                _nQTotal  = unsigned( std::pow( 2, _nQuadPoints ) ) + 1u;
+                _nQTotal  = 13;
+            }
+            else {    // tensorizedGrid
+                _gridType = G_TENSORIZEDGRID;
+                _nQTotal  = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
+            }
             /*
             // determine size of quad array on PE
             int nQPE = int( ( int( _nQTotal ) - 1 ) / _npes ) + 1;
@@ -228,6 +301,7 @@ Settings::Settings( std::string inputFile ) : _inputFile( inputFile ), _hasExact
         }
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
+        _hasSource     = false;
     } catch( const cpptoml::parse_exception& e ) {
         log->error( "Failed to parse {0}: {1}", _inputFile.c_str(), e.what() );
         exit( EXIT_FAILURE );
@@ -246,6 +320,7 @@ void Settings::SetNStates( unsigned n ) { _nStates = n; }
 std::string Settings::GetInputFile() const { return _inputFile; }
 std::string Settings::GetInputDir() const { return _inputDir; }
 std::string Settings::GetOutputDir() const { return _outputDir; }
+int Settings::GetWriteFrequency() const { return _writeFrequency; }
 
 // mesh
 unsigned Settings::GetMeshDimension() const { return _meshDimension; }
@@ -282,6 +357,9 @@ bool Settings::HasICFile() const { return !_icFile.empty(); }
 std::string Settings::GetICFile() const { return _icFile; }
 bool Settings::HasRestartFile() const { return !_restartFile.empty(); }
 std::string Settings::GetRestartFile() const { return _restartFile; }
+bool Settings::HasReferenceFile() const { return !_referenceFile.empty(); }
+std::string Settings::GetReferenceFile() const { return _referenceFile; }
+bool Settings::LoadLambda() const { return _loadLambda; }
 
 // problem
 TimesteppingType Settings::GetTimesteppingType() const { return _timesteppingType; }
@@ -298,11 +376,15 @@ std::vector<double> Settings::GetSigma() const { return _sigma; }
 double Settings::GetSigma( unsigned l ) const { return _sigma[l]; }
 void Settings::SetExactSolution( bool hasExactSolution ) { _hasExactSolution = hasExactSolution; }
 bool Settings::HasExactSolution() const { return _hasExactSolution; }
+bool Settings::HasSource() const { return _hasSource; }
+void Settings::SetSource( bool hasSource ) { _hasSource = hasSource; }
 
 // moment_system
 ClosureType Settings::GetClosureType() const { return _closureType; }
+void Settings::SetClosureType( ClosureType cType ) { _closureType = cType; }
 unsigned Settings::GetNMoments() const { return _nMoments; }
 unsigned Settings::GetNQuadPoints() const { return _nQuadPoints; }
+void Settings::SetNQuadPoints( unsigned nqNew ) { _nQuadPoints = nqNew; }
 unsigned Settings::GetNQTotal() const { return _nQTotal; }
 bool Settings::UsesMaxDegree() const { return _useMaxDegree; }
 LimiterType Settings::GetLimiterType() const { return _limiterType; }
@@ -310,6 +392,18 @@ unsigned Settings::GetMaxIterations() const { return _maxIterations; }
 void Settings::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxIterations; }
 double Settings::GetEpsilon() const { return _epsilon; }
 unsigned Settings::GetNTotal() const { return _nTotal; }
+VectorU Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLevel; }
+unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
+unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }
+GridType Settings::GetGridType() const { return _gridType; }
+void Settings::SetNQTotal( unsigned nqTotalNew ) {
+    _nQTotal = nqTotalNew;
+    // if number of quadrature points is updated, the MPI bounds need to be updated as well
+    _kEnd   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotal / double( _npes ) ) ) );
+    _kStart = unsigned( std::ceil( double( _mype ) * ( double( _nQTotal ) / double( _npes ) ) ) );
+    if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotal ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
+    _nQPE = _kEnd - _kStart + 1;
+}
 
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }

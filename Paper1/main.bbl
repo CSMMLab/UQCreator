@@ -1,0 +1,133 @@
+\begin{thebibliography}{10}
+
+\bibitem{xiu2002wiener}
+Dongbin Xiu and George~Em Karniadakis.
+\newblock The wiener--askey polynomial chaos for stochastic differential
+  equations.
+\newblock {\em SIAM journal on scientific computing}, 24(2):619--644, 2002.
+
+\bibitem{wiener1938homogeneous}
+Norbert Wiener.
+\newblock The homogeneous chaos.
+\newblock {\em American Journal of Mathematics}, 60(4):897--936, 1938.
+
+\bibitem{xiu2005high}
+Dongbin Xiu and Jan~S Hesthaven.
+\newblock High-order collocation methods for differential equations with random
+  inputs.
+\newblock {\em SIAM Journal on Scientific Computing}, 27(3):1118--1139, 2005.
+
+\bibitem{babuvska2007stochastic}
+Ivo Babu{\v{s}}ka, Fabio Nobile, and Raul Tempone.
+\newblock A stochastic collocation method for elliptic partial differential
+  equations with random input data.
+\newblock {\em SIAM Journal on Numerical Analysis}, 45(3):1005--1034, 2007.
+
+\bibitem{loeven2008probabilistic}
+GJA Loeven and H~Bijl.
+\newblock Probabilistic collocation used in a two-step approach for efficient
+  uncertainty quantification in computational fluid dynamics.
+\newblock {\em Computer Modeling in Engineering \& Sciences}, 36(3):193--212,
+  2008.
+
+\bibitem{xiu2009fast}
+Dongbin Xiu.
+\newblock Fast numerical methods for stochastic computations: a review.
+\newblock {\em Communications in computational physics}, 5(2-4):242--272, 2009.
+
+\bibitem{alekseev2011estimation}
+AK~Alekseev, IM~Navon, and ME~Zelentsov.
+\newblock The estimation of functional uncertainty using polynomial chaos and
+  adjoint equations.
+\newblock {\em International Journal for numerical methods in fluids},
+  67(3):328--341, 2011.
+
+\bibitem{ghanem2003stochastic}
+Roger~G Ghanem and Pol~D Spanos.
+\newblock {\em Stochastic finite elements: a spectral approach}.
+\newblock Courier Corporation, 2003.
+
+\bibitem{poette2009uncertainty}
+Ga{\"e}l Po{\"e}tte, Bruno Despr{\'e}s, and Didier Lucor.
+\newblock Uncertainty quantification for systems of conservation laws.
+\newblock {\em Journal of Computational Physics}, 228(7):2443--2467, 2009.
+
+\bibitem{schlachter2018hyperbolicity}
+Louisa Schlachter and Florian Schneider.
+\newblock A hyperbolicity-preserving stochastic galerkin approximation for
+  uncertain hyperbolic systems of equations.
+\newblock {\em Journal of Computational Physics}, 375:80--98, 2018.
+
+\bibitem{kusch2017maximum}
+Jonas Kusch, Graham~W Alldredge, and Martin Frank.
+\newblock Maximum-principle-satisfying second-order intrusive polynomial moment
+  scheme.
+\newblock {\em arXiv preprint arXiv:1712.06966}, 2017.
+
+\bibitem{garrett2015optimization}
+C.~Kristopher Garrett, Cory Hauck, and Judith Hill.
+\newblock Optimization and large scale computation of an entropy-based moment
+  closure.
+\newblock {\em Journal of Computational Physics}, 302:573--590, 2015.
+
+\bibitem{le2004uncertainty}
+OP~Le~Ma{\i}tre, OM~Knio, HN~Najm, and RG~Ghanem.
+\newblock Uncertainty propagation using wiener--haar expansions.
+\newblock {\em Journal of computational Physics}, 197(1):28--57, 2004.
+
+\bibitem{kusch2018filtered}
+Jonas Kusch, Ryan~G McClarren, and Martin Frank.
+\newblock Filtered stochastic galerkin methods for hyperbolic equations.
+\newblock {\em arXiv preprint arXiv:1808.00819}, 2018.
+
+\bibitem{barth2013non}
+Timothy Barth.
+\newblock Non-intrusive uncertainty propagation with error bounds for
+  conservation laws containing discontinuities.
+\newblock In {\em Uncertainty quantification in computational fluid dynamics},
+  pages 1--57. Springer, 2013.
+
+\bibitem{dwight2013adaptive}
+Richard~P Dwight, Jeroen~AS Witteveen, and Hester Bijl.
+\newblock Adaptive uncertainty quantification for computational fluid dynamics.
+\newblock In {\em Uncertainty Quantification in Computational Fluid Dynamics},
+  pages 151--191. Springer, 2013.
+
+\bibitem{pettersson2009numerical}
+Per Pettersson, Gianluca Iaccarino, and Jan Nordstr{\"o}m.
+\newblock Numerical analysis of the burgers’ equation in the presence of
+  uncertainty.
+\newblock {\em Journal of Computational Physics}, 228(22):8394--8412, 2009.
+
+\bibitem{offner2017stability}
+Philipp {\"O}ffner, Jan Glaubitz, and Hendrik Ranocha.
+\newblock Stability of correction procedure via reconstruction with
+  summation-by-parts operators for burgers' equation using a polynomial chaos
+  approach.
+\newblock {\em arXiv preprint arXiv:1703.03561}, 2017.
+
+\bibitem{tryoen2012adaptive}
+Julie Tryoen, O~Le Ma{\i}tre, and Alexandre Ern.
+\newblock Adaptive anisotropic spectral stochastic methods for uncertain scalar
+  conservation laws.
+\newblock {\em SIAM Journal on Scientific Computing}, 34(5):A2459--A2481, 2012.
+
+\bibitem{kroker2012finite}
+Ilja Kr{\"o}ker and Christian Rohde.
+\newblock Finite volume schemes for hyperbolic balance laws with multiplicative
+  noise.
+\newblock {\em Applied Numerical Mathematics}, 62(4):441--456, 2012.
+
+\bibitem{giesselmann2017posteriori}
+Jan Giesselmann, Fabian Meyer, and Christian Rohde.
+\newblock A posteriori error analysis for random scalar conservation laws using
+  the stochastic galerkin method.
+\newblock {\em arXiv preprint arXiv:1709.04351}, 2017.
+
+\bibitem{hazra2005aerodynamic}
+SB~Hazra, V~Schulz, J~Brezillon, and NR~Gauger.
+\newblock Aerodynamic shape optimization using simultaneous
+  pseudo-timestepping.
+\newblock {\em Journal of Computational Physics}, 204(1):46--64, 2005.
+
+\end{thebibliography}

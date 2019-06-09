@@ -87,9 +87,9 @@ Vector Burgers::IC( const Vector& x, const Vector& xi ) {
     exit( EXIT_FAILURE );
 }
 
-Vector Burgers::ExactSolution( double t, const Vector& x, const Vector& xi ) const {
+Matrix Burgers::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
     double x0, x1;
-    Vector y( _nStates );
+    Matrix y( _settings->GetNumCells(), _nStates );
     if( t >= ( _x1 - _x0 ) / ( _uL - _uR ) ) {
         double tS            = ( _x1 - _x0 ) / ( _uL - _uR );
         double x0BeforeShock = _x0 + _sigma[0] * xi[0] + tS * _uL;
@@ -102,12 +102,14 @@ Vector Burgers::ExactSolution( double t, const Vector& x, const Vector& xi ) con
         x1 = _x1 + _sigma[0] * xi[0] + t * _uR;
     }
 
-    if( x[0] < x0 )
-        y[0] = _uL;
-    else if( x[0] < x1 )
-        y[0] = _uL + ( _uR - _uL ) * ( x[0] - x0 ) / ( x1 - x0 );
-    else
-        y[0] = _uR;
+    for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
+        if( x( j, 0 ) < x0 )
+            y( j, 0 ) = _uL;
+        else if( x( j, 0 ) < x1 )
+            y( j, 0 ) = _uL + ( _uR - _uL ) * ( x( j, 0 ) - x0 ) / ( x1 - x0 );
+        else
+            y( j, 0 ) = _uR;
+    }
     return y;
 }
 

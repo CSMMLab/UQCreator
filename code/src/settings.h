@@ -8,11 +8,24 @@
 
 #include "cpptoml.h"
 
-enum ProblemType { P_BURGERS_1D, P_EULER_1D, P_EULER_2D, P_SHALLOWWATER_1D, P_SHALLOWWATER_2D };
-enum ClosureType { C_BOUNDEDBARRIER, C_STOCHASTICGALERKIN, C_EULER_1D, C_EULER_2D, C_SHALLOWWATER_1D, C_SHALLOWWATER_2D, C_L2FILTER, C_LASSOFILTER };
+#include "typedefs.h"
+
+enum ProblemType { P_BURGERS_1D, P_EULER_1D, P_EULER_2D, P_SHALLOWWATER_1D, P_SHALLOWWATER_2D, P_PNEQUATIONS_2D };
+enum ClosureType {
+    C_BOUNDEDBARRIER,
+    C_LOGSIN,
+    C_STOCHASTICGALERKIN,
+    C_EULER_1D,
+    C_EULER_2D,
+    C_SHALLOWWATER_1D,
+    C_SHALLOWWATER_2D,
+    C_L2FILTER,
+    C_LASSOFILTER
+};
 enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };
 enum DistributionType { D_LEGENDRE, D_HERMITE };
+enum GridType { G_SPARSEGRID, G_TENSORIZEDGRID };
 
 class Settings
 {
@@ -25,6 +38,10 @@ class Settings
     std::filesystem::path _outputFile;
     std::filesystem::path _icFile;
     std::filesystem::path _restartFile;
+    std::filesystem::path _referenceFile;
+    bool _loadLambda;
+
+    int _writeFrequency;    // number of time steps until error to reference solution is computed
 
     // requied settings
     unsigned _meshDimension;
@@ -42,8 +59,10 @@ class Settings
     std::vector<unsigned> _cellIndexPE;    // vector of spatial cells for PE
     std::vector<int> _PEforCell;
 
-    unsigned _nMoments;    // number of moments in one dimension
-    unsigned _nTotal;      // number of moments in all dimensions
+    unsigned _nMoments;                // number of moments in one dimension
+    unsigned _nTotal;                  // number of moments in all dimensions
+    VectorU _nTotalRefinementLevel;    // vector of number of moments in all dimensions for each refinement level
+    unsigned _nRefinementLevels;
     bool _useMaxDegree;    // specifies moment hierarchy
 
     unsigned _maxIterations;
@@ -55,14 +74,15 @@ class Settings
     double _epsilon;
     double _CFL;
     double _tEnd;
-    double _minResidual;
-    double _dt;    // timestepsize only required if no function ComputeDt provided in problem
+    double _minResidual;    // residual at which iteration is stopped for steady problems
+    double _dt;             // timestepsize only required if no function ComputeDt provided in problem
     unsigned _plotStepInterval;
     double _plotTimeInterval;
     LimiterType _limiterType;
     ClosureType _closureType;
     ProblemType _problemType;
     TimesteppingType _timesteppingType;
+    GridType _gridType;
     std::vector<DistributionType> _distributionType;
     std::vector<double> _sigma;
 
@@ -70,11 +90,14 @@ class Settings
 
     // problem specific settings
     double _gamma;
+    bool _hasSource;
 
-    Settings() {}
+    Settings() = delete;
+    void Init( std::shared_ptr<cpptoml::table> file, bool restart );
 
   public:
     Settings( std::string inputFile );
+    Settings( const std::istringstream& inputStream );
     ~Settings();
 
     ProblemType GetProblemType() const;
@@ -83,6 +106,7 @@ class Settings
     std::string GetInputFile() const;
     std::string GetInputDir() const;
     std::string GetOutputDir() const;
+    int GetWriteFrequency() const;
 
     // mesh
     unsigned GetMeshDimension() const;
@@ -93,6 +117,9 @@ class Settings
     std::string GetICFile() const;
     bool HasRestartFile() const;
     std::string GetRestartFile() const;
+    bool HasReferenceFile() const;
+    std::string GetReferenceFile() const;
+    bool LoadLambda() const;
 
     // problem
     TimesteppingType GetTimesteppingType() const;
@@ -109,18 +136,28 @@ class Settings
     void SetGamma( double gamma );
     void SetExactSolution( bool hasExactSolution );
     bool HasExactSolution() const;
+    bool HasSource() const;
+    void SetSource( bool hasSource );
 
     // moment_system
     ClosureType GetClosureType() const;
+    void SetClosureType( ClosureType cType );
     unsigned GetNMoments() const;
+
     unsigned GetNTotal() const;
+    VectorU GetNTotalRefinementLevel() const;
+    unsigned GetNRefinementLevels() const;
+    unsigned GetNTotalforRefLevel( unsigned level ) const;
     unsigned GetNQuadPoints() const;
+    void SetNQuadPoints( unsigned nqNew );
+    void SetNQTotal( unsigned nqTotalNew );
     unsigned GetNQTotal() const;
     bool UsesMaxDegree() const;
     LimiterType GetLimiterType() const;
     unsigned GetMaxIterations() const;
     void SetMaxIterations( unsigned maxIterations );
     double GetEpsilon() const;
+    GridType GetGridType() const;
 
     // plot
     bool GetPlotEnabled() const;

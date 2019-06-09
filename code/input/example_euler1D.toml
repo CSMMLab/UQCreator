@@ -20,7 +20,7 @@ tEnd = 0.14
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
 closure = "StochasticGalerkin"
-moments = 1
-quadPoints = 1
+moments = [["totalDegree"],[3]]
+quadPoints = [["tensorized"],[4]]
 maxIterations = 1
 epsilon = 5e-5
