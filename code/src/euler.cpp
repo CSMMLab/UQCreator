@@ -85,7 +85,7 @@ double Euler::ComputeDt( const Matrix& u, double dx ) const {
         p      = ( _gamma - 1.0 ) * ( u( 2, k ) - 0.5 * u( 0, k ) * pow( v, 2 ) );
         a      = sqrt( _gamma * p * rhoInv );
 
-        dtMin      = ( cfl / dx ) * std::min( std::fabs( 1.0 / ( v - a ) ), std::fabs( 1.0 / ( v + a ) ) );
+        dtMin      = ( cfl * dx ) * std::min( std::fabs( 1.0 / ( v - a ) ), std::fabs( 1.0 / ( v + a ) ) );
         dtMinTotal = std::min( dtMin, dtMinTotal );
     }
 
@@ -97,9 +97,9 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
     double gamma = 1.4;
 
     double rhoL = 1.0;
-    double rhoR = 0.125;
+    double rhoR = 0.3;
     double pL   = 1.0;
-    double pR   = 0.1;
+    double pR   = 0.3;
     double uL   = 0.0;
     double uR   = 0.0;
     Vector y( _nStates );
@@ -112,7 +112,13 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
         y[2]                  = kineticEnergyL + innerEnergyL;
     }
     else {
-        y[0]                  = rhoR;
+        y[0] = rhoR;
+        if( xi.size() > 1 ) {
+            y[0] += _sigma[1] * xi[1];
+        }
+        if( xi.size() > 2 ) {
+            pR += _sigma[2] * xi[2];
+        }
         y[1]                  = rhoR * uR;
         double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 );
         double innerEnergyR   = ( pR / ( rhoR * ( gamma - 1 ) ) ) * rhoR;

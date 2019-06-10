@@ -220,6 +220,8 @@ int main( int argc, char* argv[] ) {
     unsigned nStates       = settings->GetNStates();
     unsigned nTotal        = settings->GetNTotal();
 
+    std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
+
     std::cout << "PE " << settings->GetMyPE() << ": kStart is " << settings->GetKStart() << " kEnd is " << settings->GetKEnd() << std::endl;
     for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
         std::cout << "PE " << settings->GetMyPE() << ": xi = " << xi[k] << std::endl;
@@ -251,6 +253,12 @@ int main( int argc, char* argv[] ) {
         u[j].reset();
         MPI_Reduce( uMoments[j].GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
     }
+
+    std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
+    log->info( "" );
+    log->info( "Finished!" );
+    log->info( "" );
+    log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
     // compute errors
     std::vector<std::vector<double>> referenceSolution;
@@ -388,18 +396,6 @@ int main( int argc, char* argv[] ) {
         std::cout << "Exporting solution..." << std::endl;
         // export moments
         solver->Export( u );
-
-        Matrix meanAndVar( 2 * nStates, nCells, 0.0 );
-        for( unsigned j = 0; j < nCells; ++j ) {
-            // expected value
-            for( unsigned s = 0; s < nStates; ++s ) {
-                meanAndVar( s, j ) = u[j]( s, 0 );
-            }
-            // variance
-            for( unsigned s = 0; s < nStates; ++s ) {
-                for( unsigned i = 1; i < settings->GetNTotal(); ++i ) meanAndVar( s + nStates, j ) += std::pow( u[j]( s, i ), 2 );
-            }
-        }
 
         if( settings->GetProblemType() == P_SHALLOWWATER_2D )
             mesh->ExportShallowWater( meanAndVar );

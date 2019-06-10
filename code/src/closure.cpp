@@ -8,6 +8,8 @@
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
 #include "stochasticgalerkin.h"
+#include "tensorizedquadrature.h"
+#include "uniformsparsegrid.h"
 
 Closure::Closure( Settings* settings )
     : _settings( settings ), _nMoments( _settings->GetNMoments() ), _nQuadPoints( _settings->GetNQuadPoints() ), _nStates( _settings->GetNStates() ) {
@@ -22,20 +24,11 @@ Closure::Closure( Settings* settings )
 
     // compute total number of quad points
     _numDimXi = _settings->GetNDimXi();
-    _nQTotal  = unsigned( std::pow( _settings->GetNQuadPoints(), _numDimXi ) );
 
     // setup map from k (0,...,_nQTotal-1) to individual indices
     std::vector<std::vector<unsigned>> indices;
-    std::vector<std::vector<unsigned>> indicesQ;
-    indicesQ.resize( _nQTotal );
-    for( unsigned k = 0; k < _nQTotal; ++k ) {
-        indicesQ[k].resize( _numDimXi );
-        for( unsigned l = 0; l < _numDimXi; ++l ) {
-            indicesQ[k][l] = unsigned( ( k - k % unsigned( std::pow( _nQuadPoints, l ) ) ) / unsigned( std::pow( _nQuadPoints, l ) ) ) % _nQuadPoints;
-        }
-    }
 
-    // setup map from i (0,...,_nTotal-1) to individual indices
+    // setup map from i (0,...,nTotal-1) to individual indices
     std::vector<unsigned> indexTest;
     indexTest.resize( _numDimXi );
     unsigned totalDegree;    // compute total degree of basis function i
@@ -50,34 +43,35 @@ Closure::Closure( Settings* settings )
     }
     _nTotal = unsigned( indices.size() );
 
-    // store quad points and weights for individual distributions
-    std::vector<Vector> xi;
-    xi.resize( _quad.size() );
-    std::vector<Vector> w;
-    w.resize( _quad.size() );
-    for( unsigned l = 0; l < _quad.size(); ++l ) {
-        xi[l] = _quad[l]->GetNodes();
-        w[l]  = _quad[l]->GetWeights();
-    }
+    // define quadrature
+    _quadGrid = QuadratureGrid::Create( _settings );
+    // TensorizedQuadrature* quadGrid = new TensorizedQuadrature( _settings );
+    std::cout << "quadGrid done" << std::endl;
+    _xiGrid    = _quadGrid->GetNodes();
+    auto wGrid = _quadGrid->GetWeights();
+
+    // set total number of quadrature points
+    _nQTotal = _quadGrid->GetNodeCount();
 
     // compute basis functions evaluated at the quadrature points
     _phiTilde    = Matrix( _nQTotal, _nTotal, 1.0 );
     _phiTildeWf  = Matrix( _nQTotal, _nTotal, 1.0 );
     _phiTildeVec = std::vector<Vector>( _nQTotal, Vector( _nTotal, 0.0 ) );
 
-    unsigned n;
+    unsigned n = 0;
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         for( unsigned i = 0; i < _nTotal; ++i ) {
             for( unsigned l = 0; l < _numDimXi; ++l ) {
                 if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                 if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
                 _phiTilde( k, i ) *=
-                    _basis[n]->Evaluate( indices[i][l], xi[n][indicesQ[k][l]] ) / _basis[n]->L2Norm( indices[i][l] );    // sqrt( 2.0 * i + 1.0 );
-                _phiTildeWf( k, i ) *= _basis[n]->Evaluate( indices[i][l], xi[n][indicesQ[k][l]] ) / _basis[n]->L2Norm( indices[i][l] ) *
-                                       w[n][indicesQ[k][l]] * _basis[n]->fXi( xi[n][indicesQ[k][l]] );
+                    _basis[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _basis[n]->L2Norm( indices[i][l] );    // sqrt( 2.0 * i + 1.0 );
+                _phiTildeWf( k, i ) *=
+                    _basis[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _basis[n]->L2Norm( indices[i][l] ) * _basis[n]->fXi( _xiGrid[k][l] );
             }
-            // multiplied by pdf
-            _phiTildeVec[k][i] = _phiTilde( k, i );    // sqrt( 2.0 * i + 1.0 );
+
+            _phiTildeWf( k, i ) *= wGrid[k];
+            _phiTildeVec[k][i] = _phiTilde( k, i );
         }
     }
 
@@ -98,7 +92,7 @@ Closure::Closure( Settings* settings )
                 }
             }
         }
-        std::cout << testQuad << std::endl;*/
+        std::cout << "test I " << testQuad << std::endl;*/
 }
 
 Closure::~Closure() {

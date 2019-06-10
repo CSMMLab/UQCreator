@@ -27,8 +27,6 @@ MomentSolver::~MomentSolver() {
 MatVec MomentSolver::Solve( Vector xi ) {
     auto log = spdlog::get( "event" );
 
-    std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
-
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, 1 ) );
 
     // create solution fields
@@ -84,12 +82,6 @@ MatVec MomentSolver::Solve( Vector xi ) {
 
     // save final moments on uQ
     uQ = uNew;
-
-    std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
-    log->info( "" );
-    log->info( "Finished!" );
-    log->info( "" );
-    log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
     return uQ;
 }

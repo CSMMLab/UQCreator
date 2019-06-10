@@ -8,6 +8,8 @@
 #include "settings.h"
 #include "typedefs.h"
 
+#include "quadraturegrid.h"
+
 class Closure
 {
   private:
@@ -33,6 +35,9 @@ class Closure
     void Gradient( Vector& g, const Matrix& lambda, const Matrix& u );
     std::shared_ptr<spdlog::logger> _log;
     Matrix _dUdLambda;    // preallocated memory dor computation of Hessian
+    std::vector<Vector> _xiGrid;
+    std::vector<Vector> _quadNodes;
+    QuadratureGrid* _quadGrid;
 
   public:
     /**
