@@ -27,39 +27,8 @@ Closure::Closure( Settings* settings )
     // compute total number of quad points
     _numDimXi = _settings->GetNDimXi();
 
-    // setup map from k (0,...,_nQTotal-1) to individual indices
-    std::vector<std::vector<unsigned>> indices;
-
-    // setup map from i\in(0,...,nTotal-1) to individual indices for basis function calculation
-    std::vector<unsigned> indexTest;
-    indexTest.resize( _numDimXi );
-    int totalDegree;    // compute total degree of basis function i
-    int previousDegree = -1;
-    // loop over all levels and only store indices of certain level to ensure correct ordering
-    for( unsigned level = 0; level < _settings->GetNRefinementLevels(); ++level ) {
-        for( unsigned i = 0; i < std::pow( _settings->GetNMoments() + 1, _numDimXi ); ++i ) {
-            totalDegree = 0;
-            for( unsigned l = 0; l < _numDimXi; ++l ) {
-                indexTest[l] =
-                    unsigned( ( i - i % unsigned( std::pow( _nMoments + 1, l ) ) ) / unsigned( std::pow( _nMoments + 1, l ) ) ) % ( _nMoments + 1 );
-                totalDegree += indexTest[l];
-            }
-            // if total degree is sufficiently small or max degree is used, indices are stored
-            if( ( unsigned( totalDegree ) <= _settings->GetPolyDegreeforRefLevel( level ) && totalDegree > previousDegree ) ||
-                _settings->UsesMaxDegree() ) {
-                indices.push_back( indexTest );
-                unsigned ii = indices.size() - 1;
-                for( unsigned j = 0; j < indices[ii].size(); ++j ) {
-                    std::cout << indices[ii][j] << " ";
-                }
-                std::cout << ", degree " << totalDegree << std::endl;
-            }
-        }
-        if( _settings->UsesMaxDegree() ) break;
-        previousDegree = int( _settings->GetPolyDegreeforRefLevel( level ) );
-    }
-    _nTotal = unsigned( indices.size() );
-    exit( EXIT_FAILURE );
+    auto indices = _settings->GetPolyIndices();
+    _nTotal      = _settings->GetNTotal();
 
     // define quadrature
     _quadGrid = QuadratureGrid::Create( _settings );

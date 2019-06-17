@@ -59,10 +59,11 @@ class Settings
     std::vector<unsigned> _cellIndexPE;    // vector of spatial cells for PE
     std::vector<int> _PEforCell;
 
-    unsigned _nMoments;                // number of moments in one dimension
-    unsigned _nTotal;                  // number of moments in all dimensions
-    VectorU _nTotalRefinementLevel;    // vector of number of moments in all dimensions for each refinement level
-    VectorU _refinementLevel;          // vector of different refinement levels
+    unsigned _nMoments;                                 // number of moments in one dimension
+    unsigned _nTotal;                                   // number of moments in all dimensions
+    VectorU _nTotalRefinementLevel;                     // vector of number of moments in all dimensions for each refinement level
+    VectorU _refinementLevel;                           // vector of different refinement levels
+    std::vector<std::vector<unsigned>> _polyIndices;    // indices for polynomial basis functions
     unsigned _nRefinementLevels;
     bool _useMaxDegree;    // specifies moment hierarchy
 
@@ -147,6 +148,7 @@ class Settings
 
     unsigned GetNTotal() const;
     VectorU GetNTotalRefinementLevel() const;
+    std::vector<std::vector<unsigned>> GetPolyIndices() const;
     unsigned GetNRefinementLevels() const;
     unsigned GetNTotalforRefLevel( unsigned level ) const;
     unsigned GetPolyDegreeforRefLevel( unsigned level ) const;

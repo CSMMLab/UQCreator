@@ -233,34 +233,39 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 validConfig = false;
             }
             _nTotal = 0;
-            unsigned totalDegree;    // compute total degree of basis function i
 
-            for( unsigned i = 0; i < std::pow( ( _nMoments + 1 ), _numDimXi ); ++i ) {
-                totalDegree = 0;
-                for( unsigned l = 0; l < _numDimXi; ++l ) {
-                    totalDegree +=
-                        unsigned( ( i - i % unsigned( std::pow( ( _nMoments + 1 ), l ) ) ) / unsigned( std::pow( ( _nMoments + 1 ), l ) ) ) %
-                        ( _nMoments + 1 );
-                }
-                // if total degree is sufficiently small or max degree is used, indices are stored
-                if( totalDegree <= _nMoments || _useMaxDegree ) {
-                    std::cout << "-> total degree is " << totalDegree << std::endl;
-                    ++_nTotal;
-                    // count up truncation index if total degree of current basis fct lies below total degree of level l
-                    for( int l = int( _nRefinementLevels ) - 1; l >= 0; --l ) {
-                        if( _refinementLevel[unsigned( l )] >= totalDegree ) {
-                            std::cout << "Count up level " << l << std::endl;
-                            _nTotalRefinementLevel[l] = _nTotalRefinementLevel[l] + 1;
+            // setup map from k (0,...,_nQTotal-1) to individual indices
+            std::vector<std::vector<unsigned>> _polyIndices;
+
+            // setup map from i\in(0,...,nTotal-1) to individual indices for basis function calculation
+            VectorU nTotal( _nRefinementLevels );
+            std::vector<unsigned> indexTest;
+            indexTest.resize( _numDimXi );
+            int totalDegree;    // compute total degree of basis function i
+            int previousDegree = -1;
+            // loop over all levels and only store indices of certain level to ensure correct ordering
+            for( unsigned level = 0; level < _nRefinementLevels; ++level ) {
+                for( unsigned i = 0; i < std::pow( _nMoments + 1, _numDimXi ); ++i ) {
+                    totalDegree = 0;
+                    for( unsigned l = 0; l < _numDimXi; ++l ) {
+                        indexTest[l] = unsigned( ( i - i % unsigned( std::pow( _nMoments + 1, l ) ) ) / unsigned( std::pow( _nMoments + 1, l ) ) ) %
+                                       ( _nMoments + 1 );
+                        totalDegree += indexTest[l];
+                    }
+                    // if total degree is sufficiently small or max degree is used, indices are stored
+                    if( ( unsigned( totalDegree ) <= GetPolyDegreeforRefLevel( level ) && totalDegree > previousDegree ) || this->UsesMaxDegree() ) {
+                        _polyIndices.push_back( indexTest );
+                        unsigned ii = _polyIndices.size() - 1;
+                        for( unsigned j = 0; j < _polyIndices[ii].size(); ++j ) {
+                            std::cout << _polyIndices[ii][j] << " ";
                         }
-                        else
-                            break;
+                        std::cout << ", degree " << totalDegree << std::endl;
                     }
                 }
+                if( UsesMaxDegree() ) break;
+                previousDegree                = int( GetPolyDegreeforRefLevel( level ) );
+                _nTotalRefinementLevel[level] = _polyIndices.size();
             }
-            for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
-                std::cout << "number Moments at level " << l << ": " << _nTotalRefinementLevel[l] << std::endl;
-            }
-            std::cout << "nTotal is " << _nTotal << std::endl;
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
@@ -399,6 +404,7 @@ void Settings::SetMaxIterations( unsigned maxIterations ) { _maxIterations = max
 double Settings::GetEpsilon() const { return _epsilon; }
 unsigned Settings::GetNTotal() const { return _nTotal; }
 VectorU Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLevel; }
+std::vector<std::vector<unsigned>> Settings::GetPolyIndices() const { return _polyIndices; }
 unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
 unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }
 unsigned Settings::GetPolyDegreeforRefLevel( unsigned level ) const { return _refinementLevel[level]; }
