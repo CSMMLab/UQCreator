@@ -27,8 +27,8 @@ Closure::Closure( Settings* settings )
     // compute total number of quad points
     _numDimXi = _settings->GetNDimXi();
 
-    auto indices = _settings->GetPolyIndices();
-    _nTotal      = _settings->GetNTotal();
+    std::vector<std::vector<unsigned>> indices = _settings->GetPolyIndices();
+    _nTotal                                    = _settings->GetNTotal();
 
     // define quadrature
     _quadGrid = QuadratureGrid::Create( _settings );

@@ -234,9 +234,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             }
             _nTotal = 0;
 
-            // setup map from k (0,...,_nQTotal-1) to individual indices
-            std::vector<std::vector<unsigned>> _polyIndices;
-
+            _polyIndices.resize( 0 );
             // setup map from i\in(0,...,nTotal-1) to individual indices for basis function calculation
             VectorU nTotal( _nRefinementLevels );
             std::vector<unsigned> indexTest;
@@ -262,10 +260,11 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                         std::cout << ", degree " << totalDegree << std::endl;
                     }
                 }
-                if( UsesMaxDegree() ) break;
-                previousDegree                = int( GetPolyDegreeforRefLevel( level ) );
                 _nTotalRefinementLevel[level] = _polyIndices.size();
+                if( UsesMaxDegree() ) break;
+                previousDegree = int( GetPolyDegreeforRefLevel( level ) );
             }
+            _nTotal = unsigned( _polyIndices.size() );
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
