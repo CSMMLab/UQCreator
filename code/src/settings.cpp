@@ -253,11 +253,6 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                     // if total degree is sufficiently small or max degree is used, indices are stored
                     if( ( unsigned( totalDegree ) <= GetPolyDegreeforRefLevel( level ) && totalDegree > previousDegree ) || this->UsesMaxDegree() ) {
                         _polyIndices.push_back( indexTest );
-                        unsigned ii = _polyIndices.size() - 1;
-                        for( unsigned j = 0; j < _polyIndices[ii].size(); ++j ) {
-                            std::cout << _polyIndices[ii][j] << " ";
-                        }
-                        std::cout << ", degree " << totalDegree << std::endl;
                     }
                 }
                 _nTotalRefinementLevel[level] = _polyIndices.size();
