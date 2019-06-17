@@ -22,6 +22,6 @@ residual = 1e-6
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
 closure = "L2Filter"
 moments = [["totalDegree"],[5]]
-quadPoints = 10
+quadPoints = [["tensorized"],[10]]
 maxIterations = 1000
 epsilon = 1e-7
