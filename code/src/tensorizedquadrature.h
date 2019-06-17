@@ -10,9 +10,9 @@
 
 class TensorizedQuadrature : public QuadratureGrid
 {
-    const unsigned _nQuadPoints;
-    std::vector<Polynomial*> _quad;
     Settings* _settings;
+    const unsigned _nQuadPoints;
+    std::vector<Polynomial*> _quad;    
     unsigned _numDimXi;
     unsigned _nQTotal;
     double** _nodes;

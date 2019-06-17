@@ -152,16 +152,16 @@ Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const
 
     // speed of sound
     double c_l = sqrt( ( _gamma * P_l / rho_l ) );
-    double c_r = sqrt( ( _gamma * P_r / rho_r ) );
+    // double c_r = sqrt( ( _gamma * P_r / rho_r ) );
 
     // find_zero( xi->sod_func( xi, rho_l, P_l, u_l, rho_r, P_r, u_r, _gamma ), ( P_l, P_r ), Bisection() );
     double P_post     = Bisection( P_l, P_r, rho_l, P_l, rho_r, P_r );
     double rho_post   = rho_r * ( ( ( P_post / P_r ) + pow( mu, 2 ) ) / ( 1 + mu * mu * ( P_post / P_r ) ) );
     double rho_middle = rho_l * pow( P_post / P_l, 1 / _gamma );
 
-    double gm1    = _gamma - 1.0;
-    double gp1    = _gamma + 1.0;
-    double gmfac1 = 0.5 * gm1 / _gamma;
+    // double gm1 = _gamma - 1.0;
+    double gp1 = _gamma + 1.0;
+    // double gmfac1 = 0.5 * gm1 / _gamma;
     double gmfac2 = 0.5 * gp1 / _gamma;
 
     double z  = ( P_post / P_r - 1.0 );

@@ -655,6 +655,12 @@ Vector MomentSolver::CalculateError( const Matrix& solution, unsigned LNorm, con
                 _mesh->GetGrid()[j]->GetCenter()[1] > a[1] && _mesh->GetGrid()[j]->GetCenter()[1] < b[1] ) {
 
                 switch( LNorm ) {
+                    case 0:
+                        for( unsigned s = 0; s < 2 * _nStates; ++s ) {
+                            error[s]   = std::max( std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j ), error[s] );
+                            refNorm[s] = std::max( std::fabs( _referenceSolution[j][s] ) * _mesh->GetArea( j ), refNorm[s] );
+                        }
+                        break;
                     case 1:
                         for( unsigned s = 0; s < 2 * _nStates; ++s ) {
                             error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
@@ -666,7 +672,6 @@ Vector MomentSolver::CalculateError( const Matrix& solution, unsigned LNorm, con
                             error[s] += std::pow( ( solution( s, j ) - _referenceSolution[j][s] ), 2 ) * _mesh->GetArea( j );
                             refNorm[s] += std::pow( _referenceSolution[j][s], 2 ) * _mesh->GetArea( j );
                         }
-
                         break;
                     default: exit( EXIT_FAILURE );
                 }
@@ -676,6 +681,12 @@ Vector MomentSolver::CalculateError( const Matrix& solution, unsigned LNorm, con
     else {
         for( unsigned j = 0; j < _nCells; ++j ) {
             switch( LNorm ) {
+                case 0:
+                    for( unsigned s = 0; s < 2 * _nStates; ++s ) {
+                        error[s]   = std::max( std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j ), error[s] );
+                        refNorm[s] = std::max( std::fabs( _referenceSolution[j][s] ) * _mesh->GetArea( j ), refNorm[s] );
+                    }
+                    break;
                 case 1:
                     for( unsigned s = 0; s < 2 * _nStates; ++s ) {
                         error[s] += std::fabs( ( solution( s, j ) - _referenceSolution[j][s] ) ) * _mesh->GetArea( j );
@@ -705,14 +716,14 @@ void MomentSolver::WriteErrors( const VectorU& refinementLevel ) {
     a[0] = -0.05;
     a[1] = -0.5;
     Vector b( 2 );
-    b[0]                = 1.05;
-    b[1]                = 0.5;
-    auto l1ErrorMeanLog = spdlog::get( "l1ErrorMean" );
-    auto l2ErrorMeanLog = spdlog::get( "l2ErrorMean" );
-    // auto lInfErrorMeanLog = spdlog::get( "lInfErrorMean" );
-    auto l1ErrorVarLog = spdlog::get( "l1ErrorVar" );
-    auto l2ErrorVarLog = spdlog::get( "l2ErrorVar" );
-    // auto lInfErrorVarLog  = spdlog::get( "lInfErrorVar" );
+    b[0]                  = 1.05;
+    b[1]                  = 0.5;
+    auto l1ErrorMeanLog   = spdlog::get( "l1ErrorMean" );
+    auto l2ErrorMeanLog   = spdlog::get( "l2ErrorMean" );
+    auto lInfErrorMeanLog = spdlog::get( "lInfErrorMean" );
+    auto l1ErrorVarLog    = spdlog::get( "l1ErrorVar" );
+    auto l2ErrorVarLog    = spdlog::get( "l2ErrorVar" );
+    auto lInfErrorVarLog  = spdlog::get( "lInfErrorVar" );
 
     Matrix meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     Matrix phiTildeWf = _closure->GetPhiTildeWf();
@@ -735,24 +746,24 @@ void MomentSolver::WriteErrors( const VectorU& refinementLevel ) {
             }
         }
     }
-    auto l1Error = this->CalculateError( meanAndVar, 1, a, b );
-    auto l2Error = this->CalculateError( meanAndVar, 2, a, b );
-    // auto lInfError = this->CalculateError( meanAndVar, 0, a, b );
+    auto l1Error   = this->CalculateError( meanAndVar, 1, a, b );
+    auto l2Error   = this->CalculateError( meanAndVar, 2, a, b );
+    auto lInfError = this->CalculateError( meanAndVar, 0, a, b );
 
     std::ostringstream osL1ErrorMean, osL2ErrorMean, osLInfErrorMean, osL1ErrorVar, osL2ErrorVar, osLInfErrorVar;
     for( unsigned i = 0; i < _nStates; ++i ) {
         osL1ErrorMean << std::scientific << l1Error[i] << "\t";
         osL2ErrorMean << std::scientific << l2Error[i] << "\t";
-        // osLInfErrorMean << std::scientific << lInfError[i] << "\t";
+        osLInfErrorMean << std::scientific << lInfError[i] << "\t";
         osL1ErrorVar << std::scientific << l1Error[i + _nStates] << "\t";
         osL2ErrorVar << std::scientific << l2Error[i + _nStates] << "\t";
-        // osLInfErrorVar << std::scientific << lInfError[i + _nStates] << "\t";
+        osLInfErrorVar << std::scientific << lInfError[i + _nStates] << "\t";
     }
 
     l1ErrorMeanLog->info( osL1ErrorMean.str() );
     l2ErrorMeanLog->info( osL2ErrorMean.str() );
-    // lInfErrorMeanLog->info( osLInfErrorMean.str() );
+    lInfErrorMeanLog->info( osLInfErrorMean.str() );
     l1ErrorVarLog->info( osL1ErrorVar.str() );
     l2ErrorVarLog->info( osL2ErrorVar.str() );
-    // lInfErrorVarLog->info( osLInfErrorVar.str() );
+    lInfErrorVarLog->info( osLInfErrorVar.str() );
 }
