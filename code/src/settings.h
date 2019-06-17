@@ -62,6 +62,7 @@ class Settings
     unsigned _nMoments;                // number of moments in one dimension
     unsigned _nTotal;                  // number of moments in all dimensions
     VectorU _nTotalRefinementLevel;    // vector of number of moments in all dimensions for each refinement level
+    VectorU _refinementLevel;          // vector of different refinement levels
     unsigned _nRefinementLevels;
     bool _useMaxDegree;    // specifies moment hierarchy
 
@@ -148,6 +149,7 @@ class Settings
     VectorU GetNTotalRefinementLevel() const;
     unsigned GetNRefinementLevels() const;
     unsigned GetNTotalforRefLevel( unsigned level ) const;
+    unsigned GetPolyDegreeforRefLevel( unsigned level ) const;
     unsigned GetNQuadPoints() const;
     void SetNQuadPoints( unsigned nqNew );
     void SetNQTotal( unsigned nqTotalNew );

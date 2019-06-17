@@ -218,7 +218,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             auto degreeType        = ( *momentSettings )[0]->get_array_of<std::string>();
             _nRefinementLevels     = unsigned( momentArray->size() );
             _nTotalRefinementLevel = VectorU( _nRefinementLevels );
-            _nMoments              = unsigned( ( *momentArray )[momentArray->size() - 1] );    // unsigned( ( *nMoments )[nMoments->size() - 1] );
+            _refinementLevel       = VectorU( _nRefinementLevels );
+            for( unsigned i = 0; i < _nRefinementLevels; ++i ) _refinementLevel[i] = unsigned( ( *momentArray )[i] );
+            _nMoments = unsigned( ( *momentArray )[momentArray->size() - 1] );    // unsigned( ( *nMoments )[nMoments->size() - 1] );
             // compute nTotal
             if( degreeType->at( 0 ).compare( "maxDegree" ) == 0 ) {
                 _useMaxDegree = true;
@@ -233,19 +235,23 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             _nTotal = 0;
             unsigned totalDegree;    // compute total degree of basis function i
 
-            for( unsigned i = 0; i < std::pow( _nMoments, _numDimXi ); ++i ) {
+            for( unsigned i = 0; i < std::pow( ( _nMoments + 1 ), _numDimXi ); ++i ) {
                 totalDegree = 0;
                 for( unsigned l = 0; l < _numDimXi; ++l ) {
-                    totalDegree += unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
+                    totalDegree +=
+                        unsigned( ( i - i % unsigned( std::pow( ( _nMoments + 1 ), l ) ) ) / unsigned( std::pow( ( _nMoments + 1 ), l ) ) ) %
+                        ( _nMoments + 1 );
                 }
                 // if total degree is sufficiently small or max degree is used, indices are stored
                 if( totalDegree <= _nMoments || _useMaxDegree ) {
-                    std::cout << "total degree is " << totalDegree << std::endl;
+                    std::cout << "-> total degree is " << totalDegree << std::endl;
                     ++_nTotal;
                     // count up truncation index if total degree of current basis fct lies below total degree of level l
                     for( int l = int( _nRefinementLevels ) - 1; l >= 0; --l ) {
-                        if( unsigned( ( *momentArray )[unsigned( l )] ) >= totalDegree )
+                        if( _refinementLevel[unsigned( l )] >= totalDegree ) {
+                            std::cout << "Count up level " << l << std::endl;
                             _nTotalRefinementLevel[l] = _nTotalRefinementLevel[l] + 1;
+                        }
                         else
                             break;
                     }
@@ -395,6 +401,7 @@ unsigned Settings::GetNTotal() const { return _nTotal; }
 VectorU Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLevel; }
 unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
 unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }
+unsigned Settings::GetPolyDegreeforRefLevel( unsigned level ) const { return _refinementLevel[level]; }
 GridType Settings::GetGridType() const { return _gridType; }
 void Settings::SetNQTotal( unsigned nqTotalNew ) {
     _nQTotal = nqTotalNew;
