@@ -48,4 +48,7 @@ Matrix Problem::ExactSolution( double t, const Matrix& x, const Vector& xi ) con
     exit( EXIT_FAILURE );
 }
 
-Matrix Problem::Source( const Matrix& uQ ) const {}
+Matrix Problem::Source( const Matrix& uQ ) const {
+    exit( EXIT_FAILURE );
+    return uQ;
+}
