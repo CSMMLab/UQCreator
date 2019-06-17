@@ -48,7 +48,6 @@ Closure::Closure( Settings* settings )
     // define quadrature
     _quadGrid = QuadratureGrid::Create( _settings );
     // TensorizedQuadrature* quadGrid = new TensorizedQuadrature( _settings );
-    std::cout << "quadGrid done" << std::endl;
     _xiGrid    = _quadGrid->GetNodes();
     auto wGrid = _quadGrid->GetWeights();
 
