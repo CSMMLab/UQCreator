@@ -1,6 +1,6 @@
 #include "pnequations.h"
 
-PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 7 ) {
+PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 13 ) {
     _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
     _settings->SetNStates( _nStates );
     _settings->SetSource( true );
@@ -151,10 +151,8 @@ void PNEquations::SetupSystemMatrices() {
 
 Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
 
-    Vector uMean = 0.5 * ( u + v );
-    double dt    = _settings->GetDT();
-
-    return F( uMean ) * n - 0.5 * ( v - u ) * norm( n );    // - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
+    return F( 0.5 * ( u + v ) ) * n -
+           0.5 * ( v - u ) * norm( n );    // - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
 }
 
 Matrix PNEquations::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
@@ -190,7 +188,7 @@ Matrix PNEquations::Source( const Matrix& uQ ) const {
     double sigmaS    = 1.0;    // scattering coefficient
     double sigmaT    = sigmaA + sigmaS;
     Vector g( nStates, 0.0 );
-    g[0] = 2 * M_PI;
+    g[0] = 1.0;    // 2 * M_PI;
     Matrix y( nStates, Nq, 0.0 );
     for( unsigned k = 0; k < Nq; ++k ) {
         for( unsigned s = 0; s < nStates; ++s ) {
@@ -204,7 +202,7 @@ double PNEquations::ComputeDt( const Matrix& u, double dx ) const {
 
     double cfl = _settings->GetCFL();
 
-    double maxVelocity = 0.1;
+    double maxVelocity = 1.0;
 
     return ( cfl / dx ) / maxVelocity;
 }
@@ -213,8 +211,8 @@ Vector PNEquations::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
     double x0    = 0.0;
     double y0    = 0.0;
-    double s2    = std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
-    double floor = 1e-4;
+    double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
+    double floor = 0.0;
     _sigma       = _settings->GetSigma();
 
     y[0] = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2 ) );
