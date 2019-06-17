@@ -41,7 +41,7 @@ Closure::Closure( Settings* settings )
             totalDegree += indexTest[l];
         }
         // if total degree is sufficiently small or max degree is used, indices are stored
-        if( totalDegree < _nMoments || _settings->UsesMaxDegree() ) indices.push_back( indexTest );
+        if( totalDegree <= _nMoments || _settings->UsesMaxDegree() ) indices.push_back( indexTest );
     }
     _nTotal = unsigned( indices.size() );
 

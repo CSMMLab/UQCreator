@@ -239,7 +239,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                     totalDegree += unsigned( ( i - i % unsigned( std::pow( _nMoments, l ) ) ) / unsigned( std::pow( _nMoments, l ) ) ) % _nMoments;
                 }
                 // if total degree is sufficiently small or max degree is used, indices are stored
-                if( totalDegree < _nMoments || _useMaxDegree ) {
+                if( totalDegree <= _nMoments || _useMaxDegree ) {
                     std::cout << "total degree is " << totalDegree << std::endl;
                     ++_nTotal;
                     // count up truncation index if total degree of current basis fct lies below total degree of level l
