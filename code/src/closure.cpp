@@ -24,9 +24,10 @@ Closure::Closure( Settings* settings )
     _quad[0]  = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_LEGENDRE );
     _quad[1]  = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_HERMITE );
 
-    // compute total number of quad points
+    // get number of uncertain dimensions
     _numDimXi = _settings->GetNDimXi();
 
+    // get index vector for basis function calculation
     std::vector<std::vector<unsigned>> indices = _settings->GetPolyIndices();
     _nTotal                                    = _settings->GetNTotal();
 

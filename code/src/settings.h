@@ -53,6 +53,7 @@ class Settings
     unsigned _nQPE;           // number of total quadrature points on PE
     unsigned _kStart;         // start point in quadrature point array for PE
     unsigned _kEnd;           // end point in quadrature point array for PE
+    VectorU _quadLevel;       // quadrature level array
 
     int _mype;                             // PE number
     int _npes;                             // number of all PEs
@@ -148,6 +149,7 @@ class Settings
 
     unsigned GetNTotal() const;
     VectorU GetNTotalRefinementLevel() const;
+    VectorU GetQuadLevel() const;
     std::vector<std::vector<unsigned>> GetPolyIndices() const;
     unsigned GetNRefinementLevels() const;
     unsigned GetNTotalforRefLevel( unsigned level ) const;

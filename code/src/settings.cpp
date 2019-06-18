@@ -272,6 +272,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             auto nQArray        = ( *quadratureSettings )[1]->get_array_of<int64_t>();
             auto quadratureType = ( *quadratureSettings )[0]->get_array_of<std::string>();
             _nQuadPoints        = unsigned( ( *nQArray )[nQArray->size() - 1] );
+            assert( nQArray->size() == _nRefinementLevels );
+            _quadLevel = VectorU( _nRefinementLevels );
+            for( unsigned i = 0; i < _nRefinementLevels; ++i ) _quadLevel[i] = unsigned( ( *nQArray )[i] );
 
             // computing Nq Total
             if( quadratureType->at( 0 ).compare( "sparseGrid" ) == 0 ) {
@@ -403,6 +406,8 @@ unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
 unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }
 unsigned Settings::GetPolyDegreeforRefLevel( unsigned level ) const { return _refinementLevel[level]; }
 GridType Settings::GetGridType() const { return _gridType; }
+VectorU Settings::GetQuadLevel() const { return _quadLevel; }
+
 void Settings::SetNQTotal( unsigned nqTotalNew ) {
     _nQTotal = nqTotalNew;
     // if number of quadrature points is updated, the MPI bounds need to be updated as well

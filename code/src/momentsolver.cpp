@@ -154,7 +154,7 @@ void MomentSolver::Solve() {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
             if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
             if( writeSolutionInTime && timeIndex % _settings->GetWriteFrequency() == 1 ) {
-                Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t );
+                Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, false );
                 _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
                 if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
             }
@@ -181,7 +181,7 @@ void MomentSolver::Solve() {
     log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
     // compute mean and variance numerical + exact (if exact solution specified)
-    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t );
+    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true );
 
     // write solution on reference field
     _referenceSolution.resize( _nCells );
@@ -295,13 +295,13 @@ void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, co
         double indicator                = ComputeRefIndicator( refinementLevel, u[j], refinementLevel[j] );
         refinementIndicatorPlot( 0, j ) = indicator;    // modify for multiD
         refinementIndicatorPlot( 1, j ) = double( refinementLevel[j] );
-        _mesh->Export( refinementIndicatorPlot, "_refinementIndicator" + std::to_string( index ) );
     }
+    _mesh->Export( refinementIndicatorPlot, "_refinementIndicator" + std::to_string( index ) );
 }
 
-Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t ) const {
+Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, bool writeExact ) const {
     Matrix meanAndVar;
-    if( _settings->HasExactSolution() ) {
+    if( _settings->HasExactSolution() && writeExact ) {
         meanAndVar = Matrix( 4 * _nStates, _mesh->GetNumCells(), 0.0 );
     }
     else {
@@ -326,7 +326,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t )
             }
         }
     }
-    if( _settings->HasExactSolution() ) {
+    if( _settings->HasExactSolution() && writeExact ) {
         // store xGrid on vector
         Matrix xGrid( _nCells, _settings->GetMeshDimension() );
         for( unsigned j = 0; j < _nCells; ++j ) {

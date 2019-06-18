@@ -125,7 +125,7 @@ class MomentSolver
 
     void WriteErrors( const VectorU& refinementLevel );
 
-    Matrix WriteMeanAndVar( const VectorU& refinementLevel, double t ) const;
+    Matrix WriteMeanAndVar( const VectorU& refinementLevel, double t, bool writeExact ) const;
     void ExportRefinementIndicator( const VectorU& refinementLevel, const MatVec& u, unsigned index ) const;
     double ComputeRefIndicator( const VectorU& refinementLevel, const Matrix& u, unsigned refLevel ) const;
 

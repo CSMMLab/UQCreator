@@ -4,7 +4,7 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 1500
+numberOfCells = 500
 a = 0
 b = 3
 outputFile = "burgers_shock"
@@ -14,13 +14,13 @@ outputFile = "burgers_shock"
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.5]]
-CFL = 1.0
+CFL = 0.9
 tEnd = 0.12
 
 [moment_system]
 # available closures: BoundedBarrier, LogSin, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "BoundedBarrier"
-moments = [["totalDegree"],[ 2, 5, 10 ]]
-quadPoints = 40
+moments = [["totalDegree"],[2,3,4,5]]
+quadPoints = [["tensorized"],[20]]
 maxIterations = 2000
 epsilon = 5e-5
