@@ -95,7 +95,7 @@ void UniformSparseGrid::computeWeights(
         }
         if( l >= min_level ) {
             int coeff = modu( level - l ) * choose( static_cast<int>( dim ) - 1, static_cast<int>( level ) - static_cast<int>( l ) );
-            std::cout << modu( level - l ) << std::endl;
+            // std::cout << modu( level - l ) << std::endl;
             for( unsigned i = 0; i < orderND; i++ ) {
                 for( unsigned j = 0; j < nodeCount; j++ ) {
                     bool found = true;
