@@ -100,8 +100,23 @@ void MomentSolver::Solve() {
 
         // determine refinement level of cells on current PE
         for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-            double indicator = std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 1 ) ) +
-                               std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 2 ) );
+            double indicator = 0.0;
+            if( _settings->GetNDimXi() == 1 ) {
+                indicator += std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 1 ) ) +
+                             std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 2 ) );
+            }
+            else {
+                unsigned prevRefinementLevel;
+                if( refinementLevel[cellIndexPE[j]] == 0 ) {
+                    prevRefinementLevel = 1;
+                }
+                else {
+                    prevRefinementLevel = nTotal[refinementLevel[cellIndexPE[j]] - 1];
+                }
+                for( unsigned i = prevRefinementLevel; i < nTotal[refinementLevel[cellIndexPE[j]]]; ++i ) {
+                    indicator += std::fabs( u[cellIndexPE[j]]( 0, i ) );
+                }
+            }
             if( indicator > 0.001 && refinementLevel[cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
                 refinementLevel[cellIndexPE[j]] += 1;
             else if( indicator < 0.0001 && refinementLevel[cellIndexPE[j]] > 0 )
