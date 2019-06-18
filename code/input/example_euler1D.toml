@@ -1,6 +1,7 @@
 [general]
 problem = "Euler1D"
 outputDir = "../results"
+writeFrequency = 10
 
 [mesh]
 dimension = 1
@@ -20,8 +21,8 @@ tEnd = 0.2
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
 closure = "Euler"
-moments = [["totalDegree"],[6]]
-quadPoints = [["sparseGrid"],[8]]
+moments = [["totalDegree"],[2,3,4,5]]
+quadPoints = [["tensorizedGrid"],[6]]
 # quadPoints = [["tensorizedGrid"],[ 7 ]]
 maxIterations = 200
 epsilon = 5e-5
