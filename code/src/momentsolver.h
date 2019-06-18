@@ -32,6 +32,8 @@ class MomentSolver
     unsigned _nTotal;                          // total number of moments
     std::shared_ptr<spdlog::logger> _log;      // log file writer
     std::vector<Vector> _referenceSolution;    // reference solution stores expected value and variance for all states
+    VectorU _nTotalForRef;                     // nTotal for different refinement levels
+    std::vector<unsigned> _cellIndexPE;        // gives cell index on each PE
 
     /**
      * numerical flux for moment system
@@ -122,6 +124,10 @@ class MomentSolver
     Matrix CalculateErrorField( const Matrix& solution, unsigned LNorm ) const;
 
     void WriteErrors( const VectorU& refinementLevel );
+
+    Matrix WriteMeanAndVar( const VectorU& refinementLevel, double t ) const;
+    void ExportRefinementIndicator( const VectorU& refinementLevel, const MatVec& u, unsigned index ) const;
+    double ComputeRefIndicator( const VectorU& refinementLevel, const Matrix& u, unsigned refLevel ) const;
 
   public:
     /**

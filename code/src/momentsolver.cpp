@@ -10,7 +10,10 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
 
-    _nTotal = _settings->GetNTotal();
+    _nTotal       = _settings->GetNTotal();
+    _nTotalForRef = _settings->GetNTotalRefinementLevel();
+
+    _cellIndexPE = _settings->GetCellIndexPE();
 
     _closure = Closure::Create( _settings );
     _settings->SetNQTotal( _closure->GetQuadratureGrid()->GetNodeCount() );
@@ -32,10 +35,8 @@ MomentSolver::~MomentSolver() {
 }
 
 void MomentSolver::Solve() {
-    bool useAdaptivity = true;                                                    // flag for using adaptivity
+    bool writeSolutionInTime = true;
     VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels() - 1 );    // vector carries refinement level for each cell
-    Matrix refinementIndicatorPlot( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
-    VectorU nTotal = _settings->GetNTotalRefinementLevel();
 
     auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
@@ -48,8 +49,7 @@ void MomentSolver::Solve() {
     SetDuals( prevSettings, prevClosure, u );
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
 
-    std::vector<unsigned> cellIndexPE = _settings->GetCellIndexPE();
-    std::vector<int> PEforCell        = _settings->GetPEforCell();
+    std::vector<int> PEforCell = _settings->GetPEforCell();
 
     // log->info( "PE {0}: kStart {1}, kEnd {2}", _settings->GetMyPE(), _settings->GetKStart(), _settings->GetKEnd() );
 
@@ -78,12 +78,14 @@ void MomentSolver::Solve() {
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
         double residual = 0;
+
+        // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
-        for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-            if( _mesh->GetBoundaryType( cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            // std::cout << "Cell " << j << ": Solving Closure with lambda = " << _lambda[cellIndexPE[j]] << ", u = " << u[cellIndexPE[j]] <<
+        for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            // std::cout << "Cell " << j << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] <<
             // std::endl;
-            _closure->SolveClosure( _lambda[cellIndexPE[j]], u[cellIndexPE[j]], nTotal[refinementLevel[cellIndexPE[j]]], _nQTotal );
+            _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], _nTotalForRef[refinementLevel[_cellIndexPE[j]]], _nQTotal );
         }
 
         // MPI Broadcast lambdas to all PEs
@@ -95,36 +97,20 @@ void MomentSolver::Solve() {
         // for nQ refinement: here we need new refinement level for nQTotal and old level for nTotal
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
-            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], nTotal[refinementLevel[j]] ) );
+            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], _nTotalForRef[refinementLevel[j]] ) );
         }
 
         // determine refinement level of cells on current PE
-        for( unsigned j = 0; j < static_cast<unsigned>( cellIndexPE.size() ); ++j ) {
-            if( _mesh->GetBoundaryType( cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            double indicator = 0.0;
-            if( _settings->GetNDimXi() == 1 ) {
-                indicator += std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 1 ) ) +
-                             std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 2 ) );
-            }
-            else {
-                unsigned prevRefinementLevel;
-                if( refinementLevel[cellIndexPE[j]] == 0 ) {
-                    prevRefinementLevel = 1;
-                }
-                else {
-                    prevRefinementLevel = nTotal[refinementLevel[cellIndexPE[j]] - 1];
-                }
-                for( unsigned i = prevRefinementLevel; i < nTotal[refinementLevel[cellIndexPE[j]]]; ++i ) {
-                    indicator += std::fabs( u[cellIndexPE[j]]( 0, i ) );
-                }
-            }
-            if( indicator > 0.02 && refinementLevel[cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
-                refinementLevel[cellIndexPE[j]] += 1;
-            else if( indicator < 0.002 && refinementLevel[cellIndexPE[j]] > 0 )
-                refinementLevel[cellIndexPE[j]] -= 1;
+        for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+
+            if( indicator > 0.02 && refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
+                refinementLevel[_cellIndexPE[j]] += 1;
+            else if( indicator < 0.002 && refinementLevel[_cellIndexPE[j]] > 0 )
+                refinementLevel[_cellIndexPE[j]] -= 1;
         }
 
-        // std::cout << "Before MPI_Bcast" << std::endl;
         // broadcast refinemt level to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
@@ -133,7 +119,8 @@ void MomentSolver::Solve() {
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
             u[j].reset();
-            multOnPENoReset( uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd(), nTotal[refinementLevel[j]] );
+            multOnPENoReset(
+                uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd(), _nTotalForRef[refinementLevel[j]] );
         }
 
         // determine time step size
@@ -144,7 +131,6 @@ void MomentSolver::Solve() {
             if( dtCurrent < dtMinOnPE ) dtMinOnPE = dtCurrent;
         }
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
-        // std::cout << "dt = " << dt << std::endl;
         t += dt;
         ++timeIndex;
 
@@ -160,13 +146,18 @@ void MomentSolver::Solve() {
         }
 
         // compute residual
-        for( unsigned j = 0; j < cellIndexPE.size(); ++j ) {
-            residual += std::abs( u[cellIndexPE[j]]( 0, 0 ) - uOld[cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( cellIndexPE[j] );
+        for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
+            residual += std::abs( u[_cellIndexPE[j]]( 0, 0 ) - uOld[_cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( _cellIndexPE[j] );
         }
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
             if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
+            if( writeSolutionInTime && timeIndex % _settings->GetWriteFrequency() == 1 ) {
+                Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t );
+                _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
+                if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
+            }
         }
     }
 
@@ -189,8 +180,127 @@ void MomentSolver::Solve() {
     log->info( "" );
     log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
 
+    // compute mean and variance numerical + exact (if exact solution specified)
+    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t );
+
+    // write solution on reference field
+    _referenceSolution.resize( _nCells );
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        _referenceSolution[j].resize( 2 * _nStates );
+        for( unsigned s = 2 * _nStates; s < 4 * _nStates; ++s ) {
+            _referenceSolution[j][s - 2 * _nStates] = meanAndVar( s, j );
+        }
+    }
+
+    if( _settings->HasReferenceFile() || _settings->HasExactSolution() ) {
+        Vector a( 2 );
+        a[0] = -0.05;
+        a[1] = -0.5;
+        Vector b( 2 );
+        b[0]         = 1.05;
+        b[1]         = 0.5;
+        auto l1Error = this->CalculateError( meanAndVar, 1, a, b );
+        auto l2Error = this->CalculateError( meanAndVar, 2, a, b );
+        log->info( "\nExpectation Value error w.r.t reference solution:" );
+        log->info( "State   L1-error      L2-error" );
+        for( unsigned i = 0; i < _nStates; ++i ) {
+            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
+        }
+        log->info( "\nVariance error w.r.t reference solution:" );
+        log->info( "State   L1-error      L2-error" );
+        for( unsigned i = _nStates; i < 2 * _nStates; ++i ) {
+            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
+        }
+        Matrix meanAndVarErrors = this->CalculateErrorField( meanAndVar, 2 );
+
+        // export error plot
+        _mesh->Export( meanAndVarErrors, "_errors" );
+    }
+
+    // export mean and variance
+    if( _settings->GetProblemType() == P_SHALLOWWATER_2D )
+        _mesh->ExportShallowWater( meanAndVar );
+    else {
+        _mesh->Export( meanAndVar, "" );
+    }
+
+    // export solution fields
+    this->Export( uNew, _lambda );
+
+    // export refinement indicator
+    if( _settings->GetNRefinementLevels() > 1 ) {
+        ExportRefinementIndicator( refinementLevel, u, 1000 );
+    }
+
+    unsigned evalCell = 2404;
+    if( _settings->GetNumCells() > evalCell ) {
+        std::ofstream outXi( "../results/xiGrid" );
+
+        Vector xiEta( _settings->GetNDimXi() );
+        unsigned n;
+
+        unsigned plotState  = 0;
+        unsigned nQFine     = 100;
+        unsigned nQOriginal = _settings->GetNQuadPoints();
+        _settings->SetNQuadPoints( nQFine );
+        Closure* closurePlot = Closure::Create( _settings );
+        Matrix testLambda( _nStates, _nTotal, 0.0 );
+        testLambda( plotState, 1 ) = 1.0;
+        _mesh->PlotInXi( closurePlot->U( closurePlot->EvaluateLambda( _lambda[evalCell] ) ), plotState );
+        std::vector<Polynomial*> quad = closurePlot->GetQuadrature();
+        testLambda                    = _lambda[evalCell];
+        auto uPlot                    = closurePlot->U( closurePlot->EvaluateLambda( testLambda ) );
+
+        for( unsigned k = 0; k < uPlot.columns(); ++k ) {
+            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                unsigned index = unsigned( ( k - k % unsigned( std::pow( nQFine, l ) ) ) / unsigned( std::pow( nQFine, l ) ) ) % nQFine;
+                xiEta[l]       = quad[n]->GetNodes()[index];
+                outXi << xiEta[l] << " ";
+            }
+            outXi << uPlot( 0, k ) << std::endl;
+        }
+
+        outXi.close();
+
+        _settings->SetNQuadPoints( nQOriginal );
+    }
+}
+
+double MomentSolver::ComputeRefIndicator( const VectorU& refinementLevel, const Matrix& u, unsigned refLevel ) const {
+    double indicator = 0;
+    if( _settings->GetNDimXi() == 1 ) {
+        indicator += std::fabs( u( 0, _nTotalForRef[refLevel] - 1 ) ) + std::fabs( u( 0, _nTotalForRef[refLevel] - 2 ) );
+    }
+    else {
+        unsigned prevRefinementLevel;
+        if( refLevel == 0 ) {
+            prevRefinementLevel = 1;
+        }
+        else {
+            prevRefinementLevel = _nTotalForRef[refLevel - 1];
+        }
+        for( unsigned i = prevRefinementLevel; i < _nTotalForRef[refLevel]; ++i ) {
+            indicator += std::fabs( u( 0, i ) );
+        }
+    }
+    return indicator;
+}
+
+void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, const MatVec& u, unsigned index ) const {
+    // loop over all cells and check refinement indicator
+    Matrix refinementIndicatorPlot( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        double indicator                = ComputeRefIndicator( refinementLevel, u[j], refinementLevel[j] );
+        refinementIndicatorPlot( 0, j ) = indicator;    // modify for multiD
+        refinementIndicatorPlot( 1, j ) = double( refinementLevel[j] );
+        _mesh->Export( refinementIndicatorPlot, "_refinementIndicator" + std::to_string( index ) );
+    }
+}
+
+Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t ) const {
     Matrix meanAndVar;
-    Matrix meanAndVarErrors = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     if( _settings->HasExactSolution() ) {
         meanAndVar = Matrix( 4 * _nStates, _mesh->GetNumCells(), 0.0 );
     }
@@ -202,7 +312,7 @@ void MomentSolver::Solve() {
     for( unsigned j = 0; j < _nCells; ++j ) {
         // expected value
         for( unsigned k = 0; k < _nQTotal; ++k ) {
-            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, nTotal[refinementLevel[j]] ) );
+            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotalForRef[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
             }
@@ -210,7 +320,7 @@ void MomentSolver::Solve() {
 
         // variance
         for( unsigned k = 0; k < _nQTotal; ++k ) {
-            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, nTotal[refinementLevel[j]] ) );
+            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotalForRef[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
             }
@@ -286,121 +396,16 @@ void MomentSolver::Solve() {
                 }
             }
         }
-        // write solution on reference field
-        _referenceSolution.resize( _nCells );
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            _referenceSolution[j].resize( 2 * _nStates );
-            for( unsigned s = 2 * _nStates; s < 4 * _nStates; ++s ) {
-                _referenceSolution[j][s - 2 * _nStates] = meanAndVar( s, j );
-            }
-        }
     }
-
-    if( _settings->HasReferenceFile() || _settings->HasExactSolution() ) {
-        Vector a( 2 );
-        a[0] = -0.05;
-        a[1] = -0.5;
-        Vector b( 2 );
-        b[0]         = 1.05;
-        b[1]         = 0.5;
-        auto l1Error = this->CalculateError( meanAndVar, 1, a, b );
-        auto l2Error = this->CalculateError( meanAndVar, 2, a, b );
-        log->info( "\nExpectation Value error w.r.t reference solution:" );
-        log->info( "State   L1-error      L2-error" );
-        for( unsigned i = 0; i < _nStates; ++i ) {
-            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
-        }
-        log->info( "\nVariance error w.r.t reference solution:" );
-        log->info( "State   L1-error      L2-error" );
-        for( unsigned i = _nStates; i < 2 * _nStates; ++i ) {
-            log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
-        }
-        meanAndVarErrors = this->CalculateErrorField( meanAndVar, 2 );
-
-        _mesh->Export( meanAndVarErrors, "_errors" );
-    }
-
-    if( _settings->GetProblemType() == P_SHALLOWWATER_2D )
-        _mesh->ExportShallowWater( meanAndVar );
-    else {
-        _mesh->Export( meanAndVar, "" );
-    }
-
-    // loop over all cells and check refinement indicator
-    if( useAdaptivity ) {    // master determines refinement level for now
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            double indicator                = 0;
-            refinementIndicatorPlot( 0, j ) = std::fabs( u[j]( 0, _nTotal - 1 ) ) + std::fabs( u[j]( 0, _nTotal - 2 ) );    // modify for multiD
-            refinementIndicatorPlot( 1, j ) = double( refinementLevel[j] );
-
-            if( _settings->GetNDimXi() == 1 ) {
-                indicator += std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 1 ) ) +
-                             std::fabs( u[cellIndexPE[j]]( 0, nTotal[refinementLevel[cellIndexPE[j]]] - 2 ) );
-            }
-            else {
-                unsigned prevRefinementLevel;
-                if( refinementLevel[cellIndexPE[j]] == 0 ) {
-                    prevRefinementLevel = 1;
-                }
-                else {
-                    prevRefinementLevel = nTotal[refinementLevel[cellIndexPE[j]] - 1];
-                }
-                for( unsigned i = prevRefinementLevel; i < nTotal[refinementLevel[cellIndexPE[j]]]; ++i ) {
-                    indicator += std::fabs( u[cellIndexPE[j]]( 0, i ) );
-                }
-            }
-            _mesh->Export( refinementIndicatorPlot, "_refinementIndicator" );
-        }
-    }
-
-    this->Export( uNew, _lambda );
-
-    unsigned evalCell = 2404;
-    if( _settings->GetNumCells() > evalCell ) {
-        std::ofstream outXi( "../results/xiGrid" );
-
-        Vector xiEta( _settings->GetNDimXi() );
-        unsigned n;
-
-        unsigned plotState  = 0;
-        unsigned nQFine     = 100;
-        unsigned nQOriginal = _settings->GetNQuadPoints();
-        _settings->SetNQuadPoints( nQFine );
-        Closure* closurePlot = Closure::Create( _settings );
-        Matrix testLambda( _nStates, _nTotal, 0.0 );
-        testLambda( plotState, 1 ) = 1.0;
-        _mesh->PlotInXi( closurePlot->U( closurePlot->EvaluateLambda( _lambda[evalCell] ) ), plotState );
-        std::vector<Polynomial*> quad = closurePlot->GetQuadrature();
-        testLambda                    = _lambda[evalCell];
-        auto uPlot                    = closurePlot->U( closurePlot->EvaluateLambda( testLambda ) );
-
-        for( unsigned k = 0; k < uPlot.columns(); ++k ) {
-            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                unsigned index = unsigned( ( k - k % unsigned( std::pow( nQFine, l ) ) ) / unsigned( std::pow( nQFine, l ) ) ) % nQFine;
-                xiEta[l]       = quad[n]->GetNodes()[index];
-                outXi << xiEta[l] << " ";
-            }
-            outXi << uPlot( 0, k ) << std::endl;
-        }
-
-        outXi.close();
-
-        _settings->SetNQuadPoints( nQOriginal );
-    }
+    return meanAndVar;
 }
 
 void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const VectorU& refLevel ) const {
     Matrix out( _nStates, _nTotal, 0.0 );    // could also be allocated before and then stored in class, be careful with openmp!!!
 #pragma omp parallel for
     for( unsigned j = 0; j < _nCells; ++j ) {
-        multOnPENoReset( _problem->Source( uQ[j] ),
-                         _closure->GetPhiTildeWf(),
-                         out,
-                         _settings->GetKStart(),
-                         _settings->GetKEnd(),
-                         _settings->GetNTotalforRefLevel( refLevel[j] ) );
+        multOnPENoReset(
+            _problem->Source( uQ[j] ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd(), _nTotalForRef[refLevel[j]] );
         uNew[j] = uNew[j] + dt * _mesh->GetArea( j ) * out;
     }
 }
