@@ -743,7 +743,7 @@ Vector MomentSolver::CalculateError( const Matrix& solution, unsigned LNorm, con
         }
     }
     for( unsigned s = 0; s < 2 * _nStates; ++s ) {
-        error[s] = std::pow( error[s] / refNorm[s], 1.0 / double( LNorm ) );
+        error[s] = std::pow( error[s] / refNorm[s], 1.0 / std::max( double( LNorm ), 1.0 ) );
     }
     return error;
 }
