@@ -1,14 +1,14 @@
 [general]
 problem = "Euler2D"
 outputDir = "../results"
-writeFrequency = 10
+writeFrequency = 2
 
 [mesh]
 dimension = 2
 format = "SU2"
 SU2MeshFile = "pipe.su2"
 SU2BC = [["inlet","dirichlet"],["outlet","dirichlet"], ["walls", "noslip"]]
-outputFile = "pipeNewL2Lambda0-0000015"
+outputFile = "pipeAdaptive"
 
 [problem]
 # available timesteppings: explicitEuler
