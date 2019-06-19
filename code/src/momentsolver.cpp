@@ -83,8 +83,8 @@ void MomentSolver::Solve() {
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            // std::cout << "Cell " << j << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] <<
-            // std::endl;
+            std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
+                      << ", u = " << u[_cellIndexPE[j]] << std::endl;
             _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], _nTotalForRef[refinementLevel[_cellIndexPE[j]]], _nQTotal );
         }
 
