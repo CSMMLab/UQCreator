@@ -82,7 +82,7 @@ void MomentSolver::Solve() {
         // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
             //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
             _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], _nTotalForRef[refinementLevel[_cellIndexPE[j]]], _nQTotal );
@@ -102,12 +102,12 @@ void MomentSolver::Solve() {
 
         // determine refinement level of cells on current PE
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
 
             if( indicator > 0.02 && refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
                 refinementLevel[_cellIndexPE[j]] += 1;
-            else if( indicator < 0.003 && refinementLevel[_cellIndexPE[j]] > 0 )
+            else if( indicator < 0.004 && refinementLevel[_cellIndexPE[j]] > 0 )
                 refinementLevel[_cellIndexPE[j]] -= 1;
         }
 
