@@ -20,8 +20,8 @@ residual = 1e-6
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
-closure = "StochasticGalerkin"
-moments = [["totalDegree"],[5]]
-quadPoints = [["sparseGrid"],[6]]
+closure = "Euler2D"
+moments = [["totalDegree"],[3]]
+quadPoints = [["sparseGrid"],[5]]
 maxIterations = 1000
 epsilon = 1e-7
