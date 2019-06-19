@@ -152,24 +152,20 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
 
         double rhoFarfield = p / ( R * T );
 
-        y[0] = rhoFarfield;
-        if( xi.size() > 1 ) {
-            y[0] += _sigma[1] * xi[1];
-        }
+        y[0]                  = rhoFarfield;
         y[1]                  = rhoFarfield * uF;
         y[2]                  = rhoFarfield * vF;
-        double kineticEnergyL = 0.5 * y[0] * ( pow( uF, 2 ) + pow( vF, 2 ) );
-        double innerEnergyL   = ( p / ( y[0] * ( gamma - 1 ) ) ) * y[0];
-        y[3]                  = kineticEnergyL + innerEnergyL;
+        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
+        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
+        y[3]                  = 1.0;
 
         if( x[1] < 1.1 + _sigma[0] * xi[0] ) {
             y[0] = 0.5 * rhoFarfield;
-            if( xi.size() > 2 ) y[0] += _sigma[2] * xi[2];
-            y[1]           = rhoFarfield * uF;
-            y[2]           = rhoFarfield * vF;
-            kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
-            innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-            y[3]           = 0.5 * ( kineticEnergyL + innerEnergyL );
+            if( _settings->GetNDimXi() > 1 ) y[0] += _sigma[1] * xi[1];
+            y[1] = rhoFarfield * uF;
+            y[2] = rhoFarfield * vF;
+            y[3] = 0.3;
+            if( _settings->GetNDimXi() > 2 ) y[3] += _sigma[2] * xi[2];
         }
         /*
          if( x[1] < 1.1 + sigma && x[1] < 1.1 - sigma ) {

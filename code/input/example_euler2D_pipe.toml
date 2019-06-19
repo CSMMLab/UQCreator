@@ -1,6 +1,7 @@
 [general]
 problem = "Euler2D"
 outputDir = "../results"
+writeFrequency = 10
 
 [mesh]
 dimension = 2
@@ -13,15 +14,16 @@ outputFile = "pipeNewL2Lambda0-0000015"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre","Legendre","Legendre"],[0.1,0.05,0.05]]
-CFL = 0.9
-tEnd = 0.0035
+distribution = [["Legendre","Legendre","Legendre"],[0.1,0.1,0.1]]
+#distribution = [["Legendre"],[0.1]]
+CFL = 0.6
+tEnd = 2.0
 residual = 1e-6
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
 closure = "Euler2D"
-moments = [["totalDegree"],[3]]
-quadPoints = [["sparseGrid"],[5]]
+moments = [["totalDegree"],[4]]
+quadPoints = [["tensorizedGrid"],[6]]
 maxIterations = 1000
 epsilon = 1e-7
