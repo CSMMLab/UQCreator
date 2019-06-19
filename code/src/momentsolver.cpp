@@ -107,7 +107,7 @@ void MomentSolver::Solve() {
 
             if( indicator > 0.02 && refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
                 refinementLevel[_cellIndexPE[j]] += 1;
-            else if( indicator < 0.001 && refinementLevel[_cellIndexPE[j]] > 0 )
+            else if( indicator < 0.003 && refinementLevel[_cellIndexPE[j]] > 0 )
                 refinementLevel[_cellIndexPE[j]] -= 1;
         }
 
