@@ -21,9 +21,13 @@ class Closure
     std::vector<Polynomial*> _quad;
     QuadratureGrid* _quadGrid;
     std::vector<Vector> _xiGrid;
+    std::vector<Vector> _wGrid;
     std::vector<Vector> _quadNodes;
+    VectorU _nQTotalForRef;
+    VectorU _nTotalForRef;
     Matrix _phiTilde;         // stores scaled basis functions evaluated at quadrature points
     Matrix _phiTildeTrans;    // stores scaled basis functions evaluated at quadrature points
+    Matrix _phiTildeF;        // stores scaled basis functions evaluated at quadrature points times pdf
     Matrix _phiTildeWf;       // stores scaled basis functions evaluated at quadrature points times weight and pdf
     std::vector<Vector> _phiTildeVec;
     MatVec _hPartial;    // stores partial matrices for Hessian computation
@@ -35,8 +39,8 @@ class Closure
     unsigned _nQTotal;
     unsigned _nTotal;
     unsigned _maxIterations;
-    void Hessian( Matrix& H, const Matrix& lambda, unsigned nTotal, unsigned nQTotal );
-    void Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
+    void Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel );
+    void Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned refLevel );
     std::shared_ptr<spdlog::logger> _log;
     Matrix _dUdLambda;    // preallocated memory dor computation of Hessian
   public:
@@ -54,8 +58,8 @@ class Closure
      * @return correct dual vector
      */
     // virtual void SolveClosure( Matrix& lambda, const Matrix& u );
-    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
-    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
+    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel );
+    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel );
     /**
      * calculate entropic variable from given dual vector
      * @param dual variable

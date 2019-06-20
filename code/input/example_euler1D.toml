@@ -14,15 +14,15 @@ outputFile = "euler_shock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre","Legendre","Legendre"],[0.01, 0.1,0.01]]
-CFL = 0.9
+distribution = [["Legendre","Legendre"],[0.01,0.01]]
+CFL = 0.7
 tEnd = 0.2
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
 closure = "Euler"
-moments = [["totalDegree"],[2,3,4,5]]
-quadPoints = [["tensorizedGrid"],[6]]
+moments = [["totalDegree"],[2,3,4]]
+quadPoints = [["sparseGrid"],[3,4,5]]
 # quadPoints = [["tensorizedGrid"],[ 7 ]]
 maxIterations = 200
 epsilon = 5e-5

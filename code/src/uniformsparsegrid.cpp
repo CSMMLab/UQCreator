@@ -2,6 +2,8 @@
 
 UniformSparseGrid::UniformSparseGrid( Settings* settings ) : SparseGrid( settings->GetNDimXi(), settings->GetNQuadPoints() ) { createGrid(); }
 
+UniformSparseGrid::UniformSparseGrid( Settings* settings, unsigned level ) : SparseGrid( settings->GetNDimXi(), level ) { createGrid(); }
+
 UniformSparseGrid::~UniformSparseGrid() {}
 
 ///////////////////////////////////////////////////////////////////////////////////////

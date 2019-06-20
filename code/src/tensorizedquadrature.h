@@ -12,7 +12,7 @@ class TensorizedQuadrature : public QuadratureGrid
 {
     Settings* _settings;
     const unsigned _nQuadPoints;
-    std::vector<Polynomial*> _quad;    
+    std::vector<Polynomial*> _quad;
     unsigned _numDimXi;
     unsigned _nQTotal;
     double** _nodes;
@@ -21,7 +21,7 @@ class TensorizedQuadrature : public QuadratureGrid
 
   public:
     TensorizedQuadrature( Settings* settings );
-    TensorizedQuadrature( Settings* settings, unsigned numDimXi, unsigned nQuadPoints );
+    TensorizedQuadrature( Settings* settings, unsigned level );
     ~TensorizedQuadrature();
     std::vector<Vector> GetNodes();
     Vector GetWeights();

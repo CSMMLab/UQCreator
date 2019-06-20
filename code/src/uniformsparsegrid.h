@@ -18,6 +18,7 @@ class UniformSparseGrid : public SparseGrid
 
   public:
     UniformSparseGrid( Settings* settings );
+    UniformSparseGrid( Settings* settings, unsigned level );
     virtual ~UniformSparseGrid();
 };
 

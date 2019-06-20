@@ -7,16 +7,18 @@
 
 class QuadratureGrid
 {
-private:
+  private:
     Settings* _settings;
-public:
-    QuadratureGrid();
-    virtual ~QuadratureGrid(){}
-    static QuadratureGrid* Create( Settings* settings );
 
-    virtual unsigned GetNodeCount() = 0;
+  public:
+    QuadratureGrid();
+    virtual ~QuadratureGrid() {}
+    static QuadratureGrid* Create( Settings* settings );
+    static QuadratureGrid* Create( Settings* settings, unsigned level );
+
+    virtual unsigned GetNodeCount()        = 0;
     virtual std::vector<Vector> GetNodes() = 0;
-    virtual Vector GetWeights() = 0;
+    virtual Vector GetWeights()            = 0;
 };
 
-#endif // QUADRATUREGRID_H
+#endif    // QUADRATUREGRID_H

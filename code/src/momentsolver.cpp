@@ -85,7 +85,7 @@ void MomentSolver::Solve() {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
             //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
-            _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], _nTotalForRef[refinementLevel[_cellIndexPE[j]]], _nQTotal );
+            _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
         }
 
         // MPI Broadcast lambdas to all PEs
@@ -487,7 +487,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
             prevClosure->SetMaxIterations( 10000 );
             for( unsigned j = 0; j < _nCells; ++j ) {
-                prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNTotal(), prevSettings->GetNQTotal() );
+                prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNRefinementLevels() - 1 );
             }
             prevClosure->SetMaxIterations( maxIterations );
         }
@@ -512,7 +512,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
                     _lambda[j]( s, i ) = 0.0;
                 }
             }
-            _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
+            _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
         }
         _closure->SetMaxIterations( maxIterations );
         // delete reload closures and settings
