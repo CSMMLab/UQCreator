@@ -87,21 +87,17 @@ void MomentSolver::Solve() {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
             //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
-            // std::cout << "Cell " << _cellIndexPE[j] << std::endl;
             _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
         }
-        // std::cout << "Closure DONE." << std::endl;
 
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             uOld[j] = u[j];    // save old Moments for residual computation
             MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
-        // std::cout << "BCast DONE." << std::endl;
 
         // save old refinement levels
         refinementLevelOld = refinementLevel;
-        //  std::cout << "RefLevel save DONE." << std::endl;
 
         // determine refinement level of cells on current PE
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
@@ -113,7 +109,6 @@ void MomentSolver::Solve() {
             else if( indicator < 0.004 && refinementLevel[_cellIndexPE[j]] > 0 )
                 refinementLevel[_cellIndexPE[j]] -= 1;
         }
-        // std::cout << "Indicator DONE." << std::endl;
 
         // broadcast refinemt level to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -135,19 +130,24 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Bcast( &refinementLevelTransition[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
         }
-        //  std::cout << "BCast indicator DONE." << std::endl;
 
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
         }
         //  std::cout << "uQ DONE." << std::endl;
-        // std::cout << "Refinementlevel cell 146: " << refinementLevel[146] << std::endl;
-        // std::cout << "uQ[146] = " << uQ[146] << std::endl;
+        if( _settings->GetMyPE() == 0 ) {
+            std::cout << "Refinementlevel cell 30: " << refinementLevel[30] << std::endl;
+            std::cout << "u[30] = " << u[30] << std::endl;
+            std::cout << "uQ[30] = " << uQ[30] << std::endl;
+
+            std::cout << "Refinementlevel cell 31: " << refinementLevel[31] << std::endl;
+            std::cout << "u[31] = " << u[31] << std::endl;
+            std::cout << "uQ[31] = " << uQ[31] << std::endl;
+        }
 
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
-            u[j].reset();
             u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
         // std::cout << "u DONE." << std::endl;
@@ -318,6 +318,10 @@ void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const Vect
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned level ) {
     // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
+    auto GMatrix = _problem->G( u1, u2, nUnit, n, level );
+    std::cout << "out size = " << out.rows() << " " << out.columns() << std::endl;
+    std::cout << "G size = " << GMatrix.rows() << " " << GMatrix.columns() << std::endl;
+    std::cout << "Phi size = " << _closure->GetPhiTildeWfAtRef( level ).rows() << " " << _closure->GetPhiTildeWfAtRef( level ).columns() << std::endl;
     out += _problem->G( u1, u2, nUnit, n, level ) * _closure->GetPhiTildeWfAtRef( level );
 }
 
