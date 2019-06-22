@@ -38,6 +38,7 @@ void MomentSolver::Solve() {
     bool writeSolutionInTime = false;
     VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels() - 1 );       // vector carries refinement level for each cell
     VectorU refinementLevelOld( _nCells, _settings->GetNRefinementLevels() - 1 );    // vector carries old refinement level for each cell
+    VectorU refinementLevelTransition( _nCells, _settings->GetNRefinementLevels() - 1 );
 
     auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
@@ -52,18 +53,6 @@ void MomentSolver::Solve() {
     std::cout << "nQPE = " << _settings->GetNqPE() << std::endl;
 
     std::vector<int> PEforCell = _settings->GetPEforCell();
-
-    for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-        log->info( "PE {0}: kStart {1}, kEnd {2}",
-                   _settings->GetMyPE(),
-                   _settings->GetKStartAtRef( refinementLevel[_cellIndexPE[j]] ),
-                   _settings->GetKEndAtRef( refinementLevel[_cellIndexPE[j]] ) );
-    }
-    std::cout << "Ref 0: size " << _settings->GetNqPEAtRef( 0 ) << ", start -- end = " << _settings->GetKStartAtRef( 0 ) << " "
-              << _settings->GetKEndAtRef( 0 ) << std::endl;
-    std::cout << "Ref 1: " << _settings->GetNqPEAtRef( 1 ) << ", start -- end = " << _settings->GetKStartAtRef( 1 ) << " "
-              << _settings->GetKEndAtRef( 1 ) << std::endl;
-    // exit( EXIT_FAILURE );
 
     MatVec uNew = u;
     MatVec uOld = u;
@@ -130,6 +119,22 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
         }
+
+        // determine transition refinement level to ensure that neighboring cells of high refinement level have fine uQ reconstruction
+        // important for FV stencil in Advance function
+        for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+            auto neighbors           = _mesh->GetNeighborIDs( _cellIndexPE[j] );
+            unsigned maxRefLevelNghs = refinementLevel[_cellIndexPE[j]];
+            for( unsigned l = 0; l < neighbors.size(); ++l ) {
+                if( maxRefLevelNghs < refinementLevel[neighbors[l]] ) {
+                    maxRefLevelNghs                            = refinementLevel[neighbors[l]];
+                    refinementLevelTransition[_cellIndexPE[j]] = maxRefLevelNghs;
+                }
+            }
+        }
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            MPI_Bcast( &refinementLevelTransition[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
+        }
         //  std::cout << "BCast indicator DONE." << std::endl;
 
         // TODO: determine interface cells. Interface cells need to be evaluated at finest neighborlevel, so we need one more refinement level vector
@@ -137,11 +142,11 @@ void MomentSolver::Solve() {
         // use the normal refinementLevel vector everywhere else!
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
-            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevel[j] ) );
+            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
         }
         //  std::cout << "uQ DONE." << std::endl;
-        std::cout << "Refinementlevel cell 146: " << refinementLevel[146] << std::endl;
-        std::cout << "uQ[146] = " << uQ[146] << std::endl;
+        // std::cout << "Refinementlevel cell 146: " << refinementLevel[146] << std::endl;
+        // std::cout << "uQ[146] = " << uQ[146] << std::endl;
 
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -363,11 +368,11 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
     else {
         meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     }
-    Matrix phiTildeWf = _closure->GetPhiTildeWf();
     Vector tmp( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
+        Matrix phiTildeWf = _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         // expected value
-        for( unsigned k = 0; k < _nQTotal; ++k ) {
+        for( unsigned k = 0; k < _settings->GetNQTotalForRef( refinementLevel[j] ); ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotalForRef[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );

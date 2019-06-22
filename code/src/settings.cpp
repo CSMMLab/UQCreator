@@ -436,6 +436,7 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
 
     // Set Total number of Quadrature points at each refinement level
 }
+unsigned Settings::GetNQTotalForRef( unsigned level ) const { return _nQTotalForRef[level]; }
 unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }
 
 // plot

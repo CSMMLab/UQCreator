@@ -154,6 +154,7 @@ class Settings
     unsigned GetNTotal() const;
     VectorU GetNTotalRefinementLevel() const;
     void SetNQTotalForRef( const VectorU& nQTotalForRef );
+    unsigned GetNQTotalForRef( unsigned level ) const;
     VectorU GetQuadLevel() const;
     std::vector<std::vector<unsigned>> GetPolyIndices() const;
     unsigned GetNRefinementLevels() const;
