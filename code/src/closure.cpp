@@ -93,7 +93,7 @@ Closure::Closure( Settings* settings )
             }
         }
         std::cout << "test I " << testQuad << std::endl;*/
-    std::cout << "Closure DONE" << std::endl;
+    std::cout << "size _h " << _hPartial.size() << std::endl;
 }
 
 Closure::~Closure() {
@@ -153,7 +153,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel )
     }
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
-    // std::cout << "before first Hessian inversion..." << std::endl;
+    std::cout << "before first Hessian inversion..." << std::endl;
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
     // std::cout << g << std::endl;
@@ -168,6 +168,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel )
     Gradient( dlambdaNew, lambdaNew, u, refLevel );
     // perform Newton iterations
     for( unsigned l = 0; l < _maxIterations; ++l ) {
+        std::cout << "Iteration " << l << std::endl;
         double stepSize = 1.0;
         if( l != 0 ) {
             Gradient( g, lambda, u, refLevel );
@@ -179,8 +180,9 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel )
             Gradient( dlambdaNew, lambdaNew, u, refLevel );
         }
         int refinementCounter = 0;
-        // std::cout << "Res is " << CalcNorm( dlambda, nTotal ) << std::endl;
+        std::cout << "Res is " << CalcNorm( dlambda, nTotal ) << std::endl;
         while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) ) {
+            std::cout << "refining..." << std::endl;
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
             Gradient( dlambdaNew, lambdaNew, u, refLevel );
@@ -214,14 +216,14 @@ double Closure::CalcNorm( Vector& test, unsigned nTotal ) const {
 }
 
 Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k, unsigned nTotal ) {
-    std::cout << "EvalLambda Start" << std::endl;
+    // std::cout << "EvalLambda Start" << std::endl;
     Vector out( _nStates, 0.0 );
     for( unsigned s = 0; s < _nStates; ++s ) {
         for( unsigned i = 0; i < nTotal; ++i ) {
             out[s] += lambda( s, i ) * _phiTildeVec[k][i];
         }
     }
-    std::cout << "EvalLambda End" << std::endl;
+    // std::cout << "EvalLambda End" << std::endl;
     return out;
 }
 
@@ -246,6 +248,7 @@ Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda, unsigned levelOld, uns
 void Closure::EvaluateLambda( Matrix& out, const Matrix& lambda ) const { out = lambda * _phiTildeTrans; }
 
 void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+    // std::cout << "Start Hessian" << std::endl;
     Vector uKinetic( _nStates, 0.0 );
     unsigned nTotal = _nTotalForRef[refLevel];
     g.reset();
@@ -265,12 +268,13 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsign
     // std::cout << "g int = " << g << std::endl;
 
     SubstractVectorMatrixOnVector( g, u, _nTotalForRef[refLevel] );
+    // std::cout << "End Gradient" << std::endl;
 }
 
 void Closure::Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel ) {
-    std::cout << "Start Hessian" << std::endl;
-    std::cout << "refLevel " << refLevel << ", nQ = " << _nQTotalForRef[refLevel] << ", h size " << _hPartial.size()
-              << ", nTotal = " << _nTotalForRef[refLevel] << ", size H " << H.columns() << " " << H.rows() << std::endl;
+    // std::cout << "Start Hessian" << std::endl;
+    // std::cout << "refLevel " << refLevel << ", nQ = " << _nQTotalForRef[refLevel] << ", h size " << _hPartial.size()
+    //          << ", nTotal = " << _nTotalForRef[refLevel] << ", size H " << H.columns() << " " << H.rows() << std::endl;
     H.reset();
     Matrix dUdLambda( _nStates, _nStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
     unsigned nTotal = _nTotalForRef[refLevel];
@@ -287,7 +291,7 @@ void Closure::Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel ) {
             }
         }
     }
-    std::cout << "End Hessian" << std::endl;
+    // std::cout << "End Hessian" << std::endl;
 }
 
 void Closure::AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y, unsigned nTotal ) const {
@@ -365,10 +369,11 @@ unsigned Closure::GetMaxIterations() const { return _maxIterations; }
 
 QuadratureGrid* Closure::GetQuadratureGrid() { return _quadGrid; }
 
-const Matrix Closure::GetPhiTildeWfAtRef( unsigned level ) const {
+Matrix Closure::GetPhiTildeWfAtRef( unsigned level ) const {
     unsigned kStart = _settings->GetKStartAtRef( level );
+    unsigned kEnd   = _settings->GetKEndAtRef( level );
     Matrix phiTildeWfTrans( _nQTotalForRef[level], _nTotalForRef[level], false );
-    for( unsigned k = kStart; k <= _nQTotalForRef[level]; ++k ) {
+    for( unsigned k = kStart; k <= kEnd; ++k ) {
         for( unsigned i = 0; i < _nTotalForRef[level]; ++i ) {
             phiTildeWfTrans( k - kStart, i ) = _phiTildeF( k, i ) * _wGrid[level][k];
         }

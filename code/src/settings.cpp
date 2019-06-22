@@ -417,17 +417,24 @@ void Settings::SetNQTotal( unsigned nqTotalNew ) {
     _nQPE = _kEnd - _kStart + 1;
 }
 void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
+    std::cout << "Settings kEnd and kStart Vectors" << std::endl;
     _nQTotalForRef = nQTotalForRef;
     _kEndAtRef     = VectorU( _nRefinementLevels );
     _kStartAtRef   = VectorU( _nRefinementLevels );
     _nQPEAtRef     = VectorU( _nRefinementLevels );
     // Determine start and end points of quad array for current PE on all refinement levels
     for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
+        std::cout << "Level " << l << std::endl;
         _kEndAtRef[l]   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotalForRef[l] / double( _npes ) ) ) );
         _kStartAtRef[l] = unsigned( std::ceil( double( _mype ) * ( double( _nQTotalForRef[l] ) / double( _npes ) ) ) );
-        if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotalForRef[l] ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
-        _nQPEAtRef[l] = _kEnd - _kStart + 1;
+        if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotalForRef[l] ) / double( _npes ) ) ) ) == _kEndAtRef[l] )
+            _kEndAtRef[l] = _kEndAtRef[l] - 1;
+        _nQPEAtRef[l] = _kEndAtRef[l] - _kStartAtRef[l] + 1;
+        std::cout << "nQ = " << _nQTotalForRef[l] << std::endl;
+        std::cout << "kStart = " << _kStartAtRef[l] << ", kEnd = " << _kEndAtRef[l] << std::endl;
     }
+
+    // Set Total number of Quadrature points at each refinement level
 }
 unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }
 

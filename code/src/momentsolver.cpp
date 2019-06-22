@@ -49,10 +49,17 @@ void MomentSolver::Solve() {
     MatVec u = DetermineMoments( prevSettings->GetNTotal() );
     SetDuals( prevSettings, prevClosure, u );
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
+    std::cout << "nQPE = " << _settings->GetNqPE() << std::endl;
 
     std::vector<int> PEforCell = _settings->GetPEforCell();
 
-    // log->info( "PE {0}: kStart {1}, kEnd {2}", _settings->GetMyPE(), _settings->GetKStart(), _settings->GetKEnd() );
+    for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+        log->info( "PE {0}: kStart {1}, kEnd {2}",
+                   _settings->GetMyPE(),
+                   _settings->GetKStartAtRef( refinementLevel[_cellIndexPE[j]] ),
+                   _settings->GetKEndAtRef( refinementLevel[_cellIndexPE[j]] ) );
+    }
+    // exit( EXIT_FAILURE );
 
     MatVec uNew = u;
     MatVec uOld = u;
@@ -85,9 +92,9 @@ void MomentSolver::Solve() {
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
-            //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
-            std::cout << "Cell " << _cellIndexPE[j] << std::endl;
+            std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
+                      << ", u = " << u[_cellIndexPE[j]] << std::endl;
+            // std::cout << "Cell " << _cellIndexPE[j] << std::endl;
             _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
         }
         std::cout << "Closure DONE." << std::endl;
@@ -127,6 +134,7 @@ void MomentSolver::Solve() {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevel[j] ) );
         }
         std::cout << "uQ DONE." << std::endl;
+        std::cout << "uQ[1] = " << uQ[1] << std::endl;
 
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {

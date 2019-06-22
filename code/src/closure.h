@@ -88,7 +88,7 @@ class Closure
     const Vector& GetPhiTilde( int k ) const { return _phiTildeVec[k]; }
     const Matrix& GetPhiTilde() const { return _phiTilde; }
     const Matrix& GetPhiTildeWf() const { return _phiTildeWf; }
-    const Matrix GetPhiTildeWfAtRef( unsigned level ) const;
+    Matrix GetPhiTildeWfAtRef( unsigned level ) const;
     /**
      * Add matrix A and vector b and save result in a matrix
      */

@@ -62,12 +62,10 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
         for( unsigned l = 0; l < neighbors.size(); ++l ) {
             if( ( _mesh->GetBoundaryType( j ) == BoundaryType::NOSLIP || _mesh->GetBoundaryType( j ) == BoundaryType::SWWALL ) &&
                 neighbors[l] == numCells ) {
-                fluxFunc(
-                    rhs, _ghostCell, _ghostCell, cell->GetUnitNormal( l ), cell->GetNormal( l ), _settings->GetNTotalforRefLevel( refLevel[j] ) );
+                fluxFunc( rhs, _ghostCell, _ghostCell, cell->GetUnitNormal( l ), cell->GetNormal( l ), refLevel[j] );
             }
             else {
-                fluxFunc(
-                    rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ), _settings->GetNTotalforRefLevel( refLevel[j] ) );
+                fluxFunc( rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ), refLevel[j] );
             }
         }
         uNew[j] = u[j] - ( dt / cell->GetArea() ) * rhs;
