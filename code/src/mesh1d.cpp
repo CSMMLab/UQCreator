@@ -202,7 +202,7 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
         out << GetCenterPos( j )[0];
         for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
             out << " " << results( s, j );
-            if( _settings->HasExactSolution() ) out << " " << results( 2 * _settings->GetNStates(), j );
+            if( _settings->HasExactSolution() ) out << " " << results( 2 * _settings->GetNStates() + s, j );
         }
         out << std::endl;
     }
@@ -212,6 +212,7 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
         outV << GetCenterPos( j )[0];
         for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
             outV << " " << results( s + _settings->GetNStates(), j );
+            if( _settings->HasExactSolution() ) outV << " " << results( 3 * _settings->GetNStates() + s, j );
         }
         outV << std::endl;
     }
