@@ -135,22 +135,11 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
         }
-        //  std::cout << "uQ DONE." << std::endl;
-        if( _settings->GetMyPE() == 0 ) {
-            std::cout << "Refinementlevel cell 30: " << refinementLevel[30] << std::endl;
-            std::cout << "u[30] = " << u[30] << std::endl;
-            std::cout << "uQ[30] = " << uQ[30] << std::endl;
-
-            std::cout << "Refinementlevel cell 31: " << refinementLevel[31] << std::endl;
-            std::cout << "u[31] = " << u[31] << std::endl;
-            std::cout << "uQ[31] = " << uQ[31] << std::endl;
-        }
 
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
             u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
-        // std::cout << "u DONE." << std::endl;
 
         // determine time step size
         double dtMinOnPE = 1e10;
@@ -317,11 +306,6 @@ void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const Vect
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned level ) {
-    // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
-    auto GMatrix = _problem->G( u1, u2, nUnit, n, level );
-    std::cout << "out size = " << out.rows() << " " << out.columns() << std::endl;
-    std::cout << "G size = " << GMatrix.rows() << " " << GMatrix.columns() << std::endl;
-    std::cout << "Phi size = " << _closure->GetPhiTildeWfAtRef( level ).rows() << " " << _closure->GetPhiTildeWfAtRef( level ).columns() << std::endl;
     out += _problem->G( u1, u2, nUnit, n, level ) * _closure->GetPhiTildeWfAtRef( level );
 }
 
