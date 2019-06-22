@@ -39,18 +39,16 @@ Closure::Closure( Settings* settings )
     unsigned oldQLevel = 0;
     _quadGrid          = nullptr;
     for( unsigned rlevel = 0; rlevel < _settings->GetNRefinementLevels(); ++rlevel ) {
-        std::cout << "Refinement Level " << rlevel << " with quad level " << quadLevel[rlevel] << std::endl;
         if( oldQLevel != quadLevel[rlevel] ) {    // new quadrature weights needed
-            std::cout << "creating new quadrature" << std::endl;
             if( _quadGrid ) delete _quadGrid;
             _quadGrid = QuadratureGrid::Create( _settings, quadLevel[rlevel] );
         }
         _wGrid[rlevel]         = _quadGrid->GetWeights();
         _nQTotalForRef[rlevel] = _wGrid[rlevel].size();
         oldQLevel              = quadLevel[rlevel];
-        std::cout << "nWeights are " << _nQTotalForRef[rlevel] << std::endl;
     }
     _xiGrid = _quadGrid->GetNodes();
+    _settings->SetNQTotalForRef( _nQTotalForRef );    // give number of quad points per level to settings
 
     // set total number of quadrature points
     _nQTotal = _quadGrid->GetNodeCount();
@@ -216,21 +214,24 @@ double Closure::CalcNorm( Vector& test, unsigned nTotal ) const {
 }
 
 Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k, unsigned nTotal ) {
+    std::cout << "EvalLambda Start" << std::endl;
     Vector out( _nStates, 0.0 );
     for( unsigned s = 0; s < _nStates; ++s ) {
         for( unsigned i = 0; i < nTotal; ++i ) {
             out[s] += lambda( s, i ) * _phiTildeVec[k][i];
         }
     }
+    std::cout << "EvalLambda End" << std::endl;
     return out;
 }
 
 Matrix Closure::EvaluateLambda( const Matrix& lambda ) const { return lambda * _phiTildeTrans; }
 
-Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda, unsigned nTotal ) const {
-    Matrix out( _settings->GetNStates(), _settings->GetNqPE(), 0.0 );
-    unsigned kStart = _settings->GetKStart();
-    unsigned kEnd   = _settings->GetKEnd();
+Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda, unsigned levelOld, unsigned levelNew ) const {
+    Matrix out( _settings->GetNStates(), _settings->GetNqPEAtRef( levelNew ), 0.0 );
+    unsigned kStart = _settings->GetKStartAtRef( levelNew );
+    unsigned kEnd   = _settings->GetKEndAtRef( levelNew );
+    unsigned nTotal = _nTotalForRef[levelOld];
 
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned k = kStart; k <= kEnd; ++k ) {
@@ -267,6 +268,9 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsign
 }
 
 void Closure::Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel ) {
+    std::cout << "Start Hessian" << std::endl;
+    std::cout << "refLevel " << refLevel << ", nQ = " << _nQTotalForRef[refLevel] << ", h size " << _hPartial.size()
+              << ", nTotal = " << _nTotalForRef[refLevel] << ", size H " << H.columns() << " " << H.rows() << std::endl;
     H.reset();
     Matrix dUdLambda( _nStates, _nStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
     unsigned nTotal = _nTotalForRef[refLevel];
@@ -283,6 +287,7 @@ void Closure::Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel ) {
             }
         }
     }
+    std::cout << "End Hessian" << std::endl;
 }
 
 void Closure::AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y, unsigned nTotal ) const {
@@ -359,3 +364,14 @@ void Closure::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxI
 unsigned Closure::GetMaxIterations() const { return _maxIterations; }
 
 QuadratureGrid* Closure::GetQuadratureGrid() { return _quadGrid; }
+
+const Matrix Closure::GetPhiTildeWfAtRef( unsigned level ) const {
+    unsigned kStart = _settings->GetKStartAtRef( level );
+    Matrix phiTildeWfTrans( _nQTotalForRef[level], _nTotalForRef[level], false );
+    for( unsigned k = kStart; k <= _nQTotalForRef[level]; ++k ) {
+        for( unsigned i = 0; i < _nTotalForRef[level]; ++i ) {
+            phiTildeWfTrans( k - kStart, i ) = _phiTildeF( k, i ) * _wGrid[level][k];
+        }
+    }
+    return phiTildeWfTrans;
+}

@@ -43,7 +43,7 @@ class MomentSolver
      * @param unit normal of interface
      * @param normal of interface
      */
-    void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal );
+    void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned level );
     /**
      * source term for moment system
      * @param Moments for in- and output

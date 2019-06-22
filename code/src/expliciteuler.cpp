@@ -58,7 +58,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
             }
         }
 
-        Matrix rhs( u[0].rows(), u[0].columns(), 0.0 );
+        Matrix rhs( _settings->GetNStates(), _settings->GetNqPEAtRef( refLevel[j] ), 0.0 );
         for( unsigned l = 0; l < neighbors.size(); ++l ) {
             if( ( _mesh->GetBoundaryType( j ) == BoundaryType::NOSLIP || _mesh->GetBoundaryType( j ) == BoundaryType::SWWALL ) &&
                 neighbors[l] == numCells ) {

@@ -416,6 +416,20 @@ void Settings::SetNQTotal( unsigned nqTotalNew ) {
     if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotal ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
     _nQPE = _kEnd - _kStart + 1;
 }
+void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
+    _nQTotalForRef = nQTotalForRef;
+    _kEndAtRef     = VectorU( _nRefinementLevels );
+    _kStartAtRef   = VectorU( _nRefinementLevels );
+    _nQPEAtRef     = VectorU( _nRefinementLevels );
+    // Determine start and end points of quad array for current PE on all refinement levels
+    for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
+        _kEndAtRef[l]   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotalForRef[l] / double( _npes ) ) ) );
+        _kStartAtRef[l] = unsigned( std::ceil( double( _mype ) * ( double( _nQTotalForRef[l] ) / double( _npes ) ) ) );
+        if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotalForRef[l] ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
+        _nQPEAtRef[l] = _kEnd - _kStart + 1;
+    }
+}
+unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }
 
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }
@@ -426,6 +440,8 @@ int Settings::GetMyPE() const { return _mype; }
 int Settings::GetNPEs() const { return _npes; }
 unsigned Settings::GetKStart() const { return _kStart; }
 unsigned Settings::GetKEnd() const { return _kEnd; }
+unsigned Settings::GetKStartAtRef( unsigned level ) const { return _kStartAtRef[level]; }
+unsigned Settings::GetKEndAtRef( unsigned level ) const { return _kEndAtRef[level]; }
 unsigned Settings::GetNqPE() const { return _nQPE; }
 unsigned Settings::GetNxPE() const { return _nXPE; }
 std::vector<unsigned> Settings::GetCellIndexPE() const { return _cellIndexPE; }

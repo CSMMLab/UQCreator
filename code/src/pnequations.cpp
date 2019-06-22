@@ -155,9 +155,9 @@ Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& nUnit, co
            0.5 * ( v - u ) * norm( n );    // - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
 }
 
-Matrix PNEquations::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
-    unsigned nStates = static_cast<unsigned>( u.rows() );
-    unsigned Nq      = static_cast<unsigned>( u.columns() );
+Matrix PNEquations::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
+    unsigned nStates = u.rows();
+    unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
         column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
@@ -198,7 +198,7 @@ Matrix PNEquations::Source( const Matrix& uQ ) const {
     return y;
 }
 
-double PNEquations::ComputeDt( const Matrix& u, double dx ) const {
+double PNEquations::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
 
     double cfl = _settings->GetCFL();
 

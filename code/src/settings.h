@@ -48,12 +48,16 @@ class Settings
     unsigned _numCells;
     unsigned _nXPE;    // number of spatial cells on PE
 
-    unsigned _nQuadPoints;    // number of quadrature points in one dimension
-    unsigned _nQTotal;        // number of quadrature points in all dimensions
-    unsigned _nQPE;           // number of total quadrature points on PE
-    unsigned _kStart;         // start point in quadrature point array for PE
-    unsigned _kEnd;           // end point in quadrature point array for PE
-    VectorU _quadLevel;       // quadrature level array
+    unsigned _nQuadPoints;     // number of quadrature points in one dimension
+    unsigned _nQTotal;         // number of quadrature points in all dimensions
+    unsigned _nQPE;            // number of total quadrature points on PE
+    VectorU _nQPEAtRef;        // number of total quadrature points on PE for all refinement levels
+    unsigned _kStart;          // start point in quadrature point array for PE
+    VectorU _kStartAtRef;      // start point in quadrature point array for PE at different refinement levels
+    unsigned _kEnd;            // end point in quadrature point array for PE
+    VectorU _kEndAtRef;        // end point in quadrature point array for PE at different refinement levels
+    VectorU _quadLevel;        // quadrature level array
+    VectorU _nQTotalForRef;    // number of quadrature points on different refinement levels
 
     int _mype;                             // PE number
     int _npes;                             // number of all PEs
@@ -149,6 +153,7 @@ class Settings
 
     unsigned GetNTotal() const;
     VectorU GetNTotalRefinementLevel() const;
+    void SetNQTotalForRef( const VectorU& nQTotalForRef );
     VectorU GetQuadLevel() const;
     std::vector<std::vector<unsigned>> GetPolyIndices() const;
     unsigned GetNRefinementLevels() const;
@@ -175,7 +180,10 @@ class Settings
     int GetNPEs() const;
     unsigned GetKStart() const;
     unsigned GetKEnd() const;
+    unsigned GetKStartAtRef( unsigned level ) const;
+    unsigned GetKEndAtRef( unsigned level ) const;
     unsigned GetNqPE() const;
+    unsigned GetNqPEAtRef( unsigned level ) const;
     unsigned GetNxPE() const;
     std::vector<unsigned> GetCellIndexPE() const;
     std::vector<int> GetPEforCell() const;

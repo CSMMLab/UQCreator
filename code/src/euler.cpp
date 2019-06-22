@@ -46,9 +46,9 @@ Vector Euler::G( const Vector& u, const Vector& v, const Vector& nUnit, const Ve
     }
 }
 
-Matrix Euler::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
-    unsigned nStates = static_cast<unsigned>( u.rows() );
-    unsigned Nq      = static_cast<unsigned>( u.columns() );
+Matrix Euler::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
+    unsigned nStates = u.rows();
+    unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
         column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
@@ -72,14 +72,15 @@ Matrix Euler::F( const Matrix& u ) {
     exit( EXIT_FAILURE );
 }
 
-double Euler::ComputeDt( const Matrix& u, double dx ) const {
+double Euler::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     double dtMinTotal = 1e10;
     double dtMin;
     double rhoInv, v, p, a, cfl;
+    unsigned kEnd = _settings->GetNqPEAtRef( level );
 
     cfl = _settings->GetCFL();
 
-    for( unsigned k = 0; k < u.columns(); ++k ) {
+    for( unsigned k = 0; k < kEnd; ++k ) {
         rhoInv = 1.0 / u( 0, k );
         v      = u( 1, k ) * rhoInv;
         p      = ( _gamma - 1.0 ) * ( u( 2, k ) - 0.5 * u( 0, k ) * pow( v, 2 ) );

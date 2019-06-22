@@ -71,7 +71,7 @@ class Closure
     void EvaluateLambda( Matrix& out, const Matrix& lambda ) const;
     Vector EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k );
     Matrix EvaluateLambda( const Matrix& lambda, const Vector& xi );
-    Matrix EvaluateLambdaOnPE( const Matrix& lambda, unsigned nTotal ) const;
+    Matrix EvaluateLambdaOnPE( const Matrix& lambda, unsigned levelOld, unsigned levelNew ) const;
     /**
      * calculate solution for kinetic entropy with given entropic variable
      */
@@ -85,9 +85,10 @@ class Closure
 
     virtual void DS( Vector& ds, const Vector& u ) const;
 
-    const Vector& GetPhiTilde( int k ) { return _phiTildeVec[k]; }
-    const Matrix& GetPhiTilde() { return _phiTilde; }
-    const Matrix& GetPhiTildeWf() { return _phiTildeWf; }
+    const Vector& GetPhiTilde( int k ) const { return _phiTildeVec[k]; }
+    const Matrix& GetPhiTilde() const { return _phiTilde; }
+    const Matrix& GetPhiTildeWf() const { return _phiTildeWf; }
+    const Matrix GetPhiTildeWfAtRef( unsigned level ) const;
     /**
      * Add matrix A and vector b and save result in a matrix
      */
