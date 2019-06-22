@@ -5,7 +5,7 @@ writeFrequency = 10
 
 [mesh]
 dimension = 1
-numberOfCells = 2000
+numberOfCells = 500
 a = 0
 b = 1
 outputFile = "euler_shock"
@@ -22,7 +22,7 @@ tEnd = 0.2
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
 closure = "Euler"
 moments = [["totalDegree"],[10]]
-quadPoints = [["sparseGrid"],[5]]
+quadPoints = [["tensorizedGrid"],[20]]
 # quadPoints = [["tensorizedGrid"],[ 7 ]]
 maxIterations = 200
 epsilon = 5e-5
