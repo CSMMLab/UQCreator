@@ -416,6 +416,8 @@ void Settings::SetNQTotal( unsigned nqTotalNew ) {
     if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotal ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
     _nQPE = _kEnd - _kStart + 1;
 }
+
+// Set Total number of Quadrature points at each refinement level
 void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
     std::cout << "Settings kEnd and kStart Vectors" << std::endl;
     _nQTotalForRef = nQTotalForRef;
@@ -433,8 +435,6 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
         std::cout << "nQ = " << _nQTotalForRef[l] << std::endl;
         std::cout << "kStart = " << _kStartAtRef[l] << ", kEnd = " << _kEndAtRef[l] << std::endl;
     }
-
-    // Set Total number of Quadrature points at each refinement level
 }
 unsigned Settings::GetNQTotalForRef( unsigned level ) const { return _nQTotalForRef[level]; }
 unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }

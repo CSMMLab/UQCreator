@@ -128,7 +128,7 @@ void MomentSolver::Solve() {
             for( unsigned l = 0; l < neighbors.size(); ++l ) {
                 if( maxRefLevelNghs < refinementLevel[neighbors[l]] ) {
                     maxRefLevelNghs                            = refinementLevel[neighbors[l]];
-                    refinementLevelTransition[_cellIndexPE[j]] = maxRefLevelNghs;
+                    refinementLevelTransition[_cellIndexPE[j]] = _settings->GetNRefinementLevels() - 1;    // maxRefLevelNghs;
                 }
             }
         }
@@ -137,9 +137,6 @@ void MomentSolver::Solve() {
         }
         //  std::cout << "BCast indicator DONE." << std::endl;
 
-        // TODO: determine interface cells. Interface cells need to be evaluated at finest neighborlevel, so we need one more refinement level vector
-        // in which we set refinementlevel to highest neighbor refinement level
-        // use the normal refinementLevel vector everywhere else!
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
@@ -183,12 +180,7 @@ void MomentSolver::Solve() {
 
         // compute residual
         for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
-
             residual += std::abs( u[_cellIndexPE[j]]( 0, 0 ) - uOld[_cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( _cellIndexPE[j] );
-            if( !std::isfinite( residual ) ) {
-                std::cout << "cell " << _cellIndexPE[j] << std::endl;
-                break;
-            }
         }
         //  std::cout << "Residual DONE." << std::endl;
 
@@ -370,7 +362,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
     }
     Vector tmp( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
-        Matrix phiTildeWf = _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
+        Matrix phiTildeWf = _closure->GetPhiTildeWfAtRef( refinementLevel[j], true );
         // expected value
         for( unsigned k = 0; k < _settings->GetNQTotalForRef( refinementLevel[j] ); ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotalForRef[refinementLevel[j]] ) );
@@ -579,10 +571,11 @@ void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
 }
 
 MatVec MomentSolver::SetupIC() const {
+
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     Vector xiEta( _settings->GetNDimXi() );
     Matrix uIC( _nStates, _nQTotal );
-    Matrix phiTildeWf = _closure->GetPhiTildeWf();
+    Matrix phiTildeWf = _closure->GetPhiTildeWfAtRef( _settings->GetNRefinementLevels() - 1, true );
     std::vector<Vector> IC;
     auto grid   = _closure->GetQuadratureGrid();
     auto xiQuad = grid->GetNodes();

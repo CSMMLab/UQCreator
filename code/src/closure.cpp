@@ -364,6 +364,18 @@ QuadratureGrid* Closure::GetQuadratureGrid() { return _quadGrid; }
 Matrix Closure::GetPhiTildeWfAtRef( unsigned level ) const {
     unsigned kStart = _settings->GetKStartAtRef( level );
     unsigned kEnd   = _settings->GetKEndAtRef( level );
+    Matrix phiTildeWfTrans( kEnd - kStart + 1, _nTotalForRef[level], false );
+    for( unsigned k = kStart; k <= kEnd; ++k ) {
+        for( unsigned i = 0; i < _nTotalForRef[level]; ++i ) {
+            phiTildeWfTrans( k - kStart, i ) = _phiTildeF( k, i ) * _wGrid[level][k];
+        }
+    }
+    return phiTildeWfTrans;
+}
+
+Matrix Closure::GetPhiTildeWfAtRef( unsigned level, bool full ) const {
+    unsigned kStart = 0;
+    unsigned kEnd   = _nQTotalForRef[level] - 1;
     Matrix phiTildeWfTrans( _nQTotalForRef[level], _nTotalForRef[level], false );
     for( unsigned k = kStart; k <= kEnd; ++k ) {
         for( unsigned i = 0; i < _nTotalForRef[level]; ++i ) {
