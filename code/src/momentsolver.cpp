@@ -59,6 +59,10 @@ void MomentSolver::Solve() {
                    _settings->GetKStartAtRef( refinementLevel[_cellIndexPE[j]] ),
                    _settings->GetKEndAtRef( refinementLevel[_cellIndexPE[j]] ) );
     }
+    std::cout << "Ref 0: size " << _settings->GetNqPEAtRef( 0 ) << ", start -- end = " << _settings->GetKStartAtRef( 0 ) << " "
+              << _settings->GetKEndAtRef( 0 ) << std::endl;
+    std::cout << "Ref 1: " << _settings->GetNqPEAtRef( 1 ) << ", start -- end = " << _settings->GetKStartAtRef( 1 ) << " "
+              << _settings->GetKEndAtRef( 1 ) << std::endl;
     // exit( EXIT_FAILURE );
 
     MatVec uNew = u;
@@ -85,30 +89,30 @@ void MomentSolver::Solve() {
 
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
-        std::cout << "In Loop..." << std::endl;
+        // std::cout << "In Loop..." << std::endl;
         double residual = 0;
 
         // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
-                      << ", u = " << u[_cellIndexPE[j]] << std::endl;
+            // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
+            //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
             // std::cout << "Cell " << _cellIndexPE[j] << std::endl;
             _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
         }
-        std::cout << "Closure DONE." << std::endl;
+        // std::cout << "Closure DONE." << std::endl;
 
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             uOld[j] = u[j];    // save old Moments for residual computation
             MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
-        std::cout << "BCast DONE." << std::endl;
+        // std::cout << "BCast DONE." << std::endl;
 
         // save old refinement levels
         refinementLevelOld = refinementLevel;
-        std::cout << "RefLevel save DONE." << std::endl;
+        //  std::cout << "RefLevel save DONE." << std::endl;
 
         // determine refinement level of cells on current PE
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
@@ -120,28 +124,31 @@ void MomentSolver::Solve() {
             else if( indicator < 0.004 && refinementLevel[_cellIndexPE[j]] > 0 )
                 refinementLevel[_cellIndexPE[j]] -= 1;
         }
-        std::cout << "Indicator DONE." << std::endl;
+        // std::cout << "Indicator DONE." << std::endl;
 
         // broadcast refinemt level to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
         }
-        std::cout << "BCast indicator DONE." << std::endl;
+        //  std::cout << "BCast indicator DONE." << std::endl;
 
-        // for nQ refinement: here we need new refinement level for nQTotal and old level for nTotal
+        // TODO: determine interface cells. Interface cells need to be evaluated at finest neighborlevel, so we need one more refinement level vector
+        // in which we set refinementlevel to highest neighbor refinement level
+        // use the normal refinementLevel vector everywhere else!
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevel[j] ) );
         }
-        std::cout << "uQ DONE." << std::endl;
-        std::cout << "uQ[1] = " << uQ[1] << std::endl;
+        //  std::cout << "uQ DONE." << std::endl;
+        std::cout << "Refinementlevel cell 146: " << refinementLevel[146] << std::endl;
+        std::cout << "uQ[146] = " << uQ[146] << std::endl;
 
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
             u[j].reset();
             u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
-        std::cout << "u DONE." << std::endl;
+        // std::cout << "u DONE." << std::endl;
 
         // determine time step size
         double dtMinOnPE = 1e10;
@@ -153,39 +160,44 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
         t += dt;
         ++timeIndex;
-        std::cout << "dt = " << dt << std::endl;
+        //  std::cout << "dt = " << dt << std::endl;
 
         _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
-        std::cout << "Advance DONE." << std::endl;
+        //  std::cout << "Advance DONE." << std::endl;
 
         if( _settings->HasSource() ) {
             this->Source( uNew, uQ, dt, refinementLevel );
         }
-        std::cout << "Source DONE." << std::endl;
+        //  std::cout << "Source DONE." << std::endl;
 
         // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
         }
-        std::cout << "u Reduce DONE." << std::endl;
+        //  std::cout << "u Reduce DONE." << std::endl;
 
         // compute residual
         for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
+
             residual += std::abs( u[_cellIndexPE[j]]( 0, 0 ) - uOld[_cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( _cellIndexPE[j] );
+            if( !std::isfinite( residual ) ) {
+                std::cout << "cell " << _cellIndexPE[j] << std::endl;
+                break;
+            }
         }
-        std::cout << "Residual DONE." << std::endl;
-        /*
+        //  std::cout << "Residual DONE." << std::endl;
+
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
-            // if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
+            if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
             if( writeSolutionInTime && timeIndex % _settings->GetWriteFrequency() == 1 ) {
                 Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, false );
                 _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
                 if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
             }
-        }*/
-        std::cout << "Export DONE." << std::endl;
+        }
+        //  std::cout << "Export DONE." << std::endl;
     }
 
     // write final error

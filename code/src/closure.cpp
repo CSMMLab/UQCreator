@@ -93,7 +93,6 @@ Closure::Closure( Settings* settings )
             }
         }
         std::cout << "test I " << testQuad << std::endl;*/
-    std::cout << "size _h " << _hPartial.size() << std::endl;
 }
 
 Closure::~Closure() {
@@ -153,7 +152,6 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel )
     }
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
-    std::cout << "before first Hessian inversion..." << std::endl;
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
     // std::cout << g << std::endl;
@@ -168,21 +166,17 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel )
     Gradient( dlambdaNew, lambdaNew, u, refLevel );
     // perform Newton iterations
     for( unsigned l = 0; l < _maxIterations; ++l ) {
-        std::cout << "Iteration " << l << std::endl;
         double stepSize = 1.0;
         if( l != 0 ) {
             Gradient( g, lambda, u, refLevel );
             dlambda = -g;
             Hessian( H, lambda, refLevel );
-            // std::cout << H << std::endl;
             posv( H, g );
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
             Gradient( dlambdaNew, lambdaNew, u, refLevel );
         }
         int refinementCounter = 0;
-        std::cout << "Res is " << CalcNorm( dlambda, nTotal ) << std::endl;
         while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) ) {
-            std::cout << "refining..." << std::endl;
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
             Gradient( dlambdaNew, lambdaNew, u, refLevel );
@@ -216,14 +210,12 @@ double Closure::CalcNorm( Vector& test, unsigned nTotal ) const {
 }
 
 Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k, unsigned nTotal ) {
-    // std::cout << "EvalLambda Start" << std::endl;
     Vector out( _nStates, 0.0 );
     for( unsigned s = 0; s < _nStates; ++s ) {
         for( unsigned i = 0; i < nTotal; ++i ) {
             out[s] += lambda( s, i ) * _phiTildeVec[k][i];
         }
     }
-    // std::cout << "EvalLambda End" << std::endl;
     return out;
 }
 
