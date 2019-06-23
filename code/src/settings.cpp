@@ -420,43 +420,27 @@ void Settings::SetNQTotal( unsigned nqTotalNew ) {
 
 // Set Total number of Quadrature points at each refinement level
 void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
-    std::cout << "Settings kEnd and kStart Vectors" << std::endl;
     _nQTotalForRef = nQTotalForRef;
-    _kEndAtRef     = VectorU( _nRefinementLevels );
-    _kStartAtRef   = VectorU( _nRefinementLevels );
     _nQPEAtRef     = VectorU( _nRefinementLevels );
-    // Determine start and end points of quad array for current PE on all refinement levels
-    for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
-        // std::cout << "Level " << l << std::endl;
-        _kEndAtRef[l]   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotalForRef[l] / double( _npes ) ) ) );
-        _kStartAtRef[l] = unsigned( std::ceil( double( _mype ) * ( double( _nQTotalForRef[l] ) / double( _npes ) ) ) );
-        if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotalForRef[l] ) / double( _npes ) ) ) ) == _kEndAtRef[l] )
-            _kEndAtRef[l] = _kEndAtRef[l] - 1;
-        _nQPEAtRef[l] = _kEndAtRef[l] - _kStartAtRef[l] + 1;
-        // std::cout << "nQ PE = " << _mype << ": " << _nQPEAtRef[l] << " " << std::ceil( double( _nQTotalForRef[l] / double( _npes ) ) ) <<
-        // std::endl; std::cout << "nQ = " << _nQTotalForRef[l] << std::endl; std::cout << "kStart = " << _kStartAtRef[l] << ", kEnd = " <<
-        // _kEndAtRef[l] << std::endl;
-    }
-    // std::cout << "-----------------------------------------------" << std::endl;
 
+    unsigned kEnd, kStart;
     _kIndicesAtRef.resize( _nRefinementLevels );
     unsigned nQTotalForRefOld = 0;
     for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
         unsigned numberNewPoints = _nQTotalForRef[l] - nQTotalForRefOld;
         // compute end and start point for each refinement level for standard distribution strategy
-        _kEndAtRef[l]   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( double( numberNewPoints ) / double( _npes ) ) ) );
-        _kStartAtRef[l] = unsigned( std::ceil( double( _mype ) * ( double( numberNewPoints ) / double( _npes ) ) ) );
-        if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( numberNewPoints ) / double( _npes ) ) ) ) == _kEndAtRef[l] )
-            _kEndAtRef[l] = _kEndAtRef[l] - 1;
-        _kEndAtRef[l] += nQTotalForRefOld;
-        _kStartAtRef[l] += nQTotalForRefOld;
+        kEnd   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( double( numberNewPoints ) / double( _npes ) ) ) );
+        kStart = unsigned( std::ceil( double( _mype ) * ( double( numberNewPoints ) / double( _npes ) ) ) );
+        if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( numberNewPoints ) / double( _npes ) ) ) ) == kEnd ) kEnd = kEnd - 1;
+        kEnd += nQTotalForRefOld;
+        kStart += nQTotalForRefOld;
 
         // save old indices on current refinement level
         if( l > 0 )
             for( unsigned i = 0; i < _kIndicesAtRef[l - 1].size(); ++i ) _kIndicesAtRef[l].push_back( _kIndicesAtRef[l - 1][i] );
 
         // save new indices on current refinement level
-        for( unsigned k = _kStartAtRef[l]; k <= _kEndAtRef[l]; ++k ) {
+        for( unsigned k = kStart; k <= kEnd; ++k ) {
             _kIndicesAtRef[l].push_back( k );
         }
 

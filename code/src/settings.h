@@ -53,10 +53,8 @@ class Settings
     unsigned _nQPE;            // number of total quadrature points on PE
     VectorU _nQPEAtRef;        // number of total quadrature points on PE for all refinement levels
     unsigned _kStart;          // start point in quadrature point array for PE
-    VectorU _kStartAtRef;      // start point in quadrature point array for PE at different refinement levels
     MatrixU _kIndicesAtRef;    // quadrature indices for PE at different refinement levels
     unsigned _kEnd;            // end point in quadrature point array for PE
-    VectorU _kEndAtRef;        // end point in quadrature point array for PE at different refinement levels
     VectorU _quadLevel;        // quadrature level array
     VectorU _nQTotalForRef;    // number of quadrature points on different refinement levels
 
