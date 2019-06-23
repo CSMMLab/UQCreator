@@ -54,6 +54,7 @@ class Settings
     VectorU _nQPEAtRef;        // number of total quadrature points on PE for all refinement levels
     unsigned _kStart;          // start point in quadrature point array for PE
     VectorU _kStartAtRef;      // start point in quadrature point array for PE at different refinement levels
+    MatrixU _kIndicesAtRef;    // quadrature indices for PE at different refinement levels
     unsigned _kEnd;            // end point in quadrature point array for PE
     VectorU _kEndAtRef;        // end point in quadrature point array for PE at different refinement levels
     VectorU _quadLevel;        // quadrature level array
@@ -160,6 +161,7 @@ class Settings
     unsigned GetNRefinementLevels() const;
     unsigned GetNTotalforRefLevel( unsigned level ) const;
     unsigned GetPolyDegreeforRefLevel( unsigned level ) const;
+    std::vector<unsigned> GetIndicesQforRef( unsigned level ) const;
     unsigned GetNQuadPoints() const;
     void SetNQuadPoints( unsigned nqNew );
     void SetNQTotal( unsigned nqTotalNew );
@@ -179,10 +181,6 @@ class Settings
     // MPI
     int GetMyPE() const;
     int GetNPEs() const;
-    unsigned GetKStart() const;
-    unsigned GetKEnd() const;
-    unsigned GetKStartAtRef( unsigned level ) const;
-    unsigned GetKEndAtRef( unsigned level ) const;
     unsigned GetNqPE() const;
     unsigned GetNqPEAtRef( unsigned level ) const;
     unsigned GetNxPE() const;

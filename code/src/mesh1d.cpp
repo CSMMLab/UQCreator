@@ -212,6 +212,10 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
         outV << GetCenterPos( j )[0];
         for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
             outV << " " << results( s + _settings->GetNStates(), j );
+            if( results( s + _settings->GetNStates(), j ) < 0 ) {
+                std::cerr << "Negative variance found in EXPORT" << std::endl;
+                exit( EXIT_FAILURE );
+            }
             if( _settings->HasExactSolution() ) outV << " " << results( 3 * _settings->GetNStates() + s, j );
         }
         outV << std::endl;

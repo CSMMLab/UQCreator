@@ -58,11 +58,6 @@ class MomentSolver
      */
     MatVec SetupIC() const;
     /**
-     * sets up moments for specified initial condition
-     * @return output moment matrix
-     */
-    void CalculateMoments( MatVec& out, const MatVec& lambda );
-    /**
      * exports moments and duals
      * @param moment matrix for export
      * @param dual matrix for export

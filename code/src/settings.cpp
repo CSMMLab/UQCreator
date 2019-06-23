@@ -407,6 +407,7 @@ unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotal
 unsigned Settings::GetPolyDegreeforRefLevel( unsigned level ) const { return _refinementLevel[level]; }
 GridType Settings::GetGridType() const { return _gridType; }
 VectorU Settings::GetQuadLevel() const { return _quadLevel; }
+std::vector<unsigned> Settings::GetIndicesQforRef( unsigned level ) const { return _kIndicesAtRef[level]; }
 
 void Settings::SetNQTotal( unsigned nqTotalNew ) {
     _nQTotal = nqTotalNew;
@@ -426,14 +427,41 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
     _nQPEAtRef     = VectorU( _nRefinementLevels );
     // Determine start and end points of quad array for current PE on all refinement levels
     for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
-        std::cout << "Level " << l << std::endl;
+        // std::cout << "Level " << l << std::endl;
         _kEndAtRef[l]   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotalForRef[l] / double( _npes ) ) ) );
         _kStartAtRef[l] = unsigned( std::ceil( double( _mype ) * ( double( _nQTotalForRef[l] ) / double( _npes ) ) ) );
         if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotalForRef[l] ) / double( _npes ) ) ) ) == _kEndAtRef[l] )
             _kEndAtRef[l] = _kEndAtRef[l] - 1;
         _nQPEAtRef[l] = _kEndAtRef[l] - _kStartAtRef[l] + 1;
-        std::cout << "nQ = " << _nQTotalForRef[l] << std::endl;
-        std::cout << "kStart = " << _kStartAtRef[l] << ", kEnd = " << _kEndAtRef[l] << std::endl;
+        // std::cout << "nQ PE = " << _mype << ": " << _nQPEAtRef[l] << " " << std::ceil( double( _nQTotalForRef[l] / double( _npes ) ) ) <<
+        // std::endl; std::cout << "nQ = " << _nQTotalForRef[l] << std::endl; std::cout << "kStart = " << _kStartAtRef[l] << ", kEnd = " <<
+        // _kEndAtRef[l] << std::endl;
+    }
+    // std::cout << "-----------------------------------------------" << std::endl;
+
+    _kIndicesAtRef.resize( _nRefinementLevels );
+    unsigned nQTotalForRefOld = 0;
+    for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
+        unsigned numberNewPoints = _nQTotalForRef[l] - nQTotalForRefOld;
+        // compute end and start point for each refinement level for standard distribution strategy
+        _kEndAtRef[l]   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( double( numberNewPoints ) / double( _npes ) ) ) );
+        _kStartAtRef[l] = unsigned( std::ceil( double( _mype ) * ( double( numberNewPoints ) / double( _npes ) ) ) );
+        if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( numberNewPoints ) / double( _npes ) ) ) ) == _kEndAtRef[l] )
+            _kEndAtRef[l] = _kEndAtRef[l] - 1;
+        _kEndAtRef[l] += nQTotalForRefOld;
+        _kStartAtRef[l] += nQTotalForRefOld;
+
+        // save old indices on current refinement level
+        if( l > 0 )
+            for( unsigned i = 0; i < _kIndicesAtRef[l - 1].size(); ++i ) _kIndicesAtRef[l].push_back( _kIndicesAtRef[l - 1][i] );
+
+        // save new indices on current refinement level
+        for( unsigned k = _kStartAtRef[l]; k <= _kEndAtRef[l]; ++k ) {
+            _kIndicesAtRef[l].push_back( k );
+        }
+
+        _nQPEAtRef[l]    = unsigned( _kIndicesAtRef[l].size() );
+        nQTotalForRefOld = _nQTotalForRef[l];
     }
 }
 unsigned Settings::GetNQTotalForRef( unsigned level ) const { return _nQTotalForRef[level]; }
@@ -446,10 +474,6 @@ double Settings::GetPlotTimeInterval() const { return _plotTimeInterval; }
 // MPI
 int Settings::GetMyPE() const { return _mype; }
 int Settings::GetNPEs() const { return _npes; }
-unsigned Settings::GetKStart() const { return _kStart; }
-unsigned Settings::GetKEnd() const { return _kEnd; }
-unsigned Settings::GetKStartAtRef( unsigned level ) const { return _kStartAtRef[level]; }
-unsigned Settings::GetKEndAtRef( unsigned level ) const { return _kEndAtRef[level]; }
 unsigned Settings::GetNqPE() const { return _nQPE; }
 unsigned Settings::GetNxPE() const { return _nXPE; }
 std::vector<unsigned> Settings::GetCellIndexPE() const { return _cellIndexPE; }

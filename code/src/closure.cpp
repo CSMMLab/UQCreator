@@ -223,14 +223,13 @@ Matrix Closure::EvaluateLambda( const Matrix& lambda ) const { return lambda * _
 
 Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda, unsigned levelOld, unsigned levelNew ) const {
     Matrix out( _settings->GetNStates(), _settings->GetNqPEAtRef( levelNew ), 0.0 );
-    unsigned kStart = _settings->GetKStartAtRef( levelNew );
-    unsigned kEnd   = _settings->GetKEndAtRef( levelNew );
-    unsigned nTotal = _nTotalForRef[levelOld];
+    std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( levelNew );
+    unsigned nTotal              = _nTotalForRef[levelOld];
 
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned k = kStart; k <= kEnd; ++k ) {
+        for( unsigned k = 0; k < qIndex.size(); ++k ) {
             for( unsigned i = 0; i < nTotal; ++i ) {
-                out( s, k - kStart ) += lambda( s, i ) * _phiTildeTrans( i, k );
+                out( s, k ) += lambda( s, i ) * _phiTildeTrans( i, qIndex[k] );
             }
         }
     }
@@ -362,12 +361,11 @@ unsigned Closure::GetMaxIterations() const { return _maxIterations; }
 QuadratureGrid* Closure::GetQuadratureGrid() { return _quadGrid; }
 
 Matrix Closure::GetPhiTildeWfAtRef( unsigned level ) const {
-    unsigned kStart = _settings->GetKStartAtRef( level );
-    unsigned kEnd   = _settings->GetKEndAtRef( level );
-    Matrix phiTildeWfTrans( kEnd - kStart + 1, _nTotalForRef[level], false );
-    for( unsigned k = kStart; k <= kEnd; ++k ) {
+    std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );
+    Matrix phiTildeWfTrans( unsigned( qIndex.size() ), _nTotalForRef[level], false );
+    for( unsigned k = 0; k < qIndex.size(); ++k ) {
         for( unsigned i = 0; i < _nTotalForRef[level]; ++i ) {
-            phiTildeWfTrans( k - kStart, i ) = _phiTildeF( k, i ) * _wGrid[level][k];
+            phiTildeWfTrans( k, i ) = _phiTildeF( qIndex[k], i ) * _wGrid[level][qIndex[k]];
         }
     }
     return phiTildeWfTrans;
