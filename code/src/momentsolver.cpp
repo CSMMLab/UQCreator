@@ -16,7 +16,6 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _cellIndexPE = _settings->GetCellIndexPE();
 
     _closure = Closure::Create( _settings );
-    _settings->SetNQTotal( _closure->GetQuadratureGrid()->GetNodeCount() );
     _nQTotal = _settings->GetNQTotal();
     _time    = TimeSolver::Create( _settings, _mesh );
 

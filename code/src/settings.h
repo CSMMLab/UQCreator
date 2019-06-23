@@ -162,7 +162,6 @@ class Settings
     std::vector<unsigned> GetIndicesQforRef( unsigned level ) const;
     unsigned GetNQuadPoints() const;
     void SetNQuadPoints( unsigned nqNew );
-    void SetNQTotal( unsigned nqTotalNew );
     unsigned GetNQTotal() const;
     bool UsesMaxDegree() const;
     LimiterType GetLimiterType() const;

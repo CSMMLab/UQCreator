@@ -286,22 +286,6 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 _gridType = G_TENSORIZEDGRID;
                 _nQTotal  = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
             }
-            /*
-            // determine size of quad array on PE
-            int nQPE = int( ( int( _nQTotal ) - 1 ) / _npes ) + 1;
-            if( _mype == _npes - 1 ) {
-                nQPE = int( _nQTotal ) - _mype * nQPE;
-                if( nQPE < 0 ) {
-                    nQPE = 0;
-                }
-            }
-            _nQPE   = unsigned( nQPE );
-            _kStart = _mype * ( ( _nQTotal - 1 ) / _npes + 1.0 );
-            _kEnd   = _kStart + _nQPE - 1;*/
-            _kEnd   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotal / double( _npes ) ) ) );
-            _kStart = unsigned( std::ceil( double( _mype ) * ( double( _nQTotal ) / double( _npes ) ) ) );
-            if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotal ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
-            _nQPE = _kEnd - _kStart + 1;
         }
         else {
             log->error( "[inputfile] [moment_system] 'quadPoints' not set!" );
@@ -409,20 +393,10 @@ GridType Settings::GetGridType() const { return _gridType; }
 VectorU Settings::GetQuadLevel() const { return _quadLevel; }
 std::vector<unsigned> Settings::GetIndicesQforRef( unsigned level ) const { return _kIndicesAtRef[level]; }
 
-void Settings::SetNQTotal( unsigned nqTotalNew ) {
-    _nQTotal = nqTotalNew;
-    // if number of quadrature points is updated, the MPI bounds need to be updated as well
-    _kEnd   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotal / double( _npes ) ) ) );
-    _kStart = unsigned( std::ceil( double( _mype ) * ( double( _nQTotal ) / double( _npes ) ) ) );
-    if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotal ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
-    _nQPE = _kEnd - _kStart + 1;
-}
-
 // Set Total number of Quadrature points at each refinement level
 void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
     _nQTotalForRef = nQTotalForRef;
     _nQPEAtRef     = VectorU( _nRefinementLevels );
-
     unsigned kEnd, kStart;
     _kIndicesAtRef.resize( _nRefinementLevels );
     unsigned nQTotalForRefOld = 0;
@@ -447,6 +421,8 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
         _nQPEAtRef[l]    = unsigned( _kIndicesAtRef[l].size() );
         nQTotalForRefOld = _nQTotalForRef[l];
     }
+    _nQPE    = _nQPEAtRef[_nRefinementLevels - 1];
+    _nQTotal = _nQTotalForRef[_nRefinementLevels - 1];
 }
 unsigned Settings::GetNQTotalForRef( unsigned level ) const { return _nQTotalForRef[level]; }
 unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }

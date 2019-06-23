@@ -48,7 +48,8 @@ Closure::Closure( Settings* settings )
         oldQLevel              = quadLevel[rlevel];
     }
     _xiGrid = _quadGrid->GetNodes();
-    _settings->SetNQTotalForRef( _nQTotalForRef );    // give number of quad points per level to settings
+    // give number of quad points per level to settings. Quadrature variables are computed here.
+    _settings->SetNQTotalForRef( _nQTotalForRef );
 
     // set total number of quadrature points
     _nQTotal = _quadGrid->GetNodeCount();
