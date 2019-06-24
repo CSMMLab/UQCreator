@@ -282,7 +282,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 _nQTotal  = unsigned( std::pow( 2, _nQuadPoints ) ) + 1u;
                 _nQTotal  = 13;
             }
-            if( quadratureType->at( 0 ).compare( "tensorizedGrid" ) == 0 ) {    // tensorizedGrid
+            else if( quadratureType->at( 0 ).compare( "tensorizedGrid" ) == 0 ) {    // tensorizedGrid
                 _gridType = G_TENSORIZEDGRID;
                 _nQTotal  = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
             }
