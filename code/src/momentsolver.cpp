@@ -132,7 +132,6 @@ void MomentSolver::Solve() {
 
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
-            // refinementLevelTransition[j] = 1;
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
         }
 
