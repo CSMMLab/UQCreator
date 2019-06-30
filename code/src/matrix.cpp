@@ -185,8 +185,10 @@ template <class T> Matrix<T> Matrix<T>::operator/( const T& scalar ) const {
 }
 
 template <class T> Vector<T> Matrix<T>::operator*( const Vector<T>& vector ) const {
+    // ensure that only allocated data is written when sizes differ (due to adaptivity)
+    unsigned columns = std::min( _columns, vector.size() );
     Vector<T> res( _rows );
-    for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             res[i] += ( *this )( i, j ) * vector[j];
         }
