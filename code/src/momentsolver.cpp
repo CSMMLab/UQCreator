@@ -48,7 +48,7 @@ void MomentSolver::Solve() {
             idx = i;
         }
     }
-    VectorU refinementLevel( _nCells, idx );    // vector carries refinement level for each cell
+    VectorU refinementLevel( _nCells, idx );                                         // vector carries refinement level for each cell
     VectorU refinementLevelOld( _nCells, _settings->GetNRefinementLevels() - 1 );    // vector carries old refinement level for each cell
     VectorU refinementLevelTransition( _nCells, _settings->GetNRefinementLevels() - 1 );
 
@@ -110,19 +110,21 @@ void MomentSolver::Solve() {
         refinementLevelOld = refinementLevel;
 
         // determine refinement level of cells on current PE
-        for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+        if( timeIndex > 10000 ) {
+            for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+                // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+                double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
 
-            if( indicator > 0.005 && refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
-                refinementLevel[_cellIndexPE[j]] += 1;
-            else if( indicator < 0.0005 && refinementLevel[_cellIndexPE[j]] > 0 )
-                refinementLevel[_cellIndexPE[j]] -= 1;
-        }
+                if( indicator > 0.0001 && refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
+                    refinementLevel[_cellIndexPE[j]] += 1;
+                else if( indicator < 0.00001 && refinementLevel[_cellIndexPE[j]] > 0 )
+                    refinementLevel[_cellIndexPE[j]] -= 1;
+            }
 
-        // broadcast refinemt level to all PEs
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
+            // broadcast refinemt level to all PEs
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
+            }
         }
 
         // determine transition refinement level to ensure that neighboring cells of high refinement level have fine uQ reconstruction
