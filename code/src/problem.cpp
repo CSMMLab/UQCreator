@@ -41,7 +41,7 @@ Problem* Problem::Create( Settings* settings ) {
     }
 }
 
-double Problem::ComputeDt( const Matrix& u, double dx ) const { return _settings->GetDT(); }
+double Problem::ComputeDt( const Matrix& u, double dx, unsigned level ) const { return _settings->GetDT(); }
 
 Matrix Problem::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
     _log->error( "[Problem]: No exact solution specified" );

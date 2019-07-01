@@ -21,9 +21,13 @@ class Closure
     std::vector<Polynomial*> _quad;
     QuadratureGrid* _quadGrid;
     std::vector<Vector> _xiGrid;
+    std::vector<Vector> _wGrid;
     std::vector<Vector> _quadNodes;
+    VectorU _nQTotalForRef;
+    VectorU _nTotalForRef;
     Matrix _phiTilde;         // stores scaled basis functions evaluated at quadrature points
     Matrix _phiTildeTrans;    // stores scaled basis functions evaluated at quadrature points
+    Matrix _phiTildeF;        // stores scaled basis functions evaluated at quadrature points times pdf
     Matrix _phiTildeWf;       // stores scaled basis functions evaluated at quadrature points times weight and pdf
     std::vector<Vector> _phiTildeVec;
     MatVec _hPartial;    // stores partial matrices for Hessian computation
@@ -35,8 +39,8 @@ class Closure
     unsigned _nQTotal;
     unsigned _nTotal;
     unsigned _maxIterations;
-    void Hessian( Matrix& H, const Matrix& lambda, unsigned nTotal, unsigned nQTotal );
-    void Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
+    void Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel );
+    void Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned refLevel );
     std::shared_ptr<spdlog::logger> _log;
     Matrix _dUdLambda;    // preallocated memory dor computation of Hessian
   public:
@@ -54,8 +58,8 @@ class Closure
      * @return correct dual vector
      */
     // virtual void SolveClosure( Matrix& lambda, const Matrix& u );
-    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
-    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
+    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel );
+    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel );
     /**
      * calculate entropic variable from given dual vector
      * @param dual variable
@@ -67,7 +71,7 @@ class Closure
     void EvaluateLambda( Matrix& out, const Matrix& lambda ) const;
     Vector EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k );
     Matrix EvaluateLambda( const Matrix& lambda, const Vector& xi );
-    Matrix EvaluateLambdaOnPE( const Matrix& lambda, unsigned nTotal ) const;
+    Matrix EvaluateLambdaOnPE( const Matrix& lambda, unsigned levelOld, unsigned levelNew ) const;
     /**
      * calculate solution for kinetic entropy with given entropic variable
      */
@@ -81,9 +85,11 @@ class Closure
 
     virtual void DS( Vector& ds, const Vector& u ) const;
 
-    const Vector& GetPhiTilde( int k ) { return _phiTildeVec[k]; }
-    const Matrix& GetPhiTilde() { return _phiTilde; }
-    const Matrix& GetPhiTildeWf() { return _phiTildeWf; }
+    const Vector& GetPhiTilde( int k ) const { return _phiTildeVec[k]; }
+    const Matrix& GetPhiTilde() const { return _phiTilde; }
+    const Matrix& GetPhiTildeWf() const { return _phiTildeWf; }
+    Matrix GetPhiTildeWfAtRef( unsigned level ) const;
+    Matrix GetPhiTildeWfAtRef( unsigned level, bool full ) const;
     /**
      * Add matrix A and vector b and save result in a matrix
      */

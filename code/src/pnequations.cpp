@@ -4,9 +4,11 @@ PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 13 ) {
     _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
     _settings->SetNStates( _nStates );
     _settings->SetSource( true );
+    _sigmaA = 0.0;    // absorption coefficient
+    _sigmaS = 1.0;    // scattering coefficient
+    _sigmaT = _sigmaA + _sigmaS;
     try {
-        auto file = cpptoml::parse_file( _settings->GetInputFile() );
-
+        auto file    = cpptoml::parse_file( _settings->GetInputFile() );
         auto problem = file->get_table( "problem" );
         SetupSystemMatrices();
     } catch( const cpptoml::parse_exception& e ) {
@@ -155,9 +157,9 @@ Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& nUnit, co
            0.5 * ( v - u ) * norm( n );    // - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
 }
 
-Matrix PNEquations::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
-    unsigned nStates = static_cast<unsigned>( u.rows() );
-    unsigned Nq      = static_cast<unsigned>( u.columns() );
+Matrix PNEquations::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
+    unsigned nStates = u.rows();
+    unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
         column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
@@ -184,21 +186,18 @@ Matrix PNEquations::F( const Matrix& u ) {
 Matrix PNEquations::Source( const Matrix& uQ ) const {
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = static_cast<unsigned>( uQ.columns() );
-    double sigmaA    = 0.0;    // absorption coefficient
-    double sigmaS    = 1.0;    // scattering coefficient
-    double sigmaT    = sigmaA + sigmaS;
     Vector g( nStates, 0.0 );
     g[0] = 1.0;    // 2 * M_PI;
     Matrix y( nStates, Nq, 0.0 );
     for( unsigned k = 0; k < Nq; ++k ) {
         for( unsigned s = 0; s < nStates; ++s ) {
-            y( s, k ) = sigmaT * uQ( s, k ) - sigmaS * g[s] * uQ( s, k );
+            y( s, k ) = _sigmaT * uQ( s, k ) - _sigmaS * g[s] * uQ( s, k );
         }
     }
     return y;
 }
 
-double PNEquations::ComputeDt( const Matrix& u, double dx ) const {
+double PNEquations::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
 
     double cfl = _settings->GetCFL();
 

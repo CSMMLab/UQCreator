@@ -16,7 +16,6 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _cellIndexPE = _settings->GetCellIndexPE();
 
     _closure = Closure::Create( _settings );
-    _settings->SetNQTotal( _closure->GetQuadratureGrid()->GetNodeCount() );
     _nQTotal = _settings->GetNQTotal();
     _time    = TimeSolver::Create( _settings, _mesh );
 
@@ -35,7 +34,7 @@ MomentSolver::~MomentSolver() {
 }
 
 void MomentSolver::Solve() {
-    bool writeSolutionInTime = true;
+    bool writeSolutionInTime = false;
     auto quadLevel           = _settings->GetQuadLevel();
     double mean              = 0;
     for( unsigned i = 0; i < quadLevel.size(); ++i ) {
@@ -50,6 +49,8 @@ void MomentSolver::Solve() {
         }
     }
     VectorU refinementLevel( _nCells, idx );    // vector carries refinement level for each cell
+    VectorU refinementLevelOld( _nCells, _settings->GetNRefinementLevels() - 1 );    // vector carries old refinement level for each cell
+    VectorU refinementLevelTransition( _nCells, _settings->GetNRefinementLevels() - 1 );
 
     auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
@@ -63,8 +64,6 @@ void MomentSolver::Solve() {
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
 
     std::vector<int> PEforCell = _settings->GetPEforCell();
-
-    // log->info( "PE {0}: kStart {1}, kEnd {2}", _settings->GetMyPE(), _settings->GetKStart(), _settings->GetKEnd() );
 
     MatVec uNew = u;
     MatVec uOld = u;
@@ -98,7 +97,7 @@ void MomentSolver::Solve() {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
             //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
-            _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], _nTotalForRef[refinementLevel[_cellIndexPE[j]]], _nQTotal );
+            _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
         }
 
         // MPI Broadcast lambdas to all PEs
@@ -107,20 +106,17 @@ void MomentSolver::Solve() {
             MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
 
-        // for nQ refinement: here we need new refinement level for nQTotal and old level for nTotal
-        // compute solution at quad points
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], _nTotalForRef[refinementLevel[j]] ) );
-        }
+        // save old refinement levels
+        refinementLevelOld = refinementLevel;
 
         // determine refinement level of cells on current PE
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
 
-            if( indicator > 0.02 && refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
+            if( indicator > 0.005 && refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
                 refinementLevel[_cellIndexPE[j]] += 1;
-            else if( indicator < 0.004 && refinementLevel[_cellIndexPE[j]] > 0 )
+            else if( indicator < 0.0005 && refinementLevel[_cellIndexPE[j]] > 0 )
                 refinementLevel[_cellIndexPE[j]] -= 1;
         }
 
@@ -129,18 +125,38 @@ void MomentSolver::Solve() {
             MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
         }
 
+        // determine transition refinement level to ensure that neighboring cells of high refinement level have fine uQ reconstruction
+        // important for FV stencil in Advance function
+        for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+            refinementLevelTransition[_cellIndexPE[j]] = refinementLevel[_cellIndexPE[j]];
+            auto neighbors                             = _mesh->GetNeighborIDs( _cellIndexPE[j] );
+            unsigned maxRefLevelNghs                   = refinementLevel[_cellIndexPE[j]];
+            for( unsigned l = 0; l < neighbors.size(); ++l ) {
+                if( maxRefLevelNghs < refinementLevel[neighbors[l]] ) {
+                    maxRefLevelNghs                            = refinementLevel[neighbors[l]];
+                    refinementLevelTransition[_cellIndexPE[j]] = maxRefLevelNghs;
+                }
+            }
+        }
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            MPI_Bcast( &refinementLevelTransition[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
+        }
+
+        // compute solution at quad points
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
+        }
+
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
-            u[j].reset();
-            multOnPENoReset(
-                uQ[j], _closure->GetPhiTildeWf(), u[j], _settings->GetKStart(), _settings->GetKEnd(), _nTotalForRef[refinementLevel[j]] );
+            u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
 
         // determine time step size
         double dtMinOnPE = 1e10;
         double dtCurrent;
         for( unsigned j = 0; j < _nCells; ++j ) {
-            dtCurrent = _problem->ComputeDt( uQ[j], _mesh->GetMaxEdge( j ) / _mesh->GetArea( j ) );
+            dtCurrent = _problem->ComputeDt( uQ[j], _mesh->GetMaxEdge( j ) / _mesh->GetArea( j ), refinementLevel[j] );
             if( dtCurrent < dtMinOnPE ) dtMinOnPE = dtCurrent;
         }
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
@@ -162,6 +178,7 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
             residual += std::abs( u[_cellIndexPE[j]]( 0, 0 ) - uOld[_cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( _cellIndexPE[j] );
         }
+
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
@@ -281,6 +298,19 @@ void MomentSolver::Solve() {
     }
 }
 
+void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const VectorU& refLevel ) const {
+    Matrix out( _nStates, _nTotal );    // could also be allocated before and then stored in class, be careful with openmp!!!
+#pragma omp parallel for
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        out     = _problem->Source( uQ[j] ) * _closure->GetPhiTildeWfAtRef( refLevel[j] );
+        uNew[j] = uNew[j] + dt * _mesh->GetArea( j ) * out;
+    }
+}
+
+void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned level ) {
+    out += _problem->G( u1, u2, nUnit, n, level ) * _closure->GetPhiTildeWfAtRef( level );
+}
+
 double MomentSolver::ComputeRefIndicator( const VectorU& refinementLevel, const Matrix& u, unsigned refLevel ) const {
     double indicator = 0;
     if( _settings->GetNDimXi() == 1 ) {
@@ -320,11 +350,11 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
     else {
         meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     }
-    Matrix phiTildeWf = _closure->GetPhiTildeWf();
     Vector tmp( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
+        Matrix phiTildeWf = _closure->GetPhiTildeWfAtRef( refinementLevel[j], true );
         // expected value
-        for( unsigned k = 0; k < _nQTotal; ++k ) {
+        for( unsigned k = 0; k < _settings->GetNQTotalForRef( refinementLevel[j] ); ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotalForRef[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
@@ -332,7 +362,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
         }
 
         // variance
-        for( unsigned k = 0; k < _nQTotal; ++k ) {
+        for( unsigned k = 0; k < _settings->GetNQTotalForRef( refinementLevel[j] ); ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotalForRef[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
@@ -357,7 +387,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
 
         // compute indices for quad points
         std::vector<std::vector<unsigned>> indicesQ;
-        unsigned nQTotal = static_cast<unsigned>( std::pow( nQuadFine, _settings->GetNDimXi() ) );
+        unsigned nQTotal = pow( nQuadFine, _settings->GetNDimXi() );
         indicesQ.resize( nQTotal );
         for( unsigned k = 0; k < nQTotal; ++k ) {
             indicesQ[k].resize( _settings->GetNDimXi() );
@@ -411,21 +441,6 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
         }
     }
     return meanAndVar;
-}
-
-void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const VectorU& refLevel ) const {
-    Matrix out( _nStates, _nTotal, 0.0 );    // could also be allocated before and then stored in class, be careful with openmp!!!
-#pragma omp parallel for
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        multOnPENoReset(
-            _problem->Source( uQ[j] ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd(), _nTotalForRef[refLevel[j]] );
-        uNew[j] = uNew[j] + dt * _mesh->GetArea( j ) * out;
-    }
-}
-
-void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned nTotal ) {
-    // out += _problem->G( u1, u2, nUnit, n ) * _closure->GetPhiTildeWf();
-    multOnPENoReset( _problem->G( u1, u2, nUnit, n ), _closure->GetPhiTildeWf(), out, _settings->GetKStart(), _settings->GetKEnd(), nTotal );
 }
 
 MatVec MomentSolver::DetermineMoments( unsigned nTotal ) const {
@@ -500,7 +515,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
             prevClosure->SetMaxIterations( 10000 );
             for( unsigned j = 0; j < _nCells; ++j ) {
-                prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNTotal(), prevSettings->GetNQTotal() );
+                prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNRefinementLevels() - 1 );
             }
             prevClosure->SetMaxIterations( maxIterations );
         }
@@ -525,7 +540,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
                     _lambda[j]( s, i ) = 0.0;
                 }
             }
-            _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNTotal(), _settings->GetNQTotal() );
+            _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
         }
         _closure->SetMaxIterations( maxIterations );
         // delete reload closures and settings
@@ -535,21 +550,12 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
     if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete prevClosure;
 }
 
-void MomentSolver::CalculateMoments( MatVec& out, const MatVec& lambda ) {
-    Matrix U( _nStates, _nQTotal, 0.0 );
-    Matrix evalLambda( _nStates, _nQTotal, 0.0 );
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        _closure->EvaluateLambda( evalLambda, lambda[j] );
-        _closure->U( U, evalLambda );
-        out[j] = U * _closure->GetPhiTildeWf();
-    }
-}
-
 MatVec MomentSolver::SetupIC() const {
+
     MatVec u( _nCells, Matrix( _nStates, _nTotal ) );
     Vector xiEta( _settings->GetNDimXi() );
     Matrix uIC( _nStates, _nQTotal );
-    Matrix phiTildeWf = _closure->GetPhiTildeWf();
+    Matrix phiTildeWf = _closure->GetPhiTildeWfAtRef( _settings->GetNRefinementLevels() - 1, true );
     std::vector<Vector> IC;
     auto grid   = _closure->GetQuadratureGrid();
     auto xiQuad = grid->GetNodes();

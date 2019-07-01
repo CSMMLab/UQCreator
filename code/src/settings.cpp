@@ -282,26 +282,14 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 _nQTotal  = unsigned( std::pow( 2, _nQuadPoints ) ) + 1u;
                 _nQTotal  = 13;
             }
-            else {    // tensorizedGrid
+            else if( quadratureType->at( 0 ).compare( "tensorizedGrid" ) == 0 ) {    // tensorizedGrid
                 _gridType = G_TENSORIZEDGRID;
                 _nQTotal  = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
             }
-            /*
-            // determine size of quad array on PE
-            int nQPE = int( ( int( _nQTotal ) - 1 ) / _npes ) + 1;
-            if( _mype == _npes - 1 ) {
-                nQPE = int( _nQTotal ) - _mype * nQPE;
-                if( nQPE < 0 ) {
-                    nQPE = 0;
-                }
+            else {
+                log->error( "[inputfile] [moment_system] 'quadType' not defined!" );
+                validConfig = false;
             }
-            _nQPE   = unsigned( nQPE );
-            _kStart = _mype * ( ( _nQTotal - 1 ) / _npes + 1.0 );
-            _kEnd   = _kStart + _nQPE - 1;*/
-            _kEnd   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotal / double( _npes ) ) ) );
-            _kStart = unsigned( std::ceil( double( _mype ) * ( double( _nQTotal ) / double( _npes ) ) ) );
-            if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotal ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
-            _nQPE = _kEnd - _kStart + 1;
         }
         else {
             log->error( "[inputfile] [moment_system] 'quadPoints' not set!" );
@@ -407,15 +395,41 @@ unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotal
 unsigned Settings::GetPolyDegreeforRefLevel( unsigned level ) const { return _refinementLevel[level]; }
 GridType Settings::GetGridType() const { return _gridType; }
 VectorU Settings::GetQuadLevel() const { return _quadLevel; }
+std::vector<unsigned> Settings::GetIndicesQforRef( unsigned level ) const { return _kIndicesAtRef[level]; }
 
-void Settings::SetNQTotal( unsigned nqTotalNew ) {
-    _nQTotal = nqTotalNew;
-    // if number of quadrature points is updated, the MPI bounds need to be updated as well
-    _kEnd   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( _nQTotal / double( _npes ) ) ) );
-    _kStart = unsigned( std::ceil( double( _mype ) * ( double( _nQTotal ) / double( _npes ) ) ) );
-    if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( _nQTotal ) / double( _npes ) ) ) ) == _kEnd ) _kEnd = _kEnd - 1;
-    _nQPE = _kEnd - _kStart + 1;
+// Set Total number of Quadrature points at each refinement level
+void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
+    _nQTotalForRef = nQTotalForRef;
+    _nQPEAtRef     = VectorU( _nRefinementLevels );
+    unsigned kEnd, kStart;
+    _kIndicesAtRef.resize( _nRefinementLevels );
+    unsigned nQTotalForRefOld = 0;
+    for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
+        unsigned numberNewPoints = _nQTotalForRef[l] - nQTotalForRefOld;
+        // compute end and start point for each refinement level for standard distribution strategy
+        kEnd   = unsigned( std::floor( ( double( _mype ) + 1.0 ) * double( double( numberNewPoints ) / double( _npes ) ) ) );
+        kStart = unsigned( std::ceil( double( _mype ) * ( double( numberNewPoints ) / double( _npes ) ) ) );
+        if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( numberNewPoints ) / double( _npes ) ) ) ) == kEnd ) kEnd = kEnd - 1;
+        kEnd += nQTotalForRefOld;
+        kStart += nQTotalForRefOld;
+
+        // save old indices on current refinement level
+        if( l > 0 )
+            for( unsigned i = 0; i < _kIndicesAtRef[l - 1].size(); ++i ) _kIndicesAtRef[l].push_back( _kIndicesAtRef[l - 1][i] );
+
+        // save new indices on current refinement level
+        for( unsigned k = kStart; k <= kEnd; ++k ) {
+            _kIndicesAtRef[l].push_back( k );
+        }
+
+        _nQPEAtRef[l]    = unsigned( _kIndicesAtRef[l].size() );
+        nQTotalForRefOld = _nQTotalForRef[l];
+    }
+    _nQPE    = _nQPEAtRef[_nRefinementLevels - 1];
+    _nQTotal = _nQTotalForRef[_nRefinementLevels - 1];
 }
+unsigned Settings::GetNQTotalForRef( unsigned level ) const { return _nQTotalForRef[level]; }
+unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }
 
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }
@@ -424,8 +438,6 @@ double Settings::GetPlotTimeInterval() const { return _plotTimeInterval; }
 // MPI
 int Settings::GetMyPE() const { return _mype; }
 int Settings::GetNPEs() const { return _npes; }
-unsigned Settings::GetKStart() const { return _kStart; }
-unsigned Settings::GetKEnd() const { return _kEnd; }
 unsigned Settings::GetNqPE() const { return _nQPE; }
 unsigned Settings::GetNxPE() const { return _nXPE; }
 std::vector<unsigned> Settings::GetCellIndexPE() const { return _cellIndexPE; }

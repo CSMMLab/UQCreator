@@ -44,9 +44,9 @@ Vector ShallowWater::G( const Vector& q_l, const Vector& q_r, const Vector& nUni
     }
 }
 
-Matrix ShallowWater::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
-    unsigned nStates = static_cast<unsigned>( u.rows() );
-    unsigned Nq      = static_cast<unsigned>( u.columns() );
+Matrix ShallowWater::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
+    unsigned nStates = u.rows();
+    unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
         column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
@@ -66,7 +66,7 @@ Matrix ShallowWater::F( const Matrix& u ) {
     exit( EXIT_FAILURE );
 }
 
-double ShallowWater::ComputeDt( const Matrix& u, double dx ) const {
+double ShallowWater::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     _log->error( "[ShallowWater] ComputeDt not implemented" );
     return 0.0;
 }

@@ -9,11 +9,10 @@ TensorizedQuadrature::TensorizedQuadrature( Settings* settings ) : _settings( se
     CreateGrid();
 }
 
-TensorizedQuadrature::TensorizedQuadrature( Settings* settings, unsigned numDimXi, unsigned nQuadPoints )
-    : _settings( settings ), _nQuadPoints( nQuadPoints ) {
+TensorizedQuadrature::TensorizedQuadrature( Settings* settings, unsigned nQuadPoints ) : _settings( settings ), _nQuadPoints( nQuadPoints ) {
     // compute total number of quad points
-    _numDimXi = numDimXi;
-    _nQTotal  = unsigned( std::pow( _settings->GetNQuadPoints(), _numDimXi ) );
+    _numDimXi = _settings->GetNDimXi();
+    _nQTotal  = unsigned( std::pow( nQuadPoints, _numDimXi ) );
     CreateGrid();
 }
 

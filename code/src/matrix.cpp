@@ -130,10 +130,13 @@ template <class T> Matrix<T> Matrix<T>::operator-( const Matrix<T>& other ) cons
 }
 
 template <class T> Matrix<T> Matrix<T>::operator*( const Matrix<T>& other ) const {
+    // ensure that only allocated data is written when sizes differ (due to adaptivity)
+    unsigned rows = std::min( _columns, other._rows );
+
     Matrix<T> res( this->_rows, other.columns() );
     for( unsigned j = 0; j < other._columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
-            for( unsigned k = 0; k < other.rows(); k++ ) {
+            for( unsigned k = 0; k < rows; k++ ) {
                 res( i, j ) += ( *this )( i, k ) * other( k, j );
             }
         }
@@ -182,8 +185,10 @@ template <class T> Matrix<T> Matrix<T>::operator/( const T& scalar ) const {
 }
 
 template <class T> Vector<T> Matrix<T>::operator*( const Vector<T>& vector ) const {
+    // ensure that only allocated data is written when sizes differ (due to adaptivity)
+    unsigned columns = std::min( _columns, vector.size() );
     Vector<T> res( _rows );
-    for( unsigned j = 0; j < _columns; ++j ) {
+    for( unsigned j = 0; j < columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             res[i] += ( *this )( i, j ) * vector[j];
         }

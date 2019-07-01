@@ -66,6 +66,8 @@ template <class T> class Vector
     iterator begin();
     iterator end();
 
+    T inner( const Vector<T>& a ) const;
+
     friend void gesv<>( Matrix<T>& A, Vector<T>& b, int* ipiv );
     friend void posv<>( Matrix<T>& A, Vector<T>& b );
 };
@@ -286,5 +288,13 @@ template <class T> void Vector<T>::resize( unsigned newSize ) {
 template <class T> T* Vector<T>::begin() { return &_data[0]; }
 
 template <class T> T* Vector<T>::end() { return &_data[_N]; }
+
+template <class T> T Vector<T>::inner( const Vector<T>& a ) const {
+    double tmp = 0.0;
+    for( unsigned i = 0; i < a.size(); ++i ) {
+        tmp += a[i] * _data[i];
+    }
+    return tmp;
+}
 
 }    // namespace VectorSpace

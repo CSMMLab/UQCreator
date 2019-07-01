@@ -49,9 +49,9 @@ Vector Euler2D::G( const Vector& u, const Vector& v, const Vector& nUnit, const 
     }
 }
 
-Matrix Euler2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
-    unsigned nStates = static_cast<unsigned>( u.rows() );
-    unsigned Nq      = static_cast<unsigned>( u.columns() );
+Matrix Euler2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
+    unsigned nStates = u.rows();
+    unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
         // column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
@@ -111,14 +111,15 @@ Matrix Euler2D::F( const Matrix& u ) {
     return 0.5 * pow( u, 2 );
 }
 
-double Euler2D::ComputeDt( const Matrix& u, double dx ) const {
+double Euler2D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     double dtMinTotal = 1e10;
     double dtMin;
     double rhoInv, uU, vU, p, a, cfl;
+    unsigned kEnd = _settings->GetNqPEAtRef( level );
 
     cfl = _settings->GetCFL();
 
-    for( unsigned k = 0; k < u.columns(); ++k ) {
+    for( unsigned k = 0; k < kEnd; ++k ) {
         rhoInv = 1.0 / u( 0, k );
         uU     = u( 1, k ) * rhoInv;
         vU     = u( 2, k ) * rhoInv;
@@ -136,7 +137,7 @@ double Euler2D::ComputeDt( const Matrix& u, double dx ) const {
 Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
     _sigma            = _settings->GetSigma();
-    bool pipeTestCase = true;
+    bool pipeTestCase = false;
     if( pipeTestCase ) {    // pipe testcase
         double gamma = 1.4;
         double R     = 287.87;

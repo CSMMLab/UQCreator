@@ -6,9 +6,12 @@
 
 class PNEquations : public Problem
 {
-  private:
+  protected:
     // moment orders for P_N
-    const int _N;
+    int _N;
+    double _sigmaA;    // absorption coefficient
+    double _sigmaS;    // scattering coefficient
+    double _sigmaT;    // total crossection
 
     // System Matrix for x, y and z flux
     Matrix _Ax;
@@ -39,13 +42,14 @@ class PNEquations : public Problem
 
   public:
     PNEquations( Settings* settings );
+    PNEquations( Settings* settings, bool noSystemMatrix ) {}
     virtual ~PNEquations();
     inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
-    virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n );
+    virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level );
     Matrix F( const Vector& u );
     Matrix F( const Matrix& u );
     virtual Matrix Source( const Matrix& uQ ) const;
-    virtual double ComputeDt( const Matrix& u, double dx ) const;
+    virtual double ComputeDt( const Matrix& u, double dx, unsigned level ) const;
     virtual Vector IC( const Vector& x, const Vector& xi );
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
 };

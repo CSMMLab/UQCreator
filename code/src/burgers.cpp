@@ -27,9 +27,9 @@ Vector Burgers::G( const Vector& u, const Vector& v, const Vector& nUnit, const 
     }
 }
 
-Matrix Burgers::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n ) {
+Matrix Burgers::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
     unsigned nStates = u.rows();
-    unsigned Nq      = u.columns();
+    unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq );
     for( unsigned k = 0; k < Nq; ++k ) {
         column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
@@ -111,11 +111,12 @@ Matrix Burgers::ExactSolution( double t, const Matrix& x, const Vector& xi ) con
     return y;
 }
 
-double Burgers::ComputeDt( const Matrix& u, double dx ) const {
+double Burgers::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     double dtMinTotal = 1e10;
     double cfl        = _settings->GetCFL();
+    unsigned kEnd     = _settings->GetNqPEAtRef( level );
 
-    for( unsigned k = 0; k < u.columns(); ++k ) {
+    for( unsigned k = 0; k < kEnd; ++k ) {
         dtMinTotal = std::min( cfl * dx / ( std::fabs( u( 0, k ) ) ), dtMinTotal );
     }
     return dtMinTotal;

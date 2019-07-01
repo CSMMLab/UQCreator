@@ -15,6 +15,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
 
 #pragma omp parallel for private( _ghostCell )
     for( unsigned j = 0; j < numCells; ++j ) {
+        unsigned Nq    = _settings->GetNqPEAtRef( refLevel[j] );
         Cell* cell     = _cells[j];
         auto neighbors = cell->GetNeighborIDs();
         if( cell->IsBoundaryCell() ) {
@@ -25,7 +26,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
             else if( cell->GetBoundaryType() == BoundaryType::NOSLIP ) {
                 _ghostCell = uQ[j];
                 Vector v( 2, 0.0 );
-                for( unsigned k = 0; k < uQ[numCells].columns(); ++k ) {
+                for( unsigned k = 0; k < Nq; ++k ) {
                     v.reset();
                     v[0]               = _ghostCell( 1, k ) / _ghostCell( 0, k );
                     v[1]               = _ghostCell( 2, k ) / _ghostCell( 0, k );
@@ -44,7 +45,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
             else if( cell->GetBoundaryType() == BoundaryType::SWWALL ) {
                 _ghostCell = uQ[j];
                 Vector v( 2, 0.0 );
-                for( unsigned k = 0; k < uQ[numCells].columns(); ++k ) {
+                for( unsigned k = 0; k < Nq; ++k ) {
                     v[0]               = _ghostCell( 1, k ) / _ghostCell( 0, k );
                     v[1]               = _ghostCell( 2, k ) / _ghostCell( 0, k );
                     Vector n           = cell->GetBoundaryUnitNormal();
@@ -58,16 +59,14 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, const M
             }
         }
 
-        Matrix rhs( u[0].rows(), u[0].columns(), 0.0 );
+        Matrix rhs( _settings->GetNStates(), _settings->GetNTotalforRefLevel( refLevel[j] ), 0.0 );
         for( unsigned l = 0; l < neighbors.size(); ++l ) {
             if( ( _mesh->GetBoundaryType( j ) == BoundaryType::NOSLIP || _mesh->GetBoundaryType( j ) == BoundaryType::SWWALL ) &&
                 neighbors[l] == numCells ) {
-                fluxFunc(
-                    rhs, _ghostCell, _ghostCell, cell->GetUnitNormal( l ), cell->GetNormal( l ), _settings->GetNTotalforRefLevel( refLevel[j] ) );
+                fluxFunc( rhs, _ghostCell, _ghostCell, cell->GetUnitNormal( l ), cell->GetNormal( l ), refLevel[j] );
             }
             else {
-                fluxFunc(
-                    rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ), _settings->GetNTotalforRefLevel( refLevel[j] ) );
+                fluxFunc( rhs, uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ), refLevel[j] );
             }
         }
         uNew[j] = u[j] - ( dt / cell->GetArea() ) * rhs;

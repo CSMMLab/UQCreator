@@ -102,3 +102,10 @@ std::pair<Vector, Matrix> MathTools::ComputeEigenValTriDiagMatrix( const Matrix&
     }
     return std::make_pair( d, z );
 }
+
+int MathTools::Factorial( int i ) {
+    int fact = 1;
+    for( unsigned n = 1; n <= i; n++ ) {
+        fact *= i;
+    }
+}
