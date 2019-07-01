@@ -152,12 +152,12 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
 
         double rhoFarfield = p / ( R * T );
 
-        y[0]                  = rhoFarfield;
-        y[1]                  = rhoFarfield * uF;
-        y[2]                  = rhoFarfield * vF;
-        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
-        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-        y[3]                  = 1.0;
+        y[0] = rhoFarfield;
+        y[1] = rhoFarfield * uF;
+        y[2] = rhoFarfield * vF;
+        // double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
+        // double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
+        y[3] = 1.0;
 
         if( x[1] < 1.1 + _sigma[0] * xi[0] ) {
             y[0] = 0.5 * rhoFarfield;

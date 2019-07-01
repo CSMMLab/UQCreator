@@ -41,7 +41,7 @@ class Settings
     std::filesystem::path _referenceFile;
     bool _loadLambda;
 
-    int _writeFrequency;    // number of time steps until error to reference solution is computed
+    unsigned _writeFrequency;    // number of time steps until error to reference solution is computed
 
     // requied settings
     unsigned _meshDimension;
@@ -109,7 +109,7 @@ class Settings
     std::string GetInputFile() const;
     std::string GetInputDir() const;
     std::string GetOutputDir() const;
-    int GetWriteFrequency() const;
+    unsigned GetWriteFrequency() const;
 
     // mesh
     unsigned GetMeshDimension() const;

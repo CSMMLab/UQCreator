@@ -36,7 +36,20 @@ MomentSolver::~MomentSolver() {
 
 void MomentSolver::Solve() {
     bool writeSolutionInTime = true;
-    VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels() - 1 );    // vector carries refinement level for each cell
+    auto quadLevel           = _settings->GetQuadLevel();
+    double mean              = 0;
+    for( unsigned i = 0; i < quadLevel.size(); ++i ) {
+        mean += quadLevel[i];
+    }
+    mean /= quadLevel.size();
+    auto diff    = quadLevel - static_cast<unsigned>( std::ceil( mean ) );
+    unsigned idx = 0;
+    for( unsigned i = 0; i < diff.size(); ++i ) {
+        if( diff[i] < diff[idx] ) {
+            idx = i;
+        }
+    }
+    VectorU refinementLevel( _nCells, idx );    // vector carries refinement level for each cell
 
     auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
@@ -69,8 +82,8 @@ void MomentSolver::Solve() {
     if( _settings->GetMyPE() == 0 ) log->info( "{:10}   {:10}", "t", "residual" );
 
     // init time and residual
-    double t      = _tStart;
-    int timeIndex = 0;
+    double t           = _tStart;
+    unsigned timeIndex = 0;
     double dt;
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
@@ -344,7 +357,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
 
         // compute indices for quad points
         std::vector<std::vector<unsigned>> indicesQ;
-        unsigned nQTotal = pow( nQuadFine, _settings->GetNDimXi() );
+        unsigned nQTotal = static_cast<unsigned>( std::pow( nQuadFine, _settings->GetNDimXi() ) );
         indicesQ.resize( nQTotal );
         for( unsigned k = 0; k < nQTotal; ++k ) {
             indicesQ[k].resize( _settings->GetNDimXi() );
