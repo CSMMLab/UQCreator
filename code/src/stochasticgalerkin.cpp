@@ -12,6 +12,6 @@ Matrix StochasticGalerkin::U( const Matrix& Lambda ) { return Lambda; }
 
 void StochasticGalerkin::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 
-void StochasticGalerkin::SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) { lambda = u; }
+void StochasticGalerkin::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) { lambda = u; }
 
-void StochasticGalerkin::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) { lambda = u; }
+void StochasticGalerkin::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) { lambda = u; }

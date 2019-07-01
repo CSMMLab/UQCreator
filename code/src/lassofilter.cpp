@@ -32,7 +32,7 @@ Matrix LassoFilter::U( const Matrix& Lambda ) { return Lambda; }
 
 void LassoFilter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 
-void LassoFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
+void LassoFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
     double scL1, filterStrength;
     unsigned nMax = _settings->GetNTotal() - 1;
 
@@ -46,7 +46,7 @@ void LassoFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal
     }
 }
 
-void LassoFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal ) {
+void LassoFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
     double scL1, filterStrength;
     unsigned nMax = _settings->GetNTotal() - 1;
 
