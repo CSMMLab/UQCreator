@@ -8,6 +8,7 @@
 class RadiationHydrodynamics : public PNEquations
 {
     double _c; // radiation velocity
+    double _P;
     double _R;
     double _gamma;
     unsigned _nMoments;

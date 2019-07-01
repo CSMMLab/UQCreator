@@ -3,6 +3,7 @@
 RadiationHydrodynamics::RadiationHydrodynamics( Settings* settings ) : PNEquations( settings, true ) {
     _N        = 1;    // set moment order
     _c        = 1.0;
+    _P        = 1.0;
     _gamma    = 1.4;
     _R        = 287.87;
     _nMoments = unsigned( GlobalIndex( _N, _N ) + 1 );
@@ -23,13 +24,17 @@ RadiationHydrodynamics::RadiationHydrodynamics( Settings* settings ) : PNEquatio
 Matrix RadiationHydrodynamics::Source( const Matrix& uQ ) const {
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = static_cast<unsigned>( uQ.columns() );
-    Vector g( nStates, 0.0 );
-    g[0] = 1.0;    // 2 * M_PI;
     Matrix y( nStates, Nq, 0.0 );
     for( unsigned k = 0; k < Nq; ++k ) {
-        for( unsigned s = 0; s < nStates; ++s ) {
-            y( s, k ) = _sigmaT * uQ( s, k ) - _sigmaS * g[s] * uQ( s, k );
-        }
+        double se             = SE( column( uQ, k ) );
+        Vector sFVec          = SF( column( uQ, k ) );
+        y( 0, k )             = _c * se;
+        y( 1, k )             = _c * sFVec[0];
+        y( 2, k )             = _c * sFVec[1];
+        y( 3, k )             = _c * sFVec[2];
+        y( _nMoments + 1, k ) = -_P * sFVec[0];
+        y( _nMoments + 2, k ) = -_P * sFVec[1];
+        y( _nMoments + 3, k ) = -_P * _c * se;
     }
     return y;
 }
