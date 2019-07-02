@@ -201,14 +201,17 @@ void MomentSolver::Solve() {
     // compute mean and variance numerical + exact (if exact solution specified)
     Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true );
 
-    // write solution on reference field
-    _referenceSolution.resize( _nCells );
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        _referenceSolution[j].resize( 2 * _nStates );
-        for( unsigned s = 2 * _nStates; s < 4 * _nStates; ++s ) {
-            _referenceSolution[j][s - 2 * _nStates] = meanAndVar( s, j );
+    // write exact solution on reference field
+    if( _settings->HasExactSolution() && !_settings->HasReferenceFile() ) {
+        _referenceSolution.resize( _nCells );
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            _referenceSolution[j].resize( 2 * _nStates );
+            for( unsigned s = 2 * _nStates; s < 4 * _nStates; ++s ) {
+                _referenceSolution[j][s - 2 * _nStates] = meanAndVar( s, j );
+            }
         }
     }
+    std::cout << "Writing mean and var DONE." << std::endl;
 
     if( _settings->HasReferenceFile() || _settings->HasExactSolution() ) {
         Vector a( 2 );
