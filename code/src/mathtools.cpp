@@ -108,4 +108,5 @@ int MathTools::Factorial( int i ) {
     for( unsigned n = 1; n <= i; n++ ) {
         fact *= i;
     }
+    return fact;
 }

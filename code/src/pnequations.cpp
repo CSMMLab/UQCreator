@@ -17,6 +17,8 @@ PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 13 ) {
     }
 }
 
+PNEquations::PNEquations( Settings* settings, bool noSystemMatrix ) : Problem( settings ) {}
+
 PNEquations::~PNEquations() {}
 
 double PNEquations::AParam( int l, int k ) const {
@@ -95,10 +97,9 @@ void PNEquations::SetupSystemMatrices() {
     int j;
     unsigned i;
     unsigned nTotalEntries = unsigned( GlobalIndex( _N, _N ) + 1 );    // total number of entries for sytem matrix
-    std::cout << "Setting Up System Matrix with dimension " << nTotalEntries << std::endl;
-    _Ax = Matrix( nTotalEntries, nTotalEntries );
-    _Ay = Matrix( nTotalEntries, nTotalEntries );
-    _Az = Matrix( nTotalEntries, nTotalEntries );
+    _Ax                    = Matrix( nTotalEntries, nTotalEntries );
+    _Ay                    = Matrix( nTotalEntries, nTotalEntries );
+    _Az                    = Matrix( nTotalEntries, nTotalEntries );
     // loop over columns of A
     for( int l = 0; l <= _N; ++l ) {
         for( int k = -l; k <= l; ++k ) {
@@ -117,7 +118,6 @@ void PNEquations::SetupSystemMatrices() {
             if( j >= 0 && j < int( nTotalEntries ) ) _Ax( i, unsigned( j ) ) = -0.5 * ETilde( l - 1, std::abs( k ) + 1 );
 
             j = GlobalIndex( l + 1, kPlus( k ) );
-            // if( i == 1 ) std::cout << "j = " << j << std::endl;
             if( j >= 0 && j < int( nTotalEntries ) ) _Ax( i, unsigned( j ) ) = 0.5 * FTilde( l + 1, std::abs( k ) + 1 );
 
             //

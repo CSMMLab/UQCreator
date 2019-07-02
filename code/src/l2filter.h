@@ -18,8 +18,8 @@ class L2Filter : public Closure
     virtual void U( Matrix& out, const Matrix& Lambda );
     virtual Matrix U( const Matrix& Lambda );
     virtual void DU( Matrix& y, const Vector& Lambda );
-    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
-    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned nTotal, unsigned nQTotal );
+    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel );
+    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel );
 };
 
 #endif    // L2FILTER_H

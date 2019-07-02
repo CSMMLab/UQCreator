@@ -5,6 +5,7 @@
 #include "euler2d.h"
 #include "pnequations.h"
 #include "problem.h"
+#include "radiationhydrodynamics.h"
 #include "shallowwater.h"
 #include "shallowwater2d.h"
 
@@ -34,6 +35,9 @@ Problem* Problem::Create( Settings* settings ) {
     }
     else if( settings->GetProblemType() == ProblemType::P_PNEQUATIONS_2D ) {
         return new PNEquations( settings );
+    }
+    else if( settings->GetProblemType() == ProblemType::P_RADIATIONHYDRO_2D ) {
+        return new RadiationHydrodynamics( settings );
     }
     else {
         log->error( "[Problem] Invalid problem type!" );

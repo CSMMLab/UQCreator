@@ -11,8 +11,7 @@ RadiationHydrodynamics::RadiationHydrodynamics( Settings* settings ) : PNEquatio
     _settings->SetNStates( _nStates );
     _settings->SetSource( true );
     try {
-        auto file = cpptoml::parse_file( _settings->GetInputFile() );
-
+        auto file    = cpptoml::parse_file( _settings->GetInputFile() );
         auto problem = file->get_table( "problem" );
         SetupSystemMatrices();
     } catch( const cpptoml::parse_exception& e ) {
@@ -72,10 +71,10 @@ void RadiationHydrodynamics::SetupSystemMatrices() {
                 j = GlobalIndex( l - 1, kMinus( k ) );
                 if( j >= 0 && j < int( nTotalEntries ) )
                     _Ax( i, unsigned( j ) ) = 0.5 * Delta( l - 1, std::abs( k ) - 1 ) * CTilde( l - 1, std::abs( k ) - 1 );
-
                 j = GlobalIndex( l + 1, kMinus( k ) );
-                if( j >= 0 && j < int( nTotalEntries ) )
+                if( j >= 0 && j < int( nTotalEntries ) ) {
                     _Ax( i, unsigned( j ) ) = -0.5 * Delta( l + 1, std::abs( k ) - 1 ) * DTilde( l + 1, std::abs( k ) - 1 );
+                }
             }
 
             j = GlobalIndex( l - 1, kPlus( k ) );
@@ -115,14 +114,30 @@ void RadiationHydrodynamics::SetupSystemMatrices() {
             if( j >= 0 && j < int( nTotalEntries ) ) _Az( i, unsigned( j ) ) = Delta( l + 1, k ) * BParam( l + 1, k );
 
             // multiply to change to monomials for up to order one
-            for( unsigned j = 0; j < nTotalEntries; ++j ) {
-                _Ax( i, j ) = _c * _Ax( i, j ) * Delta( l, k );
-                _Ay( i, j ) = _c * _Ay( i, j ) * Delta( l, k );
-                _Az( i, j ) = _c * _Az( i, j ) * Delta( l, k );
+            for( unsigned n = 0; n < nTotalEntries; ++n ) {
+                _Ax( i, n ) = _c * _Ax( i, n ) * Delta( l, k );
+                _Ay( i, n ) = _c * _Ay( i, n ) * Delta( l, k );
+                _Az( i, n ) = _c * _Az( i, n ) * Delta( l, k );
             }
         }
     }
 }
+/*
+int RadiationHydrodynamics::GlobalIndex( int l, int k ) const {
+    if( l != 1 ) {
+        int numIndicesPrevLevel  = l * l;    // number of previous indices untill level l-1
+        int prevIndicesThisLevel = k + l;    // number of previous indices in current level
+        return numIndicesPrevLevel + prevIndicesThisLevel;
+    }
+    else {
+        if( k == 0 ) {
+            return 1;
+        }
+        else if( k == -1 ) {
+            return 2;
+        }
+    }
+}*/
 
 double RadiationHydrodynamics::Er0( const Vector& u ) const {
     double Er     = u[0];
@@ -193,4 +208,114 @@ Matrix RadiationHydrodynamics::F( const Vector& u ) {
     flux( _nMoments + 2, 1 ) = u[_nMoments + 2] * v2 + p;
     flux( _nMoments + 3, 1 ) = ( u[_nMoments + 3] + p ) * v2;
     return flux;
+}
+
+Vector RadiationHydrodynamics::IC( const Vector& x, const Vector& xi ) {
+    Vector y( _nStates, 0.0 );
+    double x0    = 0.0;
+    double y0    = 0.0;
+    double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
+    double floor = 0.0;
+    _sigma       = _settings->GetSigma();
+
+    y[0] = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2 ) );
+    y[_nMoments + 0] = 1.0;
+    y[_nMoments + 3] = 1.0;
+    return y;
+}
+/*
+void RadiationHydrodynamics::DS( Vector& ds, const Vector& u ) const {
+    double gamma      = _gamma;
+    double rho        = u[_nMoments + 0];
+    double rhoU       = u[_nMoments + 1];
+    double rhoV       = u[_nMoments + 2];
+    double rhoV2      = pow( rhoV, 2 );
+    double rhoU2      = pow( rhoU, 2 );
+    double rhoE       = u[_nMoments + 3];
+    ds[_nMoments + 0] = ( rhoU2 + rhoV2 + gamma * ( 2 * rho * rhoE - rhoU2 - rhoV2 ) ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) -
+                        std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
+    ds[_nMoments + 1] = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
+    ds[_nMoments + 2] = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
+    ds[_nMoments + 3] = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
+
+    // safety factor on ds3
+    // ds[3] -= 1e-7;
+}*/
+
+Matrix RadiationHydrodynamics::FRadiation( const Vector& u ) {
+    Matrix flux( u.size(), 2 );
+
+    column( flux, 0 ) = _Ax * u;
+    column( flux, 1 ) = _Ay * u;
+    // column( flux, 1 ) = _Az * u;
+
+    return flux;
+}
+
+Matrix RadiationHydrodynamics::FEuler( const Vector& u ) {
+    double rhoInv = 1.0 / u[0];
+    double v1     = u[1] * rhoInv;
+    double v2     = u[2] * rhoInv;
+    double p      = ( _gamma - 1.0 ) * ( u[3] - 0.5 * u[0] * ( pow( v1, 2 ) + pow( v2, 2 ) ) );
+    Matrix flux( u.size(), 2 );
+
+    flux( 0, 0 ) = u[1];
+    flux( 1, 0 ) = u[1] * v1 + p;
+    flux( 2, 0 ) = u[1] * v2;
+    flux( 3, 0 ) = ( u[3] + p ) * v1;
+    flux( 0, 1 ) = u[2];
+    flux( 1, 1 ) = u[2] * v1;
+    flux( 2, 1 ) = u[2] * v2 + p;
+    flux( 3, 1 ) = ( u[3] + p ) * v2;
+
+    return flux;
+}
+
+Vector RadiationHydrodynamics::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+    Vector out( _nStates, false );
+    Vector outEuler( 4, false );
+    double rhoInv = 1.0 / u[0];
+    double uU     = u[1] * rhoInv;
+    double vU     = u[2] * rhoInv;
+    double p      = ( _gamma - 1.0 ) * ( u[3] - 0.5 * u[0] * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
+    double aU     = sqrt( _gamma * p * rhoInv );
+
+    rhoInv    = 1.0 / v[0];
+    double uV = v[1] * rhoInv;
+    double vV = v[2] * rhoInv;
+    p         = ( _gamma - 1.0 ) * ( v[3] - 0.5 * v[0] * ( pow( uV, 2 ) + pow( vV, 2 ) ) );
+    double aV = sqrt( _gamma * p * rhoInv );
+
+    double uUProjected = nUnit[0] * uU + nUnit[1] * vU;
+    double uVProjected = nUnit[0] * uV + nUnit[1] * vV;
+
+    double lambdaMin = uUProjected - aU;
+    double lambdaMax = uVProjected + aV;
+
+    if( lambdaMin >= 0 )
+        outEuler = FEuler( u ) * n;
+    else if( lambdaMax <= 0 )
+        outEuler = FEuler( v ) * n;
+    else {
+        outEuler = ( 1.0 / ( lambdaMax - lambdaMin ) ) *
+                   ( lambdaMax * FEuler( u ) * n - lambdaMin * FEuler( v ) * n + lambdaMax * lambdaMin * ( v - u ) * norm( n ) );
+    }
+
+    // write radiation part on _nMoments entries
+    out = FRadiation( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
+
+    // save Euler part on return vector
+    for( unsigned s = 0; s < 4; ++s ) out[_nMoments + s] = outEuler[s];
+
+    return out;
+}
+
+Matrix RadiationHydrodynamics::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
+    unsigned nStates = u.rows();
+    unsigned Nq      = _settings->GetNqPEAtRef( level );
+    Matrix y( nStates, Nq );
+    for( unsigned k = 0; k < Nq; ++k ) {
+        column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
+    }
+    return y;
 }

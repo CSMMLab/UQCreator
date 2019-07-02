@@ -35,14 +35,19 @@ class PNEquations : public Problem
     int Sgn( int k ) const;
     int kPlus( int k ) const;
     int kMinus( int k ) const;
-    int GlobalIndex( int l, int k ) const;
+    virtual int GlobalIndex( int l, int k ) const;
 
     // function for setting up system matrices
     void SetupSystemMatrices();
 
   public:
     PNEquations( Settings* settings );
-    PNEquations( Settings* settings, bool noSystemMatrix ) {}
+    /**
+     * @brief PNEquations constructur without setting up system matrices used for radiation hydrodynamics
+     * @param settings Settings pointer
+     * @param noSystemMatrix dummy bool
+     */
+    PNEquations( Settings* settings, bool noSystemMatrix );
     virtual ~PNEquations();
     inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level );
