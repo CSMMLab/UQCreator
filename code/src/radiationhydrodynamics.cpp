@@ -9,7 +9,10 @@ RadiationHydrodynamics::RadiationHydrodynamics( Settings* settings ) : PNEquatio
     _nMoments = unsigned( GlobalIndex( _N, _N ) + 1 );
     _nStates  = _nMoments + 4;    // total number of states in equations in P_N + Euler
     _settings->SetNStates( _nStates );
-    _settings->SetSource( true );
+    _settings->SetSource( false );    // TODO:DEBUGGING
+    _sigmaA = 0.0;                    // absorption coefficient
+    _sigmaS = 0.0;                    // scattering coefficient
+    _sigmaT = _sigmaA + _sigmaS;
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
         auto problem = file->get_table( "problem" );
@@ -39,6 +42,7 @@ Matrix RadiationHydrodynamics::Source( const Matrix& uQ ) const {
 }
 
 double RadiationHydrodynamics::Delta( int l, int k ) const {
+    return 1.0;    // TODO: DEBUGGING
     if( l == 0 ) {
         return std::sqrt( 4.0 * M_PI );
     }
@@ -218,7 +222,8 @@ Vector RadiationHydrodynamics::IC( const Vector& x, const Vector& xi ) {
     double floor = 0.0;
     _sigma       = _settings->GetSigma();
 
-    y[0] = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2 ) );
+    y[0] = Delta( 0, 0 ) *
+           std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2 ) );
     y[_nMoments + 0] = 1.0;
     y[_nMoments + 3] = 1.0;
     return y;
@@ -274,16 +279,23 @@ Matrix RadiationHydrodynamics::FEuler( const Vector& u ) {
 Vector RadiationHydrodynamics::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     Vector out( _nStates, false );
     Vector outEuler( 4, false );
-    double rhoInv = 1.0 / u[0];
-    double uU     = u[1] * rhoInv;
-    double vU     = u[2] * rhoInv;
-    double p      = ( _gamma - 1.0 ) * ( u[3] - 0.5 * u[0] * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
+    Vector uRadiation( _nStates, false );
+    Vector vRadiation( _nStates, false );
+    // copy radiation part on uRadiation
+    for( unsigned i = 0; i < _nMoments; ++i ) {
+        uRadiation[i] = u[i];
+        vRadiation[i] = v[i];
+    }
+    double rhoInv = 1.0 / u[_nMoments + 0];
+    double uU     = u[_nMoments + 1] * rhoInv;
+    double vU     = u[_nMoments + 2] * rhoInv;
+    double p      = ( _gamma - 1.0 ) * ( u[_nMoments + 3] - 0.5 * u[_nMoments + 0] * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
     double aU     = sqrt( _gamma * p * rhoInv );
 
-    rhoInv    = 1.0 / v[0];
-    double uV = v[1] * rhoInv;
-    double vV = v[2] * rhoInv;
-    p         = ( _gamma - 1.0 ) * ( v[3] - 0.5 * v[0] * ( pow( uV, 2 ) + pow( vV, 2 ) ) );
+    rhoInv    = 1.0 / v[_nMoments + 0];
+    double uV = v[_nMoments + 1] * rhoInv;
+    double vV = v[_nMoments + 2] * rhoInv;
+    p         = ( _gamma - 1.0 ) * ( v[_nMoments + 3] - 0.5 * v[_nMoments + 0] * ( pow( uV, 2 ) + pow( vV, 2 ) ) );
     double aV = sqrt( _gamma * p * rhoInv );
 
     double uUProjected = nUnit[0] * uU + nUnit[1] * vU;
@@ -302,10 +314,10 @@ Vector RadiationHydrodynamics::G( const Vector& u, const Vector& v, const Vector
     }
 
     // write radiation part on _nMoments entries
-    out = FRadiation( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
+    out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * n - 0.5 * ( vRadiation - uRadiation ) * norm( n );
 
     // save Euler part on return vector
-    for( unsigned s = 0; s < 4; ++s ) out[_nMoments + s] = outEuler[s];
+    for( unsigned s = 0; s < 4; ++s ) out[_nMoments + s] = outEuler[s];    // TODO: DEBUG
 
     return out;
 }

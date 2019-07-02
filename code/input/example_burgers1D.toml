@@ -20,7 +20,7 @@ tEnd = 0.12
 [moment_system]
 # available closures: BoundedBarrier, LogSin, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "BoundedBarrier"
-moments = [["totalDegree"],[2,3,4,5]]
-quadPoints = [["tensorized"],[20]]
+moments = [["totalDegree"],[5]]
+quadPoints = [["tensorizedGrid"],[20]]
 maxIterations = 2000
 epsilon = 5e-5
