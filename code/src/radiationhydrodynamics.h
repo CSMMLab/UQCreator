@@ -22,10 +22,11 @@ class RadiationHydrodynamics : public PNEquations
     Matrix FRadiation( const Vector& u );
     Matrix FEuler( const Vector& u );
     Matrix F( const Vector& u );
+    virtual int GlobalIndex( int l, int k ) const;
 
   public:
     RadiationHydrodynamics( Settings* settings );
-
+    virtual double ComputeDt( const Matrix& u, double dx, unsigned level ) const;
     inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level );
     virtual Matrix Source( const Matrix& uQ ) const;

@@ -1,17 +1,20 @@
 #include "radiationhydrodynamics.h"
 
 RadiationHydrodynamics::RadiationHydrodynamics( Settings* settings ) : PNEquations( settings, true ) {
-    _N        = 1;    // set moment order
-    _c        = 1.0;
-    _P        = 1.0;
-    _gamma    = 1.4;
-    _R        = 287.87;
-    _nMoments = unsigned( GlobalIndex( _N, _N ) + 1 );
-    _nStates  = _nMoments + 4;    // total number of states in equations in P_N + Euler
+    _N     = 1;    // set moment order
+    _c     = 1.0;
+    _P     = 0.5;
+    _gamma = 1.4;
+    _R     = 287.87;
+    if( _N == 1 )    // GlobalIndex has different ordering here
+        _nMoments = 4;
+    else
+        _nMoments = unsigned( GlobalIndex( _N, _N ) + 1 );
+    _nStates = _nMoments + 4;    // total number of states in equations in P_N + Euler
     _settings->SetNStates( _nStates );
-    _settings->SetSource( false );    // TODO:DEBUGGING
-    _sigmaA = 0.0;                    // absorption coefficient
-    _sigmaS = 0.0;                    // scattering coefficient
+    _settings->SetSource( true );    // TODO:DEBUGGING
+    _sigmaA = 0.5;                   // absorption coefficient
+    _sigmaS = 0.1;                   // scattering coefficient
     _sigmaT = _sigmaA + _sigmaS;
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -42,7 +45,6 @@ Matrix RadiationHydrodynamics::Source( const Matrix& uQ ) const {
 }
 
 double RadiationHydrodynamics::Delta( int l, int k ) const {
-    return 1.0;    // TODO: DEBUGGING
     if( l == 0 ) {
         return std::sqrt( 4.0 * M_PI );
     }
@@ -61,10 +63,9 @@ double RadiationHydrodynamics::Delta( int l, int k ) const {
 void RadiationHydrodynamics::SetupSystemMatrices() {
     int j;
     unsigned i;
-    unsigned nTotalEntries = unsigned( GlobalIndex( _N, _N ) + 1 );    // total number of entries for sytem matrix
-    _Ax                    = Matrix( nTotalEntries, nTotalEntries );
-    _Ay                    = Matrix( nTotalEntries, nTotalEntries );
-    _Az                    = Matrix( nTotalEntries, nTotalEntries );
+    _Ax = Matrix( _nMoments, _nMoments );
+    _Ay = Matrix( _nMoments, _nMoments );
+    _Az = Matrix( _nMoments, _nMoments );
     // loop over columns of A
     for( int l = 0; l <= _N; ++l ) {
         for( int k = -l; k <= l; ++k ) {
@@ -73,52 +74,52 @@ void RadiationHydrodynamics::SetupSystemMatrices() {
             // flux matrix in direction x
             if( k != -1 ) {
                 j = GlobalIndex( l - 1, kMinus( k ) );
-                if( j >= 0 && j < int( nTotalEntries ) )
-                    _Ax( i, unsigned( j ) ) = 0.5 * Delta( l - 1, std::abs( k ) - 1 ) * CTilde( l - 1, std::abs( k ) - 1 );
+                if( j >= 0 && j < int( _nMoments ) )
+                    _Ax( i, unsigned( j ) ) = 0.5 * CTilde( l - 1, std::abs( k ) - 1 ) / Delta( l - 1, std::abs( k ) - 1 );
                 j = GlobalIndex( l + 1, kMinus( k ) );
-                if( j >= 0 && j < int( nTotalEntries ) ) {
-                    _Ax( i, unsigned( j ) ) = -0.5 * Delta( l + 1, std::abs( k ) - 1 ) * DTilde( l + 1, std::abs( k ) - 1 );
+                if( j >= 0 && j < int( _nMoments ) ) {
+                    _Ax( i, unsigned( j ) ) = -0.5 * DTilde( l + 1, std::abs( k ) - 1 ) / Delta( l + 1, std::abs( k ) - 1 );
                 }
             }
 
             j = GlobalIndex( l - 1, kPlus( k ) );
-            if( j >= 0 && j < int( nTotalEntries ) )
-                _Ax( i, unsigned( j ) ) = -0.5 * Delta( l - 1, std::abs( k ) + 1 ) * ETilde( l - 1, std::abs( k ) + 1 );
+            if( j >= 0 && j < int( _nMoments ) )
+                _Ax( i, unsigned( j ) ) = -0.5 * ETilde( l - 1, std::abs( k ) + 1 ) / Delta( l - 1, std::abs( k ) + 1 );
 
             j = GlobalIndex( l + 1, kPlus( k ) );
-            if( j >= 0 && j < int( nTotalEntries ) )
-                _Ax( i, unsigned( j ) ) = 0.5 * Delta( l + 1, std::abs( k ) + 1 ) * FTilde( l + 1, std::abs( k ) + 1 );
+            if( j >= 0 && j < int( _nMoments ) )
+                _Ax( i, unsigned( j ) ) = 0.5 * FTilde( l + 1, std::abs( k ) + 1 ) / Delta( l + 1, std::abs( k ) + 1 );
 
             //
             // flux matrix in direction y
             if( k != 1 ) {
                 j = GlobalIndex( l - 1, -kMinus( k ) );
-                if( j >= 0 && j < int( nTotalEntries ) )
-                    _Ay( i, unsigned( j ) ) = -0.5 * Sgn( k ) * Delta( l - 1, std::abs( k ) - 1 ) * CTilde( l - 1, std::abs( k ) - 1 );
+                if( j >= 0 && j < int( _nMoments ) )
+                    _Ay( i, unsigned( j ) ) = -0.5 * Sgn( k ) * CTilde( l - 1, std::abs( k ) - 1 ) / Delta( l - 1, std::abs( k ) - 1 );
 
                 j = GlobalIndex( l + 1, -kMinus( k ) );
-                if( j >= 0 && j < int( nTotalEntries ) )
-                    _Ay( i, unsigned( j ) ) = 0.5 * Sgn( k ) * Delta( l + 1, std::abs( k ) - 1 ) * DTilde( l + 1, std::abs( k ) - 1 );
+                if( j >= 0 && j < int( _nMoments ) )
+                    _Ay( i, unsigned( j ) ) = 0.5 * Sgn( k ) * DTilde( l + 1, std::abs( k ) - 1 ) / Delta( l + 1, std::abs( k ) - 1 );
             }
 
             j = GlobalIndex( l - 1, -kPlus( k ) );
-            if( j >= 0 && j < int( nTotalEntries ) )
-                _Ay( i, unsigned( j ) ) = -0.5 * Sgn( k ) * Delta( l - 1, std::abs( k ) + 1 ) * ETilde( l - 1, std::abs( k ) + 1 );
+            if( j >= 0 && j < int( _nMoments ) )
+                _Ay( i, unsigned( j ) ) = -0.5 * Sgn( k ) * ETilde( l - 1, std::abs( k ) + 1 ) / Delta( l - 1, std::abs( k ) + 1 );
 
             j = GlobalIndex( l + 1, -kPlus( k ) );
-            if( j >= 0 && j < int( nTotalEntries ) )
-                _Ay( i, unsigned( j ) ) = 0.5 * Sgn( k ) * Delta( l + 1, std::abs( k ) + 1 ) * FTilde( l + 1, std::abs( k ) + 1 );
+            if( j >= 0 && j < int( _nMoments ) )
+                _Ay( i, unsigned( j ) ) = 0.5 * Sgn( k ) * FTilde( l + 1, std::abs( k ) + 1 ) / Delta( l + 1, std::abs( k ) + 1 );
 
             //
             // flux matrix in direction z
             j = GlobalIndex( l - 1, k );
-            if( j >= 0 && j < int( nTotalEntries ) ) _Az( i, unsigned( j ) ) = Delta( l - 1, k ) * AParam( l - 1, k );
+            if( j >= 0 && j < int( _nMoments ) ) _Az( i, unsigned( j ) ) = AParam( l - 1, k ) / Delta( l - 1, k );
 
             j = GlobalIndex( l + 1, k );
-            if( j >= 0 && j < int( nTotalEntries ) ) _Az( i, unsigned( j ) ) = Delta( l + 1, k ) * BParam( l + 1, k );
+            if( j >= 0 && j < int( _nMoments ) ) _Az( i, unsigned( j ) ) = BParam( l + 1, k ) / Delta( l + 1, k );
 
             // multiply to change to monomials for up to order one
-            for( unsigned n = 0; n < nTotalEntries; ++n ) {
+            for( unsigned n = 0; n < _nMoments; ++n ) {
                 _Ax( i, n ) = _c * _Ax( i, n ) * Delta( l, k );
                 _Ay( i, n ) = _c * _Ay( i, n ) * Delta( l, k );
                 _Az( i, n ) = _c * _Az( i, n ) * Delta( l, k );
@@ -126,7 +127,7 @@ void RadiationHydrodynamics::SetupSystemMatrices() {
         }
     }
 }
-/*
+
 int RadiationHydrodynamics::GlobalIndex( int l, int k ) const {
     if( l != 1 ) {
         int numIndicesPrevLevel  = l * l;    // number of previous indices untill level l-1
@@ -134,14 +135,17 @@ int RadiationHydrodynamics::GlobalIndex( int l, int k ) const {
         return numIndicesPrevLevel + prevIndicesThisLevel;
     }
     else {
-        if( k == 0 ) {
+        if( k == 1 ) {
             return 1;
         }
         else if( k == -1 ) {
             return 2;
         }
+        else {    // k == 0
+            return 3;
+        }
     }
-}*/
+}
 
 double RadiationHydrodynamics::Er0( const Vector& u ) const {
     double Er     = u[0];
@@ -191,6 +195,8 @@ Vector RadiationHydrodynamics::SF( const Vector& u ) const {
 }
 
 Matrix RadiationHydrodynamics::F( const Vector& u ) {
+    std::cerr << "F not tested" << std::endl;
+    exit( EXIT_FAILURE );
     Matrix flux( u.size(), 2 );
     double rhoInv = 1.0 / u[_nMoments + 0];
     double v1     = u[_nMoments + 1] * rhoInv;
@@ -216,16 +222,20 @@ Matrix RadiationHydrodynamics::F( const Vector& u ) {
 
 Vector RadiationHydrodynamics::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
-    double x0    = 0.0;
-    double y0    = 0.0;
-    double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
-    double floor = 0.0;
-    _sigma       = _settings->GetSigma();
+    double x0      = 0.0;
+    double y0      = 0.0;
+    double s2      = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
+    double s2Euler = 3.2 * std::pow( 0.15, 2 );    // std::pow( 0.03, 2 );
+    double floor   = 0.0;
+    _sigma         = _settings->GetSigma();
 
     y[0] = Delta( 0, 0 ) *
            std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2 ) );
     y[_nMoments + 0] = 1.0;
-    y[_nMoments + 3] = 1.0;
+    y[_nMoments + 0] = std::fmax(
+        floor, 1.0 / ( 4.0 * M_PI * s2Euler ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2Euler ) );
+    y[_nMoments + 3] = std::fmax(
+        floor, 1.0 / ( 4.0 * M_PI * s2Euler ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2Euler ) );
     return y;
 }
 /*
@@ -281,16 +291,24 @@ Vector RadiationHydrodynamics::G( const Vector& u, const Vector& v, const Vector
     Vector outEuler( 4, false );
     Vector uRadiation( _nStates, false );
     Vector vRadiation( _nStates, false );
+    Vector uEuler( _nStates, false );
+    Vector vEuler( _nStates, false );
     // copy radiation part on uRadiation
     for( unsigned i = 0; i < _nMoments; ++i ) {
         uRadiation[i] = u[i];
         vRadiation[i] = v[i];
+    }
+    for( unsigned i = 0; i < 4; ++i ) {
+        uEuler[i] = u[_nMoments + i];
+        vEuler[i] = v[_nMoments + i];
     }
     double rhoInv = 1.0 / u[_nMoments + 0];
     double uU     = u[_nMoments + 1] * rhoInv;
     double vU     = u[_nMoments + 2] * rhoInv;
     double p      = ( _gamma - 1.0 ) * ( u[_nMoments + 3] - 0.5 * u[_nMoments + 0] * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
     double aU     = sqrt( _gamma * p * rhoInv );
+
+    // std::cout << " rhoInv = " << rhoInv << ", p = " << p << std::endl;
 
     rhoInv    = 1.0 / v[_nMoments + 0];
     double uV = v[_nMoments + 1] * rhoInv;
@@ -305,12 +323,12 @@ Vector RadiationHydrodynamics::G( const Vector& u, const Vector& v, const Vector
     double lambdaMax = uVProjected + aV;
 
     if( lambdaMin >= 0 )
-        outEuler = FEuler( u ) * n;
+        outEuler = FEuler( uEuler ) * n;
     else if( lambdaMax <= 0 )
-        outEuler = FEuler( v ) * n;
+        outEuler = FEuler( vEuler ) * n;
     else {
         outEuler = ( 1.0 / ( lambdaMax - lambdaMin ) ) *
-                   ( lambdaMax * FEuler( u ) * n - lambdaMin * FEuler( v ) * n + lambdaMax * lambdaMin * ( v - u ) * norm( n ) );
+                   ( lambdaMax * FEuler( uEuler ) * n - lambdaMin * FEuler( vEuler ) * n + lambdaMax * lambdaMin * ( vEuler - uEuler ) * norm( n ) );
     }
 
     // write radiation part on _nMoments entries
@@ -330,4 +348,27 @@ Matrix RadiationHydrodynamics::G( const Matrix& u, const Matrix& v, const Vector
         column( y, k ) = G( column( u, k ), column( v, k ), nUnit, n );
     }
     return y;
+}
+
+double RadiationHydrodynamics::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+    double dtMinTotal = 1e10;
+    double dtMin;
+    double rhoInv, uU, vU, p, a, cfl;
+    unsigned kEnd = _settings->GetNqPEAtRef( level );
+
+    cfl = _settings->GetCFL();
+
+    for( unsigned k = 0; k < kEnd; ++k ) {
+        rhoInv = 1.0 / u( _nMoments + 0, k );
+        uU     = u( _nMoments + 1, k ) * rhoInv;
+        vU     = u( _nMoments + 2, k ) * rhoInv;
+        p      = ( _gamma - 1.0 ) * ( u( _nMoments + 3, k ) - 0.5 * u( _nMoments + 0, k ) * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
+        a      = sqrt( _gamma * p * rhoInv );
+
+        dtMin      = ( cfl / dx ) * std::min( std::min( std::fabs( 1.0 / ( vU - a ) ), std::fabs( 1.0 / ( vU + a ) ) ),
+                                         std::min( std::fabs( 1.0 / ( uU + a ) ), std::fabs( 1.0 / ( uU - a ) ) ) );
+        dtMinTotal = std::min( dtMin, dtMinTotal );
+    }
+    // std::cout << "P_N dt = " << _c * cfl / dx << ", Euler dt =  " << dtMinTotal << std::endl;
+    return std::min( dtMinTotal, _c * cfl / dx );
 }
