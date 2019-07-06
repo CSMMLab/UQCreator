@@ -38,9 +38,9 @@ needs to be minimized, i.e. one needs to find the root of
 \nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle^T - \bm{\hat u}_i,
 \end{align*}
 which is usually done by an iterative method. Defining the dual iteration function $\bm{d}:\mathbb{R}^{(N+1)\times p}\times\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$,
-\begin{align*}
+\begin{align}\label{eq:dualIterationFunction}
 \bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}(\bm{\lambda})\cdot \left(\langle \bm u_{s}(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}^T\rangle^T-\bm{\hat{u}}\right),
-\end{align*}
+\end{align}
 with an adequate preconditioner $\bm{B}$, the iteration process for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
 \bm{\lambda}^{(m+1)}_j = \bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j}).
