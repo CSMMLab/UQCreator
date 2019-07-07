@@ -13,4 +13,9 @@ Now the indicator for a moment vector at level $\ell$ is defined as
 \end{align}
 where divisions and multiplications are performed element-wise. In this work, we use the first entry in $\bm S_{\ell}$ to determine the refinement level, i.e. in the case of gas dynamics, the regularity of the density is chosen to indicate an adequate refinement level. If the moment vector in a given cell at a certain timestep is initially at refinement level $\ell$, this level is kept if if the error indicator \eqref{eq:errorIndicator} lies in the interval $I_{\delta}:=[\delta_{-},\delta_{+}]$. Here $\delta_{\pm}$ are user determined parameters. If the indicator is smaller than $\delta_-$, the refinement level is decreased, if it lies above $\delta_+$, it is increased.
 
-Now we need to specify how the different building blocks of the IPM method can be modified to work with varying truncation orders on different cells. Let first add dimensions to the definition of the dual iteration function $\bm d$, which has been defined in \eqref{eq:dualIteration}.
+Now we need to specify how the different building blocks of the IPM method can be modified to work with varying truncation orders on different cells. Let us first add dimensions to the notation of the dual iteration function $\bm d$, which has been defined in \eqref{eq:dualIterationFunction}. Now, we have 
+$\bm{d}_{\ell}:\mathbb{R}^{N_{\ell}\times p}\times\mathbb{R}^{N_{\ell}\times p}\to\mathbb{R}^{N_{\ell}\times p}$, given by
+\begin{align}\label{eq:dualIterationFunction}
+\bm{d}_{\ell}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}_{\ell}(\bm{\lambda})\cdot \left(\langle \bm u_{s}(\bm{\lambda}^T\bm{\varphi}_{\ell})\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T-\bm{\hat{u}}\right),
+\end{align}
+where $\bm{\varphi}_{\ell}\in\mathbb{R}^{N_{\ell}}$ collects all basis functions with total degree smaller or equal to $\ell$. The preconditioner $\bm{B}_{\ell}$ is given by 

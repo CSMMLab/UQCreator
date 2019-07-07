@@ -6,11 +6,11 @@ Omitting initial conditions and assuming a one-dimensional spatial domain, we ca
 \begin{align*}
 \partial_t \bm{\hat u}+\partial_x \bm{F}(\bm{\hat u}) = \bm{0}
 \end{align*}
-with the flux $\bm{F}:\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$, $\bm{F}(\bm{\hat u})=\langle \bm f(\mathcal{U}(\bm{\hat u}))\bm{\varphi}^T \rangle^T$. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. First we perform the discretization of the spatial domain: We choose the discrete unknowns which represent the solution to be the spatial averages over each cell at time $t_n$, given by
+with the flux $\bm{F}:\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$, $\bm{F}(\bm{\hat u})=\langle \bm f(\mathcal{U}(\bm{\hat u}))\bm{\varphi}^T \rangle^T$. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. First we perform the discretization of the spatial domain: We choose the discrete unknowns which represent the solution to be the spatial averages over each cell at time $t_n$, given by
 \begin{align*}
 \bm{\hat u}_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}\bm{\hat u}_i(t_n,x) dx.
 \end{align*}
-If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{0j}^n,\cdots,\bm{\hat u}_{Nj}^n)^T\in\mathbb{R}^{N+1}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{(N+1)\times p}\times\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$ as
+If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{0j}^n,\cdots,\bm{\hat u}_{Nj}^n)^T\in\mathbb{R}^{N+1}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{N\times p}\times\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$ as
 \begin{align}\label{eq:IPMDiscretization}
 \bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}  - \frac{\Delta t}{\Delta x}\left( \bm{G}(\bm{\hat u}_{j}^{n},\bm{\hat u}_{j+1}^{n})- \bm{G}(\bm{\hat u}_{j-1}^{n},\bm{\hat u}_{j}^{n})\right)
 \end{align}
@@ -19,7 +19,15 @@ The numerical flux is assumed to be consistent, i.e. $\bm{G}(\hat{\bm{u}},\hat{\
 
 When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the original problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take
 \begin{align*}
- \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T.
+ \bm{\tilde G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T.
+\end{align*}
+Commonly, this integral cannot be evaluated analytically and therefore needs to be approximated by a quadrature rule
+\begin{align*}
+\langle h \rangle \approx \langle h \rangle_{Q} := \sum_{k=1}^Q w_k h(\xi_k).
+\end{align*}
+The approximated numerical flux then becomes
+\begin{align*}
+ \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T_Q.
 \end{align*}
 Note that the numerical flux requires evaluating the closure $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define $\bm{u}_{s}:\mathbb{R}^s \to \mathbb{R}^s$,
 \begin{align*}
@@ -31,15 +39,15 @@ meaning that the closure \eqref{eq:ansatz} at cell $j$ in timestep $n$ can be wr
 \end{align*}
 The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. Hence, to determine the dual variables for a given moment vector $\bm{\hat{u}}$, the cost function
 \begin{align*}
-L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{i=0}^{N}\bm{\lambda}_i^T \bm{\hat u}_i
+L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle_Q - \sum_{i\leq M}\bm{\lambda}_i^T \bm{\hat u}_i
 \end{align*}
 needs to be minimized, i.e. one needs to find the root of
 \begin{align*}
-\nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle^T - \bm{\hat u}_i,
+\nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}_i,
 \end{align*}
-which is usually done by an iterative method. Defining the dual iteration function $\bm{d}:\mathbb{R}^{(N+1)\times p}\times\mathbb{R}^{(N+1)\times p}\to\mathbb{R}^{(N+1)\times p}$,
+which is usually done by an iterative method. Defining the dual iteration function $\bm{d}:\mathbb{R}^{N\times p}\times\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$,
 \begin{align}\label{eq:dualIterationFunction}
-\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}(\bm{\lambda})\cdot \left(\langle \bm u_{s}(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}^T\rangle^T-\bm{\hat{u}}\right),
+\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}(\bm{\lambda})\cdot \left(\langle \bm u_{s}(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}^T\rangle_Q^T-\bm{\hat{u}}\right),
 \end{align}
 with an adequate preconditioner $\bm{B}$, the iteration process for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
@@ -47,7 +55,7 @@ with an adequate preconditioner $\bm{B}$, the iteration process for spatial cell
 \end{align}
 The exact dual state is then obtained by computing the fix point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$. A common preconditioner is the inverse Hessian of the dual problem, i.e.
 \begin{align*}
-\bm{B}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-T}.
+\bm{B}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle_Q^{-T}.
 \end{align*}
 To obtain a finite number of iterations for the iteration in cell $j$, a stopping criterion 
 \begin{align}\label{eq:tauCrit}
@@ -57,7 +65,7 @@ is used.
 
 We now write down the entire scheme: To obtain a more compact notation, one defines
 \begin{align*}
-\bm{c}\left(\bm{\lambda}_{\ell},\bm{\lambda}_c,\bm{\lambda}_r\right):= \langle \bm u_{s}(\bm{\lambda}_c^T\bm{\varphi})\bm{\varphi}^T\rangle^T - \frac{\Delta t}{\Delta x}\left(\langle \bm g(\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}^T\rangle^T-\langle \bm g(\bm u_{s}(\bm{\lambda}_{\ell}^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}))\bm{\varphi}^T\rangle^T\right).
+\bm{c}\left(\bm{\lambda}_{\ell},\bm{\lambda}_c,\bm{\lambda}_r\right):= \langle \bm u_{s}(\bm{\lambda}_c^T\bm{\varphi})\bm{\varphi}^T\rangle_Q^T - \frac{\Delta t}{\Delta x}\left(\langle \bm g(\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}^T\rangle_Q^T-\langle \bm g(\bm u_{s}(\bm{\lambda}_{\ell}^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}))\bm{\varphi}^T\rangle_Q^T\right).
 \end{align*}
 The moment iteration is then given by
 \begin{align}\label{eq:momentIteration}
@@ -72,7 +80,7 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
 \For{$j=0$ to $N_x+1$}
-\State $\bm{u}_j^0 \leftarrow \frac{1}{\Delta x} \int_{x_{j-1/ 2}}^{x_{j+1/ 2}} \langle u_{\text{IC}}(x, \cdot) \bm{\varphi} \rangle dx$
+\State $\bm{u}_j^0 \leftarrow \frac{1}{\Delta x} \int_{x_{j-1/ 2}}^{x_{j+1/ 2}} \langle u_{\text{IC}}(x, \cdot) \bm{\varphi} \rangle_Q dx$
 \EndFor
 \For{$n=0$ to $N_t$}
 \For{$j=0$ to $N_x+1$}
