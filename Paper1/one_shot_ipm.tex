@@ -34,7 +34,7 @@ In the following, we will show that this iteration converges, if the chosen init
 Assume that the classical IPM iteration is contractive at its fix point $\bm{\hat u}^*$. Then the Jacobi matrix $\bm{J}$ of the One-Shot IPM iteration \eqref{eq:oneshotIPM} has a spectral radius $\rho(\bm{J})<1$ at the fix point $(\bm{\lambda}^*,\bm{\hat u}^*)$ if the preconditioner $\bm{B} = \langle \nabla \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^{n})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}$, i.e. the Hessian of the dual problem is used.
 \end{theorem}
 \begin{proof}
-First, understand what contraction of the classical IPM iteration implies, we rewrite the moment iteration \eqref{eq:momentIteration} of the classical IPM scheme: When defining the update function
+First, to understand what contraction of the classical IPM iteration implies, we rewrite the moment iteration \eqref{eq:momentIteration} of the classical IPM scheme: When defining the update function
 \begin{align*}
 \bm{\tilde c}\left(\bm{\hat{u}}_{\ell},\bm{\hat{u}}_{c},\bm{\hat{u}}_{r}\right):=\bm{c}\left(\bm{\hat{\lambda}}(\bm{\hat{u}}_{\ell}),\bm{\hat{\lambda}}(\bm{\hat{u}}_{c}),\bm{\hat{\lambda}}(\bm{\hat{u}}_{r})\right)
 \end{align*}
