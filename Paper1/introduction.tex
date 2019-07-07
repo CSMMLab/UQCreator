@@ -40,9 +40,9 @@ To obtain a closed set of equations, one needs to derive a closure $\mathcal{U}$
 \bm{u}(t,\bm x,\bm \xi) \approx \mathcal{U}(\bm{\hat u};\bm\xi).
 \end{align*}
 Here, we collect the $N$ moments for which $\vert i \vert \leq M$ holds in the moment matrix $\bm{\hat{u}}:=(\bm{\hat{u}}_i)_{|i|\leq M}\in\mathbb{R}^{N \times p}$. The dependency of $\mathcal{U}$ on $\bm \xi$ will occasionally be omitted in the following for sake of readability. A commonly used closure is given by stochastic-Galerkin (SG) \cite{ghanem2003stochastic}, which represents the solution by a polynomial:
-\begin{align*}
+\begin{align}\label{eq:SGClosure}
 \mathcal{U}_{\text{SG}}(\bm{\hat u};\bm\xi):= \sum_{|i|\leq M} \bm{\hat{u}}_i\varphi_i(\bm{\xi}) = \hat{\bm u}^T\bm{\varphi}(\bm\xi),
-\end{align*}
+\end{align}
 Corresponding to the definition of $\bm{\hat u}$, we collect the $N$ basis function for which $\vert i \vert \leq M$ holds in $\bm{\varphi}:=(\varphi_i)_{|i|\leq M}\in\mathbb{R}^{N+1}$. When using the stochastic-Galerkin method to close \eqref{eq:nonClosedMomentSystem}, the resulting moment system is not necessarily hyperbolic \cite{poette2009uncertainty} and the solution needs to be manipulated \cite{schlachter2018hyperbolicity} in order to prevent a failure of the method. A generalization of stochastic-Galerkin, which ensures hyperbolicity is the Intrusive Polynomial Moment (IPM) closure \cite{poette2009uncertainty}: The closure is given by a constraint optimization problem. For a given convex entropy $s:\mathbb{R}^p\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, this optimization problem is given by
 \begin{align}\label{eq:primalProblem}
 \mathcal{U}(\bm{\hat u}) = \argmin_{\bm u} \langle s(\bm u) \rangle \enskip \text{ subject to } \bm{\hat u}_i = \langle \bm u \varphi_i \rangle \text{ for } |i| \leq M.

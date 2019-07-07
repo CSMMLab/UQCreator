@@ -26,9 +26,9 @@ Commonly, this integral cannot be evaluated analytically and therefore needs to 
 \langle h \rangle \approx \langle h \rangle_{Q} := \sum_{k=1}^Q w_k h(\bm{\xi}_k)f_{\Xi}(\bm{\xi}_k).
 \end{align*}
 The approximated numerical flux then becomes
-\begin{align*}
+\begin{align}\label{eq:numericalFluxIPM}
  \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T_Q.
-\end{align*}
+\end{align}
 Note that the numerical flux requires evaluating the closure $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define $\bm{u}_{s}:\mathbb{R}^s \to \mathbb{R}^s$,
 \begin{align*}
 \bm{u}_{s}(\bm\Lambda):=\left( \nabla_{\bm{u}} s \right)^{-1}(\bm\Lambda),
@@ -99,6 +99,31 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 \caption{IPM implementation}
 \label{alg:IPM}
 \end{algorithm}
+
+\subsection{Costs of the numerical flux}
+A straight forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}, which has been proposed in \cite{kusch2017maximum}. By simply taking moments of a given deterministic flux, the software can easily be extended to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. However, the need to approximate the flux by an integral seems to be numerically expensive, especially when considering that the stochastic-Galerkin method often allows an analytic computation of all arising integrals. In the following, we discuss this issue and show the advantages of our numerical flux choice by considering the stochastic Burgers' equation
+\begin{align*}
+\partial_t u + \partial_x \frac{u^2}{2} &= 0\\
+u(t=0,x,\xi) &= u_{IC}(x,\xi).
+\end{align*}
+The scalar random variable $\xi$ is uniformly distributed in the $[-1,1]$, hence the gPC basis functions $\bm\varphi=(\varphi_0,\cdots,\varphi_M)^T$ are the Legendre polynomials. Testing with these basis functions and choosing the SG closure \eqref{eq:SGClosure} yields the closed SG moment system
+\begin{align*}
+\partial_t \hat u_i + \partial_x \frac12\sum_{n,m = 0}^M \hat u_n \hat u_m \langle \varphi_n\varphi_m\varphi_i \rangle = 0.
+\end{align*}
+Defining the matrices $\bm C_i := \langle \bm\varphi\bm\varphi^T\varphi_i\rangle\in\mathbb{R}^{M\times M}$ gives
+\begin{align*}
+\partial_t \bm{\hat u} + \partial_x \bm F(\bm{\hat u}) = 0
+\end{align*}
+with $F_i(\bm{\hat u}) = \frac12\bm{\hat u}^T\bm C_i\bm{\hat u}$. Note that $\bm{C}_i$ can be computed analytically, hence choosing a Lax-Friedrichs flux
+\begin{align}\label{eq:numFluxAnalytic}
+G_i^{(LF)}(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) =\frac{1}{4}\left(\bm{\hat u}_{\ell}^T \bm{C}_i \bm{\hat u}_{\ell}+\bm{\hat u}_{r}^T \bm{C}_i \bm{\hat u}_{r}\right) - \frac{\Delta x}{2\Delta t}(\bm{\hat u}_{r}-\bm{\hat u}_{\ell})_i.
+\end{align}
+requires no integral evaluations. Recall, that the numerical flux choice made in this work gives
+\begin{align}\label{eq:numericalFluxIPMBurgers}
+ \bm{G}(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) = \langle g(\mathcal{U}_{SG}(\bm{\hat u}_{\ell};\xi_k),\mathcal{U}_{SG}(\bm{\hat u}_{r};\xi_k))\bm{\varphi}^T\rangle^T_Q.
+\end{align}
+When the chosen deterministic flux $g$ is Lax-Friedrichs, the order of the polynomials inside the integral brackets is of order $3M$. Choosing a Gauss-Lobatto quadrature rule, $Q = \frac32 M +\frac12$ quadrature points suffice for an exact computation of the numerical flux. Indeed, with this choice of quadrature points, the numerical fluxes \eqref{eq:numFluxAnalytic} and \eqref{eq:numericalFluxIPMBurgers} are equivalent. 
+Counting the number of operations, one observes that our choice of the numerical flux \eqref{eq:numericalFluxIPMBurgers} is significantly cheaper: When precomputing the values $\mathcal{U}_{SG}(\bm{\hat u};\xi_k)=\sum_{i=0}^N\hat u_i\varphi_i(\xi_k)$ which requires $M\cdot Q$ evaluations, the computation of \eqref{eq:numericalFluxIPMBurgers} again requires $O(M\cdot Q)$ operations, i.e. the costs are $O(M^2)$, whereas the evaluation of \eqref{eq:numFluxAnalytic} requires $O(M^3)$ operations.
 
 TODO: Extension to 2D $\rightarrow$ triangular meshes
 
