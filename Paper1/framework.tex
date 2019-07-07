@@ -23,7 +23,7 @@ When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb
 \end{align*}
 Commonly, this integral cannot be evaluated analytically and therefore needs to be approximated by a quadrature rule
 \begin{align*}
-\langle h \rangle \approx \langle h \rangle_{Q} := \sum_{k=1}^Q w_k h(\xi_k).
+\langle h \rangle \approx \langle h \rangle_{Q} := \sum_{k=1}^Q w_k h(\bm{\xi}_k)f_{\Xi}(\bm{\xi}_k).
 \end{align*}
 The approximated numerical flux then becomes
 \begin{align*}
@@ -64,9 +64,9 @@ To obtain a finite number of iterations for the iteration in cell $j$, a stoppin
 is used.
 
 We now write down the entire scheme: To obtain a more compact notation, one defines
-\begin{align*}
+\begin{align}\label{eq:momentIterationFunction}
 \bm{c}\left(\bm{\lambda}_{\ell},\bm{\lambda}_c,\bm{\lambda}_r\right):= \langle \bm u_{s}(\bm{\lambda}_c^T\bm{\varphi})\bm{\varphi}^T\rangle_Q^T - \frac{\Delta t}{\Delta x}\left(\langle \bm g(\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}^T\rangle_Q^T-\langle \bm g(\bm u_{s}(\bm{\lambda}_{\ell}^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}))\bm{\varphi}^T\rangle_Q^T\right).
-\end{align*}
+\end{align}
 The moment iteration is then given by
 \begin{align}\label{eq:momentIteration}
 \bm{\hat u}_j^{n+1} = \bm{c}\left(\bm{\hat\lambda}(\bm{\hat u}_{j-1}^n),\bm{\hat\lambda}(\bm{\hat u}_{j}^n),\bm{\hat\lambda}(\bm{\hat u}_{j+1}^n)\right),
