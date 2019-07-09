@@ -120,7 +120,7 @@ void MomentSolver::Solve() {
             auto neighbors                             = _mesh->GetNeighborIDs( _cellIndexPE[j] );
             unsigned maxRefLevelNghs                   = refinementLevel[_cellIndexPE[j]];
             for( unsigned l = 0; l < neighbors.size(); ++l ) {
-                if( maxRefLevelNghs < refinementLevel[neighbors[l]] ) {
+                if( maxRefLevelNghs < refinementLevel[neighbors[l]] && neighbors[l] != _nCells ) {
                     maxRefLevelNghs                            = refinementLevel[neighbors[l]];
                     refinementLevelTransition[_cellIndexPE[j]] = maxRefLevelNghs;
                 }
@@ -152,7 +152,6 @@ void MomentSolver::Solve() {
         ++timeIndex;
 
         _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
-
         if( _settings->HasSource() ) {
             this->Source( uNew, uQ, dt, refinementLevel );
         }
