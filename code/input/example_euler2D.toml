@@ -8,7 +8,7 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "nacaCoarse.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "euler_naca0012_Collocation_Nq5_Sigma0-5_Res1e-6"
+outputFile = "example"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -17,13 +17,12 @@ timestepping = "explicitEuler"
 distribution = [["Legendre"],[0.5]]
 CFL = 0.9
 tEnd = 2.0
-residual = 1e-6
+residual = 2.2e-4
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "StochasticGalerkin"
-moments = 5
-quadPoints = 5
+moments = [["totalDegree"],[2]]
+quadPoints = [["tensorized"],[2]]
 maxIterations = 1
 epsilon = 5e-5
-

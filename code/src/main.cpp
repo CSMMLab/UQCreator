@@ -151,7 +151,7 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
     fileSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
 
     std::vector<spdlog::sink_ptr> sinks;
-    sinks.push_back( terminalSink );
+    if( mype == 0 ) sinks.push_back( terminalSink );
     if( fileLogLvl != spdlog::level::off ) sinks.push_back( fileSink );
 
     auto event_logger = std::make_shared<spdlog::logger>( "event", begin( sinks ), end( sinks ) );
@@ -163,12 +163,6 @@ void initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_
     momentFileSink->set_pattern( "%v" );
     auto moment_logger = std::make_shared<spdlog::logger>( "moments", momentFileSink );
     spdlog::register_logger( moment_logger );
-
-    auto dualsFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + currentDateTime() + "_duals" );
-    dualsFileSink->set_level( spdlog::level::info );
-    dualsFileSink->set_pattern( "%v" );
-    auto duals_logger = std::make_shared<spdlog::logger>( "duals", dualsFileSink );
-    spdlog::register_logger( duals_logger );
 }
 
 void PrintInit( std::string configFile ) {
@@ -250,7 +244,6 @@ int main( int argc, char* argv[] ) {
     // perform reduction to obtain full moments on all PEs
     std::vector<int> PEforCell = settings->GetPEforCell();
     for( unsigned j = 0; j < nCells; ++j ) {
-        u[j].reset();
         MPI_Reduce( uMoments[j].GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
     }
 
@@ -263,7 +256,10 @@ int main( int argc, char* argv[] ) {
     // compute errors
     std::vector<std::vector<double>> referenceSolution;
     unsigned nQTotal = settings->GetNQTotal();
-    if( settings->GetMyPE() != 0 ) return EXIT_SUCCESS;
+    if( settings->GetMyPE() != 0 ) {
+        MPI_Finalize();
+        return EXIT_SUCCESS;
+    }
     Matrix meanAndVar;
     Matrix meanAndVarErrors = Matrix( 2 * nStates, mesh->GetNumCells(), 0.0 );
     if( settings->HasExactSolution() ) {
@@ -277,7 +273,6 @@ int main( int argc, char* argv[] ) {
     for( unsigned j = 0; j < nCells; ++j ) {
         // expected value
         for( unsigned k = 0; k < settings->GetNQTotal(); ++k ) {
-
             for( unsigned i = 0; i < nStates; ++i ) {
                 meanAndVar( i, j ) += uQFinal[j]( i, k ) * phiTildeWf( k, 0 );
             }
@@ -309,7 +304,7 @@ int main( int argc, char* argv[] ) {
 
         // compute indices for quad points
         std::vector<std::vector<unsigned>> indicesQ;
-        unsigned nQTotal = pow( nQuadFine, settings->GetNDimXi() );
+        unsigned nQTotal = static_cast<unsigned>( pow( nQuadFine, settings->GetNDimXi() ) );
         indicesQ.resize( nQTotal );
         for( unsigned k = 0; k < nQTotal; ++k ) {
             indicesQ[k].resize( settings->GetNDimXi() );
@@ -396,7 +391,6 @@ int main( int argc, char* argv[] ) {
         std::cout << "Exporting solution..." << std::endl;
         // export moments
         solver->Export( u );
-
         if( settings->GetProblemType() == P_SHALLOWWATER_2D )
             mesh->ExportShallowWater( meanAndVar );
         else
