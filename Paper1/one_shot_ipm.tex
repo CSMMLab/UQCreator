@@ -42,7 +42,7 @@ we can rewrite the classical moment iteration as
 \begin{align}\label{eq:shortIPMIt}
 \bm{\hat u}_j^{n+1} = \bm{\tilde c}\left(\bm{\hat u}_{j-1}^n,\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^n\right).
 \end{align}
-Since we assume that the classical IPM scheme is contractive at its fix point, we have $\rho (\nabla_{\bm{\hat u}}\bm{\tilde c}(\bm{\hat u}^*))<1$ with $\nabla_{\bm{\hat u}}\bm{\tilde c}\in\mathbb{R}^{(N+1)\cdot N_x\times (N+1)\cdot N_x}$ defined by
+Since we assume that the classical IPM scheme is contractive at its fix point, we have $\rho (\nabla_{\bm{\hat u}}\bm{\tilde c}(\bm{\hat u}^*))<1$ with $\nabla_{\bm{\hat u}}\bm{\tilde c}\in\mathbb{R}^{N\cdot N_x\times N\cdot N_x}$ defined by
 \begin{align*}
 \nabla_{\bm{\hat u}}\bm{\tilde c} = 
 \begin{pmatrix} 
@@ -82,7 +82,7 @@ Now we begin to derive the spectrum of the \textit{One-Shot IPM} iteration \eqre
 &\bm{\lambda}_j^{n+1} = \bm{d}(\bm{\lambda}_j^{n},\bm{\hat u}_j^{n}) \enskip \text{ for all j} \\
 &\bm{\hat u}_j^{n+1} =  \bm{c}\left(\bm{d}(\bm{\lambda}_{j-1}^{n},\bm{\hat u}_{j-1}^{n}),\bm{d}(\bm{\lambda}_{j}^{n},\bm{\hat u}_{j}^{n}),\bm{d}(\bm{\lambda}_{j+1}^{n},\bm{\hat u}_{j+1}^{n})\right)
 \end{align*}
-The Jacobian $\bm{J}\in\mathbb{R}^{2(N+1)\cdot N_x \times 2(N+1)\cdot N_x}$ has the form
+The Jacobian $\bm{J}\in\mathbb{R}^{2N\cdot N_x \times 2N\cdot N_x}$ has the form
 \begin{align}\label{eq:Jacobian}
 \bm{J} = 
 \begin{pmatrix}
@@ -118,7 +118,7 @@ With the assumptions from Theorem \ref{th:Contractive}, the One-Shot IPM converg
 \begin{proof}
 By Theorem \ref{th:Contractive}, the One-Shot scheme is contractive at its fix point. Since we assumed convergence of the classical IPM scheme, we can conclude that all entries in the Jacobian $\bm{J}$ are continuous functions. Furthermore, the determinant of $\bm{\tilde{J}}:=\bm{J}-\lambda \bm{I}_d$ is a polynomial of continuous functions, since
 \begin{align*}
-\text{det}(\bm{\tilde J}) = \sum_{\sigma} \text{sgn}(\sigma)\prod_{i = 1}^{2 N_x (N+1)} \tilde J_{\sigma(i),i}.
+\text{det}(\bm{\tilde J}) = \sum_{\sigma} \text{sgn}(\sigma)\prod_{i = 1}^{2 N_x N} \tilde J_{\sigma(i),i}.
 \end{align*}
 Since the roots of a polynomial vary continuously with its coefficients, the eigenvalues of $\bm{J}$ are continuous w.r.t $(\bm{\lambda},\bm{\hat u})$. Hence there exists an open ball with radius $\delta$ around the fix point in which the eigenvalues remain in the interval $(-1,1)$.
 \end{proof}

@@ -120,12 +120,14 @@ G_i^{(LF)}(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) =\frac{1}{4}\left(\bm{\hat u}_{\e
 \end{align}
 requires no integral evaluations. Recall, that the numerical flux choice made in this work gives
 \begin{align}\label{eq:numericalFluxIPMBurgers}
- \bm{G}(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) = \langle g(\mathcal{U}_{SG}(\bm{\hat u}_{\ell};\xi_k),\mathcal{U}_{SG}(\bm{\hat u}_{r};\xi_k))\bm{\varphi}^T\rangle^T_Q.
+ \bm{G}(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) = \sum_{k=1}^Q w_k g(\mathcal{U}_{SG}(\bm{\hat u}_{\ell};\xi_k),\mathcal{U}_{SG}(\bm{\hat u}_{r};\xi_k))\bm{\varphi}(\xi_k)f_{\Xi}(\xi_k).
 \end{align}
-When the chosen deterministic flux $g$ is Lax-Friedrichs, the order of the polynomials inside the integral brackets is of order $3M$. Choosing a Gauss-Lobatto quadrature rule, $Q = \frac32 M +\frac12$ quadrature points suffice for an exact computation of the numerical flux. Indeed, with this choice of quadrature points, the numerical fluxes \eqref{eq:numFluxAnalytic} and \eqref{eq:numericalFluxIPMBurgers} are equivalent. 
-Counting the number of operations, one observes that our choice of the numerical flux \eqref{eq:numericalFluxIPMBurgers} is significantly cheaper: When precomputing the values $\mathcal{U}_{SG}(\bm{\hat u};\xi_k)=\sum_{i=0}^N\hat u_i\varphi_i(\xi_k)$ which requires $M\cdot Q$ evaluations, the computation of \eqref{eq:numericalFluxIPMBurgers} again requires $O(M\cdot Q)$ operations, i.e. the costs are $O(M^2)$, whereas the evaluation of \eqref{eq:numFluxAnalytic} requires $O(M^3)$ operations.
-
-TODO: Extension to 2D $\rightarrow$ triangular meshes
+When the chosen deterministic flux $g$ is Lax-Friedrichs, the order of the polynomials inside the sum is of order $3M=3(N-1)$. Choosing a Gauss-Lobatto quadrature rule, $Q = \frac32 N -1$ quadrature points suffice for an exact computation of the numerical flux. Indeed, with this choice of quadrature points, the numerical fluxes \eqref{eq:numFluxAnalytic} and \eqref{eq:numericalFluxIPMBurgers} are equivalent. 
+Counting the number of operations, one observes that our choice of the numerical flux \eqref{eq:numericalFluxIPMBurgers} is significantly cheaper: When computing and storing the values in a matrix $\bm A\in\mathbb{R}^{Q\times N}$ with entries $a_{ki} = \varphi_i(\xi_k)$ before running the program, the numerical flux \eqref{eq:numericalFluxIPMBurgers} can be split into two parts. First, we determine the SG solution at all quadrature points, i.e. we compute $\bm{u}^{(\ell)} := \bm A \bm{\hat u}_{\ell}$ and $\bm{u}^{(r)} := \bm A \bm{\hat u}_{r}$ which requires $O(N\cdot Q)$ operations. These solution values are then used to compute the numerical flux
+\begin{align*}
+G_i(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) &= \sum_{k=1}^Q w_k g(u^{(\ell)}_k,u^{(r)}_k)a_{ki}f_{\Xi}(\xi_k),
+\end{align*}
+which again requires $O(N\cdot Q)$ operations, i.e. the costs are $O(N^2)$. The evaluation of \eqref{eq:numFluxAnalytic} however requires $O(N^3)$ operations.
 
 \subsection{Code framework}
 
