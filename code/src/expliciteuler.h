@@ -12,8 +12,8 @@ class ExplicitEuler : public TimeSolver
     Matrix _ghostCell;
 
   public:
-    ExplicitEuler( Settings* settings, Mesh* mesh );
-    virtual void Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector&, unsigned )> const& fluxFunc,
+    ExplicitEuler( Settings* settings, Mesh* mesh, Problem* problem );
+    virtual void Advance( std::function<void( Matrix&, const Matrix&, unsigned )> const& fluxFunc,
                           MatVec& uNew,
                           MatVec& u,
                           MatVec& uQ,

@@ -38,12 +38,10 @@ class MomentSolver
     /**
      * numerical flux for moment system
      * @param output moment matrix
-     * @param left moment matrix
-     * @param right moment matrix
-     * @param unit normal of interface
-     * @param normal of interface
+     * @param values deterministic fluxes
+     * @param refinement level
      */
-    void numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned level );
+    void numFlux( Matrix& out, const Matrix& g, unsigned level );
     /**
      * source term for moment system
      * @param Moments for in- and output

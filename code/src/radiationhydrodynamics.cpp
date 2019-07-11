@@ -3,7 +3,7 @@
 RadiationHydrodynamics::RadiationHydrodynamics( Settings* settings ) : PNEquations( settings, true ) {
     _N     = 1;    // set moment order
     _c     = 1.0;
-    _P     = 0.5;
+    _P     = 0.0;    // 0.5;
     _gamma = 1.4;
     _R     = 287.87;
     if( _N == 1 )    // GlobalIndex has different ordering here
@@ -12,9 +12,9 @@ RadiationHydrodynamics::RadiationHydrodynamics( Settings* settings ) : PNEquatio
         _nMoments = unsigned( GlobalIndex( _N, _N ) + 1 );
     _nStates = _nMoments + 4;    // total number of states in equations in P_N + Euler
     _settings->SetNStates( _nStates );
-    _settings->SetSource( true );    // TODO:DEBUGGING
-    _sigmaA = 0.5;                   // absorption coefficient
-    _sigmaS = 0.1;                   // scattering coefficient
+    _settings->SetSource( false );    // TODO:DEBUGGING
+    _sigmaA = 0.5;                    // absorption coefficient
+    _sigmaS = 0.1;                    // scattering coefficient
     _sigmaT = _sigmaA + _sigmaS;
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -194,7 +194,7 @@ Vector RadiationHydrodynamics::SF( const Vector& u ) const {
     return Fr0( u ) * ( -_sigmaT ) + v * _sigmaA * ( std::pow( T, 4 ) - Er ) / _c;
 }
 
-Matrix RadiationHydrodynamics::F( const Vector& u ) {
+Matrix RadiationHydrodynamics::F( const Vector& u ) const {
     std::cerr << "F not tested" << std::endl;
     exit( EXIT_FAILURE );
     Matrix flux( u.size(), 2 );
@@ -222,6 +222,7 @@ Matrix RadiationHydrodynamics::F( const Vector& u ) {
 
 Vector RadiationHydrodynamics::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
+    /*
     double x0      = 0.0;
     double y0      = 0.0;
     double s2      = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
@@ -236,6 +237,17 @@ Vector RadiationHydrodynamics::IC( const Vector& x, const Vector& xi ) {
         floor, 1.0 / ( 4.0 * M_PI * s2Euler ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2Euler ) );
     y[_nMoments + 3] = std::fmax(
         floor, 1.0 / ( 4.0 * M_PI * s2Euler ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2Euler ) );
+    */
+    if( x[0] < 0.5 ) {
+        y[0]             = 1.0;
+        y[_nMoments + 0] = 1.0;
+        y[_nMoments + 3] = 1.0;
+    }
+    else {
+        y[0]             = 1.0;
+        y[_nMoments + 0] = 1.0;
+        y[_nMoments + 3] = 1.0;
+    }
     return y;
 }
 /*
@@ -257,7 +269,7 @@ void RadiationHydrodynamics::DS( Vector& ds, const Vector& u ) const {
     // ds[3] -= 1e-7;
 }*/
 
-Matrix RadiationHydrodynamics::FRadiation( const Vector& u ) {
+Matrix RadiationHydrodynamics::FRadiation( const Vector& u ) const {
     Matrix flux( u.size(), 2 );
 
     column( flux, 0 ) = _Ax * u;
@@ -267,7 +279,7 @@ Matrix RadiationHydrodynamics::FRadiation( const Vector& u ) {
     return flux;
 }
 
-Matrix RadiationHydrodynamics::FEuler( const Vector& u ) {
+Matrix RadiationHydrodynamics::FEuler( const Vector& u ) const {
     double rhoInv = 1.0 / u[0];
     double v1     = u[1] * rhoInv;
     double v2     = u[2] * rhoInv;
@@ -287,7 +299,7 @@ Matrix RadiationHydrodynamics::FEuler( const Vector& u ) {
 }
 
 Vector RadiationHydrodynamics::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    Vector out( _nStates, false );
+    Vector out( _nStates, 0.0 );
     Vector outEuler( 4, false );
     Vector uRadiation( _nStates, false );
     Vector vRadiation( _nStates, false );
@@ -371,4 +383,42 @@ double RadiationHydrodynamics::ComputeDt( const Matrix& u, double dx, unsigned l
     }
     // std::cout << "P_N dt = " << _c * cfl / dx << ", Euler dt =  " << dtMinTotal << std::endl;
     return std::min( dtMinTotal, _c * cfl / dx );
+}
+
+Matrix RadiationHydrodynamics::BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const {
+    unsigned nStates = u.rows();
+    Vector outEuler( 4, false );
+    Matrix flux( nStates, 2 );
+    unsigned Nq = _settings->GetNqPEAtRef( level );
+    Matrix y( nStates, Nq );
+    Vector uB( nStates );
+    for( unsigned k = 0; k < Nq; ++k ) {
+        // part radiative transfer
+        Vector uM          = column( u, k );
+        Vector correctTerm = nUnit[0] * _Ax * uM + nUnit[1] * _Ay * uM;
+        column( flux, 0 )  = _Ax * uM - correctTerm * nUnit[0];
+        column( flux, 1 )  = _Ay * uM - correctTerm * nUnit[1];
+        column( y, k )     = flux * n;
+
+        // part Euler
+        Vector v( 2, 0.0 );
+        v.reset();
+        v[0]           = u( _nMoments + 1, k ) / u( _nMoments + 0, k );
+        v[1]           = u( _nMoments + 2, k ) / u( _nMoments + 0, k );
+        double vn      = dot( nUnit, v );
+        Vector Vn      = vn * nUnit;
+        Vector Vb      = -Vn + v;
+        double velMagB = Vb[0] * Vb[0] + Vb[1] * Vb[1];
+        double velMag  = v[0] * v[0] + v[1] * v[1];
+        double rho     = u( _nMoments + 0, k );
+        uB[0]          = rho;
+        uB[1]          = rho * ( Vb[0] );
+        uB[2]          = rho * ( Vb[1] );
+        uB[3]          = u( _nMoments + 3, k ) + rho * 0.5 * ( velMagB - velMag );
+        outEuler       = FEuler( uB ) * n;
+
+        // save Euler part on return vector
+        for( unsigned s = 0; s < 4; ++s ) y( _nMoments + s, k ) = outEuler[s];    // TODO: DEBUG
+    }
+    return y;
 }

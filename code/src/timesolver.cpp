@@ -1,7 +1,7 @@
 #include "timesolver.h"
 #include "expliciteuler.h"
 
-TimeSolver::TimeSolver( Settings* settings, Mesh* mesh ) : _settings( settings ), _mesh( mesh ) {
+TimeSolver::TimeSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
     _CFL        = _settings->GetCFL();
     _dx         = _mesh->GetArea( 0 );
     _dt         = _dx * _settings->GetCFL() / 12.0;
@@ -10,10 +10,10 @@ TimeSolver::TimeSolver( Settings* settings, Mesh* mesh ) : _settings( settings )
 
 TimeSolver::~TimeSolver() {}
 
-TimeSolver* TimeSolver::Create( Settings* settings, Mesh* mesh ) {
+TimeSolver* TimeSolver::Create( Settings* settings, Mesh* mesh, Problem* problem ) {
     auto log = spdlog::get( "event" );
     if( settings->GetTimesteppingType() == TimesteppingType::T_EXPLICITEULER ) {
-        return new ExplicitEuler( settings, mesh );
+        return new ExplicitEuler( settings, mesh, problem );
     }
     else {
         log->error( "[timesolver] Invalid timesolver type" );

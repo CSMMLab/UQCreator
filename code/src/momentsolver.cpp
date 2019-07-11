@@ -17,7 +17,7 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
 
     _closure = Closure::Create( _settings );
     _nQTotal = _settings->GetNQTotal();
-    _time    = TimeSolver::Create( _settings, _mesh );
+    _time    = TimeSolver::Create( _settings, _mesh, _problem );
 
     _dt = _time->GetTimeStepSize();
     _settings->SetDT( _dt );
@@ -35,6 +35,8 @@ MomentSolver::~MomentSolver() {
 
 void MomentSolver::Solve() {
     bool writeSolutionInTime = false;
+    unsigned retCounter      = 0;    // counter for retardation level
+    // unsigned retLevel        = _settings->GetResidualRetardation( 0 );
     VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels() - 1 );       // vector carries refinement level for each cell
     VectorU refinementLevelOld( _nCells, _settings->GetNRefinementLevels() - 1 );    // vector carries old refinement level for each cell
     VectorU refinementLevelTransition( _nCells, _settings->GetNRefinementLevels() - 1 );
@@ -56,14 +58,7 @@ void MomentSolver::Solve() {
     MatVec uOld = u;
 
     // set up function pointer for right hand side
-    auto numFluxPtr = std::bind( &MomentSolver::numFlux,
-                                 this,
-                                 std::placeholders::_1,
-                                 std::placeholders::_2,
-                                 std::placeholders::_3,
-                                 std::placeholders::_4,
-                                 std::placeholders::_5,
-                                 std::placeholders::_6 );
+    auto numFluxPtr = std::bind( &MomentSolver::numFlux, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3 );
 
     if( _settings->GetMyPE() == 0 ) log->info( "{:10}   {:10}", "t", "residual" );
 
@@ -101,7 +96,7 @@ void MomentSolver::Solve() {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
 
-            if( indicator > 0.005 && refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels() - 1 )
+            if( indicator > 0.005 && refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels( retCounter ) - 1 )
                 refinementLevel[_cellIndexPE[j]] += 1;
             else if( indicator < 0.0005 && refinementLevel[_cellIndexPE[j]] > 0 )
                 refinementLevel[_cellIndexPE[j]] -= 1;
@@ -176,6 +171,10 @@ void MomentSolver::Solve() {
                 if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
             }
         }
+
+        // if current retardation level fulfills residual condition, then increase retardation level
+        if( residualFull < _settings->GetResidualRetardation( retCounter ) && retCounter < _settings->GetNRetardationLevels() - 1 ) retCounter += 1;
+        std::cout << retCounter << std::endl;
     }
 
     // write final error
@@ -297,9 +296,7 @@ void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const Vect
     }
 }
 
-void MomentSolver::numFlux( Matrix& out, const Matrix& u1, const Matrix& u2, const Vector& nUnit, const Vector& n, unsigned level ) {
-    out += _problem->G( u1, u2, nUnit, n, level ) * _closure->GetPhiTildeWfAtRef( level );
-}
+void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned level ) { out += g * _closure->GetPhiTildeWfAtRef( level ); }
 
 double MomentSolver::ComputeRefIndicator( const VectorU& refinementLevel, const Matrix& u, unsigned refLevel ) const {
     double indicator = 0;

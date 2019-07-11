@@ -8,6 +8,7 @@
 #include <spdlog/spdlog.h>
 
 #include "mesh.h"
+#include "problem.h"
 #include "settings.h"
 
 class TimeSolver
@@ -16,6 +17,7 @@ class TimeSolver
   protected:
     const Settings* _settings;
     const Mesh* _mesh;
+    Problem* _problem;
     double _CFL;
     double _dt;
     double _dx;
@@ -25,10 +27,10 @@ class TimeSolver
     TimeSolver() = delete;
 
   public:
-    TimeSolver( Settings* settings, Mesh* mesh );
+    TimeSolver( Settings* settings, Mesh* mesh, Problem* problem );
     virtual ~TimeSolver();
-    static TimeSolver* Create( Settings* settings, Mesh* mesh );
-    virtual void Advance( std::function<void( Matrix&, const Matrix&, const Matrix&, const Vector&, const Vector&, unsigned )> const& fluxFunc,
+    static TimeSolver* Create( Settings* settings, Mesh* mesh, Problem* problem );
+    virtual void Advance( std::function<void( Matrix&, const Matrix&, unsigned )> const& fluxFunc,
                           MatVec& uNew,
                           MatVec& u,
                           MatVec& uQ,

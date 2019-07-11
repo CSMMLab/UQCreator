@@ -48,15 +48,18 @@ class Settings
     unsigned _numCells;
     unsigned _nXPE;    // number of spatial cells on PE
 
-    unsigned _nQuadPoints;     // number of quadrature points in one dimension
-    unsigned _nQTotal;         // number of quadrature points in all dimensions
-    unsigned _nQPE;            // number of total quadrature points on PE
-    VectorU _nQPEAtRef;        // number of total quadrature points on PE for all refinement levels
-    unsigned _kStart;          // start point in quadrature point array for PE
-    MatrixU _kIndicesAtRef;    // quadrature indices for PE at different refinement levels
-    unsigned _kEnd;            // end point in quadrature point array for PE
-    VectorU _quadLevel;        // quadrature level array
-    VectorU _nQTotalForRef;    // number of quadrature points on different refinement levels
+    unsigned _nQuadPoints;           // number of quadrature points in one dimension
+    unsigned _nQTotal;               // number of quadrature points in all dimensions
+    unsigned _nQPE;                  // number of total quadrature points on PE
+    VectorU _nQPEAtRef;              // number of total quadrature points on PE for all refinement levels
+    unsigned _kStart;                // start point in quadrature point array for PE
+    MatrixU _kIndicesAtRef;          // quadrature indices for PE at different refinement levels
+    unsigned _kEnd;                  // end point in quadrature point array for PE
+    VectorU _quadLevel;              // quadrature level array
+    VectorU _nQTotalForRef;          // number of quadrature points on different refinement levels
+    Vector _residualRetardation;     // stores residual at different refinement levels
+    VectorU _retardationSteps;       // stores maximal truncation orders at retardation step
+    unsigned _nRetardationLevels;    // number of retardation levels
 
     int _mype;                             // PE number
     int _npes;                             // number of all PEs
@@ -157,6 +160,9 @@ class Settings
     VectorU GetQuadLevel() const;
     std::vector<std::vector<unsigned>> GetPolyIndices() const;
     unsigned GetNRefinementLevels() const;
+    unsigned GetNRefinementLevels( unsigned retardation ) const;
+    unsigned GetNRetardationLevels() const;
+    double GetResidualRetardation( unsigned retardation ) const;
     unsigned GetNTotalforRefLevel( unsigned level ) const;
     unsigned GetPolyDegreeforRefLevel( unsigned level ) const;
     std::vector<unsigned> GetIndicesQforRef( unsigned level ) const;

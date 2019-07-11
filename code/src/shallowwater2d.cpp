@@ -52,7 +52,7 @@ Matrix ShallowWater2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit,
     return y;
 }
 
-Matrix ShallowWater2D::F( const Vector& u ) {
+Matrix ShallowWater2D::F( const Vector& u ) const {
     Matrix flux( u.size(), 2 );
     flux( 0, 0 ) = u[1];
     flux( 1, 0 ) = pow( u[1], 2 ) / u[0] + 0.5 * _g * pow( u[0], 2 );
@@ -109,4 +109,29 @@ Vector ShallowWater2D::IC( const Vector& x, const Vector& xi ) {
 Vector ShallowWater2D::LoadIC( const Vector& x, const Vector& xi ) {
     _log->error( "[ShallowWater2D: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
+}
+
+Matrix ShallowWater2D::BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const {
+    unsigned nStates = u.rows();
+    unsigned Nq      = _settings->GetNqPEAtRef( level );
+    Matrix y( nStates, Nq );
+    Vector uB( nStates );
+    for( unsigned k = 0; k < Nq; ++k ) {
+        Vector v( 2, 0.0 );
+        v.reset();
+
+        v[0]           = u( 1, k ) / u( 0, k );
+        v[1]           = u( 2, k ) / u( 0, k );
+        double vn      = dot( nUnit, v );
+        Vector Vn      = vn * nUnit;
+        Vector Vb      = -Vn + v;
+        double velMagB = Vb[0] * Vb[0] + Vb[1] * Vb[1];
+        double velMag  = v[0] * v[0] + v[1] * v[1];
+        double rho     = u( 0, k );
+        uB[0]          = rho;
+        uB[1]          = rho * ( Vb[0] );
+        uB[2]          = rho * ( Vb[1] );
+        column( y, k ) = F( uB ) * n;
+    }
+    return y;
 }

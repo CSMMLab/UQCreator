@@ -56,3 +56,8 @@ Matrix Problem::Source( const Matrix& uQ ) const {
     exit( EXIT_FAILURE );
     return uQ;
 }
+
+Matrix Problem::BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const {
+    std::cerr << "[Problem]: Boundary Flux not defined" << std::endl;
+    exit( EXIT_FAILURE );
+}

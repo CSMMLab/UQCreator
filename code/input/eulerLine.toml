@@ -1,0 +1,30 @@
+[general]
+problem = "Euler2D"
+outputDir = "../results"
+writeFrequency = 100000
+
+[mesh]
+dimension = 2
+format = "SU2"
+SU2MeshFile = "lineThick.su2"
+SU2BC = [["inout","dirichlet"], ["walls", "noslip"]]
+outputFile = "line"
+
+[problem]
+# available timesteppings: explicitEuler
+timestepping = "explicitEuler"
+# available distributions: Legendre, Hermite
+distribution = [["Legendre"],[0.05]]
+#distribution = [["Legendre"],[0.1]]
+CFL = 0.6
+tEnd = 0.14
+residual = 0
+
+[moment_system]
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
+closure = "Euler2D"
+moments = [["totalDegree"],[4,5,6]]
+quadPoints = [["sparseGrid"],[3,4,5]]
+cRetardation = [[1,2],[0.00001,0.00001]]
+maxIterations = 1000
+epsilon = 1e-7

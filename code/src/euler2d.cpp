@@ -86,7 +86,7 @@ Matrix Euler2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const 
     return y;
 }
 
-Matrix Euler2D::F( const Vector& u ) {
+Matrix Euler2D::F( const Vector& u ) const {
     double rhoInv = 1.0 / u[0];
     double v1     = u[1] * rhoInv;
     double v2     = u[2] * rhoInv;
@@ -109,6 +109,31 @@ Matrix Euler2D::F( const Matrix& u ) {
     _log->error( "[euler2d] Flux not implemented" );
     exit( EXIT_FAILURE );
     return 0.5 * pow( u, 2 );
+}
+
+Matrix Euler2D::BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const {
+    unsigned nStates = u.rows();
+    unsigned Nq      = _settings->GetNqPEAtRef( level );
+    Matrix y( nStates, Nq );
+    Vector uB( nStates );
+    for( unsigned k = 0; k < Nq; ++k ) {
+        Vector v( 2, 0.0 );
+        v.reset();
+        v[0]           = u( 1, k ) / u( 0, k );
+        v[1]           = u( 2, k ) / u( 0, k );
+        double vn      = dot( nUnit, v );
+        Vector Vn      = vn * nUnit;
+        Vector Vb      = -Vn + v;
+        double velMagB = Vb[0] * Vb[0] + Vb[1] * Vb[1];
+        double velMag  = v[0] * v[0] + v[1] * v[1];
+        double rho     = u( 0, k );
+        uB[0]          = rho;
+        uB[1]          = rho * ( Vb[0] );
+        uB[2]          = rho * ( Vb[1] );
+        uB[3]          = u( 3, k ) + rho * 0.5 * ( velMagB - velMag );
+        column( y, k ) = F( uB ) * n;
+    }
+    return y;
 }
 
 double Euler2D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
@@ -137,7 +162,7 @@ double Euler2D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
 Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
     _sigma            = _settings->GetSigma();
-    bool pipeTestCase = false;
+    bool pipeTestCase = true;
     if( pipeTestCase ) {    // pipe testcase
         double gamma = 1.4;
         double R     = 287.87;
@@ -153,19 +178,17 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
 
         double rhoFarfield = p / ( R * T );
 
-        y[0]                  = rhoFarfield;
-        y[1]                  = rhoFarfield * uF;
-        y[2]                  = rhoFarfield * vF;
-        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
-        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-        y[3]                  = 1.0;
+        y[0] = 1.0;
+        y[1] = 0.0;
+        y[2] = 0.0;
+        y[3] = 1.0;
 
-        if( x[1] < 1.1 + _sigma[0] * xi[0] ) {
-            y[0] = 0.5 * rhoFarfield;
+        if( x[0] > 0.5 + _sigma[0] * xi[0] ) {
+            y[0] = 0.2;
             if( _settings->GetNDimXi() > 1 ) y[0] += _sigma[1] * xi[1];
-            y[1] = rhoFarfield * uF;
-            y[2] = rhoFarfield * vF;
-            y[3] = 0.3;
+            y[1] = 0.0;
+            y[2] = 0.0;
+            y[3] = 0.2;
             if( _settings->GetNDimXi() > 2 ) y[3] += _sigma[2] * xi[2];
         }
         /*

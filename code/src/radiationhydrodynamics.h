@@ -19,9 +19,9 @@ class RadiationHydrodynamics : public PNEquations
     Vector Fr0( const Vector& u ) const;
     double SE( const Vector& u ) const;
     Vector SF( const Vector& u ) const;
-    Matrix FRadiation( const Vector& u );
-    Matrix FEuler( const Vector& u );
-    Matrix F( const Vector& u );
+    Matrix FRadiation( const Vector& u ) const;
+    Matrix FEuler( const Vector& u ) const;
+    Matrix F( const Vector& u ) const;
     virtual int GlobalIndex( int l, int k ) const;
 
   public:
@@ -31,6 +31,7 @@ class RadiationHydrodynamics : public PNEquations
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level );
     virtual Matrix Source( const Matrix& uQ ) const;
     virtual Vector IC( const Vector& x, const Vector& xi );
+    virtual Matrix BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const;
 };
 
 #endif    // RADIATIONHYDRODYNAMICS_H

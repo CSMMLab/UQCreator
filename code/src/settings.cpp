@@ -298,6 +298,29 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             log->error( "[inputfile] [moment_system] 'quadPoints' not set!" );
             validConfig = false;
         }
+
+        // read convergence retardation
+        std::cout << "Reading cRetardation" << std::endl;
+        auto cRetardation = moment_system->get_array_of<cpptoml::array>( "cRetardation" );
+        if( cRetardation ) {
+            auto retardationSteps    = ( *cRetardation )[0]->get_array_of<int64_t>();
+            auto residualRetardation = ( *cRetardation )[1]->get_array_of<double>();
+            assert( retardationSteps->size() == residualRetardation->size() );
+            _nRetardationLevels  = unsigned( retardationSteps->size() );
+            _retardationSteps    = VectorU( _nRetardationLevels, false );
+            _residualRetardation = Vector( _nRetardationLevels, false );
+
+            for( unsigned i = 0; i < _nRetardationLevels; ++i ) {
+                _retardationSteps[i]    = unsigned( ( *retardationSteps )[i] );
+                _residualRetardation[i] = ( *residualRetardation )[i];
+            }
+        }
+        else {
+            _retardationSteps    = VectorU( 1, _nRefinementLevels );
+            _residualRetardation = Vector( 1, _minResidual );
+            _nRetardationLevels  = 1;
+        }
+        std::cout << "Reading cRetardation DONE." << std::endl;
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
         _hasSource     = false;
@@ -394,6 +417,9 @@ unsigned Settings::GetNTotal() const { return _nTotal; }
 VectorU Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLevel; }
 std::vector<std::vector<unsigned>> Settings::GetPolyIndices() const { return _polyIndices; }
 unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
+unsigned Settings::GetNRefinementLevels( unsigned retardation ) const { return _retardationSteps[retardation]; }
+double Settings::GetResidualRetardation( unsigned retardation ) const { return _residualRetardation[retardation]; }
+unsigned Settings::GetNRetardationLevels() const { return _nRetardationLevels; }
 unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }
 unsigned Settings::GetPolyDegreeforRefLevel( unsigned level ) const { return _refinementLevel[level]; }
 GridType Settings::GetGridType() const { return _gridType; }
