@@ -174,7 +174,6 @@ void MomentSolver::Solve() {
 
         // if current retardation level fulfills residual condition, then increase retardation level
         if( residualFull < _settings->GetResidualRetardation( retCounter ) && retCounter < _settings->GetNRetardationLevels() - 1 ) retCounter += 1;
-        std::cout << retCounter << std::endl;
     }
 
     // write final error
