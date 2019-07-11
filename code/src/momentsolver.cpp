@@ -37,9 +37,9 @@ void MomentSolver::Solve() {
     bool writeSolutionInTime = false;
     unsigned retCounter      = 0;    // counter for retardation level
     // unsigned retLevel        = _settings->GetResidualRetardation( 0 );
-    VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels() - 1 );       // vector carries refinement level for each cell
-    VectorU refinementLevelOld( _nCells, _settings->GetNRefinementLevels() - 1 );    // vector carries old refinement level for each cell
-    VectorU refinementLevelTransition( _nCells, _settings->GetNRefinementLevels() - 1 );
+    VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );       // vector carries refinement level for each cell
+    VectorU refinementLevelOld( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );    // vector carries old refinement level for each cell
+    VectorU refinementLevelTransition( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );
 
     auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
