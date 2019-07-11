@@ -103,10 +103,10 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 \subsection{Costs of the numerical flux}
 A straight forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}, which has been proposed in \cite{kusch2017maximum}. By simply taking moments of a given deterministic flux, the software can easily be extended to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. However, the need to approximate the flux by an integral seems to be numerically expensive, especially when considering that the stochastic-Galerkin method often allows an analytic computation of all arising integrals. In the following, we discuss this issue and show the advantages of our numerical flux choice by considering the stochastic Burgers' equation
 \begin{align*}
-\partial_t u + \partial_x \frac{u^2}{2} &= 0\\
+\partial_t u + \partial_x \frac{u^2}{2} &= 0,\\
 u(t=0,x,\xi) &= u_{IC}(x,\xi).
 \end{align*}
-The scalar random variable $\xi$ is uniformly distributed in the $[-1,1]$, hence the gPC basis functions $\bm\varphi=(\varphi_0,\cdots,\varphi_M)^T$ are the Legendre polynomials. Testing with these basis functions and choosing the SG closure \eqref{eq:SGClosure} yields the closed SG moment system
+The scalar random variable $\xi$ is uniformly distributed in the interval $[-1,1]$, hence the gPC basis functions $\bm\varphi=(\varphi_0,\cdots,\varphi_M)^T$ are the Legendre polynomials. Testing with these basis functions and choosing the SG closure \eqref{eq:SGClosure} yields the closed SG moment system
 \begin{align*}
 \partial_t \hat u_i + \partial_x \frac12\sum_{n,m = 0}^M \hat u_n \hat u_m \langle \varphi_n\varphi_m\varphi_i \rangle = 0.
 \end{align*}
@@ -116,7 +116,7 @@ Defining the matrices $\bm C_i := \langle \bm\varphi\bm\varphi^T\varphi_i\rangle
 \end{align*}
 with $F_i(\bm{\hat u}) = \frac12\bm{\hat u}^T\bm C_i\bm{\hat u}$. Note that $\bm{C}_i$ can be computed analytically, hence choosing a Lax-Friedrichs flux
 \begin{align}\label{eq:numFluxAnalytic}
-G_i^{(LF)}(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) =\frac{1}{4}\left(\bm{\hat u}_{\ell}^T \bm{C}_i \bm{\hat u}_{\ell}+\bm{\hat u}_{r}^T \bm{C}_i \bm{\hat u}_{r}\right) - \frac{\Delta x}{2\Delta t}(\bm{\hat u}_{r}-\bm{\hat u}_{\ell})_i.
+G_i^{(LF)}(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) =\frac{1}{4}\left(\bm{\hat u}_{\ell}^T \bm{C}_i \bm{\hat u}_{\ell}+\bm{\hat u}_{r}^T \bm{C}_i \bm{\hat u}_{r}\right) - \frac{\Delta x}{2\Delta t}(\bm{\hat u}_{r}-\bm{\hat u}_{\ell})_i
 \end{align}
 requires no integral evaluations. Recall, that the numerical flux choice made in this work gives
 \begin{align}\label{eq:numericalFluxIPMBurgers}
