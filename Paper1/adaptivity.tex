@@ -1,0 +1,57 @@
+\section{Adaptivity}
+\label{sec:adaptivity}
+
+The following section presents the adaptivity strategy used in this work. Since stochastic hyperbolic problems generally experience shocks in a small portion of the space-time domain, the idea is to perform arising computations on a high accuracy level in this small area, while keeping a low level of accuracy in the remainder. The hope is to achieve the finest level accuracy with this adaptive strategy, i.e. the same error is obtained while using a significantly reduced number of unknowns.
+
+In the following, we discuss the building blocks of the IPM method for accuracy levels $\ell = 1,\cdots,N_{\text{ad}}$. At a given level $\ell$, the total degree of the basis function is given by $M_{\ell}$ with a corresponding number of moments $N_{\ell}$. The number of quadrature points at level $\ell$ is denoted by $Q_{\ell}$. To determine the accuracy level of a given moment vector $\bm{\hat u}$ we choose techniques used in discontinuous Galerkin (DG) methods. Adaptivity is a common strategy to accelerate this class of methods and several indicators to determine the smoothness of the solution exist. We make use of a strategy from \cite{persson2006sub}, which uses the highest degree moments as indicator. Translating the idea of the discontinuity sensor used in \cite{persson2006sub} to uncertainty quantification, we define the polynomial approximation at level $\ell$ as
+\begin{align*}
+\bm{\tilde u}_{\ell} := \sum_{|i|\leq M_{\ell}} \bm{\hat{u}}_i \varphi_i.
+\end{align*}
+Now the indicator for a moment vector at level $\ell$ is defined as
+\begin{align}\label{eq:errorIndicator}
+\bm S_{\ell} := \frac{\langle \left(\bm{\tilde u}_{\ell} - \bm{\tilde u}_{\ell-1}\right)^2\rangle}{\langle \bm{\tilde u}_{\ell}^2\rangle},
+\end{align}
+where divisions and multiplications are performed element-wise. In this work, we use the first entry in $\bm S_{\ell}$ to determine the refinement level, i.e. in the case of gas dynamics, the regularity of the density is chosen to indicate an adequate refinement level. If the moment vector in a given cell at a certain timestep is initially at refinement level $\ell$, this level is kept if if the error indicator \eqref{eq:errorIndicator} lies in the interval $I_{\delta}:=[\delta_{-},\delta_{+}]$. Here $\delta_{\pm}$ are user determined parameters. If the indicator is smaller than $\delta_-$, the refinement level is decreased, if it lies above $\delta_+$, it is increased.
+
+Now we need to specify how the different building blocks of the IPM method can be modified to work with varying truncation orders in different cells. Let us first add dimensions to the notation of the dual iteration function $\bm d$, which has been defined in \eqref{eq:dualIterationFunction}. Now, we have 
+$\bm{d}_{\ell}:\mathbb{R}^{N_{\ell}\times p}\times\mathbb{R}^{N_{\ell}\times p}\to\mathbb{R}^{N_{\ell}\times p}$, given by
+\begin{align}\label{eq:dualIterationFunctionAd}
+\bm{d}_{\ell}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}_{\ell}(\bm{\lambda})\cdot \left(\langle \bm u_{s}(\bm{\lambda}^T\bm{\varphi}_{\ell})\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T-\bm{\hat{u}}\right),
+\end{align}
+where $\bm{\varphi}_{\ell}\in\mathbb{R}^{N_{\ell}}$ collects all basis functions with total degree smaller or equal to $M_\ell$. The preconditioner $\bm{B}_{\ell}$ is given by 
+\begin{align*}
+\bm{B}_{\ell}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi}_{\ell})\bm{\varphi}_{\ell}\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^{-T}.
+\end{align*}
+An adaptive version of the moment iteration \eqref{eq:momentIterationFunction} is denoted by $\bm c_{\ell}^{\bm{\ell}'}:\mathbb{R}^{N_{\ell_1'}\times p}\times \mathbb{R}^{N_{\ell_2'}\times p}\times \mathbb{R}^{N_{\ell_3'}\times p}\rightarrow \mathbb{R}^{N_{\ell}\times p}$ and given by
+\begin{align*}
+\bm{c}_{\ell}^{\bm{\ell}'}\left(\bm{\lambda}_{1},\bm{\lambda}_2,\bm{\lambda}_3\right):= \langle \bm u_{s}(\bm{\lambda}_2^T\bm{\varphi}_{\ell_2'})\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T - \frac{\Delta t}{\Delta x}\left(\langle \bm g(\bm u_{s}(\bm{\lambda}_2^T\bm{\varphi}_{\ell_2'}),\bm u_{s}(\bm{\lambda}_3^T\bm{\varphi}_{\ell_3'}))\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T-\langle \bm g(\bm u_{s}(\bm{\lambda}_{1}^T\bm{\varphi}_{\ell_1'}),\bm u_{s}(\bm{\lambda}_2^T\bm{\varphi}_{\ell_2'}))\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T\right).
+\end{align*}
+Hence, the index vector $\bm\ell'\in\mathbb{N}^{3}$ denotes the refinement levels of the stencil cells, which are used to compute the time updated moment vector at level $\ell$.
+
+The strategy now is to perform the dual update for a set of moment vectors $\bm{\hat u}_j^n$ at refinement levels $\ell_j^n$ for $j = 1,\cdots,N_x$. Hence, the dual iteration makes use of the iteration function \eqref{eq:dualIterationFunctionAd} at refinement level $\ell_j^n$. After that, the refinement level at the next time step $\ell_j^{n+1}$ is determined by making use of the smoothness indicator \eqref{eq:errorIndicator}. The moment update then computes the moments at the time updated refinement level $\ell_j^{n+1}$ making use of the dual states at the old refinement levels $\bm{\ell}' = (\ell_{j-1}^n,\ell_{j}^n,\ell_{j+1}^n)^T$. The IPM algorithm with adaptivity then reads
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+\For{$j=0$ to $N_x+1$}
+\State $\ell_j^0 \leftarrow$ choose initial refinement level
+\State $\bm{u}_j^0 \leftarrow \frac{1}{\Delta x} \int_{x_{j-1/ 2}}^{x_{j+1/ 2}} \langle u_{\text{IC}}(x, \cdot) \bm{\varphi}_{\ell_j^0} \rangle_{Q_{\ell_j^0}} dx$
+\EndFor
+\For{$n=0$ to $N_t$}
+\For{$j=0$ to $N_x+1$}
+\State $\bm{\lambda}_j^{(0)} \leftarrow \bm{\hat \lambda}_j^{n}$
+\While{\eqref{eq:tauCrit} is violated}
+\State $\bm{\lambda}_j^{(m+1)} \leftarrow \bm{d}_{\ell_j^n}(\bm{\lambda}_{j}^{(m)};\bm{\hat u}_j^{n})$
+\State $m \leftarrow m+1$
+\EndWhile
+\State $\bm{\hat \lambda}_j^{n+1} \leftarrow \bm{\lambda}_j^{(m)}$
+\State $\ell_j^{n+1}\leftarrow \text{DetermineRefinementLevel}\left(\bm{\hat \lambda}_j^{n+1}\right)$
+\EndFor
+\For{$j=1$ to $N_x$}
+\State $\bm\ell' \leftarrow (\ell_{j-1}^n,\ell_{j}^n,\ell_{j+1}^n)^T$
+\State $\bm{\hat u}_j^{n+1} \leftarrow \bm{c}_{\ell_j^{n+1}}^{\bm\ell'}(\bm{\hat \lambda}_{j-1}^{n+1},\bm{\hat \lambda}_j^{n+1},\bm{\hat \lambda}_{j+1}^{n+1})$
+\EndFor
+\EndFor
+\end{algorithmic}
+\caption{Adaptive IPM implementation}
+\label{alg:ad-IPM}
+\end{algorithm}
+%TODO Auch adaptiver Algorithmus fuer osIPM? 
