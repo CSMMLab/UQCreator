@@ -1,0 +1,27 @@
+\appendix
+\section{IPM for the 2D Euler equations}
+\label{app:IPM2DEuler}
+
+In the following, we provide details on the implementation of IPM for the 2D Euler equations. We for clarity, we denote the momentum by $m_1 := \rho v_1$ and $m_2:=\rho v_2$ and the energy by $E:=\rho e$. Then, the vector of conserved variables is $\bm u = (\rho,m_1,m_2,E)^T$. The entropy used is
+\begin{align*}
+s(\bm u) = -\rho \ln \left(\rho^{-\gamma} \left(E - \frac{m_1^2 + m_2^2}{2
+\rho}\right)\right).
+\end{align*}
+Now the gradient of the entropy $\nabla_{\bm u} s$ has the components
+\begin{align*}
+\frac{\partial s}{\partial \rho} &= -\ln \left(\rho^{-\gamma}\left(E-\frac{m_1^2+m_2^2}{2 \rho }\right)\right)+\frac{m_1^2+m_2^2}{-2 \rho  E+m_1^2+m_2^2}+\gamma, \\
+\frac{\partial s}{\partial m_i} &= -\frac{2\rho  m_i}{-2 \rho  E+m_1^2+m_2^2}, \\
+\frac{\partial s}{\partial E} &=-\frac1\rho\left(E-\frac{m_1^2+m_2^2}{2 \rho }\right).
+\end{align*}
+To compute $\bm u_s(\bm\Lambda) = (\nabla_{\bm u}s)^{-1}(\bm \Lambda)$, we set $\bm \Lambda = \nabla_{\bm u}s(\bm u)$ and rearrange with respect to $\bm u$. Let us define
+%\begin{align*}
+%\alpha(\bm\Lambda) := \text{exp}\left(-\frac{0.5 \left(-10 \Lambda_1 \Lambda_4+5 \Lambda_2^2+5 \Lambda_3^2+14 \Lambda_4\right)}{\Lambda_4}\right) \cdot (-\Lambda_4)^{\frac{1}{1+\gamma}}.
+%\end{align*}
+\begin{align*}
+\alpha(\bm\Lambda) := \text{exp}\left(\frac{ \Lambda_2^2 + \Lambda_3^2 - 2\Lambda_1  \Lambda_4 - 2 \Lambda_4  \gamma }{ 2 \Lambda_4(1-\gamma) } \right) \cdot (-\Lambda_4)^{\frac{1}{1-\gamma}}
+\end{align*}
+Then the solution ansatz $\bm u_s$ is given by
+\begin{align*}
+\rho(\bm\Lambda) &= \alpha(\bm\Lambda),\qquad m_1(\bm\Lambda) = -\frac{\Lambda_2 \alpha(\bm{\Lambda})}{\Lambda_4},\qquad m_2(\bm\Lambda) = -\frac{\Lambda_3 \alpha(\bm{\Lambda})}{\Lambda_4}, \\
+E(\bm\Lambda) &= -\frac{  \alpha(\bm{\Lambda}) ( -\Lambda_2^2 - \Lambda_3^2 + 2\Lambda_4 ) }{ 2 \Lambda_4^2}.
+\end{align*}
