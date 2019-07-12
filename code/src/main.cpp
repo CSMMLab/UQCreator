@@ -227,16 +227,16 @@ int main( int argc, char* argv[] ) {
 
     // compute Moments
     MatVec u( nCells, Matrix( nStates, nTotal ) );
-    MatVec uQFinal( nCells, Matrix( nStates, settings->GetKEnd() - settings->GetKStart() + 1 ) );
+    MatVec uQFinalPE( nCells, Matrix( nStates, settings->GetKEnd() - settings->GetKStart() + 1 ) );
     for( unsigned j = 0; j < nCells; ++j ) {
-        uQFinal[j].reset();
+        uQFinalPE[j].reset();
         for( unsigned l = 0; l < nStates; ++l ) {
             for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
-                uQFinal[j]( l, k - settings->GetKStart() ) = uQ[k - settings->GetKStart()][j]( l, 0 );
+                uQFinalPE[j]( l, k - settings->GetKStart() ) = uQ[k - settings->GetKStart()][j]( l, 0 );
             }
         }
         u[j].reset();
-        multOnPENoReset( uQFinal[j], closure->GetPhiTildeWf(), u[j], settings->GetKStart(), settings->GetKEnd() );
+        multOnPENoReset( uQFinalPE[j], closure->GetPhiTildeWf(), u[j], settings->GetKStart(), settings->GetKEnd() );
     }
 
     auto uMoments = u;
@@ -244,8 +244,57 @@ int main( int argc, char* argv[] ) {
     // perform reduction to obtain full moments on all PEs
     std::vector<int> PEforCell = settings->GetPEforCell();
     for( unsigned j = 0; j < nCells; ++j ) {
+        u[j].reset();
         MPI_Reduce( uMoments[j].GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
     }
+
+    std::cout << "Moments saved on u for PE " << settings->GetMyPE() << std::endl;
+
+    // send UQFinal to master thread //
+    unsigned nQTotal = settings->GetNQTotal();
+    std::vector<MatVec> uQFinalMat;
+    MatVec uQFinal( nCells, Matrix( nStates, nQTotal ) );
+    uQFinalMat.resize( nQTotal );
+    for( unsigned k = 0; k < nQTotal; ++k ) uQFinalMat[k] = MatVec( nCells, Matrix( nStates, 1 ) );
+
+    // store partial solution on full data field
+    for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
+        uQFinalMat[k] = uQ[k - settings->GetKStart()];
+    }
+
+    std::cout << "uQ saved on Full Matrix for PE " << settings->GetMyPE() << std::endl;
+
+    int PEhasK;
+    int usePE;
+    for( unsigned k = 0; k < nQTotal; ++k ) {
+        if( settings->GetMyPE() == 1 ) std::cout << "k = " << k << " of " << nQTotal << std::endl;
+        // which PE has this quadrature interval? store on usePE
+        if( k <= settings->GetKEnd() && k >= settings->GetKStart() ) {
+            PEhasK = settings->GetMyPE();
+        }
+        else {
+            PEhasK = 0;
+        }
+        usePE = 0;
+        MPI_Allreduce( &PEhasK, &usePE, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );
+        // if( settings->GetMyPE() == 1 )
+        std::cout << "Reduction DONE." << std::endl;
+        // send from usePE to all other PEs
+        for( unsigned j = 0; j < nCells; ++j ) {
+            // std::cout << j << std::endl;
+            MPI_Bcast( uQFinalMat[k][j].GetPointer(), int( nStates ), MPI_DOUBLE, usePE, MPI_COMM_WORLD );
+            // if( settings->GetMyPE() == 1 )
+            std::cout << "BCast DONE." << std::endl;
+            // if( settings->GetMyPE() == 1 )
+            std::cout << uQFinalMat[k][j].columns() << " " << uQFinalMat[k][j].rows() << std::endl;
+            for( unsigned s = 0; s < nStates; ++s ) {
+                // std::cout << "saving for state " << s << std::endl;
+                uQFinal[j]( s, k ) = uQFinalMat[k][j]( s, 0 );
+                // std::cout << "DONE." << std::endl;
+            }
+        }
+    }
+    std::cout << "uQ Broadcasting DONE." << std::endl;
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     log->info( "" );
@@ -255,7 +304,6 @@ int main( int argc, char* argv[] ) {
 
     // compute errors
     std::vector<std::vector<double>> referenceSolution;
-    unsigned nQTotal = settings->GetNQTotal();
     if( settings->GetMyPE() == 0 ) {
 
         Matrix meanAndVar;
