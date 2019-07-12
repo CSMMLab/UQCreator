@@ -256,10 +256,6 @@ int main( int argc, char* argv[] ) {
     // compute errors
     std::vector<std::vector<double>> referenceSolution;
     unsigned nQTotal = settings->GetNQTotal();
-    if( settings->GetMyPE() != 0 ) {
-        MPI_Finalize();
-        return EXIT_SUCCESS;
-    }
     Matrix meanAndVar;
     Matrix meanAndVarErrors = Matrix( 2 * nStates, mesh->GetNumCells(), 0.0 );
     if( settings->HasExactSolution() ) {
