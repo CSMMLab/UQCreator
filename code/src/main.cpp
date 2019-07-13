@@ -248,194 +248,24 @@ int main( int argc, char* argv[] ) {
         MPI_Reduce( uMoments[j].GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
     }
 
-    std::cout << "Moments saved on u for PE " << settings->GetMyPE() << std::endl;
-
-    // send UQFinal to master thread //
-    unsigned nQTotal = settings->GetNQTotal();
-    std::vector<MatVec> uQFinalMat;
-    MatVec uQFinal( nCells, Matrix( nStates, nQTotal ) );
-    uQFinalMat.resize( nQTotal );
-    for( unsigned k = 0; k < nQTotal; ++k ) uQFinalMat[k] = MatVec( nCells, Matrix( nStates, 1 ) );
-
-    // store partial solution on full data field
-    for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
-        uQFinalMat[k] = uQ[k - settings->GetKStart()];
-    }
-
-    std::cout << "uQ saved on Full Matrix for PE " << settings->GetMyPE() << std::endl;
-
-    int PEhasK;
-    int usePE;
-    for( unsigned k = 0; k < nQTotal; ++k ) {
-        if( settings->GetMyPE() == 1 ) std::cout << "k = " << k << " of " << nQTotal << std::endl;
-        // which PE has this quadrature interval? store on usePE
-        if( k <= settings->GetKEnd() && k >= settings->GetKStart() ) {
-            PEhasK = settings->GetMyPE();
-        }
-        else {
-            PEhasK = 0;
-        }
-        usePE = 0;
-        MPI_Allreduce( &PEhasK, &usePE, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );
-        // if( settings->GetMyPE() == 1 )
-        std::cout << "Reduction DONE." << std::endl;
-        // send from usePE to all other PEs
-        for( unsigned j = 0; j < nCells; ++j ) {
-            // std::cout << j << std::endl;
-            MPI_Bcast( uQFinalMat[k][j].GetPointer(), int( nStates ), MPI_DOUBLE, usePE, MPI_COMM_WORLD );
-            // if( settings->GetMyPE() == 1 )
-            std::cout << "BCast DONE." << std::endl;
-            // if( settings->GetMyPE() == 1 )
-            std::cout << uQFinalMat[k][j].columns() << " " << uQFinalMat[k][j].rows() << std::endl;
-            for( unsigned s = 0; s < nStates; ++s ) {
-                // std::cout << "saving for state " << s << std::endl;
-                uQFinal[j]( s, k ) = uQFinalMat[k][j]( s, 0 );
-                // std::cout << "DONE." << std::endl;
-            }
-        }
-    }
-    std::cout << "uQ Broadcasting DONE." << std::endl;
-
-    std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
-    log->info( "" );
-    log->info( "Finished!" );
-    log->info( "" );
-    log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
-
-    // compute errors
-    std::vector<std::vector<double>> referenceSolution;
     if( settings->GetMyPE() == 0 ) {
-
-        Matrix meanAndVar;
-        Matrix meanAndVarErrors = Matrix( 2 * nStates, mesh->GetNumCells(), 0.0 );
-        if( settings->HasExactSolution() ) {
-            meanAndVar = Matrix( 4 * nStates, mesh->GetNumCells(), 0.0 );
-        }
-        else {
-            meanAndVar = Matrix( 2 * nStates, mesh->GetNumCells(), 0.0 );
-        }
-        Matrix phiTildeWf = closure->GetPhiTildeWf();
-        Vector tmp( nStates, 0.0 );
-        for( unsigned j = 0; j < nCells; ++j ) {
-            // expected value
-            for( unsigned k = 0; k < settings->GetNQTotal(); ++k ) {
-                for( unsigned i = 0; i < nStates; ++i ) {
-                    meanAndVar( i, j ) += uQFinal[j]( i, k ) * phiTildeWf( k, 0 );
-                }
-            }
-
-            // variance
-            for( unsigned k = 0; k < nQTotal; ++k ) {
-                for( unsigned i = 0; i < nStates; ++i ) {
-                    meanAndVar( i + nStates, j ) += pow( uQFinal[j]( i, k ) - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
-                }
-            }
-        }
-        // compute distance to exact solution
-        if( settings->HasExactSolution() ) {
-            // store xGrid on vector
-            Matrix xGrid( nCells, settings->GetMeshDimension() );
-            for( unsigned j = 0; j < nCells; ++j ) {
-                Vector midPj = mesh->GetCenterPos( j );
-                for( unsigned s = 0; s < settings->GetMeshDimension(); ++s ) {
-                    xGrid( j, s ) = midPj[s];
-                }
-            }
-            Vector xiEta( settings->GetNDimXi() );
-            std::vector<Polynomial*> quad( 2 );
-            unsigned nQuadFine = 5 * settings->GetNQuadPoints();    // define fine quadrature for exact solution
-            quad[0]            = Polynomial::Create( settings, nQuadFine, DistributionType::D_LEGENDRE );
-            quad[1]            = Polynomial::Create( settings, nQuadFine, DistributionType::D_HERMITE );
-            unsigned n;
-
-            // compute indices for quad points
-            std::vector<std::vector<unsigned>> indicesQ;
-            unsigned nQTotal = static_cast<unsigned>( pow( nQuadFine, settings->GetNDimXi() ) );
-            indicesQ.resize( nQTotal );
-            for( unsigned k = 0; k < nQTotal; ++k ) {
-                indicesQ[k].resize( settings->GetNDimXi() );
-                for( unsigned l = 0; l < settings->GetNDimXi(); ++l ) {
-                    indicesQ[k][l] = unsigned( ( k - k % unsigned( std::pow( nQuadFine, l ) ) ) / unsigned( std::pow( nQuadFine, l ) ) ) % nQuadFine;
-                }
-            }
-
-            for( unsigned k = 0; k < nQTotal; ++k ) {
-                for( unsigned l = 0; l < settings->GetNDimXi(); ++l ) {
-                    if( settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                    if( settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                    xiEta[l] = quad[n]->GetNodes()[indicesQ[k][l]];
-                }
-                Matrix exactSolOnMesh = problem->ExactSolution( settings->GetTEnd(), xGrid, xiEta );
-                for( unsigned j = 0; j < nCells; ++j ) {
-                    // expected value exact
-                    for( unsigned i = 0; i < nStates; ++i ) {
-                        double wfXi = 1.0;
-                        for( unsigned l = 0; l < settings->GetNDimXi(); ++l ) {
-                            if( settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                            if( settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                            wfXi *= quad[n]->fXi( quad[n]->GetNodes()[indicesQ[k][l]] ) * quad[n]->GetWeights()[indicesQ[k][l]];
-                        }
-
-                        meanAndVar( 2 * nStates + i, j ) += exactSolOnMesh( j, i ) * wfXi;
-                    }
-                }
-            }
-            // variance exact
-            for( unsigned k = 0; k < nQTotal; ++k ) {
-                for( unsigned l = 0; l < settings->GetNDimXi(); ++l ) {
-                    if( settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                    if( settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                    xiEta[l] = quad[n]->GetNodes()[indicesQ[k][l]];
-                }
-
-                Matrix exactSolOnMesh = problem->ExactSolution( settings->GetTEnd(), xGrid, xiEta );
-                for( unsigned j = 0; j < nCells; ++j ) {
-                    // expected value exact
-                    for( unsigned i = 0; i < nStates; ++i ) {
-                        double wfXi = 1.0;
-                        for( unsigned l = 0; l < settings->GetNDimXi(); ++l ) {
-                            if( settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                            if( settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                            wfXi *= quad[n]->fXi( quad[n]->GetNodes()[indicesQ[k][l]] ) * quad[n]->GetWeights()[indicesQ[k][l]];
-                        }
-                        meanAndVar( 3 * nStates + i, j ) += pow( exactSolOnMesh( j, i ) - meanAndVar( 2 * nStates + i, j ), 2 ) * wfXi;
-                    }
-                }
-            }
-            // write solution on reference field
-            referenceSolution.resize( nCells );
-            for( unsigned j = 0; j < nCells; ++j ) {
-                referenceSolution[j].resize( 2 * nStates );
-                for( unsigned s = 2 * nStates; s < 4 * nStates; ++s ) {
-                    referenceSolution[j][s - 2 * nStates] = meanAndVar( s, j );
-                }
-            }
-        }
-
-        if( settings->HasReferenceFile() || settings->HasExactSolution() ) {
-            Vector a( 2 );
-            a[0] = -0.05;
-            a[1] = -0.5;
-            Vector b( 2 );
-            b[0]         = 1.05;
-            b[1]         = 0.5;
-            auto l1Error = CalculateError( settings, mesh, referenceSolution, meanAndVar, 1, a, b );
-            auto l2Error = CalculateError( settings, mesh, referenceSolution, meanAndVar, 1, a, b );
-            log->info( "\nExpectation Value error w.r.t reference solution:" );
-            log->info( "State   L1-error      L2-error" );
-            for( unsigned i = 0; i < nStates; ++i ) {
-                log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
-            }
-            log->info( "\nVariance error w.r.t reference solution:" );
-            log->info( "State   L1-error      L2-error" );
-            for( unsigned i = nStates; i < 2 * nStates; ++i ) {
-                log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
-            }
-        }
-
+        std::cout << u[nCells - 1] << std::endl;
         std::cout << "Exporting solution..." << std::endl;
         // export moments
         solver->Export( u );
+
+        Matrix meanAndVar( 2 * nStates, nCells, 0.0 );
+        for( unsigned j = 0; j < nCells; ++j ) {
+            // expected value
+            for( unsigned s = 0; s < nStates; ++s ) {
+                meanAndVar( s, j ) = u[j]( s, 0 );
+            }
+            // variance
+            for( unsigned s = 0; s < nStates; ++s ) {
+                for( unsigned i = 1; i < settings->GetNTotal(); ++i ) meanAndVar( s + nStates, j ) += std::pow( u[j]( s, i ), 2 );
+            }
+        }
+
         if( settings->GetProblemType() == P_SHALLOWWATER_2D )
             mesh->ExportShallowWater( meanAndVar );
         else
