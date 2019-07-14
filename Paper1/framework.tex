@@ -53,7 +53,7 @@ with an adequate preconditioner $\bm{B}$, the iteration process for spatial cell
 \begin{align}\label{eq:dualIteration1}
 \bm{\lambda}^{(m+1)}_j = \bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j}).
 \end{align}
-The exact dual state is then obtained by computing the fix point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$. A common preconditioner is the inverse Hessian of the dual problem, i.e.
+The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$. A common preconditioner is the inverse Hessian of the dual problem, i.e.
 \begin{align*}
 \bm{B}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle_Q^{-T}.
 \end{align*}
@@ -63,7 +63,7 @@ To obtain a finite number of iterations for the iteration in cell $j$, a stoppin
 \end{align}
 is used.
 
-We now write down the entire scheme: To obtain a more compact notation, one defines
+We now write down the entire scheme: To obtain a more compact notation, we define
 \begin{align}\label{eq:momentIterationFunction}
 \bm{c}\left(\bm{\lambda}_{\ell},\bm{\lambda}_c,\bm{\lambda}_r\right):= \langle \bm u_{s}(\bm{\lambda}_c^T\bm{\varphi})\bm{\varphi}^T\rangle_Q^T - \frac{\Delta t}{\Delta x}\left(\langle \bm g(\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}^T\rangle_Q^T-\langle \bm g(\bm u_{s}(\bm{\lambda}_{\ell}^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}))\bm{\varphi}^T\rangle_Q^T\right).
 \end{align}
@@ -96,12 +96,12 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 \EndFor
 \EndFor
 \end{algorithmic}
-\caption{IPM implementation}
+\caption{IPM algorithm}
 \label{alg:IPM}
 \end{algorithm}
 
-\subsection{Costs of the numerical flux}
-A straight forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}, which has been proposed in \cite{kusch2017maximum}. By simply taking moments of a given deterministic flux, the software can easily be extended to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. However, the need to approximate the flux by an integral seems to be numerically expensive, especially when considering that the stochastic-Galerkin method often allows an analytic computation of all arising integrals. In the following, we discuss this issue and show the advantages of our numerical flux choice by considering the stochastic Burgers' equation
+\subsection{Costs of evaluating the numerical flux}
+A straight-forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}, which has been proposed in \cite{kusch2017maximum}. By simply taking moments of a given deterministic flux, the software can easily be extended to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. However, the need to approximate the flux by an integral seems to be numerically expensive, especially when considering that the stochastic-Galerkin method often allows an analytic computation of all arising integrals. In the following, we discuss this issue and show the advantages of our numerical flux choice by considering the stochastic Burgers' equation
 \begin{align*}
 \partial_t u + \partial_x \frac{u^2}{2} &= 0,\\
 u(t=0,x,\xi) &= u_{IC}(x,\xi).
@@ -128,7 +128,3 @@ Counting the number of operations, one observes that our choice of the numerical
 G_i(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) &= \sum_{k=1}^Q w_k g(u^{(\ell)}_k,u^{(r)}_k)a_{ki}f_{\Xi}(\xi_k),
 \end{align*}
 which again requires $O(N\cdot Q)$ operations, i.e. the costs are $O(N^2)$. The evaluation of \eqref{eq:numFluxAnalytic} however requires $O(N^3)$ operations.
-
-\subsection{Code framework}
-
-TODO: Code structure, why is it easy to include different equations?

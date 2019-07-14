@@ -28,10 +28,10 @@ This gives algorithm
 \end{algorithm}
 We call this method One-Shot IPM, since it is inspired by One-shot optimization, see for example \cite{hazra2005aerodynamic}, which uses only a single iteration of the primal and dual step in order to update the design variables. Note that the dual variables from the One-Shot iteration are written without a hat to indicate that they are not the exact solution of the dual problem.
 
-In the following, we will show that this iteration converges, if the chosen initial condition is sufficiently close to the steady state solution. For this we take an approach commonly chosen to prove local convergence properties of Newton's method: In Theorem \ref{th:Contractive}, we show that the iteration function is contractive at its fix point and conclude in Theorem \ref{th:localConvergence} that this yields local convergence:
+In the following, we will show that this iteration converges, if the chosen initial condition is sufficiently close to the steady state solution. For this we take an approach commonly chosen to prove local convergence properties of Newton's method: In Theorem \ref{th:Contractive}, we show that the iteration function is contractive at its fixed point and conclude in Theorem \ref{th:localConvergence} that this yields local convergence:
 
 \begin{theorem}\label{th:Contractive}
-Assume that the classical IPM iteration is contractive at its fix point $\bm{\hat u}^*$. Then the Jacobi matrix $\bm{J}$ of the One-Shot IPM iteration \eqref{eq:oneshotIPM} has a spectral radius $\rho(\bm{J})<1$ at the fix point $(\bm{\lambda}^*,\bm{\hat u}^*)$ if the preconditioner $\bm{B} = \langle \nabla \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^{n})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}$, i.e. the Hessian of the dual problem is used.
+Assume that the classical IPM iteration is contractive at its fixed point $\bm{\hat u}^*$. Then the Jacobi matrix $\bm{J}$ of the One-Shot IPM iteration \eqref{eq:oneshotIPM} has a spectral radius $\rho(\bm{J})<1$ at the fixed point $(\bm{\lambda}^*,\bm{\hat u}^*)$ if the preconditioner $\bm{B} = \langle \nabla \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^{n})\bm{\varphi}\bm{\varphi}^T\rangle^{-1}$, i.e. the Hessian of the dual problem is used.
 \end{theorem}
 \begin{proof}
 First, to understand what contraction of the classical IPM iteration implies, we rewrite the moment iteration \eqref{eq:momentIteration} of the classical IPM scheme: When defining the update function
@@ -42,7 +42,7 @@ we can rewrite the classical moment iteration as
 \begin{align}\label{eq:shortIPMIt}
 \bm{\hat u}_j^{n+1} = \bm{\tilde c}\left(\bm{\hat u}_{j-1}^n,\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^n\right).
 \end{align}
-Since we assume that the classical IPM scheme is contractive at its fix point, we have $\rho (\nabla_{\bm{\hat u}}\bm{\tilde c}(\bm{\hat u}^*))<1$ with $\nabla_{\bm{\hat u}}\bm{\tilde c}\in\mathbb{R}^{N\cdot N_x\times N\cdot N_x}$ defined by
+Since we assume that the classical IPM scheme is contractive at its fixed point, we have $\rho (\nabla_{\bm{\hat u}}\bm{\tilde c}(\bm{\hat u}^*))<1$ with $\nabla_{\bm{\hat u}}\bm{\tilde c}\in\mathbb{R}^{N\cdot N_x\times N\cdot N_x}$ defined by
 \begin{align*}
 \nabla_{\bm{\hat u}}\bm{\tilde c} = 
 \begin{pmatrix} 
@@ -77,7 +77,7 @@ Note that on the left-hand-side we have the inverse of a matrix and on the right
 \begin{align}\label{eq:dudlambdaex}
 \partial_{\bm{\hat u}} \bm{\hat \lambda}(\bm{\hat u}) = \langle \nabla\bm{u}_s(\bm{\hat \lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle^{-T}.
 \end{align}
-Now we begin to derive the spectrum of the \textit{One-Shot IPM} iteration \eqref{eq:oneshotIPM}. Note that in its current form this iteration is not really a fix point iteration, since it uses the time updated dual variables in \eqref{eq:oneshotIPMmoment}. To obtain a fix point iteration, we plug the dual iteration step \eqref{eq:oneshotIPMdual} into the moment iteration \eqref{eq:oneshotIPMmoment} to obtain
+Now we begin to derive the spectrum of the \textit{One-Shot IPM} iteration \eqref{eq:oneshotIPM}. Note that in its current form this iteration is not really a fixed point iteration, since it uses the time updated dual variables in \eqref{eq:oneshotIPMmoment}. To obtain a fixed point iteration, we plug the dual iteration step \eqref{eq:oneshotIPMdual} into the moment iteration \eqref{eq:oneshotIPMmoment} to obtain
 \begin{align*}
 &\bm{\lambda}_j^{n+1} = \bm{d}(\bm{\lambda}_j^{n},\bm{\hat u}_j^{n}) \enskip \text{ for all j} \\
 &\bm{\hat u}_j^{n+1} =  \bm{c}\left(\bm{d}(\bm{\lambda}_{j-1}^{n},\bm{\hat u}_{j-1}^{n}),\bm{d}(\bm{\lambda}_{j}^{n},\bm{\hat u}_{j}^{n}),\bm{d}(\bm{\lambda}_{j+1}^{n},\bm{\hat u}_{j+1}^{n})\right)
@@ -95,7 +95,7 @@ where each block has entries for all spatial cells. We start by looking at $\par
 \partial_{\bm{\lambda}} \bm{d}(\bm{\lambda}_j^n,\bm{\hat u}_j^n) &= \bm{I}_d - \bm{B} \cdot \langle \nabla\bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle^T - \partial_{\bm{\lambda}}\bm{B} \cdot \left( \langle \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}^T \rangle^T - \bm{\hat u}\right) \\
 &=- \partial_{\bm{\lambda}}\bm{B} \cdot \left( \langle \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}^T \rangle^T - \bm{\hat u}\right),
 \end{align*}
-where we used $\bm{B} = \langle \nabla \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-T}$. Recall that at the fix point $(\bm{\lambda}^*,\bm{\hat u}^*)$, we have $\langle \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}^T \rangle^T = \bm{\hat u}$, hence one obtains $\partial_{\bm{\lambda}} \bm{d}=\bm{0}$. For the block $\partial_{\bm{\hat u}} \bm{d}$, we get 
+where we used $\bm{B} = \langle \nabla \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-T}$. Recall that at the fixed point $(\bm{\lambda}^*,\bm{\hat u}^*)$, we have $\langle \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}^T \rangle^T = \bm{\hat u}$, hence one obtains $\partial_{\bm{\lambda}} \bm{d}=\bm{0}$. For the block $\partial_{\bm{\hat u}} \bm{d}$, we get 
 \begin{align*}
 \partial_{\bm{\hat u}} \bm{d}(\bm{\lambda}_j^n,\bm{\hat u}_j^n) = \bm{B},
 \end{align*}
@@ -107,7 +107,7 @@ since we already showed that by the choice of $\bm{B}$ the term $\partial_{\bm{\
 \begin{align*}
 \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{\hat u}_{j-1}^{n})}{\partial \bm{\hat u}} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \bm{B} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \langle \nabla\bm{u}_s(\bm{\varphi}^T\bm{\lambda}_{j-1}^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-T} = \partial_{\bm{\hat u}_{\ell}}\bm{\tilde c}_j
 \end{align*}
-by the choice of $\bm{B}$ as well as \eqref{eq:cTildeDer} and \eqref{eq:dudlambdaex}. We obtain an analogous result for the second and third input. Hence, we have that $\partial_{\bm{\hat u}} \bm{c} = \nabla_{\bm{\hat u}}\bm{\tilde c}$, which only has eigenvalues between $-1$ and $1$ by the assumption that the classical IPM iteration is contractive. Since $\bm{J}$ is an upper triangluar block matrix, the eigenvalues are given by $\lambda\left(\partial_{\bm{\lambda}} \bm{d}\right) = 0$ and $\lambda\left(\partial_{\bm{\hat u}} \bm{c}\right)\in(-1,1)$, hence the One-Shot IPM is contractive around its fix point.
+by the choice of $\bm{B}$ as well as \eqref{eq:cTildeDer} and \eqref{eq:dudlambdaex}. We obtain an analogous result for the second and third input. Hence, we have that $\partial_{\bm{\hat u}} \bm{c} = \nabla_{\bm{\hat u}}\bm{\tilde c}$, which only has eigenvalues between $-1$ and $1$ by the assumption that the classical IPM iteration is contractive. Since $\bm{J}$ is an upper triangluar block matrix, the eigenvalues are given by $\lambda\left(\partial_{\bm{\lambda}} \bm{d}\right) = 0$ and $\lambda\left(\partial_{\bm{\hat u}} \bm{c}\right)\in(-1,1)$, hence the One-Shot IPM is contractive around its fixed point.
 \end{proof}
 \begin{theorem}\label{th:localConvergence}
 With the assumptions from Theorem \ref{th:Contractive}, the One-Shot IPM converges locally, i.e. there exists a $\delta>0$ s.t. for all starting points $(\bm{\lambda}^0,\bm{\hat u}^0)\in B_{\delta}(\bm{\lambda}^*,\bm{\hat u}^*)$ we have
@@ -116,11 +116,11 @@ With the assumptions from Theorem \ref{th:Contractive}, the One-Shot IPM converg
 \end{align*}
 \end{theorem}
 \begin{proof}
-By Theorem \ref{th:Contractive}, the One-Shot scheme is contractive at its fix point. Since we assumed convergence of the classical IPM scheme, we can conclude that all entries in the Jacobian $\bm{J}$ are continuous functions. Furthermore, the determinant of $\bm{\tilde{J}}:=\bm{J}-\lambda \bm{I}_d$ is a polynomial of continuous functions, since
+By Theorem \ref{th:Contractive}, the One-Shot scheme is contractive at its fixed point. Since we assumed convergence of the classical IPM scheme, we can conclude that all entries in the Jacobian $\bm{J}$ are continuous functions. Furthermore, the determinant of $\bm{\tilde{J}}:=\bm{J}-\lambda \bm{I}_d$ is a polynomial of continuous functions, since
 \begin{align*}
 \text{det}(\bm{\tilde J}) = \sum_{\sigma} \text{sgn}(\sigma)\prod_{i = 1}^{2 N_x N} \tilde J_{\sigma(i),i}.
 \end{align*}
-Since the roots of a polynomial vary continuously with its coefficients, the eigenvalues of $\bm{J}$ are continuous w.r.t $(\bm{\lambda},\bm{\hat u})$. Hence there exists an open ball with radius $\delta$ around the fix point in which the eigenvalues remain in the interval $(-1,1)$.
+Since the roots of a polynomial vary continuously with its coefficients, the eigenvalues of $\bm{J}$ are continuous w.r.t $(\bm{\lambda},\bm{\hat u})$. Hence there exists an open ball with radius $\delta$ around the fixed point in which the eigenvalues remain in the interval $(-1,1)$.
 \end{proof}
 \begin{remark}
 Since the preconditioning step of the Collocation-accelerated IPM method generates initial conditions which are close to the steady state solution, using One-Shot IPM instead of classical IPM is well suited. However, our numerical calculations show that one-shot IPM converges even if the solution is far away from its steady state. 
