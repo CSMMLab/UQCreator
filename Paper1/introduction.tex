@@ -14,37 +14,36 @@ Due to the randomness of the solution, one is interested in determining the expe
 \begin{align*}
 \text{E}[\bm{u}] = \langle \bm{u} \rangle,\qquad \text{Var}[\bm{u}] = \langle \left( \bm{u}-\text{E}[\bm{u}]\right)^2\rangle,
 \end{align*}
-where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot f_{\Xi}(\bm\xi)d\xi_1 \cdots d\xi_s$. More generally, one is interested in determining the moments of the solution for a given set of basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_s)$ we have $|i| \leq M$. Note that this yields
+where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot f_{\Xi}(\bm\xi)d\xi_1 \cdots d\xi_s$. To approximate quantities of interest (such as expectation value, variance or higher order moments), the solution is spanned with a set of polynomial basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_s)$ we have $|i| \leq M$. Note that this yields
 \begin{align*}
 N:=\begin{pmatrix}
 M+s \\ s
 \end{pmatrix}
 \end{align*}
-basis polynomials when defining $|i|:=\sum_{n = 1}^s |i_n|$. Commonly one chooses orthonormal polynomials as basis functions \cite{xiu2002wiener}, i.e. $\langle \varphi_i \varphi_j \rangle =\prod_{n=1}^s\delta_{i_nj_n}$.  The corresponding moments are then given by $\bm{\hat u}_i := \langle \bm{u}\varphi_i \rangle\in\mathbb{R}^p$. Besides facilitating the computation of the expectation value and variance, the moments can be used to span the solution in $\bm\xi$ \cite{wiener1938homogeneous}. \\
+basis functions when defining $|i|:=\sum_{n = 1}^s |i_n|$. Commonly, these functions are chosen to be orthonormal polynomials \cite{wiener1938homogeneous} with respect to the probability function, i.e. $\langle \varphi_i \varphi_j \rangle =\prod_{n=1}^s\delta_{i_nj_n}$. The generalized polynomial chaos (gPC) expansion \cite{xiu2002wiener} approximates by the solution by
+\begin{align}\label{eq:SGClosure}
+\mathcal{U}(\bm{\hat u};\bm\xi):= \sum_{|i|\leq M} \bm{\hat{u}}_i\varphi_i(\bm{\xi}) = \hat{\bm u}^T\bm{\varphi}(\bm\xi),
+\end{align}
+where the deterministic expansion coefficients $\bm{\hat{u}}_i\in\mathbb{R}^p$ are called moments. To allow a more compact notation, we collect the $N$ moments for which $\vert i \vert \leq M$ holds in the moment matrix $\hat{\bm u}:=(\bm{\hat{u}}_i)_{|i\leq M|}\in\mathbb{R}^{N\times p}$ and the corresponding basis functions in $\bm{\varphi}:=(\varphi_i)_{|i|\leq M}\in\mathbb{R}^{N}$. In the following, the dependency of $\mathcal{U}$ on $\bm \xi$ will occasionally be omitted for sake of readability. The solution ansatz \eqref{eq:SGClosure} is $L^2$ optimal if the moments are chosen to be the Fourier coefficients $\bm{\hat u}_i := \langle \bm{u}\varphi_i \rangle\in\mathbb{R}^p$. The solution ansatz \eqref{eq:SGClosure} can then be used to compute the quantities of interest. Indeed, we have that
+\begin{align*}
+\text{E}[\mathcal{U}(\bm{\hat u})] = \bm{\hat u}_0,\quad \text{Var}[\mathcal{U}(\bm{\hat u})] = \text{E}[\mathcal{U}(\bm{\hat u})^2] - \text{E}[\mathcal{U}(\bm{\hat u})]^2 = \left(\sum_{i = 1}^N \hat{u}_{\ell i}^2\right)_{\ell = 1,\cdots,p}.
+\end{align*}
 
 Numerical methods for approximating the moment $\bm{\hat u}_i$ can be divided into intrusive and non-intrusive techniques. A popular non-intrusive method is the stochastic-Collocation (SC) method, see e.g. \cite{xiu2005high,babuvska2007stochastic,loeven2008probabilistic}, which computes the moments with the help of a numerical quadrature rule: For a given set of $Q$ quadrature weights $w_k$ and quadrature points $\bm{\xi}_k$, the moments are approximated by
 \begin{align*}
 \bm{\hat u}_i = \langle \bm{u}\varphi_i \rangle \approx \sum_{k = 1}^{Q}w_k \bm{u}({t,\bm{x},\bm{\xi}_k})\varphi_i(\bm{\xi}_k)f_{\Xi}(\bm{\xi}_k).
 \end{align*} 
-Commonly, SC uses sparse grids as quadrature rule, since they posses a reduced number of collocation points for multi-dimensional problems. Compared to tensorized quadrature sets, which require $O(M^s)$ quadrature points, sparse grids use $Q = O(M(\log_2(M)^{s-1}))$ quadrature points to integrate polynomials of total degree $M$ exactly. 
+Commonly, SC uses sparse grids as quadrature rule, since they posses a reduced number of collocation points for multi-dimensional problems. Compared to tensorized quadrature sets, which require $O(M^s)$ quadrature points, sparse grids use $O(M(\log_2(M)^{s-1}))$ quadrature points to integrate polynomials of total degree $M$ exactly. 
 Since the solution at a fixed quadrature point can be computed by a standard deterministic solver, the SC method does not require a significant implementation effort. Furthermore, SC is embarrassingly parallel, since the required computations can be carried out in parallel on different cores. A downside of collocation methods are aliasing effects, which stem from the inexact approximation of integrals. Therefore, collocation methods typically require more runs of the deterministic solver than intrusive methods \cite{xiu2009fast,alekseev2011estimation} to reach a given accuracy. Despite their easy implementation, collocation methods face challenges when examining unsteady problems, since in this case, the solution needs to be written out, i.e. stored in an external file, at all quadrature points in every time step to compute the time evolution of the moments. This contradicts modern HPC paradigms, which aim at reducing the amount of data produced by numerical methods.
 
-Intrusive methods do not suffer from this problem, since the computation is directly carried out on the moments, i.e. their time evolution can be recorded during the computation. Also for steady problems, the fact that the moments are known in each iteration enables the computation of the stochastic residual, which indicates when to stop the iteration towards the steady state solution. However, intrusive methods are in general more difficult to implement and come along with higher numerical costs. The main idea of these methods is to derive a system of equations for the moments and then implementing a numerical solver for this system: Testing the initial problem \eqref{eq:hyperbolicProblem} with $\varphi_i$ for $|i|\leq M$ yields
-\begin{subequations}\label{eq:nonClosedMomentSystem}
+Intrusive methods do not suffer from this problem, since the computation is directly carried out on the moments, i.e. their time evolution can be recorded during the computation. Also for steady problems, the fact that the moments are known in each iteration enables the computation of the stochastic residual, which indicates when to stop the iteration towards the steady state solution. However, intrusive methods are in general more difficult to implement and come along with higher numerical costs. The main idea of these methods is to derive a system of equations for the moments and then implementing a numerical solver for this system: Plugging the solution ansatz \eqref{eq:SGClosure} into the set of equations \eqref{eq:hyperbolicProblem} and projecting the resulting residual to zero yields the stochastic-Galerkin (SG) \cite{ghanem2003stochastic} moment system
+\begin{subequations}\label{eq:SGMomentSystem}
 \begin{align}
-\partial_t \bm{\hat u}_i(t,\bm{x}) + \nabla&\cdot\langle\bm{f}(\bm{u}(t,\bm{x},\cdot)) \varphi_i\rangle = \bm{0}, \\
-\bm{\hat u_i}(t=0,\bm{x}&) = \langle\bm{u}_{\text{IC}}(\bm{x},\cdot)\varphi_i\rangle.
+\partial_t \bm{\hat u}_i(t,\bm{x}) + \nabla&\cdot\langle\bm{f}(\mathcal{U}(\bm{\hat u})) \varphi_i\rangle = \bm{0}, \\
+\bm{\hat u_i}(t=0,\bm{x}&) = \langle\bm{u}_{\text{IC}}(\bm{x},\cdot)\varphi_i\rangle
 \end{align}
 \end{subequations}
-To obtain a closed set of equations, one needs to derive a closure $\mathcal{U}$ such that 
-\begin{align*}
-\bm{u}(t,\bm x,\bm \xi) \approx \mathcal{U}(\bm{\hat u};\bm\xi).
-\end{align*}
-Here, we collect the $N$ moments for which $\vert i \vert \leq M$ holds in the moment matrix $\bm{\hat{u}}:=(\bm{\hat{u}}_i)_{|i|\leq M}\in\mathbb{R}^{N \times p}$. The dependency of $\mathcal{U}$ on $\bm \xi$ will occasionally be omitted in the following for sake of readability. A commonly used closure is given by stochastic-Galerkin (SG) \cite{ghanem2003stochastic}, which represents the solution by a polynomial:
-\begin{align}\label{eq:SGClosure}
-\mathcal{U}_{\text{SG}}(\bm{\hat u};\bm\xi):= \sum_{|i|\leq M} \bm{\hat{u}}_i\varphi_i(\bm{\xi}) = \hat{\bm u}^T\bm{\varphi}(\bm\xi),
-\end{align}
-Corresponding to the definition of $\bm{\hat u}$, we collect the $N$ basis function for which $\vert i \vert \leq M$ holds in $\bm{\varphi}:=(\varphi_i)_{|i|\leq M}\in\mathbb{R}^{N+1}$. When using the stochastic-Galerkin method to close \eqref{eq:nonClosedMomentSystem}, the resulting moment system is not necessarily hyperbolic \cite{poette2009uncertainty} and the solution needs to be manipulated \cite{schlachter2018hyperbolicity} in order to prevent a failure of the method. A generalization of stochastic-Galerkin, which ensures hyperbolicity is the Intrusive Polynomial Moment (IPM) closure \cite{poette2009uncertainty}: The closure is given by a constrained optimization problem. For a given convex entropy $s:\mathbb{R}^p\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, this optimization problem is given by
+with $|i|\leq M$. This system of $N$ equations can be solved by a deterministic method to determine the time evolution of the moments. A drawback of the stochastic-Galerkin method is that the resulting moment system is not necessarily hyperbolic \cite{poette2009uncertainty}. In order to remain hyperbolic, the solution needs to be manipulated \cite{schlachter2018hyperbolicity} in order to prevent a failure of the method. A generalization of stochastic-Galerkin, which ensures hyperbolicity is the Intrusive Polynomial Moment (IPM) method \cite{poette2009uncertainty}. The main difference to SG is that the solution ansatz of IPM is given by an optimization problem instead of a polynomial expansion \eqref{eq:SGClosure}. For a given convex entropy $s:\mathbb{R}^p\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, this optimization problem is given by
 \begin{align}\label{eq:primalProblem}
 \mathcal{U}(\bm{\hat u}) = \argmin_{\bm u} \langle s(\bm u) \rangle \enskip \text{ subject to } \bm{\hat u}_i = \langle \bm u \varphi_i \rangle \text{ for } |i| \leq M.
 \end{align}
@@ -57,11 +56,11 @@ where $s_*:\mathbb{R}^p\to\mathbb{R}$ is the Legendre transformation of $s$, and
 \begin{align}\label{eq:ansatz}
  \mathcal{U}(\bm{\hat u}) = \left( \nabla_{\bm{u}} s \right)^{-1}(\bm{\hat{\lambda}}(\bm{\hat u})^T \bm{\varphi}).
 \end{align}
-Plugging the derived closure into the moment system \eqref{eq:nonClosedMomentSystem}, one obtains the IPM moment system
+Plugging this ansatz into the original equations \eqref{eq:hyperbolicProblem} and projecting the resulting residual to zero yields the IPM system
 \begin{subequations}\label{eq:IPMmomentSystem}
 \begin{align}
 \partial_t \bm{\hat u}_i(t,\bm{x}) + \nabla&\cdot\langle\bm{f}(\mathcal{U}(\bm{\hat u})) \varphi_i\rangle = \bm{0}, \\
-\bm{\hat u}_i(t=0,\bm{x}&) = \langle\bm{u}_{\text{IC}}(\bm{x},\cdot)\varphi_i\rangle.
+\bm{\hat u}_i(t=0,\bm{x}&) = \langle\bm{u}_{\text{IC}}(\bm{x},\cdot)\varphi_i\rangle,
 \end{align}
 \end{subequations}
 with $|i|\leq M$. The IPM method has several advantages: Choosing the entropy $s(\bm{u}) = \frac{1}{2}\bm{u}^T\bm{u}$ yields the stochastic-Galerkin closure, i.e. IPM generalizes different intrusive methods. Furthermore, at least for scalar problems, IPM is significantly less oscillatory compared to SG \cite{kusch2017maximum}. Also, as discussed in \cite{poette2009uncertainty}, when choosing $s(\bm u)$ to be a physically correct entropy of the deterministic problem, the IPM solution dissipates the expectation value of the entropy, which is
@@ -78,7 +77,11 @@ Furthermore, we investigate intrusive methods for steady problems and compare th
 \item Accelerate the convergence to the IPM steady state solution by applying IPM as a post-processing step for collocation methods: We converge the moments of the solution to a steady state with an inaccurate, but cheap collocation method and then use the resulting collocation moments as starting values for an expensive but accurate intrusive method such as IPM, which we then again converge to steady state. 
 \item Compute inexact dual variables \eqref{eq:dualProblem} for IPM: Since the moments during the iteration process are inaccurate, i.e. they are not the correct steady state solution, we propose to not fully converge the dual iteration, which computes \eqref{eq:dualProblem}. 
 \end{itemize}
-In addition to these two strategies for steady problems, we make use of adaptivity: The intrusive nature of SG and IPM can be used to locally increase the number of moments whenever the solution has a complex structure in the random variable (as well as decrease the number of moments if not). In the case of steady problems, one can perform a large number of iteration to the steady state solution on a low number of moments and increase the maximal refinement level when the distance to the steady state has reached a specified barrier. Similar to the idea of using IPM as a post processing step, a large number of iterations will be performed by a cheap method, i.e. we can reduce numerical costs. The effectiveness of these acceleration ideas are tested by comparing results with stochastic-Collocation for the uncertain NACA test case as well as a bent shock tube problem. 
+For both steady and unsteady problems, we use adaptivity: 
+\begin{itemize}
+\item The intrusive nature of SG and IPM can be used to locally increase the number of moments whenever the solution has a complex structure in the random variable (as well as decrease the number of moments if not). In the case of steady problems, one can perform a large number of iteration to the steady state solution on a low number of moments and increase the maximal refinement level when the distance to the steady state has reached a specified barrier. Similar to the idea of using IPM as a post processing step, a large number of iterations will be performed by a cheap method, i.e. we can reduce numerical costs. 
+\end{itemize}
+The effectiveness of these acceleration ideas are tested by comparing results with stochastic-Collocation for the uncertain NACA test case as well as a bent shock tube problem. 
 
 The paper is structured as follows: After the introduction, we discuss the numerical discretization as well as the implementation and structure of the semi-intrusive framework in section \ref{sec:framework}. Section \ref{sec:collIPM} discusses the IPM acceleration with a non-intrusive method and in section \ref{sec:OneShotIPM}, we discuss the idea of not converging the dual iteration. Section~\ref{sec:adaptivity} extends the presented numerical framework to an algorithm making use of adaptivity. A comparison of results computed with the presented methods is then given in \ref{sec:results}, followed by a summary and outlook in section \ref{sec:summary_outlook}.
 
