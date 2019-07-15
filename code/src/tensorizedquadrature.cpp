@@ -36,11 +36,11 @@ void TensorizedQuadrature::CreateGrid() {
     _weights = new double[_nQTotal];
     for( unsigned i = 0; i < _nQTotal; i++ ) _weights[i] = 1.0;
 
-    std::cout << "Vectors done" << std::endl;
+    // std::cout << "Vectors done" << std::endl;
 
     _quad.resize( 2 );
 
-    std::cout << "Quad New size" << std::endl;
+    // std::cout << "Quad New size" << std::endl;
     _quad[0] = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_LEGENDRE );
     _quad[1] = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_HERMITE );
 

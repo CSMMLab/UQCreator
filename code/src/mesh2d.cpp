@@ -347,31 +347,25 @@ void Mesh2D::DetermineNeighbors() {
 
 std::vector<Vector> Mesh2D::Import() const {
     auto reader = vtkUnstructuredGridReaderSP::New();
-    reader->SetFileName( _settings->GetICFile().c_str() );
+    reader->SetFileName( _settings->GetReferenceFile().c_str() );
     reader->ReadAllScalarsOn();
     reader->ReadAllVectorsOn();
     reader->Update();
 
-    std::vector<Vector> data( _numCells, Vector( _settings->GetNStates() ) );
+    std::vector<Vector> data( _numCells, Vector( 2 * _settings->GetNStates() ) );
 
-    auto converter = vtkPointDataToCellDataSP::New();
-    converter->AddInputDataObject( reader->GetOutput() );
-    converter->PassPointDataOn();
-    converter->Update();
-
-    auto grid     = converter->GetOutput();
+    auto grid     = reader->GetOutput();
     auto cellData = grid->GetCellData();
 
-    std::cout << grid->GetPointData()->GetNumberOfArrays() << std::endl;
-    std::cout << cellData->GetArray( 0 )->GetName() << std::endl;
-    std::cout << cellData->GetArray( 1 )->GetName() << std::endl;
-    std::cout << cellData->GetNumberOfArrays() << std::endl << std::endl;
-
     for( unsigned i = 0; i < _numCells; ++i ) {
-        data[i][0] = cellData->GetArray( "Density" )->GetTuple1( static_cast<int>( i ) );
-        data[i][1] = cellData->GetArray( "Momentum" )->GetTuple3( static_cast<int>( i ) )[0];
-        data[i][2] = cellData->GetArray( "Momentum" )->GetTuple3( static_cast<int>( i ) )[1];
-        data[i][3] = cellData->GetArray( "Energy" )->GetTuple1( static_cast<int>( i ) );
+        data[i][0] = cellData->GetArray( "E(ρ)" )->GetTuple1( static_cast<int>( i ) );
+        data[i][1] = cellData->GetArray( "E(ρU)" )->GetTuple3( static_cast<int>( i ) )[0];
+        data[i][2] = cellData->GetArray( "E(ρU)" )->GetTuple3( static_cast<int>( i ) )[1];
+        data[i][3] = cellData->GetArray( "E(ρE)" )->GetTuple1( static_cast<int>( i ) );
+        data[i][4] = cellData->GetArray( "Var(ρ)" )->GetTuple1( static_cast<int>( i ) );
+        data[i][5] = cellData->GetArray( "Var(ρU)" )->GetTuple3( static_cast<int>( i ) )[0];
+        data[i][6] = cellData->GetArray( "Var(ρU)" )->GetTuple3( static_cast<int>( i ) )[1];
+        data[i][7] = cellData->GetArray( "Var(ρE)" )->GetTuple1( static_cast<int>( i ) );
     }
     return data;
 }

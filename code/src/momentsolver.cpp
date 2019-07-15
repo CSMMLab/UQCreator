@@ -95,7 +95,8 @@ MatVec MomentSolver::SetupIC( const Vector& xi ) {
     Matrix uIC( _nStates, _nQTotal );
     std::vector<Vector> IC;
     if( _settings->HasICFile() ) {
-        IC = _mesh->Import();
+        // IC = _mesh->Import();
+        exit( EXIT_FAILURE );
     }
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _settings->HasICFile() ) {

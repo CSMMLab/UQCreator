@@ -46,7 +46,7 @@ Closure::Closure( Settings* settings )
     // define quadrature
     _quadGrid = QuadratureGrid::Create( _settings );
     // TensorizedQuadrature* quadGrid = new TensorizedQuadrature( _settings );
-    std::cout << "quadGrid done" << std::endl;
+    // std::cout << "quadGrid done" << std::endl;
     _xiGrid    = _quadGrid->GetNodes();
     auto wGrid = _quadGrid->GetWeights();
 
@@ -312,7 +312,7 @@ void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u ) {
         AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );
         Gradient( dlambdaNew, lambdaNew, u );
         int refinementCounter = 0;
-        std::cout << "Res is " << CalcNorm( dlambdaNew ) << std::endl;
+        // std::cout << "Res is " << CalcNorm( dlambdaNew ) << std::endl;
         while( CalcNorm( dlambda ) < CalcNorm( dlambdaNew ) || !std::isfinite( CalcNorm( dlambdaNew ) ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew );

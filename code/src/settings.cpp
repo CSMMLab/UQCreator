@@ -240,7 +240,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 }
                 // if total degree is sufficiently small or max degree is used, indices are stored
                 if( totalDegree < _nMoments || _useMaxDegree ) {
-                    std::cout << "total degree is " << totalDegree << std::endl;
+                    // std::cout << "total degree is " << totalDegree << std::endl;
                     ++_nTotal;
                     // count up truncation index if total degree of current basis fct lies below total degree of level l
                     for( int l = int( _nRefinementLevels ) - 1; l >= 0; --l ) {
@@ -252,9 +252,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 }
             }
             for( unsigned l = 0; l < _nRefinementLevels; ++l ) {
-                std::cout << "number Moments at level " << l << ": " << _nTotalRefinementLevel[l] << std::endl;
+                // std::cout << "number Moments at level " << l << ": " << _nTotalRefinementLevel[l] << std::endl;
             }
-            std::cout << "nTotal is " << _nTotal << std::endl;
+            // std::cout << "nTotal is " << _nTotal << std::endl;
         }
         else {
             log->error( "[inputfile] [moment_system] 'moments' not set!" );
