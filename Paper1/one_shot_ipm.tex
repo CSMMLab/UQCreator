@@ -2,7 +2,7 @@
 \label{sec:OneShotIPM}
 
 In this section we aim at breaking up the inner loop in the IPM algorithm \ref{alg:IPM}, i.e. to just perform one iteration of the dual problem in each time step. Consequently, the IPM reconstruction given by \eqref{eq:primalProblem} is not done exactly, meaning that the reconstructed solution does not minimize the entropy while not fulfilling the moment constraint. However, the fact that the moment vectors are not yet converged to the steady solution seems to permit such an inexact reconstruction. Hence, we aim at iterating the moments to steady state and the dual variables to the exact solution of the IPM optimization problem \eqref{eq:primalProblem} simultaneously.
-Hence, by successively performing one update of the moment iteration and one update of the dual iteration, we obtain 
+By successively performing one update of the moment iteration and one update of the dual iteration, we obtain 
 \begin{subequations}\label{eq:oneshotIPM}
 \begin{align}
 &\bm{\lambda}_{j}^{n+1} =  \bm{d}(\bm{\lambda}_j^{n},\bm{u}_j^{n}) \enskip \text{ for all j} \label{eq:oneshotIPMdual}\\
@@ -61,7 +61,7 @@ We first wish to understand the structure of the terms $\partial_{\bm{\hat u}} \
 \begin{align}\label{eq:ulambda}
 \bm{\hat u} = \langle \bm{u}_s(\bm{\hat \lambda}^T\bm{\varphi})\bm{\varphi}^T\rangle =: \bm{h}(\bm{\hat \lambda}),
 \end{align}
-which is why we have the mapping $\bm{\hat u}:\mathbb{R}^{N+1}\to\mathbb{R}^{N+1}$, $\bm{\hat u}(\bm{\hat \lambda}) = \bm{h}(\bm{\hat \lambda})$. Since the solution of the dual problem for a given moment vector is unique, this mapping is bijective and therefore we have an inverse function
+which is why we have the mapping $\bm{\hat u}:\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$, $\bm{\hat u}(\bm{\hat \lambda}) = \bm{h}(\bm{\hat \lambda})$. Since the solution of the dual problem for a given moment vector is unique, this mapping is bijective and therefore we have an inverse function
 \begin{align}\label{eq:lambdau}
 \bm{\hat \lambda} = \bm{h}^{-1}(\bm{\hat u}(\bm{\hat \lambda})).
 \end{align}
