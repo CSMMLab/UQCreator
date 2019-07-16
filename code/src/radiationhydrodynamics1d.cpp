@@ -4,8 +4,8 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     _N = 1;    // set moment order
 
     // constants
-    _gamma        = 5.0 / 3.0;
-    _R            = 287.87;
+    _gamma        = 5.0 / 3.0;              // adiabatic constant
+    _R            = 287.87;                 // specific gas constant
     double cLight = 299792458.0 * 100.0;    // speed of light in [cm/s]
     double aR     = 7.5657 * 1e-15;         // radiation constant
 
@@ -19,13 +19,13 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     double TR   = 207.757;
 
     // reference values
-    double rhoRef = rhoL;
-    double TRef   = TL;
-    double pRef   = TRef * ( _R * rhoRef );
-    double aRef   = sqrt( _gamma * pRef / rhoRef );
+    _rhoRef = rhoL;
+    _TRef   = TL;
+    _pRef   = _TRef * ( _R * _rhoRef );
+    _aRef   = sqrt( _gamma * _pRef / _rhoRef );
 
-    _c = cLight / aRef;
-    _P = aR * pow( TRef, 4 ) / ( rhoRef * pow( aRef, 2 ) );
+    _c = cLight / _aRef;
+    _P = 0.0;    // aR * pow( _TRef, 4 ) / ( _rhoRef * pow( _aRef, 2 ) );
 
     std::cout << "C = " << _c << " , P = " << _P << std::endl;
 
@@ -244,31 +244,31 @@ Matrix RadiationHydrodynamics1D::F( const Vector& u ) const {
 
 Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
-    /*
-    double x0      = 0.0;
-    double y0      = 0.0;
-    double s2      = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
-    double s2Euler = 3.2 * std::pow( 0.15, 2 );    // std::pow( 0.03, 2 );
-    double floor   = 0.0;
-    _sigma         = _settings->GetSigma();
-
-    y[0] = Delta( 0, 0 ) *
-           std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2 ) );
-    y[_nMoments + 0] = 1.0;
-    y[_nMoments + 0] = std::fmax(
-        floor, 1.0 / ( 4.0 * M_PI * s2Euler ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2Euler ) );
-    y[_nMoments+2] = std::fmax(
-        floor, 1.0 / ( 4.0 * M_PI * s2Euler ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2Euler ) );
-    */
-    if( x[0] < 0.5 ) {
-        y[0]             = 1.0;
-        y[_nMoments + 0] = 1.0;
-        y[_nMoments + 2] = 1.0;
+    // initial chock states
+    double lRef = 1000;
+    double rhoL = 5.45887 * 1e-13;
+    double uL   = 2.3545 * 1e5;
+    double TL   = 100.0;
+    double rhoR = 1.2479 * 1e-12;
+    double uR   = 1.03 * 1e5;
+    double TR   = 207.757;
+    if( x[0] < 0.0 ) {
+        y[0]                  = 0.0;
+        y[_nMoments + 0]      = rhoL / _rhoRef;
+        y[_nMoments + 1]      = rhoL * uL / ( _rhoRef * _aRef );
+        double pL             = TL * ( _R * rhoL ) / _pRef;
+        double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
+        double innerEnergyL   = ( pL / ( _gamma - 1.0 ) );
+        y[_nMoments + 2]      = kineticEnergyL + innerEnergyL;
     }
     else {
-        y[0]             = 1.0;
-        y[_nMoments + 0] = 1.0;
-        y[_nMoments + 2] = 1.0;
+        y[0]                  = 0.0;
+        y[_nMoments + 0]      = rhoR / _rhoRef;
+        y[_nMoments + 1]      = rhoR * uR / ( _rhoRef * _aRef );
+        double pR             = TR * ( _R * rhoR ) / _pRef;
+        double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
+        double innerEnergyR   = ( pR / ( _gamma - 1.0 ) );
+        y[_nMoments + 2]      = kineticEnergyR + innerEnergyR;
     }
     return y;
 }

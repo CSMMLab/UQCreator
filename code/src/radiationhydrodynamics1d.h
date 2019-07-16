@@ -14,6 +14,12 @@ class RadiationHydrodynamics1D : public PNEquations
     unsigned _nMoments;
     double Delta( int l, int k ) const;
 
+    // reference values
+    double _rhoRef;
+    double _TRef;
+    double _pRef;
+    double _aRef;
+
     void SetupSystemMatrices();
     double Er0( const Vector& u ) const;
     Vector Fr0( const Vector& u ) const;
@@ -35,4 +41,3 @@ class RadiationHydrodynamics1D : public PNEquations
 };
 
 #endif    // RADIATIONHYDRODYNAMICS1D_H
-
