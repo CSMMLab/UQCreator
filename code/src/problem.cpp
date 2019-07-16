@@ -6,6 +6,7 @@
 #include "pnequations.h"
 #include "problem.h"
 #include "radiationhydrodynamics.h"
+#include "radiationhydrodynamics1d.h"
 #include "shallowwater.h"
 #include "shallowwater2d.h"
 
@@ -38,6 +39,9 @@ Problem* Problem::Create( Settings* settings ) {
     }
     else if( settings->GetProblemType() == ProblemType::P_RADIATIONHYDRO_2D ) {
         return new RadiationHydrodynamics( settings );
+    }
+    else if( settings->GetProblemType() == ProblemType::P_RADIATIONHYDRO_1D ) {
+        return new RadiationHydrodynamics1D( settings );
     }
     else {
         log->error( "[Problem] Invalid problem type!" );

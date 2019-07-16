@@ -29,6 +29,25 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
         _cwd      = std::filesystem::current_path();
         _inputDir = std::experimental::filesystem::path( _inputFile.parent_path() );
 
+        // section mesh
+        auto mesh          = file->get_table( "mesh" );
+        auto meshDimension = mesh->get_as<unsigned>( "dimension" );
+        if( meshDimension ) {
+            _meshDimension = *meshDimension;
+        }
+        else {
+            log->error( "[inputfile] [mesh] 'dimension' not set!" );
+            validConfig = false;
+        }
+        auto outputFile = mesh->get_as<std::string>( "outputFile" );
+        if( outputFile ) {
+            _outputFile = _inputDir.string() + "/" + _outputDir.string() + "/" + *outputFile;
+        }
+        else {
+            log->error( "[inputfile] [mesh] 'outputFile' not set!" );
+            validConfig = false;
+        }
+
         // section general
         auto general           = file->get_table( "general" );
         auto problemTypeString = general->get_as<std::string>( "problem" );
@@ -52,12 +71,15 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( problemTypeString->compare( "PNEquations2D" ) == 0 ) {
                 _problemType = ProblemType::P_PNEQUATIONS_2D;
             }
-            else if( problemTypeString->compare( "RadiationHydrodynamics2D" ) == 0 ) {
-                _problemType = ProblemType::P_RADIATIONHYDRO_2D;
+            else if( problemTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
+                if( _meshDimension == 1 )
+                    _problemType = ProblemType::P_RADIATIONHYDRO_1D;
+                else if( _meshDimension == 2 )
+                    _problemType = ProblemType::P_RADIATIONHYDRO_2D;
             }
             else {
                 log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers1D, Euler1D, "
-                            "Euler2D,ShallowWater1D,ShallowWater2D" );
+                            "Euler2D,ShallowWater1D,ShallowWater2D,PNEquations2D,RadiationHydrodynamics" );
                 validConfig = false;
             }
         }
@@ -92,25 +114,6 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             if( refFile ) {
                 _referenceFile = _inputDir.string() + "/" + *refFile;
             }
-        }
-
-        // section mesh
-        auto mesh          = file->get_table( "mesh" );
-        auto meshDimension = mesh->get_as<unsigned>( "dimension" );
-        if( meshDimension ) {
-            _meshDimension = *meshDimension;
-        }
-        else {
-            log->error( "[inputfile] [mesh] 'dimension' not set!" );
-            validConfig = false;
-        }
-        auto outputFile = mesh->get_as<std::string>( "outputFile" );
-        if( outputFile ) {
-            _outputFile = _inputDir.string() + "/" + _outputDir.string() + "/" + *outputFile;
-        }
-        else {
-            log->error( "[inputfile] [mesh] 'outputFile' not set!" );
-            validConfig = false;
         }
 
         // section problem

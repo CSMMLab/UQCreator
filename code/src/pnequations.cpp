@@ -1,6 +1,6 @@
 #include "pnequations.h"
 
-PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 13 ) {
+PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 2 ) {
     _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
     _settings->SetNStates( _nStates );
     _settings->SetSource( true );
