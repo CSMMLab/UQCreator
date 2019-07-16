@@ -401,7 +401,7 @@ double RadiationHydrodynamics1D::ComputeDt( const Matrix& u, double dx, unsigned
         dtMin      = ( cfl * dx ) * std::min( std::fabs( 1.0 / ( uU - a ) ), std::fabs( 1.0 / ( uU + a ) ) );
         dtMinTotal = std::min( dtMin, dtMinTotal );
     }
-    return std::min( dtMinTotal, _c * cfl * dx );
+    return std::min( dtMinTotal, cfl * dx / _c );
 }
 
 Matrix RadiationHydrodynamics1D::BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const {

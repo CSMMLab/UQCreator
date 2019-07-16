@@ -167,7 +167,17 @@ Vector RadiationHydrodynamics::Fr0( const Vector& u ) const {
     v[0]  = u[_nMoments + 1] * rhoInv;
     v[1]  = u[_nMoments + 2] * rhoInv;
     v[2]  = 0.0;
-    return Fr - ( v * Er + _Ax * u + _Ay * u + _Az * u ) / _c;
+
+    Matrix Pr( _nMoments - 1, _nMoments - 1, false );
+    Vector v0Pr = v[0] * _Ax * u;
+    Vector v1Pr = v[1] * _Ay * u;
+    Vector v2Pr = v[2] * _Az * u;
+    Vector vPr( 3, false );
+
+    // get rid of 0th entry
+    for( unsigned s = 0; s < 3; ++s ) vPr[s] = v0Pr[s + 1] + v1Pr[s + 1] + v2Pr[s + 1];
+
+    return Fr - ( v * Er + vPr ) / _c;
 }
 
 double RadiationHydrodynamics::SE( const Vector& u ) const {
@@ -382,7 +392,7 @@ double RadiationHydrodynamics::ComputeDt( const Matrix& u, double dx, unsigned l
         dtMinTotal = std::min( dtMin, dtMinTotal );
     }
     // std::cout << "P_N dt = " << _c * cfl / dx << ", Euler dt =  " << dtMinTotal << std::endl;
-    return std::min( dtMinTotal, _c * cfl / dx );
+    return std::min( dtMinTotal, cfl / dx / _c );
 }
 
 Matrix RadiationHydrodynamics::BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const {
