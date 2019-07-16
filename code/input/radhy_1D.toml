@@ -1,0 +1,26 @@
+[general]
+problem = "RadiationHydrodynamics"
+outputDir = "../results"
+
+[mesh]
+dimension = 1
+numberOfCells = 1000
+a = -1
+b = 1
+outputFile = "RadiationHydrodynamics_1D"
+
+[problem]
+# available timesteppings: explicitEuler
+timestepping = "explicitEuler"
+# available distributions: Legendre, Hermite
+distribution = [["Legendre"],[0.0]]
+CFL = 0.5 # 0.1
+tEnd = 0.001
+
+[moment_system]
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
+closure = "StochasticGalerkin"
+moments = [["totalDegree"],[1]]
+quadPoints = [["tensorizedGrid"],[3]]
+maxIterations = 1000
+epsilon = 1e-7
