@@ -120,9 +120,9 @@ void RadiationHydrodynamics::SetupSystemMatrices() {
 
             // multiply to change to monomials for up to order one
             for( unsigned n = 0; n < _nMoments; ++n ) {
-                _Ax( i, n ) = _c * _Ax( i, n ) * Delta( l, k );
-                _Ay( i, n ) = _c * _Ay( i, n ) * Delta( l, k );
-                _Az( i, n ) = _c * _Az( i, n ) * Delta( l, k );
+                _Ax( i, n ) = _Ax( i, n ) * Delta( l, k );
+                _Ay( i, n ) = _Ay( i, n ) * Delta( l, k );
+                _Az( i, n ) = _Az( i, n ) * Delta( l, k );
             }
         }
     }
@@ -282,9 +282,9 @@ void RadiationHydrodynamics::DS( Vector& ds, const Vector& u ) const {
 Matrix RadiationHydrodynamics::FRadiation( const Vector& u ) const {
     Matrix flux( u.size(), 2 );
 
-    column( flux, 0 ) = _Ax * u;
-    column( flux, 1 ) = _Ay * u;
-    // column( flux, 1 ) = _Az * u;
+    column( flux, 0 ) = _c * _Ax * u;
+    column( flux, 1 ) = _c * _Ay * u;
+    // column( flux, 1 ) = _c * _Az * u;
 
     return flux;
 }
