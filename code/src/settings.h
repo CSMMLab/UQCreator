@@ -60,6 +60,8 @@ class Settings
     Vector _residualRetardation;     // stores residual at different refinement levels
     VectorU _retardationSteps;       // stores maximal truncation orders at retardation step
     unsigned _nRetardationLevels;    // number of retardation levels
+    double _refinementThreshold;     // threshold for refinementIndicator above which moment/quadrature will be refined
+    double _coarsenThreshold;        // threshold for refinementIndicator below which moment/quadrature will be coarsened
 
     int _mype;                             // PE number
     int _npes;                             // number of all PEs
@@ -162,6 +164,8 @@ class Settings
     unsigned GetNRefinementLevels() const;
     unsigned GetNRefinementLevels( unsigned retardation ) const;
     unsigned GetNRetardationLevels() const;
+    double GetRefinementThreshold() const;
+    double GetCoarsenThreshold() const;
     double GetResidualRetardation( unsigned retardation ) const;
     unsigned GetNTotalforRefLevel( unsigned level ) const;
     unsigned GetPolyDegreeforRefLevel( unsigned level ) const;

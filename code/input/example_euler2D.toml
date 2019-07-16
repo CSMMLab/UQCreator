@@ -32,5 +32,6 @@ closure = "Euler2D"
 moments = [["totalDegree"],[1,2,3,4,5,6,7,8,9]]
 quadPoints = [["sparseGrid"],[2,3,3,4,4,4,4,5,5]]
 cRetardation = [[1,2,4],[0.01,0.005,0.001]]
+refinementThresholds = [0.0001, 0.00001]
 maxIterations = 1
 epsilon = 1e-7

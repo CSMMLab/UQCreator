@@ -88,7 +88,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
 
         if( !restart ) {
             auto refFile    = general->get_as<std::string>( "referenceSolution" );
-            _writeFrequency = general->get_as<int64_t>( "writeFrequency" ).value_or( 1000 );
+            _writeFrequency = general->get_as<int>( "writeFrequency" ).value_or( 1000 );
             if( refFile ) {
                 _referenceFile = _inputDir.string() + "/" + *refFile;
             }
@@ -258,7 +258,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                         _polyIndices.push_back( indexTest );
                     }
                 }
-                _nTotalRefinementLevel[level] = _polyIndices.size();
+                _nTotalRefinementLevel[level] = static_cast<unsigned>( _polyIndices.size() );
                 if( UsesMaxDegree() ) break;
                 previousDegree = int( GetPolyDegreeforRefLevel( level ) );
             }
@@ -300,7 +300,6 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
         }
 
         // read convergence retardation
-        std::cout << "Reading cRetardation" << std::endl;
         auto cRetardation = moment_system->get_array_of<cpptoml::array>( "cRetardation" );
         if( cRetardation ) {
             auto retardationSteps    = ( *cRetardation )[0]->get_array_of<int64_t>();
@@ -320,7 +319,13 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             _residualRetardation = Vector( 1, _minResidual );
             _nRetardationLevels  = 1;
         }
-        std::cout << "Reading cRetardation DONE." << std::endl;
+        if( _nRefinementLevels > 1 ) {
+            auto refinementThresholds = moment_system->get_array_of<double>( "refinementThresholds" );
+            assert( refinementThresholds->size() == 2 );
+            _refinementThreshold = ( *refinementThresholds )[0];
+            _coarsenThreshold    = ( *refinementThresholds )[1];
+        }
+
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
         _hasSource     = false;
@@ -418,6 +423,8 @@ VectorU Settings::GetNTotalRefinementLevel() const { return _nTotalRefinementLev
 std::vector<std::vector<unsigned>> Settings::GetPolyIndices() const { return _polyIndices; }
 unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
 unsigned Settings::GetNRefinementLevels( unsigned retardation ) const { return _retardationSteps[retardation]; }
+double Settings::GetRefinementThreshold() const { return _refinementThreshold; }
+double Settings::GetCoarsenThreshold() const { return _coarsenThreshold; }
 double Settings::GetResidualRetardation( unsigned retardation ) const { return _residualRetardation[retardation]; }
 unsigned Settings::GetNRetardationLevels() const { return _nRetardationLevels; }
 unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }

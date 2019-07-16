@@ -96,9 +96,10 @@ void MomentSolver::Solve() {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
 
-            if( indicator > 0.005 && refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels( retCounter ) - 1 )
+            if( indicator > _settings->GetRefinementThreshold() &&
+                refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels( retCounter ) - 1 )
                 refinementLevel[_cellIndexPE[j]] += 1;
-            else if( indicator < 0.0005 && refinementLevel[_cellIndexPE[j]] > 0 )
+            else if( indicator < _settings->GetCoarsenThreshold() && refinementLevel[_cellIndexPE[j]] > 0 )
                 refinementLevel[_cellIndexPE[j]] -= 1;
         }
 

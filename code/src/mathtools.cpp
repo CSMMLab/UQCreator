@@ -105,7 +105,7 @@ std::pair<Vector, Matrix> MathTools::ComputeEigenValTriDiagMatrix( const Matrix&
 
 int MathTools::Factorial( int i ) {
     int fact = 1;
-    for( unsigned n = 1; n <= i; n++ ) {
+    for( int n = 1; n <= i; n++ ) {
         fact *= i;
     }
     return fact;
