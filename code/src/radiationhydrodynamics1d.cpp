@@ -398,8 +398,7 @@ double RadiationHydrodynamics1D::ComputeDt( const Matrix& u, double dx, unsigned
         p      = ( _gamma - 1.0 ) * ( u( _nMoments + 2, k ) - 0.5 * u( _nMoments + 0, k ) * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
         a      = sqrt( _gamma * p * rhoInv );
 
-        dtMin      = ( cfl / dx ) * std::min( std::min( std::fabs( 1.0 / ( vU - a ) ), std::fabs( 1.0 / ( vU + a ) ) ),
-                                         std::min( std::fabs( 1.0 / ( uU + a ) ), std::fabs( 1.0 / ( uU - a ) ) ) );
+        dtMin      = ( cfl * dx ) * std::min( std::fabs( 1.0 / ( uU - a ) ), std::fabs( 1.0 / ( uU + a ) ) );
         dtMinTotal = std::min( dtMin, dtMinTotal );
     }
     // std::cout << "P_N dt = " << _c * cfl / dx << ", Euler dt =  " << dtMinTotal << std::endl;
