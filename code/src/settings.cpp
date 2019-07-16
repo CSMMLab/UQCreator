@@ -308,14 +308,16 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             auto retardationSteps    = ( *cRetardation )[0]->get_array_of<int64_t>();
             auto residualRetardation = ( *cRetardation )[1]->get_array_of<double>();
             assert( retardationSteps->size() == residualRetardation->size() );
-            _nRetardationLevels  = unsigned( retardationSteps->size() );
+            _nRetardationLevels  = unsigned( retardationSteps->size() ) + 1;
             _retardationSteps    = VectorU( _nRetardationLevels, false );
             _residualRetardation = Vector( _nRetardationLevels, false );
 
-            for( unsigned i = 0; i < _nRetardationLevels; ++i ) {
+            for( unsigned i = 0; i < _nRetardationLevels - 1; ++i ) {
                 _retardationSteps[i]    = unsigned( ( *retardationSteps )[i] );
                 _residualRetardation[i] = ( *residualRetardation )[i];
             }
+            _retardationSteps[_nRetardationLevels - 1]    = _nRefinementLevels;
+            _residualRetardation[_nRetardationLevels - 1] = _minResidual;
         }
         else {
             _retardationSteps    = VectorU( 1, _nRefinementLevels );
