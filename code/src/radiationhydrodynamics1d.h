@@ -27,7 +27,6 @@ class RadiationHydrodynamics1D : public PNEquations
     Vector SF( const Vector& u ) const;
     Matrix FRadiation( const Vector& u ) const;
     Matrix FEuler( const Vector& u ) const;
-    Matrix F( const Vector& u ) const;
     virtual int GlobalIndex( int l, int k ) const;
 
   public:

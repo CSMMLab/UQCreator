@@ -227,36 +227,9 @@ Vector RadiationHydrodynamics1D::SF( const Vector& u ) const {
     return Fr0( u ) * ( -_sigmaT ) + v * _sigmaA * ( std::pow( T, 4 ) - Er ) / _c;
 }
 
-Matrix RadiationHydrodynamics1D::F( const Vector& u ) const {
-    std::cerr << "F not tested" << std::endl;
-    exit( EXIT_FAILURE );
-    Matrix flux( u.size(), 2 );
-    double rhoInv = 1.0 / u[_nMoments + 0];
-    double v1     = u[_nMoments + 1] * rhoInv;
-    double v2     = 0.0;
-    double p      = ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * u[_nMoments + 0] * ( pow( v1, 2 ) + pow( v2, 2 ) ) );
-
-    Vector momentFluxX = _Ax * u;
-    Vector momentFluxY = _Ay * u;
-    for( unsigned i = 0; i < _nMoments; ++i ) {
-        flux( i, 0 ) = momentFluxX[i];
-        flux( i, 1 ) = momentFluxY[i];
-    }
-    flux( _nMoments + 0, 0 ) = u[_nMoments + 1];
-    flux( _nMoments + 1, 0 ) = u[_nMoments + 1] * v1 + p;
-    flux( _nMoments + 2, 0 ) = 0.0;
-    flux( _nMoments + 2, 0 ) = ( u[_nMoments + 2] + p ) * v1;
-    flux( _nMoments + 0, 1 ) = u[_nMoments + 2];
-    flux( _nMoments + 1, 1 ) = u[_nMoments + 2] * v1;
-    flux( _nMoments + 2, 1 ) = u[_nMoments + 2] * v2 + p;
-    flux( _nMoments + 2, 1 ) = ( u[_nMoments + 2] + p ) * v2;
-    return flux;
-}
-
 Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
     // initial chock states
-    double lRef = 1000;
     double rhoL = 5.45887 * 1e-13;
     double uL   = 2.3545 * 1e5;
     double TL   = 100.0;
