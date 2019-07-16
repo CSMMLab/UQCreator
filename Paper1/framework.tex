@@ -101,6 +101,7 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 \end{algorithm}
 
 \subsection{Costs of evaluating the numerical flux}
+\label{sec:costNumFlux}
 A straight-forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}, which has been proposed in \cite{kusch2017maximum}. By simply taking moments of a given deterministic flux, the software can easily be extended to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. However, the need to approximate the flux by an integral seems to be numerically expensive, especially when considering that the stochastic-Galerkin method often allows an analytic computation of all arising integrals. In the following, we discuss this issue and show the advantages of our numerical flux choice by considering the stochastic Burgers' equation
 \begin{align*}
 \partial_t u + \partial_x \frac{u^2}{2} &= 0,\\

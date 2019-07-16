@@ -23,9 +23,9 @@ where $\bm{\varphi}_{\ell}\in\mathbb{R}^{N_{\ell}}$ collects all basis functions
 \bm{B}_{\ell}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi}_{\ell})\bm{\varphi}_{\ell}\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^{-T}.
 \end{align*}
 An adaptive version of the moment iteration \eqref{eq:momentIterationFunction} is denoted by $\bm c_{\ell}^{\bm{\ell}'}:\mathbb{R}^{N_{\ell_1'}\times p}\times \mathbb{R}^{N_{\ell_2'}\times p}\times \mathbb{R}^{N_{\ell_3'}\times p}\rightarrow \mathbb{R}^{N_{\ell}\times p}$ and given by
-\begin{align*}
+\begin{align}\label{eq:adaptiveFVUpdate}
 \bm{c}_{\ell}^{\bm{\ell}'}\left(\bm{\lambda}_{1},\bm{\lambda}_2,\bm{\lambda}_3\right):= \langle \bm u_{s}(\bm{\lambda}_2^T\bm{\varphi}_{\ell_2'})\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T - \frac{\Delta t}{\Delta x}\left(\langle \bm g(\bm u_{s}(\bm{\lambda}_2^T\bm{\varphi}_{\ell_2'}),\bm u_{s}(\bm{\lambda}_3^T\bm{\varphi}_{\ell_3'}))\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T-\langle \bm g(\bm u_{s}(\bm{\lambda}_{1}^T\bm{\varphi}_{\ell_1'}),\bm u_{s}(\bm{\lambda}_2^T\bm{\varphi}_{\ell_2'}))\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T\right).
-\end{align*}
+\end{align}
 Hence, the index vector $\bm\ell'\in\mathbb{N}^{3}$ denotes the refinement levels of the stencil cells, which are used to compute the time updated moment vector at level $\ell$.
 
 The strategy now is to perform the dual update for a set of moment vectors $\bm{\hat u}_j^n$ at refinement levels $\ell_j^n$ for $j = 1,\cdots,N_x$. Hence, the dual iteration makes use of the iteration function \eqref{eq:dualIterationFunctionAd} at refinement level $\ell_j^n$. After that, the refinement level at the next time step $\ell_j^{n+1}$ is determined by making use of the smoothness indicator \eqref{eq:errorIndicator}. The moment update then computes the moments at the time updated refinement level $\ell_j^{n+1}$ making use of the dual states at the old refinement levels $\bm{\ell}' = (\ell_{j-1}^n,\ell_{j}^n,\ell_{j+1}^n)^T$. The IPM algorithm with adaptivity then reads
