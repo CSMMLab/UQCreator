@@ -1,10 +1,14 @@
 #include "radiationhydrodynamics1d.h"
 
 RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEquations( settings, true ) {
-    _N            = 1;    // set moment order
+    _N = 1;    // set moment order
+
+    // constants
     _gamma        = 5.0 / 3.0;
     _R            = 287.87;
     double cLight = 299792458.0 * 100.0;    // speed of light in [cm/s]
+    double aR     = 7.5657 * 1e-15;         // radiation constant
+
     // initial chock states
     double lRef = 1000;
     double rhoL = 5.45887 * 1e-13;
@@ -13,10 +17,17 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     double rhoR = 1.2479 * 1e-12;
     double uR   = 1.03 * 1e5;
     double TR   = 207.757;
-    double pRef = TL * ( _R * rhoL );
-    double aRef = sqrt( _gamma * pRef / rhoL );
-    _c          = cLight / aRef;
-    _P          = 0.0;    // 0.5;
+
+    // reference values
+    double rhoRef = rhoL;
+    double TRef   = TL;
+    double pRef   = TRef * ( _R * rhoRef );
+    double aRef   = sqrt( _gamma * pRef / rhoRef );
+
+    _c = cLight / aRef;
+    _P = aR * pow( TRef, 4 ) / ( rhoRef * pow( aRef, 2 ) );
+
+    std::cout << "C = " << _c << " , P = " << _P << std::endl;
 
     if( _N == 1 )    // GlobalIndex has different ordering here
         _nMoments = 4;
