@@ -10,7 +10,6 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     double aR     = 7.5657 * 1e-15;         // radiation constant
 
     // initial chock states
-    double lRef = 1000;
     double rhoL = 5.45887 * 1e-13;
     double uL   = 2.3545 * 1e5;
     double TL   = 100.0;
@@ -19,13 +18,16 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     double TR   = 207.757;
 
     // reference values
-    _rhoRef = rhoL;
-    _TRef   = TL;
-    _pRef   = _TRef * ( _R * _rhoRef );
-    _aRef   = sqrt( _gamma * _pRef / _rhoRef );
+    double lRef = 1000;
+    _rhoRef     = rhoL;
+    _TRef       = TL;
+    _aRef       = sqrt( _gamma * _R * _TRef );
+    _pRef       = _rhoRef * pow( _aRef, 2 );    // update pRef with speed of sound
+
+    std::cout << "vL = " << uL << ", aRef = " << _aRef << std::endl;
 
     _c = cLight / _aRef;
-    _P = 0.0;    // aR * pow( _TRef, 4 ) / ( _rhoRef * pow( _aRef, 2 ) );
+    _P = aR * pow( _TRef, 4 ) / ( _rhoRef * pow( _aRef, 2 ) );
 
     std::cout << "C = " << _c << " , P = " << _P << std::endl;
 
@@ -189,7 +191,16 @@ Vector RadiationHydrodynamics1D::Fr0( const Vector& u ) const {
     v[0]  = u[_nMoments + 1] * rhoInv;
     v[1]  = 0.0;
     v[2]  = 0.0;
-    return Fr - ( v * Er + _Ax * u + _Ay * u + _Az * u ) / _c;
+    Matrix Pr( _nMoments - 1, _nMoments - 1, false );
+    Vector v0Pr = v[0] * _Ax * u;
+    Vector v1Pr = v[1] * _Ay * u;
+    Vector v2Pr = v[2] * _Az * u;
+    Vector vPr( 3, false );
+
+    // get rid of 0th entry
+    for( unsigned s = 0; s < 3; ++s ) vPr[s] = v0Pr[s + 1] + v1Pr[s + 1] + v2Pr[s + 1];
+
+    return Fr - ( v * Er + vPr ) / _c;
 }
 
 double RadiationHydrodynamics1D::SE( const Vector& u ) const {
