@@ -436,6 +436,7 @@ unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotal
 unsigned Settings::GetPolyDegreeforRefLevel( unsigned level ) const { return _refinementLevel[level]; }
 GridType Settings::GetGridType() const { return _gridType; }
 VectorU Settings::GetQuadLevel() const { return _quadLevel; }
+void Settings::SetQuadLevel( const VectorU& quadLevel ) { _quadLevel = quadLevel; }
 std::vector<unsigned> Settings::GetIndicesQforRef( unsigned level ) const { return _kIndicesAtRef[level]; }
 
 // Set Total number of Quadrature points at each refinement level
@@ -470,6 +471,7 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
     _nQTotal = _nQTotalForRef[_nRefinementLevels - 1];
 }
 unsigned Settings::GetNQTotalForRef( unsigned level ) const { return _nQTotalForRef[level]; }
+VectorU Settings::GetNQTotalForRef() const { return _nQTotalForRef; }
 unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }
 
 // plot

@@ -512,6 +512,8 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         MatVec uQFullProc = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
         if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
         prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
+        prevSettings->SetNQTotalForRef( _settings->GetNQTotalForRef() );
+        prevSettings->SetQuadLevel( _settings->GetQuadLevel() );
         Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
         for( unsigned j = 0; j < _nCells; ++j ) {
             _closure->U( uQFullProc[j], intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
