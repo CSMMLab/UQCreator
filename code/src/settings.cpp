@@ -436,7 +436,6 @@ unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotal
 unsigned Settings::GetPolyDegreeforRefLevel( unsigned level ) const { return _refinementLevel[level]; }
 GridType Settings::GetGridType() const { return _gridType; }
 VectorU Settings::GetQuadLevel() const { return _quadLevel; }
-void Settings::SetQuadLevel( const VectorU& quadLevel ) { _quadLevel = quadLevel; }
 std::vector<unsigned> Settings::GetIndicesQforRef( unsigned level ) const { return _kIndicesAtRef[level]; }
 
 // Set Total number of Quadrature points at each refinement level

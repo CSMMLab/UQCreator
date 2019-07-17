@@ -170,7 +170,6 @@ class Settings
     unsigned GetNQTotalForRef( unsigned level ) const;
     VectorU GetNQTotalForRef() const;
     VectorU GetQuadLevel() const;
-    void SetQuadLevel( const VectorU& quadLevel );
     std::vector<std::vector<unsigned>> GetPolyIndices() const;
     unsigned GetNRefinementLevels() const;
     unsigned GetNRefinementLevels( unsigned retardation ) const;

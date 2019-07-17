@@ -511,17 +511,16 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
     if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
         MatVec uQFullProc = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
         if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
-        prevSettings->SetNQuadPoints( _settings->GetNQuadPoints() );
-        prevSettings->SetNQTotalForRef( _settings->GetNQTotalForRef() );
-        prevSettings->SetQuadLevel( _settings->GetQuadLevel() );
-        Closure* intermediateClosure = Closure::Create( prevSettings );    // closure with old nMoments and new Quadrature set
         for( unsigned j = 0; j < _nCells; ++j ) {
-            _closure->U( uQFullProc[j], intermediateClosure->EvaluateLambda( _lambda[j] ) );    // solution at fine Quadrature nodes
+            // compute solution with low moment order at fine Quadrature nodes
+            _closure->U( uQFullProc[j], _closure->EvaluateLambda( _lambda[j] ) );
+
+            // compute higher order moments
             auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
             u[j].resize( _nStates, _nTotal );
-            u[j] = uCurrent;    // new Moments of size new nMoments
+            u[j] = uCurrent;    // new Moments of size _nTotal
 
-            // compute lambda with size newMoments
+            // compute lambda with size _nTotal
             Matrix lambdaOld = _lambda[j];
             _lambda[j].resize( _nStates, _nTotal );
             for( unsigned s = 0; s < _nStates; ++s ) {
@@ -533,7 +532,6 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         }
         _closure->SetMaxIterations( maxIterations );
         // delete reload closures and settings
-        delete intermediateClosure;
         delete prevSettings;
     }
     if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete prevClosure;
