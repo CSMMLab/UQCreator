@@ -238,7 +238,7 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     double uR   = 1.03 * 1e5;
     double TR   = 207.757;
     if( x[0] < 0.0 ) {
-        y[0]                  = 0.0;
+        y[0]                  = 1e-5;
         y[_nMoments + 0]      = rhoL / _rhoRef;
         y[_nMoments + 1]      = rhoL * uL / ( _rhoRef * _aRef );
         double pL             = TL * ( _R * rhoL ) / _pRef;
@@ -247,7 +247,7 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
         y[_nMoments + 2]      = kineticEnergyL + innerEnergyL;
     }
     else {
-        y[0]                  = 0.0;
+        y[0]                  = 1e-5;
         y[_nMoments + 0]      = rhoR / _rhoRef;
         y[_nMoments + 1]      = rhoR * uR / ( _rhoRef * _aRef );
         double pR             = TR * ( _R * rhoR ) / _pRef;
@@ -339,7 +339,7 @@ Vector RadiationHydrodynamics1D::G( const Vector& u, const Vector& v, const Vect
     }
 
     // write radiation part on _nMoments entries
-    out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * n - 0.5 * ( vRadiation - uRadiation ) * norm( n );
+    out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * n - _c * 0.5 * ( vRadiation - uRadiation ) * norm( n );
 
     // save Euler part on return vector
     for( unsigned s = 0; s < 3; ++s ) out[_nMoments + s] = outEuler[s];    // TODO: DEBUG

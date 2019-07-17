@@ -292,7 +292,7 @@ void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const Vect
 #pragma omp parallel for
     for( unsigned j = 0; j < _nCells; ++j ) {
         out     = _problem->Source( uQ[j] ) * _closure->GetPhiTildeWfAtRef( refLevel[j] );
-        uNew[j] = uNew[j] + dt * _mesh->GetArea( j ) * out;    // TODO: check dt*dx correct?
+        uNew[j] = uNew[j] + dt * out;    // TODO: check dt*dx correct?  vorher * _mesh->GetArea( j )
     }
 }
 

@@ -354,7 +354,7 @@ Vector RadiationHydrodynamics::G( const Vector& u, const Vector& v, const Vector
     }
 
     // write radiation part on _nMoments entries
-    out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * n - 0.5 * ( vRadiation - uRadiation ) * norm( n );
+    out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * n - _c * 0.5 * ( vRadiation - uRadiation ) * norm( n );
 
     // save Euler part on return vector
     for( unsigned s = 0; s < 4; ++s ) out[_nMoments + s] = outEuler[s];    // TODO: DEBUG
