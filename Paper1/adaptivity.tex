@@ -16,11 +16,11 @@ where divisions and multiplications are performed element-wise. In this work, we
 Now we need to specify how the different building blocks of IPM can be modified to work with varying truncation orders in different cells. Let us first add dimensions to the notation of the dual iteration function $\bm d$, which has been defined in \eqref{eq:dualIterationFunction}. Now, we have 
 $\bm{d}_{\ell}:\mathbb{R}^{N_{\ell}\times p}\times\mathbb{R}^{N_{\ell}\times p}\to\mathbb{R}^{N_{\ell}\times p}$, given by
 \begin{align}\label{eq:dualIterationFunctionAd}
-\bm{d}_{\ell}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}_{\ell}(\bm{\lambda})\cdot \left(\langle \bm u_{s}(\bm{\lambda}^T\bm{\varphi}_{\ell})\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T-\bm{\hat{u}}\right),
+\bm{d}_{\ell}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{H}_{\ell}^{-1}(\bm{\lambda})\cdot \left(\langle \bm u_{s}(\bm{\lambda}^T\bm{\varphi}_{\ell})\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T-\bm{\hat{u}}\right),
 \end{align}
-where $\bm{\varphi}_{\ell}\in\mathbb{R}^{N_{\ell}}$ collects all basis functions with total degree smaller or equal to $M_\ell$. The preconditioner $\bm{B}_{\ell}$ is given by 
+where $\bm{\varphi}_{\ell}\in\mathbb{R}^{N_{\ell}}$ collects all basis functions with total degree smaller or equal to $M_\ell$. The Hessian $\bm{H}_{\ell}$ is given by 
 \begin{align*}
-\bm{B}_{\ell}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi}_{\ell})\bm{\varphi}_{\ell}\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^{-T}.
+\bm{H}_{\ell}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi}_{\ell})\otimes\bm{\varphi}_{\ell}\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^{T}.
 \end{align*}
 An adaptive version of the moment iteration \eqref{eq:momentIterationFunction} is denoted by $\bm c_{\ell}^{\bm{\ell}'}:\mathbb{R}^{N_{\ell_1'}\times p}\times \mathbb{R}^{N_{\ell_2'}\times p}\times \mathbb{R}^{N_{\ell_3'}\times p}\rightarrow \mathbb{R}^{N_{\ell}\times p}$ and given by
 \begin{align}\label{eq:adaptiveFVUpdate}

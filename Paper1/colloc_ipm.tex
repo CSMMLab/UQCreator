@@ -7,7 +7,7 @@ Similar to the unsteady case \eqref{eq:hyperbolicProblem}, we can again derive a
 \begin{align}\label{eq:MomentSystemSteady}
 \nabla\cdot\langle\bm{f}(\bm{u}(\bm{x},\bm{\xi}))\bm{\varphi}^T\rangle^T = \bm{0} \enskip \text{ in } D
 \end{align}
-which is again needed for the construction of intrusive methods. By adding a pseudo-time and using the IPM closure, we obtain the same system as in \eqref{eq:IPMmomentSystem}, i.e. Algorithm \ref{alg:IPM} can be used to iterate to a steady state solution. Note that now, the time iteration is not performed for a fixed number of time steps $N_t$, but until the condition
+which is again needed for the construction of intrusive methods. By adding a pseudo-time and using the IPM closure, we obtain the same system as in \eqref{eq:SGMomentSystem}, i.e. Algorithm \ref{alg:IPM} can be used to iterate to a steady state solution. Note that now, the time iteration is not performed for a fixed number of time steps $N_t$, but until the condition
 \begin{align}\label{eq:residualUnsteady}
 \sum_{j = 1}^{N_x} \Delta x_j \Vert \bm{\hat{u}}_j^n - \bm{\hat{u}}_j^{n-1} \Vert \leq \varepsilon
 \end{align}

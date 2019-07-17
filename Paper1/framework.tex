@@ -1,7 +1,7 @@
 \section{Discretization of the IPM system}
 \label{sec:framework}
 \subsection{Finite Volume Discretization}
-In the following, we discretize the moment system in space and time according to \cite{kusch2017maximum}. Due to the fact, that stochastic-Galerkin can be interpreted as IPM with a quadratic entropy, it suffices to only derive a discretization of the IPM moment system \eqref{eq:IPMmomentSystem}.  
+In the following, we discretize the moment system in space and time according to \cite{kusch2017maximum}. Due to the fact, that stochastic-Galerkin can be interpreted as IPM with a quadratic entropy, it suffices to only derive a discretization of the IPM moment system \eqref{eq:SGMomentSystem}.  
 Omitting initial conditions and assuming a one-dimensional spatial domain, we can write this system  as
 \begin{align*}
 \partial_t \bm{\hat u}+\partial_x \bm{F}(\bm{\hat u}) = \bm{0}
@@ -38,25 +38,26 @@ meaning that the IPM ansatz \eqref{eq:ansatz} at cell $j$ in timestep $n$ can be
 \mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{s}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
 \end{align*}
 The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. Hence, to determine the dual variables for a given moment vector $\bm{\hat{u}}$, the cost function
-\begin{align*}
+\begin{align}\label{eq:L}
 L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle_Q - \sum_{i\leq M}\bm{\lambda}_i^T \bm{\hat u}_i
-\end{align*}
-needs to be minimized, i.e. one needs to find the root of
-\begin{align*}
-\nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}_i,
-\end{align*}
-which is usually done by an iterative method. Defining the dual iteration function $\bm{d}:\mathbb{R}^{N\times p}\times\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$,
-\begin{align}\label{eq:dualIterationFunction}
-\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{B}(\bm{\lambda})\cdot \left(\langle \bm u_{s}(\bm{\lambda}^T\bm{\varphi})\bm{\varphi}^T\rangle_Q^T-\bm{\hat{u}}\right),
 \end{align}
-with an adequate preconditioner $\bm{B}$, the iteration process for spatial cell $j$ is given by
+needs to be minimized. Hence, one needs to find the root of
+\begin{align*}
+\nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}_i = \langle \bm u_s(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}_i,
+\end{align*}
+where we used $\nabla s_* \equiv \bm u_s$. The root is usually determined by using Newton's method. For simplicity, let us define the full gradient of the Lagrangian to be $\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}})\in\mathbb{R}^{N\cdot p}$, i.e. we store all entries in a vector. Newton's method uses the iteration function $\bm{d}:\mathbb{R}^{N\times p}\times\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$,
+\begin{align}\label{eq:dualIterationFunction}
+\bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{H}(\bm{\lambda})^{-1}\cdot\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}}),
+\end{align}
+where $\bm H\in\mathbb{R}^{p\cdot N\times p\cdot N}$ is the Hessian of \eqref{eq:L}, given by
+\begin{align*}
+\bm{H}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi})\otimes\bm{\varphi}\bm{\varphi}^T\rangle_Q^{T}.
+\end{align*}
+The function $\bm d$ will in the following be called dual iteration function. Now, the Newton iteration for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
 \bm{\lambda}^{(m+1)}_j = \bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j}).
 \end{align}
-The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$. A common preconditioner is the inverse Hessian of the dual problem, i.e.
-\begin{align*}
-\bm{B}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi})\bm{\varphi}\bm{\varphi}^T\rangle_Q^{-T}.
-\end{align*}
+The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$.
 To obtain a finite number of iterations for the iteration in cell $j$, a stopping criterion 
 \begin{align}\label{eq:tauCrit}
 \sum_{i=0}^p\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(m)};\bm{\hat{u}}_j^n) \right\Vert < \tau
@@ -102,7 +103,7 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 
 \subsection{Costs of evaluating the numerical flux}
 \label{sec:costNumFlux}
-A straight-forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}, which has been proposed in \cite{kusch2017maximum}. By simply taking moments of a given deterministic flux, the software can easily be extended to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. However, the need to approximate the flux by an integral seems to be numerically expensive, especially when considering that the stochastic-Galerkin method often allows an analytic computation of all arising integrals. In the following, we discuss this issue and show the advantages of our numerical flux choice by considering the stochastic Burgers' equation
+A straight-forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}. This choice of the numerical flux is common in the field of transport theory, where it is called the \textit{kinetic flux}. By simply taking moments of a given deterministic flux, the software can easily be extended to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. However, the need to approximate the flux by an integral seems to be numerically expensive, especially when considering that the stochastic-Galerkin method often allows an analytic computation of all arising integrals. In the following, we discuss this issue and show the advantages of our numerical flux choice by considering the stochastic Burgers' equation
 \begin{align*}
 \partial_t u + \partial_x \frac{u^2}{2} &= 0,\\
 u(t=0,x,\xi) &= u_{IC}(x,\xi).
