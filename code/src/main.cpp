@@ -297,10 +297,14 @@ void initErrorLogger( std::string configFile, std::string filename ) {
 void PrintInit( std::string configFile ) {
     auto log = spdlog::get( "event" );
     log->info( "UQCreator" );
-    log->info( "==================================" );
-    log->info( "" );
+    log->info( "================================================================" );
+    log->info( "Git commit hash:\t{0}", GIT_HASH );
     log->info( "Config file:\t{0}", configFile );
-    log->info( "==================================" );
+    int nprocs;
+    MPI_Comm_size( MPI_COMM_WORLD, &nprocs );
+    log->info( "MPI Threads:\t{0}", nprocs );
+    log->info( "OMP Threads:\t{0}", omp_get_max_threads() );
+    log->info( "================================================================" );
     std::ifstream ifs( configFile );
     if( ifs.is_open() ) {
         std::string line;

@@ -4,7 +4,7 @@ set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native" )
 set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -march=native -pg -no-pie" )
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall" )
+set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Werror" )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../bin/" )
 
@@ -27,5 +27,13 @@ find_package( VTK REQUIRED COMPONENTS vtkIOGeometry vtkFiltersCore )
 
 include_directories( ${CMAKE_SOURCE_DIR}/../ext/cpptoml/include )
 include_directories( ${CMAKE_SOURCE_DIR}/../ext/spdlog/include )
+
+execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+add_definitions('-DGIT_HASH="${GIT_HASH}"')
 
 target_link_libraries( ${CMAKE_PROJECT_NAME} ${LAPACK_LIBRARIES} ${VTK_LIBRARIES} ${MPI_LIBRARIES} -lstdc++fs)
