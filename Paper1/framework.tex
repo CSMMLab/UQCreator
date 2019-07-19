@@ -103,7 +103,8 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 
 \subsection{Costs of evaluating the numerical flux}
 \label{sec:costNumFlux}
-A straight-forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}. This choice of the numerical flux is common in the field of transport theory, where it is called the \textit{kinetic flux}. By simply taking moments of a given deterministic flux, the software can easily be extended to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. However, the need to approximate the flux by an integral seems to be numerically expensive, especially when considering that the stochastic-Galerkin method often allows an analytic computation of all arising integrals. In the following, we discuss this issue and show the advantages of our numerical flux choice by considering the stochastic Burgers' equation
+
+A straight-forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}. This choice of the numerical flux is common in the field of transport theory, where it is called the \textit{kinetic flux}. By simply taking moments of a given deterministic flux, the software can easily be extended to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. However, the need to approximate the flux by an integral seems to be numerically expensive, especially when considering that the stochastic-Galerkin method often allows an analytic computation of all arising integrals, see for example \cite{hu2015stochastic}. In the following, we discuss this issue and show the advantages of our numerical flux choice by considering the stochastic Burgers' equation
 \begin{align*}
 \partial_t u + \partial_x \frac{u^2}{2} &= 0,\\
 u(t=0,x,\xi) &= u_{IC}(x,\xi).
@@ -112,7 +113,7 @@ The scalar random variable $\xi$ is uniformly distributed in the interval $[-1,1
 \begin{align*}
 \partial_t \hat u_i + \partial_x \frac12\sum_{n,m = 0}^M \hat u_n \hat u_m \langle \varphi_n\varphi_m\varphi_i \rangle = 0.
 \end{align*}
-Defining the matrices $\bm C_i := \langle \bm\varphi\bm\varphi^T\varphi_i\rangle\in\mathbb{R}^{M\times M}$ gives
+Defining the matrices $\bm C_i := \langle \bm\varphi\bm\varphi^T\varphi_i\rangle\in\mathbb{R}^{N\times N}$ gives
 \begin{align*}
 \partial_t \bm{\hat u} + \partial_x \bm F(\bm{\hat u}) = 0
 \end{align*}
