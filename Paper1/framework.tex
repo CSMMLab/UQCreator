@@ -101,23 +101,14 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 \label{alg:IPM}
 \end{algorithm}
 
-\subsection{Costs of evaluating the numerical flux}
+\subsection{Properties of the kinetic flux}
 \label{sec:costNumFlux}
 
-A straight-forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}. This choice of the numerical flux is common in the field of transport theory, where it is called the \textit{kinetic flux}. By simply taking moments of a given deterministic flux, the software can easily be extended to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. Therefore, we call the proposed numerical method \textit{semi-intrusive}.
+A straight-forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}. This choice of the numerical flux is common in the field of transport theory, where it is called the \textit{kinetic flux}. By simply taking moments of a given deterministic flux, the method can easily be applied to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. Therefore, we call the proposed numerical method \textit{semi-intrusive}.
 
-Moreover, by computing the numerical flux with a quadrature rule, we minimize numerical costs: When physical fluxes or source terms in the deterministic equation are polynomials, numerical fluxes for the SG moment system \eqref{eq:SGMomentSystem} can be computed analytically before running the program. See for example \cite{hu2015stochastic,tryoen2010instrusive} for the numerical flux computation or \cite{hu2016stochastic} for the computation of source terms. Even when terms in the deterministic problem are not polynomials, an approximation which again allows a precomputation can be constructed \cite{debusschere2004numerical}. However, analytically precomputing terms in the SG moment system is often less efficient than using techniques as stratified or latin hypercube sampling \cite[Section 6]{ghanem1998stochastic}. In the following, we briefly discuss the number of operations needed when precomputing integrals versus the use of a kinetic flux, i.e. the sampling is performed by a quadrature rule.
+Moreover, by computing the numerical flux with a quadrature rule, we minimize numerical costs: When physical fluxes or source terms in the deterministic equation are polynomials, numerical fluxes for the SG moment system \eqref{eq:SGMomentSystem} can be computed analytically before running the program. Even when terms in the deterministic problem are not polynomials, an approximation which again allows a precomputation can be constructed \cite{debusschere2004numerical}. See for example \cite{hu2015stochastic,tryoen2010instrusive} for the numerical flux computation or \cite{hu2016stochastic} for the computation of source terms. However, analytically precomputing terms in the SG moment system is often less efficient than using techniques as stratified or latin hypercube sampling \cite[Section 6]{ghanem1998stochastic}. In the following, we briefly discuss the number of operations needed when precomputing integrals versus the use of a kinetic flux for Burgers' equation.
 
-We consider the stochastic Burgers' equation
-\begin{align*}
-\partial_t u + \partial_x \frac{u^2}{2} &= 0,\\
-u(t=0,x,\xi) &= u_{IC}(x,\xi).
-\end{align*}
-The scalar random variable $\xi$ is uniformly distributed in the interval $[-1,1]$, hence the gPC basis functions $\bm\varphi=(\varphi_0,\cdots,\varphi_M)^T$ are the Legendre polynomials. Choosing the SG ansatz \eqref{eq:SGClosure} and testing with the gPC basis functions yields the SG moment system
-\begin{align*}
-\partial_t \hat u_i + \partial_x \frac12\sum_{n,m = 0}^M \hat u_n \hat u_m \langle \varphi_n\varphi_m\varphi_i \rangle = 0.
-\end{align*}
-Defining the matrices $\bm C_i := \langle \bm\varphi\bm\varphi^T\varphi_i\rangle\in\mathbb{R}^{N\times N}$ gives
+With the matrices $\bm C_i := \langle \bm\varphi\bm\varphi^T\varphi_i\rangle\in\mathbb{R}^{N\times N}$ the Burgers' SG moment system reads
 \begin{align*}
 \partial_t \bm{\hat u} + \partial_x \bm F(\bm{\hat u}) = 0
 \end{align*}
@@ -134,4 +125,4 @@ Counting the number of operations, one observes that our choice of the numerical
 \begin{align*}
 G_i(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) &= \sum_{k=1}^Q w_k g(u^{(\ell)}_k,u^{(r)}_k)a_{ki}f_{\Xi}(\xi_k),
 \end{align*}
-which again requires $O(N\cdot Q)$ operations, i.e. the costs are $O(N^2)$. The evaluation of \eqref{eq:numFluxAnalytic} however requires $O(N^3)$ operations.
+which again requires $O(N\cdot Q)$ operations, i.e. the costs are $O(N^2)$. The evaluation of \eqref{eq:numFluxAnalytic} however requires $O(N^3)$ operations. When not using a quadratic entropy in the IPM method, integrals cannot be evaluated analytically and quadrature rules are not exact. We will study the approximation properties of IPM with different quadrature orders in Section~TODO
