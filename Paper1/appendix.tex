@@ -1,4 +1,34 @@
 \appendix
+\section{Costs of evaluating the numerical flux}
+\label{app:costNumFlux}
+In the following, we briefly discuss the number of operations needed when precomputing integrals versus the use of a kinetic flux for Burgers' equation. The stochastic Burgers' equation reads
+\begin{align*}
+\partial_t u + \partial_x \frac{u^2}{2} &= 0,\\
+u(t=0,x,\xi) &= u_{IC}(x,\xi).
+\end{align*}
+The scalar random variable $\xi$ is uniformly distributed in the interval $[-1,1]$, hence the gPC basis functions $\bm\varphi=(\varphi_0,\cdots,\varphi_M)^T$ are the Legendre polynomials. Choosing the SG ansatz \eqref{eq:SGClosure} and testing with the gPC basis functions yields the SG moment system
+\begin{align*}
+\partial_t \hat u_i + \partial_x \frac12\sum_{n,m = 0}^M \hat u_n \hat u_m \langle \varphi_n\varphi_m\varphi_i \rangle = 0.
+\end{align*}
+Defining the matrices $\bm C_i := \langle \bm\varphi\bm\varphi^T\varphi_i\rangle\in\mathbb{R}^{N\times N}$ gives
+\begin{align*}
+\partial_t \bm{\hat u} + \partial_x \bm F(\bm{\hat u}) = 0
+\end{align*}
+with $F_i(\bm{\hat u}) = \frac12\bm{\hat u}^T\bm C_i\bm{\hat u}$. Note that $\bm{C}_i$ can be computed analytically, hence choosing a Lax-Friedrichs flux
+\begin{align}\label{eq:numFluxAnalytic}
+G_i^{(LF)}(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) =\frac{1}{4}\left(\bm{\hat u}_{\ell}^T \bm{C}_i \bm{\hat u}_{\ell}+\bm{\hat u}_{r}^T \bm{C}_i \bm{\hat u}_{r}\right) - \frac{\Delta x}{2\Delta t}(\bm{\hat u}_{r}-\bm{\hat u}_{\ell})_i
+\end{align}
+requires no integral evaluations. Recall, that the numerical flux choice made in this work gives
+\begin{align}\label{eq:numericalFluxIPMBurgers}
+ \bm{G}(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) = \sum_{k=1}^Q w_k g(\mathcal{U}(\bm{\hat u}_{\ell};\xi_k),\mathcal{U}(\bm{\hat u}_{r};\xi_k))\bm{\varphi}(\xi_k)f_{\Xi}(\xi_k),
+\end{align}
+where $\mathcal{U}$ is the SG ansatz \eqref{eq:SGClosure}. When the chosen deterministic flux $g$ is Lax-Friedrichs, the order of the polynomials inside the sum is $3M=3(N-1)$. Choosing a Gauss-Lobatto quadrature rule, $Q = \frac32 N -1$ quadrature points suffice for an exact computation of the numerical flux. Indeed, with this choice of quadrature points, the numerical fluxes \eqref{eq:numFluxAnalytic} and \eqref{eq:numericalFluxIPMBurgers} are equivalent. 
+Counting the number of operations, one observes that our choice of the numerical flux \eqref{eq:numericalFluxIPMBurgers} is significantly cheaper: When computing and storing the values in a matrix $\bm A\in\mathbb{R}^{Q\times N}$ with entries $a_{ki} = \varphi_i(\xi_k)$ before running the program, the numerical flux \eqref{eq:numericalFluxIPMBurgers} can be split into two parts. First, we determine the SG solution at all quadrature points, i.e. we compute $\bm{u}^{(\ell)} := \bm A \bm{\hat u}_{\ell}$ and $\bm{u}^{(r)} := \bm A \bm{\hat u}_{r}$ which requires $O(N\cdot Q)$ operations. These solution values are then used to compute the numerical flux
+\begin{align*}
+G_i(\bm{\hat u}_{\ell},\bm{\hat u}_{r}) &= \sum_{k=1}^Q w_k g(u^{(\ell)}_k,u^{(r)}_k)a_{ki}f_{\Xi}(\xi_k),
+\end{align*}
+which again requires $O(N\cdot Q)$ operations, i.e. the costs are $O(N^2)$. The evaluation of \eqref{eq:numFluxAnalytic} however requires $O(N^3)$ operations.
+
 \section{IPM for the 2D Euler equations}
 \label{app:IPM2DEuler}
 
