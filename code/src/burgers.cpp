@@ -20,10 +20,10 @@ Burgers::Burgers( Settings* settings ) : Problem( settings ) {
 
 Vector Burgers::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     if( u[0] * nUnit[0] > 0 ) {
-        return F( u[0] ) * n[0];
+        return F( u[0] ) * nUnit[0];
     }
     else {
-        return F( v[0] ) * n[0];
+        return F( v[0] ) * nUnit[0];
     }
 }
 

@@ -35,7 +35,7 @@ void Line::SetupEdges() {
         B = _nodes[0];
         A = _nodes[1];
     }
-    double length = 1;
+    double length = _area;
     Vector unitNormal{1};
     Vector scaledNormal = length * unitNormal;
 

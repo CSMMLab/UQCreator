@@ -105,7 +105,6 @@ void MomentSolver::Solve() {
 
         // broadcast refinemt level to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
-            // refinementLevel[j] = 0;    // TODO: rausnehmen
             MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
         }
 
@@ -144,6 +143,7 @@ void MomentSolver::Solve() {
             if( dtCurrent < dtMinOnPE ) dtMinOnPE = dtCurrent;
         }
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
+        _settings->SetDT( dt );
         t += dt;
         ++timeIndex;
 
@@ -209,7 +209,6 @@ void MomentSolver::Solve() {
             }
         }
     }
-    std::cout << "Writing mean and var DONE." << std::endl;
 
     if( _settings->HasReferenceFile() || _settings->HasExactSolution() ) {
         Vector a( 2 );
@@ -291,6 +290,7 @@ void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const Vect
     Matrix out( _nStates, _nTotal );    // could also be allocated before and then stored in class, be careful with openmp!!!
 #pragma omp parallel for
     for( unsigned j = 0; j < _nCells; ++j ) {
+        // if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
         out     = _problem->Source( uQ[j] ) * _closure->GetPhiTildeWfAtRef( refLevel[j] );
         uNew[j] = uNew[j] + dt * out;    // TODO: check dt*dx correct?  vorher * _mesh->GetArea( j )
     }

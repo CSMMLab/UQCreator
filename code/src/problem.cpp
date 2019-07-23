@@ -4,6 +4,7 @@
 #include "euler.h"
 #include "euler2d.h"
 #include "pnequations.h"
+#include "pnequations1d.h"
 #include "problem.h"
 #include "radiationhydrodynamics.h"
 #include "radiationhydrodynamics1d.h"
@@ -36,6 +37,9 @@ Problem* Problem::Create( Settings* settings ) {
     }
     else if( settings->GetProblemType() == ProblemType::P_PNEQUATIONS_2D ) {
         return new PNEquations( settings );
+    }
+    else if( settings->GetProblemType() == ProblemType::P_PNEQUATIONS_1D ) {
+        return new PNEquations1D( settings );
     }
     else if( settings->GetProblemType() == ProblemType::P_RADIATIONHYDRO_2D ) {
         return new RadiationHydrodynamics( settings );

@@ -37,12 +37,11 @@ Vector Euler::G( const Vector& u, const Vector& v, const Vector& nUnit, const Ve
     double lambdaMax = uVProjected + aV;
 
     if( lambdaMin >= 0 )
-        return F( u ) * n;
+        return F( u ) * nUnit;
     else if( lambdaMax <= 0 )
-        return F( v ) * n;
+        return F( v ) * nUnit;
     else {
-        return ( 1.0 / ( lambdaMax - lambdaMin ) ) *
-               ( lambdaMax * F( u ) * n - lambdaMin * F( v ) * n + lambdaMax * lambdaMin * ( v - u ) * norm( n ) );
+        return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( u ) * nUnit - lambdaMin * F( v ) * nUnit + lambdaMax * lambdaMin * ( v - u ) );
     }
 }
 
@@ -98,9 +97,9 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
     double gamma = 1.4;
 
     double rhoL = 1.0;
-    double rhoR = 0.3;
+    double rhoR = 0.1;
     double pL   = 1.0;
-    double pR   = 0.3;
+    double pR   = 0.125;
     double uL   = 0.0;
     double uR   = 0.0;
     Vector y( _nStates );
@@ -138,8 +137,8 @@ Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const
     double rho_l = 1.0;
     double P_l   = 1.0;
     double u_l   = 0.0;
-    double rho_r = 0.3;
-    double P_r   = 0.3;
+    double rho_r = 0.1;
+    double P_r   = 0.125;
     double u_r   = 0.0;
 
     if( xi.size() > 1 ) {

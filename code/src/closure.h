@@ -17,7 +17,6 @@ class Closure
 
   protected:
     Settings* _settings;
-    std::vector<Polynomial*> _basis;
     std::vector<Polynomial*> _quad;
     QuadratureGrid* _quadGrid;
     std::vector<Vector> _xiGrid;
@@ -119,7 +118,6 @@ class Closure
      */
     unsigned GetMaxIterations() const;
 
-    std::vector<Polynomial*> GetBasis();
     std::vector<Polynomial*> GetQuadrature();
     QuadratureGrid* GetQuadratureGrid();
 };

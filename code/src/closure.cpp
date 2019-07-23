@@ -17,12 +17,9 @@ Closure::Closure( Settings* settings )
       _maxIterations( _settings->GetMaxIterations() ) {
     _log = spdlog::get( "event" );
     // initialize classes: Basis Functions and Quadrature rules are defined for Legendre and Hermite
-    _basis.resize( 2 );
     _quad.resize( 2 );
-    _basis[0] = Polynomial::Create( _settings, _nMoments, DistributionType::D_LEGENDRE );
-    _basis[1] = Polynomial::Create( _settings, _nMoments, DistributionType::D_HERMITE );
-    _quad[0]  = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_LEGENDRE );
-    _quad[1]  = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_HERMITE );
+    _quad[0] = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_LEGENDRE );
+    _quad[1] = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_HERMITE );
 
     // get number of uncertain dimensions
     _numDimXi = _settings->GetNDimXi();
@@ -67,9 +64,9 @@ Closure::Closure( Settings* settings )
                 if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                 if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
                 _phiTilde( k, i ) *=
-                    _basis[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _basis[n]->L2Norm( indices[i][l] );    // sqrt( 2.0 * i + 1.0 );
+                    _quad[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _quad[n]->L2Norm( indices[i][l] );    // sqrt( 2.0 * i + 1.0 );
                 _phiTildeF( k, i ) *=
-                    _basis[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _basis[n]->L2Norm( indices[i][l] ) * _basis[n]->fXi( _xiGrid[k][l] );
+                    _quad[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _quad[n]->L2Norm( indices[i][l] ) * _quad[n]->fXi( _xiGrid[k][l] );
             }
             _phiTildeWf( k, i ) = _phiTildeF( k, i ) * _wGrid[_settings->GetNRefinementLevels() - 1][k];
             _phiTildeVec[k][i]  = _phiTilde( k, i );
@@ -97,8 +94,7 @@ Closure::Closure( Settings* settings )
 }
 
 Closure::~Closure() {
-    for( unsigned l = 0; l < _basis.size(); ++l ) {
-        delete _basis[l];
+    for( unsigned l = 0; l < _quad.size(); ++l ) {
         delete _quad[l];
     }
     delete _quadGrid;
@@ -240,33 +236,23 @@ Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda, unsigned levelOld, uns
 void Closure::EvaluateLambda( Matrix& out, const Matrix& lambda ) const { out = lambda * _phiTildeTrans; }
 
 void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    // std::cout << "Start Hessian" << std::endl;
     Vector uKinetic( _nStates, 0.0 );
     unsigned nTotal = _nTotalForRef[refLevel];
     g.reset();
 
-    // std::cout << "Lambda = " << lambda * _phiTildeVec[nQTotal - 1] << std::endl;
-
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
         U( uKinetic, EvaluateLambda( lambda, k, nTotal ) );
-        // std::cout << "uKinetic = " << uKinetic << std::endl;
         for( unsigned i = 0; i < nTotal; ++i ) {
             for( unsigned l = 0; l < _nStates; ++l ) {
                 g[l * nTotal + i] += uKinetic[l] * _phiTildeF( k, i ) * _wGrid[refLevel][k];
             }
         }
     }
-    // std::cout << "uKinetic = " << uKinetic << std::endl;
-    // std::cout << "g int = " << g << std::endl;
 
     SubstractVectorMatrixOnVector( g, u, _nTotalForRef[refLevel] );
-    // std::cout << "End Gradient" << std::endl;
 }
 
 void Closure::Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel ) {
-    // std::cout << "Start Hessian" << std::endl;
-    // std::cout << "refLevel " << refLevel << ", nQ = " << _nQTotalForRef[refLevel] << ", h size " << _hPartial.size()
-    //          << ", nTotal = " << _nTotalForRef[refLevel] << ", size H " << H.columns() << " " << H.rows() << std::endl;
     H.reset();
     Matrix dUdLambda( _nStates, _nStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
     unsigned nTotal = _nTotalForRef[refLevel];
@@ -283,7 +269,6 @@ void Closure::Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel ) {
             }
         }
     }
-    // std::cout << "End Hessian" << std::endl;
 }
 
 void Closure::AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y, unsigned nTotal ) const {
@@ -303,8 +288,6 @@ void Closure::SubstractVectorMatrixOnVector( Vector& b, const Matrix& A, unsigne
 }
 
 void Closure::DS( Vector& ds, const Vector& u ) const {}
-
-std::vector<Polynomial*> Closure::GetBasis() { return _basis; }
 
 std::vector<Polynomial*> Closure::GetQuadrature() { return _quad; }
 

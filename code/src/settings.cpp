@@ -39,14 +39,6 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             log->error( "[inputfile] [mesh] 'dimension' not set!" );
             validConfig = false;
         }
-        auto outputFile = mesh->get_as<std::string>( "outputFile" );
-        if( outputFile ) {
-            _outputFile = _inputDir.string() + "/" + _outputDir.string() + "/" + *outputFile;
-        }
-        else {
-            log->error( "[inputfile] [mesh] 'outputFile' not set!" );
-            validConfig = false;
-        }
 
         // section general
         auto general           = file->get_table( "general" );
@@ -68,8 +60,11 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( problemTypeString->compare( "ShallowWater2D" ) == 0 ) {
                 _problemType = ProblemType::P_SHALLOWWATER_2D;
             }
-            else if( problemTypeString->compare( "PNEquations2D" ) == 0 ) {
-                _problemType = ProblemType::P_PNEQUATIONS_2D;
+            else if( problemTypeString->compare( "PNEquations" ) == 0 ) {
+                if( _meshDimension == 1 )
+                    _problemType = ProblemType::P_PNEQUATIONS_1D;
+                else if( _meshDimension == 2 )
+                    _problemType = ProblemType::P_PNEQUATIONS_2D;
             }
             else if( problemTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
                 if( _meshDimension == 1 )
@@ -93,6 +88,14 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
         }
         else {
             log->error( "[inputfile] [general] 'outputDir' not set!" );
+            validConfig = false;
+        }
+        auto outputFile = mesh->get_as<std::string>( "outputFile" );
+        if( outputFile ) {
+            _outputFile = _inputDir.string() + "/" + _outputDir.string() + "/" + *outputFile;
+        }
+        else {
+            log->error( "[inputfile] [mesh] 'outputFile' not set!" );
             validConfig = false;
         }
 

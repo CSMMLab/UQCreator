@@ -330,16 +330,17 @@ Vector RadiationHydrodynamics1D::G( const Vector& u, const Vector& v, const Vect
     double lambdaMax = uVProjected + aV;
 
     if( lambdaMin >= 0 )
-        outEuler = FEuler( uEuler ) * n;
+        outEuler = FEuler( uEuler ) * nUnit;
     else if( lambdaMax <= 0 )
-        outEuler = FEuler( vEuler ) * n;
+        outEuler = FEuler( vEuler ) * nUnit;
     else {
-        outEuler = ( 1.0 / ( lambdaMax - lambdaMin ) ) *
-                   ( lambdaMax * FEuler( uEuler ) * n - lambdaMin * FEuler( vEuler ) * n + lambdaMax * lambdaMin * ( vEuler - uEuler ) * norm( n ) );
+        outEuler = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * FEuler( uEuler ) * nUnit - lambdaMin * FEuler( vEuler ) * nUnit +
+                                                           lambdaMax * lambdaMin * ( vEuler - uEuler ) * norm( nUnit ) );
     }
 
     // write radiation part on _nMoments entries
-    out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * n - _c * 0.5 * ( vRadiation - uRadiation ) * norm( n );
+    // std::cout << "c = " << _c << ", LF = " << norm( n ) / _settings->GetDT() << std::endl;
+    out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * nUnit - 0.5 * ( vRadiation - uRadiation ) * norm( n ) / _settings->GetDT();
 
     // save Euler part on return vector
     for( unsigned s = 0; s < 3; ++s ) out[_nMoments + s] = outEuler[s];    // TODO: DEBUG

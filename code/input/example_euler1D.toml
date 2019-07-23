@@ -5,7 +5,7 @@ writeFrequency = 10
 
 [mesh]
 dimension = 1
-numberOfCells = 5000
+numberOfCells = 2000
 a = 0
 b = 1
 outputFile = "euler_shock"
@@ -14,15 +14,15 @@ outputFile = "euler_shock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.05]]
-CFL = 0.5
+distribution = [["Legendre"],[0.0]]
+CFL = 0.75
 tEnd = 0.23
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
 closure = "Euler"
-moments = [["totalDegree"],[2,3,4,5,6,7,8,9,10,11,12,13]]
-quadPoints = [["sparseGrid"],[2,2,3,3,3,4,4,4,4,4,5,5]]
+moments = [["maxDegree"],[0]]
+quadPoints = [["tensorizedGrid"],[2]]
 # quadPoints = [["tensorizedGrid"],[ 7 ]]
 maxIterations = 200
 epsilon = 5e-5
