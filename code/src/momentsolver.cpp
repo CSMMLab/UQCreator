@@ -76,7 +76,7 @@ void MomentSolver::Solve() {
         // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
             //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
             _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
@@ -94,8 +94,8 @@ void MomentSolver::Solve() {
         // determine refinement level of cells on current PE
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
-
+            // double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+            double indicator = 0.0;
             if( indicator > _settings->GetRefinementThreshold() &&
                 refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels( retCounter ) - 1 )
                 refinementLevel[_cellIndexPE[j]] += 1;
@@ -322,7 +322,7 @@ void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, co
     // loop over all cells and check refinement indicator
     Matrix refinementIndicatorPlot( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
-        double indicator                = ComputeRefIndicator( refinementLevel, u[j], refinementLevel[j] );
+        double indicator                = 1.0;
         refinementIndicatorPlot( 0, j ) = indicator;    // modify for multiD
         refinementIndicatorPlot( 1, j ) = double( refinementLevel[j] );
     }

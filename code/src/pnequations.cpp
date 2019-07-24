@@ -3,7 +3,7 @@
 PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 2 ) {
     _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
     _settings->SetNStates( _nStates );
-    _settings->SetSource( true );
+    _settings->SetSource( false );
     _sigmaA = 0.0;    // absorption coefficient
     _sigmaS = 1.0;    // scattering coefficient
     _sigmaT = _sigmaA + _sigmaS;
@@ -152,7 +152,6 @@ void PNEquations::SetupSystemMatrices() {
 }
 
 Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-
     return F( 0.5 * ( u + v ) ) * n -
            0.5 * ( v - u ) * norm( n ) / _settings->GetDT();    // - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
 }

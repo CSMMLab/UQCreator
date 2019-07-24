@@ -255,6 +255,10 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
         double innerEnergyR   = ( pR / ( _gamma - 1.0 ) );
         y[_nMoments + 2]      = kineticEnergyR + innerEnergyR;
     }
+    double x0    = 0.0;
+    double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
+    double floor = 1e-7;
+    y[0]         = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) ) / 4.0 / s2 ) );
     return y;
 }
 /*
@@ -341,6 +345,7 @@ Vector RadiationHydrodynamics1D::G( const Vector& u, const Vector& v, const Vect
     // write radiation part on _nMoments entries
     // std::cout << "c = " << _c << ", LF = " << norm( n ) / _settings->GetDT() << std::endl;
     out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * nUnit - 0.5 * ( vRadiation - uRadiation ) * norm( n ) / _settings->GetDT();
+    // out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * nUnit - 0.5 * _c * ( vRadiation - uRadiation ) * norm( nUnit );
 
     // save Euler part on return vector
     for( unsigned s = 0; s < 3; ++s ) out[_nMoments + s] = outEuler[s];    // TODO: DEBUG

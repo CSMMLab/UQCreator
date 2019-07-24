@@ -97,8 +97,8 @@ template <class T> void Matrix<T>::operator=( const Matrix<T>& other ) {
     unsigned columns = std::min( _columns, other._columns );
     unsigned rows    = std::min( _rows, other._rows );
 
-    for( unsigned j = 0; j < columns; ++j ) {
-        for( unsigned i = 0; i < rows; ++i ) {
+    for( unsigned i = 0; i < rows; ++i ) {
+        for( unsigned j = 0; j < columns; ++j ) {
             ( *this )( i, j ) = other( i, j );
         }
     }
