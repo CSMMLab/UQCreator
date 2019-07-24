@@ -209,11 +209,11 @@ double PNEquations1D::ComputeDt( const Matrix& u, double dx, unsigned level ) co
 Vector PNEquations1D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
     double x0    = 0.0;
-    double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
+    double s2    = 1.0 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
     double floor = 1e-7;
     _sigma       = _settings->GetSigma();
 
-    y[0] = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) ) / 4.0 / s2 ) );
+    y[0] = std::fmax( floor, 1.0 / sqrt( 2.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) ) / 2.0 / s2 ) );
 
     return y;
 }
