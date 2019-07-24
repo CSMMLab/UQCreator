@@ -248,17 +248,25 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     }
     else {
         y[0]                  = 1e-5;
+        y[_nMoments + 0]      = rhoL / _rhoRef;
+        y[_nMoments + 1]      = rhoL * uL / ( _rhoRef * _aRef );
+        double pL             = TL * ( _R * rhoL ) / _pRef;
+        double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
+        double innerEnergyL   = ( pL / ( _gamma - 1.0 ) );
+        y[_nMoments + 2]      = kineticEnergyL + innerEnergyL;
+        /*
+        y[0]                  = 1e-5;
         y[_nMoments + 0]      = rhoR / _rhoRef;
         y[_nMoments + 1]      = rhoR * uR / ( _rhoRef * _aRef );
         double pR             = TR * ( _R * rhoR ) / _pRef;
         double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
         double innerEnergyR   = ( pR / ( _gamma - 1.0 ) );
-        y[_nMoments + 2]      = kineticEnergyR + innerEnergyR;
+        y[_nMoments + 2]      = kineticEnergyR + innerEnergyR;*/
     }
     double x0    = 0.0;
     double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
     double floor = 1e-7;
-    y[0]         = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) ) / 4.0 / s2 ) );
+    // y[0]         = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) ) / 4.0 / s2 ) );
     return y;
 }
 /*

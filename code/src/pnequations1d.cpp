@@ -169,9 +169,9 @@ Matrix PNEquations1D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, 
 Matrix PNEquations1D::F( const Vector& u ) {
     Matrix flux( u.size(), 1 );
 
-    // column( flux, 0 ) = _Ax * u;
+    column( flux, 0 ) = _Ax * u;
     // column( flux, 0 ) = _Ay * u;
-    column( flux, 0 ) = _Az * u;
+    // column( flux, 0 ) = _Az * u;
 
     return flux;
 }

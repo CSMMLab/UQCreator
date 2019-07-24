@@ -4,7 +4,7 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 400
+numberOfCells = 1000
 a = -1
 b = 1
 outputFile = "RadiationHydrodynamics_1D"
@@ -14,8 +14,8 @@ outputFile = "RadiationHydrodynamics_1D"
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.0]]
-CFL = 0.01 # 0.1
-tEnd = 4e-9
+CFL = 0.1 # 0.1
+tEnd = 6e-8
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler

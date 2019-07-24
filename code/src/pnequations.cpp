@@ -1,9 +1,9 @@
 #include "pnequations.h"
 
-PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 2 ) {
+PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 7 ) {
     _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
     _settings->SetNStates( _nStates );
-    _settings->SetSource( false );
+    _settings->SetSource( true );
     _sigmaA = 0.0;    // absorption coefficient
     _sigmaS = 1.0;    // scattering coefficient
     _sigmaT = _sigmaA + _sigmaS;
@@ -152,8 +152,9 @@ void PNEquations::SetupSystemMatrices() {
 }
 
 Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    return F( 0.5 * ( u + v ) ) * n -
-           0.5 * ( v - u ) * norm( n ) / _settings->GetDT();    // - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
+    return F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
+    // F( 0.5 * ( u + v ) ) * n - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
+    // return F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT(); // LF does not work since norm(n) != Area(j)
 }
 
 Matrix PNEquations::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {

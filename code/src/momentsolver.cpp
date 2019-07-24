@@ -76,7 +76,7 @@ void MomentSolver::Solve() {
         // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
             //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
             _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
