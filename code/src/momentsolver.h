@@ -18,7 +18,6 @@ class MomentSolver
 {
   private:
     Settings* _settings;
-    Closure* _closure;
     Mesh* _mesh;
     TimeSolver* _time;
     MatVec _lambda;

@@ -12,17 +12,13 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _nQTotal     = _settings->GetNQTotal();
     _nTotal      = _settings->GetNTotal();
 
-    _closure = Closure::Create( _settings );
-    _time    = TimeSolver::Create( _settings, _mesh );
+    _time = TimeSolver::Create( _settings, _mesh );
 
     _dt = _time->GetTimeStepSize();
     _settings->SetDT( _dt );
 }
 
-MomentSolver::~MomentSolver() {
-    delete _closure;
-    delete _time;
-}
+MomentSolver::~MomentSolver() { delete _time; }
 
 MatVec MomentSolver::Solve( Vector xi ) {
     auto log = spdlog::get( "event" );

@@ -341,7 +341,7 @@ int main( int argc, char* argv[] ) {
     Mesh* mesh           = Mesh::Create( settings );
     Problem* problem     = Problem::Create( settings );
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );
-    Closure* closure     = Closure::Create( settings );
+    Closure* closure     = Closure::Create( settings, quad );
 
     std::vector<MatVec> uQ;
     uQ.resize( settings->GetKEnd() - settings->GetKStart() + 1 );

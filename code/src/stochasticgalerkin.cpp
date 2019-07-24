@@ -1,6 +1,6 @@
 #include "stochasticgalerkin.h"
 
-StochasticGalerkin::StochasticGalerkin( Settings* settings ) : Closure( settings ) { _alpha = 1.0; }
+StochasticGalerkin::StochasticGalerkin( Settings* settings, QuadratureGrid* quadGrid ) : Closure( settings, quadGrid ) { _alpha = 1.0; }
 
 StochasticGalerkin::~StochasticGalerkin() {}
 

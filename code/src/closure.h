@@ -17,91 +17,27 @@ class Closure
 
   protected:
     Settings* _settings;
-    std::vector<Polynomial*> _basis;
     std::vector<Polynomial*> _quad;
-    Matrix _phiTilde;         // stores scaled basis functions evaluated at quadrature points
-    Matrix _phiTildeTrans;    // stores scaled basis functions evaluated at quadrature points
-    Matrix _phiTildeWf;       // stores scaled basis functions evaluated at quadrature points times weight and pdf
-    std::vector<Vector> _phiTildeVec;
-    MatVec _hPartial;    // stores partial matrices for Hessian computation
-    double _alpha;       // step size for Newton
+    Matrix _phiTildeWf;    // stores scaled basis functions evaluated at quadrature points times weight and pdf
+    double _alpha;         // step size for Newton
     unsigned _nMoments;
     unsigned _nQuadPoints;
     unsigned _nStates;
     unsigned _numDimXi;
     unsigned _nQTotal;
     unsigned _nTotal;
-    void Hessian( Matrix& H, const Matrix& lambda );
-    void Gradient( Vector& g, const Matrix& lambda, const Matrix& u );
     std::shared_ptr<spdlog::logger> _log;
-    Matrix _dUdLambda;    // preallocated memory dor computation of Hessian
-    std::vector<Vector> _xiGrid;
-    std::vector<Vector> _quadNodes;
-    QuadratureGrid* _quadGrid;
 
   public:
     /**
      * constructor of class Closure
      * @param pointer to problem class
      */
-    Closure( Settings* settings );
+    Closure( Settings* settings, QuadratureGrid* quadGrid );
     virtual ~Closure();
-    static Closure* Create( Settings* settings );
-    /**
-     * calculate dual vector fulfilling the moment constraint
-     * @param moment vector
-     * @param initial guess for dual vector
-     * @return correct dual vector
-     */
-    virtual void SolveClosure( Matrix& lambda, const Matrix& u );
-    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u );
-    /**
-     * calculate entropic variable from given dual vector
-     * @param dual variable
-     * @param dual variable
-     * @return entropic state
-     */
-    Vector EvaluateLambda( const Matrix& lambda, unsigned k );
-    Matrix EvaluateLambda( const Matrix& lambda ) const;
-    void EvaluateLambda( Matrix& out, const Matrix& lambda ) const;
-    Vector EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k );
-    Matrix EvaluateLambda( const Matrix& lambda, const Vector& xi );
-    Matrix EvaluateLambdaOnPE( const Matrix& lambda ) const;
-    /**
-     * calculate solution for kinetic entropy with given entropic variable
-     */
-    virtual void U( Vector& out, const Vector& Lambda ) = 0;
-    virtual void U( Matrix& out, const Matrix& Lambda ) = 0;
-    virtual Matrix U( const Matrix& Lambda )            = 0;
-    /**
-     * calculate derivative of solution for kinetic entropy with given entropic variable
-     */
-    virtual void DU( Matrix& y, const Vector& Lambda ) = 0;
+    static Closure* Create( Settings* settings, QuadratureGrid* quadGrid );
 
-    virtual void DS( Vector& ds, const Vector& u ) const;
-
-    const Vector& GetPhiTilde( int k ) { return _phiTildeVec[k]; }
-    const Matrix& GetPhiTilde() { return _phiTilde; }
     const Matrix& GetPhiTildeWf() { return _phiTildeWf; }
-    /**
-     * Add matrix A and vector b and save result in a matrix
-     */
-    void AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y ) const;
-    /**
-     * Add matrix A and vector b and save result in b
-     */
-    void SubstractVectorMatrixOnVector( Vector& b, const Matrix& A ) const;
-
-    double CalcNorm( Vector& test );
-
-    /**
-     * reset step size for Newton
-     * @param new step size
-     */
-    void SetAlpha( double alpha );
-
-    std::vector<Polynomial*> GetBasis();
-    std::vector<Polynomial*> GetQuadrature();
 };
 
 #endif    // CLOSURE_H

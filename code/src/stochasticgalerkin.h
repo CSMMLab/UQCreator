@@ -9,7 +9,7 @@ class StochasticGalerkin : public Closure
     StochasticGalerkin() = delete;
 
   public:
-    StochasticGalerkin( Settings* settings );
+    StochasticGalerkin( Settings* settings, QuadratureGrid* quadGrid );
     virtual ~StochasticGalerkin();
 
     virtual void U( Vector& out, const Vector& Lambda );

@@ -19,9 +19,9 @@ tEnd = 0.2
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
-closure = "Euler"
-moments = [["totalDegree"],[4]]
-quadPoints = [["sparseGrid"],[8]]
+closure = "StochasticGalerkin"
+moments = [["maxDegree"],[4]]
+quadPoints = [["tensorizedGrid"],[4]]
 # quadPoints = [["tensorizedGrid"],[ 7 ]]
 maxIterations = 200
 epsilon = 5e-5
