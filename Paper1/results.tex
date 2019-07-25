@@ -1,7 +1,7 @@
 \section{Results}
 \label{sec:results}
 
-\subsection{2D Euler equations}
+\subsection{2D Euler equations with a one dimensional uncertainty}
 We start by quantifying the effects of an uncertain angle of attack $\phi\sim U(0.75,1.75)$ for a NACA0012 profile computed with different methods. The stochastic Euler equations in two dimensions are given by
 \begin{align*}
 \partial_t
@@ -22,10 +22,17 @@ These equations determine the time evolution of the conserved variables $(\rho,r
 \begin{align*}
 p = (\gamma-1)\rho\left(e-\frac12(v_1^2+v_2^2)\right).
 \end{align*}
-Since the the fluid of the following test cases is air, we choose the heat capacity ratio $\gamma$ to be $1.4$. The spatial mesh discretizes the flow domain around the airfoil. At the airfoil boundary $\Gamma_{0}$, we use the Euler slip condition $\bm v^T\bm n = 0$, where $\bm n$ denotes the surface normal. At a sufficiently large distance away from the airfoil, we assume a far field flow with a given Mach number $Ma = 0.8$, pressure $p = 101,325$ Pa and a temperature of $273.15$ K. Now the angle of attack $\phi$ is uniformly distributed in the interval of $[0.75,1.75]$ degrees. I.e. we choose $\phi(\xi) = 1.25 + 0.5\xi$ where $\xi\sim U(-1,1)$.
-The aim is to quantify the effects arising from the one-dimensional uncertainty $\xi$ with different methods. The IPM methods makes use of the acceleration strategies proposed in this work. To be able to measure the quality of the obtained solutions, we compute a reference solution using stochastic-Collocation with $100$ Gauss-Lobatto quadrature points.
+Since the the fluid of the following test cases is air, we choose the heat capacity ratio $\gamma$ to be $1.4$. The spatial mesh discretizes the flow domain around the airfoil. At the airfoil boundary $\Gamma_{0}$, we use the Euler slip condition $\bm v^T\bm n = 0$, where $\bm n$ denotes the surface normal. At a sufficiently large distance away from the airfoil, we assume a far field flow with a given Mach number $Ma = 0.8$, pressure $p = 101,325$ Pa and a temperature of $273.15$ K. Now the angle of attack $\phi$ is uniformly distributed in the interval of $[0.75,1.75]$ degrees. I.e. we choose $\phi(\xi) = 1.25 + 0.5\xi$ where $\xi\sim U(-1,1)$. As commonly done, the initial condition is equal to the far field boundary values. Consequently, the wall condition at the airfoil is violated and will correct the flow solution. The computational domain is a circle with a diameter of $40$ meters. In the center, the NACA0012 airfoil with a length of one meter is located. The discretization is composed of a coarsely refined far field and a finely resolved region around the airfoil, since we are interested in the flow solution at the airfoil. Altogether, the mesh consists of 22361 triangular elements.
+
+The aim is to quantify the effects arising from the one-dimensional uncertainty $\xi$ with different methods. The IPM methods makes use of the acceleration strategies proposed in this work. To be able to measure the quality of the obtained solutions, we compute a reference solution using stochastic-Collocation with $100$ Gauss-Lobatto quadrature points. In the following, we investigate the L$^2$ error of the variance and the expectation value. Hence, when denoting the reference solution by $\bm u$, we have
+\begin{align*}
+\Vert E[\bm u] - E[\mathcal{U}] \Vert := \sqrt{\sum_{j=0}^{N_x} \Delta x_j \left( E[\bm u] - E[\mathcal{U}] \right)^2}, \enskip \Vert Var[\bm u] - Var[\mathcal{U}] \Vert := \sqrt{\sum_{j=0}^{N_x} \Delta x_j \left( Var[\bm u] - Var[\mathcal{U}] \right)^2}.
+\end{align*}
+The error is computed inside a box of one meter height and 1.1 meters length around the airfoil to prevent that small fluctuations in the coarsely refined far field influence the error.
 
 In the following, we compare stochastic-Collocation with stochastic-Galerkin and IPM as well as its proposed acceleration techniques. Note that since IPM generalizes SG, all proposed techniques can be used for this method as well. For more information on the chosen entropy and the resulting solution ansatz for IPM, see \ref{app:IPM2DEuler}.
+
+Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rule to approximate integrals. We start by investigating the effects of this quadrature has on the solution accuracy. For this, we run the IPM method with a moment order ranging from three to seven \comment{[use IPM instead of osIPM, add accuracy of SC$^3$]} using a Clenshaw-Curtis quadrature rule with level three (i.e. 9 quadrature points) and level four (i.e. 17 quadrature points). The results are given in Figure TODO. It can be seen that the error stagnates when the chosen quadrature is not sufficiently accurate. This behavior results from aliasing effects, which dominate the accuracy level. Note that SC can be interpreted as an intrusive method which uses as many moments as quadrature points to compute the numerical flux. Therefore, we can conclude that the error of SC is dominated by aliasing effects and will not reach the same accuracy level as an intrusive method with an sufficiently accurate quadrature rule. Especially for high dimensional problems
 
  and compare against Collocation with $5$ collocation points as well as SG and IPM with $5$ moments and $10$ quadrature points. Furthermore, we use convergence accelerated (caIPM) as well as convergence accelerated one-shot IPM (caosIPM), which we introduced in Sections \ref{sec:collIPM} and \ref{sec:OneShotIPM} with $10$ moments and $15$ quadrature points to converge the collocation solution with $5$ quadrature points to an entropy solution with increased accuracy.
 
