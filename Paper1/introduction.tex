@@ -77,11 +77,11 @@ A steady problem provides different opportunities to take advantage of features 
 
 The effectiveness of these acceleration ideas are tested by comparing results with stochastic-Collocation for the uncertain NACA test case as well as a bent shock tube problem. Our numerical studies show the following main results:
 \begin{itemize}
-\item The standard IPM method cannot compete with SC and SG. However when using the discussed acceleration techniques, IPM reaches a given accuracy with the shortest run time.
-\item Comparing SG with IPM, one observes that for the same number of unknowns, SG yields more accurate expectation values, whereas IPM leads to better variance approximations.
-\item By studying aliasing effects, we show that SC requires a higher number of unknowns than intrusive methods, even for one spatial dimension to reach the same accuracy level.
+\item In our test cases, the need to solve the dual problem \eqref{eq:dualProblem} when using the IPM method leads to a significantly higher run time than SC and SG. However when using the discussed acceleration techniques, IPM requires the shortest time to reach a given accuracy.
+\item Comparing SG with IPM, one observes that for the same number of unknowns, SG yields more accurate expectation values, whereas IPM shows improved variance approximations.
+\item By studying aliasing effects, we show that SC requires a higher number of unknowns than intrusive methods (even for one spatial dimension) to reach the same accuracy level.
 \end{itemize}
-Furthermore, we present a semi-intrusive method, which facilitates the task of implementing general intrusive methods. The method only requires the numerical flux of the deterministic problem (as well as an entropy if IPM is used). We thereby provide the ability to recycle existing implementations of deterministic solvers. 
+The IPM and SG calculations use a semi-intrusive numerical method, since the discretization allows recycling a given deterministic code to generate the IPM solver. While facilitating the task of implementing general intrusive methods, this framework allows a fair comparison of intrusive and non-intrusive methods, since the intrusive method can be based on the same deterministic code as the code used in a black-box fashion for stochastic-Collocation.
 
 The paper is structured as follows: After the introduction, we discuss the numerical discretization as well as the implementation and structure of the semi-intrusive method in section \ref{sec:framework}. Section \ref{sec:collIPM} discusses the IPM acceleration with a non-intrusive method and in section \ref{sec:OneShotIPM}, we discuss the idea of not converging the dual iteration. Section~\ref{sec:adaptivity} extends the presented numerical framework to an algorithm making use of adaptivity. A comparison of results computed with the presented methods is then given in \ref{sec:results}, followed by a summary and outlook in section \ref{sec:summary_outlook}.
 
