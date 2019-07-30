@@ -4,16 +4,17 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     _N = 1;    // set moment order
 
     // constants
-    _gamma  = 5.0 / 3.0;              // adiabatic constant
-    _R      = 287.87;                 // specific gas constant
-    _cLight = 299792458.0 * 100.0;    // speed of light in [cm/s]
-    _aR     = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
-    _h      = 6.62607004 * 1e-27;     // Planck's constant [cm^2 g/s]
+    double k = 1.38064852e-16;         // Boltzmann's constant [cm^2 g / (s^2 K)]
+    _gamma   = 5.0 / 3.0;              // adiabatic constant
+    _R       = 8.3144621 * 1e7;        // specific gas constant [erg / (K mol)]
+    _cLight  = 299792458.0 * 100.0;    // speed of light in [cm/s]
+    _aR      = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
+    _h       = 6.62607004 * 1e-27;     // Planck's constant [cm^2 g/s]
 
     // initial chock states
     double rhoL = 5.45887 * 1e-13;    // [g/cm^3]
     double uL   = 2.3545 * 1e5;       // [cm/s]
-    double TL   = 100.0;              // K
+    double TL   = 100.0;              // [K]
     double rhoR = 1.2479 * 1e-12;
     double uR   = 1.03 * 1e5;
     double TR   = 207.757;
@@ -52,23 +53,6 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
         _log->error( "[pnequations] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
-}
-
-Matrix RadiationHydrodynamics1D::Source( const Matrix& uQ ) const {
-    unsigned nStates = static_cast<unsigned>( uQ.rows() );
-    unsigned Nq      = static_cast<unsigned>( uQ.columns() );
-    Matrix y( nStates, Nq, 0.0 );
-    for( unsigned k = 0; k < Nq; ++k ) {
-        double se             = SE( column( uQ, k ) );
-        Vector sFVec          = SF( column( uQ, k ) );
-        y( 0, k )             = _c * se;
-        y( 1, k )             = _c * sFVec[0];
-        y( 2, k )             = _c * sFVec[1];
-        y( 3, k )             = _c * sFVec[2];
-        y( _nMoments + 1, k ) = -_P * sFVec[0];
-        y( _nMoments + 2, k ) = -_P * _c * se;
-    }
-    return y;
 }
 
 double RadiationHydrodynamics1D::Delta( int l, int k ) const {
@@ -174,6 +158,48 @@ int RadiationHydrodynamics1D::GlobalIndex( int l, int k ) const {
     }
 }
 
+Matrix RadiationHydrodynamics1D::Source( const Matrix& uQ ) const {
+    unsigned nStates = static_cast<unsigned>( uQ.rows() );
+    unsigned Nq      = static_cast<unsigned>( uQ.columns() );
+    Matrix y( nStates, Nq, 0.0 );
+    for( unsigned k = 0; k < Nq; ++k ) {
+        double se             = SE( column( uQ, k ) );
+        Vector sFVec          = SF( column( uQ, k ) );
+        y( 0, k )             = _c * se;
+        y( 1, k )             = _c * sFVec[0];
+        y( 2, k )             = _c * sFVec[1];
+        y( 3, k )             = _c * sFVec[2];
+        y( _nMoments + 1, k ) = -_P * sFVec[0];
+        y( _nMoments + 2, k ) = -_P * _c * se;
+    }
+    return y;
+}
+
+double RadiationHydrodynamics1D::SE( const Vector& u ) const {
+    double Er  = u[0];
+    double rho = u[_nMoments + 0];
+    Vector v( 3, false );
+    v[0]     = u[_nMoments + 1] / rho;
+    v[1]     = 0.0;
+    v[2]     = 0.0;
+    double p = ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * rho * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
+    double T = p / ( _R * rho );
+    return _sigmaA * ( std::pow( T, 4 ) - Er ) + ( _sigmaA - _sigmaS ) * v.inner( Fr0( u ) ) / _c;
+}
+
+Vector RadiationHydrodynamics1D::SF( const Vector& u ) const {
+    double Er  = u[0];
+    double rho = u[_nMoments + 0];
+    Vector v( 3, false );
+    v[0]     = u[_nMoments + 1] / rho;
+    v[1]     = 0.0;
+    v[2]     = 0.0;
+    double p = ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * rho * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
+    double T = p / ( _R * rho );
+
+    return Fr0( u ) * ( -_sigmaT ) + v * _sigmaA * ( std::pow( T, 4 ) - Er ) / _c;
+}
+
 double RadiationHydrodynamics1D::Er0( const Vector& u ) const {
     double Er     = u[0];
     double rhoInv = 1.0 / u[_nMoments + 0];
@@ -206,31 +232,6 @@ Vector RadiationHydrodynamics1D::Fr0( const Vector& u ) const {
     return Fr - ( v * Er + vPr ) / _c;
 }
 
-double RadiationHydrodynamics1D::SE( const Vector& u ) const {
-    double Er  = u[0];
-    double rho = u[_nMoments + 0];
-    Vector v( 3, false );
-    v[0]     = u[_nMoments + 1] / rho;
-    v[1]     = 0.0;
-    v[2]     = 0.0;
-    double p = ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * rho * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
-    double T = p / ( _R * rho );
-    return _sigmaA * ( std::pow( T, 4 ) - Er ) + ( _sigmaA - _sigmaS ) * v.inner( Fr0( u ) ) / _c;
-}
-
-Vector RadiationHydrodynamics1D::SF( const Vector& u ) const {
-    double Er  = u[0];
-    double rho = u[_nMoments + 0];
-    Vector v( 3, false );
-    v[0]     = u[_nMoments + 1] / rho;
-    v[1]     = 0.0;
-    v[2]     = 0.0;
-    double p = ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * rho * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
-    double T = p / ( _R * rho );
-
-    return Fr0( u ) * ( -_sigmaT ) + v * _sigmaA * ( std::pow( T, 4 ) - Er ) / _c;
-}
-
 Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
     // initial chock states
@@ -240,7 +241,7 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     double rhoR = 1.2479 * 1e-12;
     double uR   = 1.03 * 1e5;
     double TR   = 207.757;
-    double k    = 1.38064852e-16;    // Boltzmann's constant
+    double k    = 1.38064852e-16;    // Boltzmann's constant [cm^2 g / (s^2 K)]
     if( x[0] < 0.0 ) {
         y[0]                  = 1e-5;    // std::pow( TL, 4 ) * k / ( std::pow( _TRef, 3 ) * _aR * _cLight * _h );
         y[_nMoments + 0]      = rhoL / _rhoRef;
@@ -251,14 +252,6 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
         y[_nMoments + 2]      = kineticEnergyL + innerEnergyL;
     }
     else {
-        /*y[0]                  = 1e-5;
-        y[_nMoments + 0]      = rhoL / _rhoRef;
-        y[_nMoments + 1]      = rhoL * uL / ( _rhoRef * _aRef );
-        double pL             = TL * ( _R * rhoL ) / _pRef;
-        double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
-        double innerEnergyL   = ( pL / ( _gamma - 1.0 ) );
-        y[_nMoments + 2]      = kineticEnergyL + innerEnergyL;*/
-
         y[0]                  = 1e-5;    // std::pow( TR, 4 ) * k / ( std::pow( _TRef, 3 ) * _aR * _cLight * _h );
         y[_nMoments + 0]      = rhoR / _rhoRef;
         y[_nMoments + 1]      = rhoR * uR / ( _rhoRef * _aRef );
