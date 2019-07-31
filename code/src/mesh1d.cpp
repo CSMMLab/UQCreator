@@ -204,6 +204,15 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
             out << " " << results( s, j );
             if( _settings->HasExactSolution() ) out << " " << results( 2 * _settings->GetNStates() + s, j );
         }
+        double rho    = results( 4, j );
+        double v      = results( 5, j ) / rho;
+        double rhoE   = results( 6, j );
+        double _gamma = 5.0 / 3.0;          // adiabatic constant
+        double _R     = 8.3144621 * 1e7;    // specific gas constant [erg / (K mol)]
+        // std::cout << "results size = " << results.rows() << " " << results.columns() << std::endl;
+        // std::cout << "p = " << rhoE << " - " << 0.5 * rho * ( pow( v, 2 ) ) << std::endl;
+        double T = _gamma * ( _gamma - 1.0 ) * ( rhoE / rho - 0.5 * ( pow( v, 2 ) ) );
+        out << " " << T;
         out << std::endl;
     }
     out.close();

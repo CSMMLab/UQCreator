@@ -182,8 +182,7 @@ double RadiationHydrodynamics1D::SE( const Vector& u ) const {
     v[0]     = u[_nMoments + 1] / rho;
     v[1]     = 0.0;
     v[2]     = 0.0;
-    double p = ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * rho * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
-    double T = p / ( _R * rho );
+    double T = _gamma * ( _gamma - 1.0 ) * ( u[_nMoments + 2] / rho - 0.5 * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
     return _sigmaA * ( std::pow( T, 4 ) - Er ) + ( _sigmaA - _sigmaS ) * v.inner( Fr0( u ) ) / _c;
 }
 
@@ -191,11 +190,11 @@ Vector RadiationHydrodynamics1D::SF( const Vector& u ) const {
     double Er  = u[0];
     double rho = u[_nMoments + 0];
     Vector v( 3, false );
-    v[0]     = u[_nMoments + 1] / rho;
-    v[1]     = 0.0;
-    v[2]     = 0.0;
-    double p = ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * rho * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
-    double T = p / ( _R * rho );
+    v[0] = u[_nMoments + 1] / rho;
+    v[1] = 0.0;
+    v[2] = 0.0;
+    // double p = _gamma * ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * rho * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
+    double T = _gamma * ( _gamma - 1.0 ) * ( u[_nMoments + 2] / rho - 0.5 * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
 
     return Fr0( u ) * ( -_sigmaT ) + v * _sigmaA * ( std::pow( T, 4 ) - Er ) / _c;
 }
@@ -243,26 +242,34 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     double TR   = 207.757;
     double k    = 1.38064852e-16;    // Boltzmann's constant [cm^2 g / (s^2 K)]
     if( x[0] < 0.0 ) {
-        y[0]                  = 1e-5;    // std::pow( TL, 4 ) * k / ( std::pow( _TRef, 3 ) * _aR * _cLight * _h );
+        // y[0]                  = std::pow( TL, 4 ) * k / ( std::pow( _TRef, 3 ) * _aR * _cLight * _h ) * 1e-7;
         y[_nMoments + 0]      = rhoL / _rhoRef;
         y[_nMoments + 1]      = rhoL * uL / ( _rhoRef * _aRef );
         double pL             = TL * ( _R * rhoL ) / _pRef;
         double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
         double innerEnergyL   = ( pL / ( _gamma - 1.0 ) );
         y[_nMoments + 2]      = kineticEnergyL + innerEnergyL;
+
+        double rho = y[_nMoments + 0];
+        double v   = y[_nMoments + 1] / rho;
+        y[0]       = pow( _gamma * ( _gamma - 1.0 ) * ( y[_nMoments + 2] / rho - 0.5 * ( pow( v, 2 ) ) ), 4 );
     }
     else {
-        y[0]                  = 1e-5;    // std::pow( TR, 4 ) * k / ( std::pow( _TRef, 3 ) * _aR * _cLight * _h );
+
         y[_nMoments + 0]      = rhoR / _rhoRef;
         y[_nMoments + 1]      = rhoR * uR / ( _rhoRef * _aRef );
         double pR             = TR * ( _R * rhoR ) / _pRef;
         double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
         double innerEnergyR   = ( pR / ( _gamma - 1.0 ) );
         y[_nMoments + 2]      = kineticEnergyR + innerEnergyR;
+
+        double rho = y[_nMoments + 0];
+        double v   = y[_nMoments + 1] / rho;
+        y[0]       = pow( _gamma * ( _gamma - 1.0 ) * ( y[_nMoments + 2] / rho - 0.5 * ( pow( v, 2 ) ) ), 4 );
     }
-    // double x0    = 0.0;
-    // double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
-    // double floor = 1e-7;
+    double x0    = 0.0;
+    double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
+    double floor = 1e-7;
     // y[0]         = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) ) / 4.0 / s2 ) );
     return y;
 }

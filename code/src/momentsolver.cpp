@@ -34,7 +34,7 @@ MomentSolver::~MomentSolver() {
 }
 
 void MomentSolver::Solve() {
-    bool writeSolutionInTime = false;
+    bool writeSolutionInTime = true;
     unsigned retCounter      = 0;    // counter for retardation level
     // unsigned retLevel        = _settings->GetResidualRetardation( 0 );
     VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );       // vector carries refinement level for each cell
@@ -288,9 +288,9 @@ void MomentSolver::Solve() {
 
 void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const VectorU& refLevel ) const {
     Matrix out( _nStates, _nTotal );    // could also be allocated before and then stored in class, be careful with openmp!!!
-#pragma omp parallel for
+                                        //#pragma omp parallel for
     for( unsigned j = 0; j < _nCells; ++j ) {
-        // if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
+        if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
         out     = _problem->Source( uQ[j] ) * _closure->GetPhiTildeWfAtRef( refLevel[j] );
         uNew[j] = uNew[j] + dt * out;    // TODO: check dt*dx correct?  vorher * _mesh->GetArea( j )
     }
