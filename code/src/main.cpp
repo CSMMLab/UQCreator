@@ -346,9 +346,11 @@ int main( int argc, char* argv[] ) {
     std::vector<MatVec> uQ;
     uQ.resize( settings->GetKEnd() - settings->GetKStart() + 1 );
     std::vector<Vector> xi = quad->GetNodes();
-    unsigned nCells        = settings->GetNumCells();
-    unsigned nStates       = settings->GetNStates();
-    unsigned nTotal        = settings->GetNTotal();
+    delete quad;
+
+    unsigned nCells  = settings->GetNumCells();
+    unsigned nStates = settings->GetNStates();
+    unsigned nTotal  = settings->GetNTotal();
 
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
@@ -374,6 +376,7 @@ int main( int argc, char* argv[] ) {
         u[j].reset();
         multOnPENoReset( uQFinalPE[j], closure->GetPhiTildeWf(), u[j], settings->GetKStart(), settings->GetKEnd() );
     }
+    delete closure;
 
     auto uMoments = u;
 
