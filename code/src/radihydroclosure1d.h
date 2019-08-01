@@ -26,6 +26,7 @@ class RadiHydroClosure1D : public Closure
     virtual void Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel );
     virtual void AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y, unsigned nTotal ) const;
     virtual void SubstractVectorMatrixOnVector( Vector& b, const Matrix& A, unsigned nTotal ) const;
+    virtual double CalcNorm( Vector& test, unsigned nTotal ) const;
 };
 
 #endif    // RADIHYDROCLOSURE1D_H

@@ -161,8 +161,8 @@ void RadiHydroClosure1D::SolveClosure( Matrix& lambdaFull, const Matrix& uFull, 
     Vector dlambda = -g;
     // std::cout << g << std::endl;
     Hessian( H, lambda, refLevel );
-    std::cout << "H = " << std::endl << H << std::endl;
-    std::cout << "g = " << std::endl << g << std::endl;
+    // std::cout << "H = " << std::endl << H << std::endl;
+    // std::cout << "g = " << std::endl << g << std::endl;
     posv( H, g );
     if( _maxIterations == 1 ) {
         AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda, nTotal );
@@ -188,7 +188,6 @@ void RadiHydroClosure1D::SolveClosure( Matrix& lambdaFull, const Matrix& uFull, 
             Gradient( dlambdaNew, lambdaNew, u, refLevel );
         }
         int refinementCounter = 0;
-        std::cout << "Res " << CalcNorm( dlambdaNew, nTotal ) << std::endl;
         while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
@@ -235,4 +234,14 @@ void RadiHydroClosure1D::SubstractVectorMatrixOnVector( Vector& b, const Matrix&
             b[l * nTotal + j] = b[l * nTotal + j] - A( l, j );
         }
     }
+}
+
+double RadiHydroClosure1D::CalcNorm( Vector& test, unsigned nTotal ) const {
+    double out = 0.0;
+    for( unsigned l = 0; l < _nHydroStates; ++l ) {
+        for( unsigned i = 0; i < nTotal; ++i ) {
+            out += pow( test[l * nTotal + i], 2 );
+        }
+    }
+    return sqrt( out );
 }
