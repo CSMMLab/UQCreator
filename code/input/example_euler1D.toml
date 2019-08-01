@@ -25,4 +25,4 @@ moments = [["maxDegree"],[0]]
 quadPoints = [["tensorizedGrid"],[2]]
 # quadPoints = [["tensorizedGrid"],[ 7 ]]
 maxIterations = 200
-epsilon = 5e-5
+epsilon = 1e-9

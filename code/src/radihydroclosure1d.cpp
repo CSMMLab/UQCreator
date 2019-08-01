@@ -66,17 +66,16 @@ void RadiHydroClosure1D::DU( Matrix& y, const Vector& Lambda ) {
                      ( -2.0 * _gamma * Lambda[2] + 2.0 * Lambda[0] * Lambda[2] - pow( Lambda[1], 2 ) - 2.0 * Lambda[2] * log( -Lambda[2] ) ) /
                          ( 2.0 * ( _gamma - 1.0 ) * pow( Lambda[2], 2 ) ) ) *
                    E;
-    y( 0, 0 ) = dEdv1;
-    y( 0, 1 ) = dEdv2;
-    y( 0, 2 ) = dEdv3;
-    y( 1, 0 ) = -( Lambda[1] / Lambda[2] ) * dEdv1;
-    y( 1, 1 ) = -( 1.0 / Lambda[2] ) * E - ( Lambda[1] / Lambda[2] ) * dEdv2;
-    y( 1, 2 ) = ( Lambda[1] / ( pow( Lambda[2], 2 ) ) ) * E - ( Lambda[1] / Lambda[2] ) * dEdv3;
-    y( 2, 0 ) = ( ( pow( Lambda[1], 2 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2 ) ) ) * dEdv1;
-    y( 2, 1 ) = ( ( pow( Lambda[1], 2 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2 ) ) ) * dEdv2 +
-                ( 2.0 * Lambda[1] / ( 2.0 * pow( Lambda[2], 2 ) ) ) * E;
-    y( 2, 2 ) = ( pow( Lambda[1], 2 ) / ( pow( Lambda[2], -3 ) ) + pow( Lambda[2], -2 ) ) * E +
-                ( ( pow( Lambda[1], 2 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2 ) ) ) * dEdv3;
+    double preFac3 = ( ( pow( Lambda[1], 2 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2 ) ) );
+    y( 0, 0 )      = dEdv1;
+    y( 0, 1 )      = dEdv2;
+    y( 0, 2 )      = dEdv3;
+    y( 1, 0 )      = -( Lambda[1] / Lambda[2] ) * dEdv1;
+    y( 1, 1 )      = -( 1.0 / Lambda[2] ) * E - ( Lambda[1] / Lambda[2] ) * dEdv2;
+    y( 1, 2 )      = ( Lambda[1] / ( pow( Lambda[2], 2 ) ) ) * E - ( Lambda[1] / Lambda[2] ) * dEdv3;
+    y( 2, 0 )      = preFac3 * dEdv1;
+    y( 2, 1 )      = preFac3 * dEdv2 + ( 2.0 * Lambda[1] / ( 2.0 * pow( Lambda[2], 2 ) ) ) * E;
+    y( 2, 2 )      = ( -pow( Lambda[1], 2 ) * pow( Lambda[2], -3 ) + pow( Lambda[2], -2 ) ) * E + preFac3 * dEdv3;
 }
 
 void RadiHydroClosure1D::DS( Vector& ds, const Vector& u ) const {
@@ -107,6 +106,25 @@ void RadiHydroClosure1D::Gradient( Vector& g, const Matrix& lambda, const Matrix
     }
 
     SubstractVectorMatrixOnVector( g, u, _nTotalForRef[refLevel] );
+}
+
+void RadiHydroClosure1D::Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel ) {
+    H.reset();
+    Matrix dUdLambda( _nHydroStates, _nHydroStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
+    unsigned nTotal = _nTotalForRef[refLevel];
+
+    for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {    // TODO: reorder to avoid cache misses
+        DU( dUdLambda, EvaluateLambda( lambda, k, nTotal ) );
+        for( unsigned l = 0; l < _nHydroStates; ++l ) {
+            for( unsigned m = 0; m < _nHydroStates; ++m ) {
+                for( unsigned j = 0; j < nTotal; ++j ) {
+                    for( unsigned i = 0; i < nTotal; ++i ) {
+                        H( m * nTotal + j, l * nTotal + i ) += _hPartial[k]( j, i ) * _wGrid[refLevel][k] * dUdLambda( l, m );
+                    }
+                }
+            }
+        }
+    }
 }
 
 void RadiHydroClosure1D::SolveClosure( Matrix& lambdaFull, const Matrix& uFull, unsigned refLevel ) {
@@ -143,6 +161,8 @@ void RadiHydroClosure1D::SolveClosure( Matrix& lambdaFull, const Matrix& uFull, 
     Vector dlambda = -g;
     // std::cout << g << std::endl;
     Hessian( H, lambda, refLevel );
+    std::cout << "H = " << std::endl << H << std::endl;
+    std::cout << "g = " << std::endl << g << std::endl;
     posv( H, g );
     if( _maxIterations == 1 ) {
         AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda, nTotal );
@@ -168,6 +188,7 @@ void RadiHydroClosure1D::SolveClosure( Matrix& lambdaFull, const Matrix& uFull, 
             Gradient( dlambdaNew, lambdaNew, u, refLevel );
         }
         int refinementCounter = 0;
+        std::cout << "Res " << CalcNorm( dlambdaNew, nTotal ) << std::endl;
         while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );

@@ -1,6 +1,6 @@
 #include "eulerclosure.h"
 
-EulerClosure::EulerClosure( Settings* settings ) : Closure( settings ), _gamma( _settings->GetGamma() ) { _alpha = 0.5; }
+EulerClosure::EulerClosure( Settings* settings ) : Closure( settings ), _gamma( _settings->GetGamma() ) { _alpha = 1.0; }
 
 EulerClosure::~EulerClosure() {}
 
@@ -43,28 +43,16 @@ void EulerClosure::DU( Matrix& y, const Vector& Lambda ) {
                      ( -2.0 * _gamma * Lambda[2] + 2.0 * Lambda[0] * Lambda[2] - pow( Lambda[1], 2 ) - 2.0 * Lambda[2] * log( -Lambda[2] ) ) /
                          ( 2.0 * ( _gamma - 1.0 ) * pow( Lambda[2], 2 ) ) ) *
                    E;
-    y( 0, 0 ) = dEdv1;
-    y( 0, 1 ) = dEdv2;
-    y( 0, 2 ) = dEdv3;
-    y( 1, 0 ) = -( Lambda[1] / Lambda[2] ) * dEdv1;
-    y( 1, 1 ) = -( 1.0 / Lambda[2] ) * E - ( Lambda[1] / Lambda[2] ) * dEdv2;
-    y( 1, 2 ) = ( Lambda[1] / ( pow( Lambda[2], 2 ) ) ) * E - ( Lambda[1] / Lambda[2] ) * dEdv3;
-    y( 2, 0 ) = ( ( pow( Lambda[1], 2 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2 ) ) ) * dEdv1;
-    y( 2, 1 ) = ( ( pow( Lambda[1], 2 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2 ) ) ) * dEdv2 +
-                ( 2.0 * Lambda[1] / ( 2.0 * pow( Lambda[2], 2 ) ) ) * E;
-    y( 2, 2 ) = ( pow( Lambda[1], 2 ) / ( pow( Lambda[2], -3 ) ) + pow( Lambda[2], -2 ) ) * E +
-                ( ( pow( Lambda[1], 2 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2 ) ) ) * dEdv3;
-    /*
-        Matrix yCheck( 3, 3 );
-        double v1 = Lambda[0];
-        double v2 = Lambda[1];
-        double v3 = Lambda[2];
-        E         = exp( ( 2 * v1 * v3 - 2 * v3 * log( -v3 ) - 2 * v3 * _gamma - pow( v2, 2 ) ) / ( 2 * v3 * ( _gamma - 1 ) ) );
-        dEdv1     = ( 1 / ( _gamma - 1 ) ) * E;
-        dEdv2     = -( v2 / ( v3 * ( _gamma - 1 ) ) ) * E;
-        dEdv3     = ( ( -2 * _gamma + 2 * v1 - 2 * log( -v3 ) - 2 ) / ( 2 * ( _gamma - 1 ) * v3 ) -
-                  ( -2 * _gamma * v3 + 2 * v1 * v3 - pow( v2, 2 ) - 2 * v3 * log( -v3 ) ) / ( 2 * ( _gamma - 1 ) * pow( v3, 2 ) ) ) *
-                E;*/
+    double preFac3 = ( ( pow( Lambda[1], 2 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2 ) ) );
+    y( 0, 0 )      = dEdv1;
+    y( 0, 1 )      = dEdv2;
+    y( 0, 2 )      = dEdv3;
+    y( 1, 0 )      = -( Lambda[1] / Lambda[2] ) * dEdv1;
+    y( 1, 1 )      = -( 1.0 / Lambda[2] ) * E - ( Lambda[1] / Lambda[2] ) * dEdv2;
+    y( 1, 2 )      = ( Lambda[1] / ( pow( Lambda[2], 2 ) ) ) * E - ( Lambda[1] / Lambda[2] ) * dEdv3;
+    y( 2, 0 )      = preFac3 * dEdv1;
+    y( 2, 1 )      = preFac3 * dEdv2 + ( 2.0 * Lambda[1] / ( 2.0 * pow( Lambda[2], 2 ) ) ) * E;
+    y( 2, 2 )      = ( -pow( Lambda[1], 2 ) * pow( Lambda[2], -3 ) + pow( Lambda[2], -2 ) ) * E + preFac3 * dEdv3;
 }
 
 void EulerClosure::DS( Vector& ds, const Vector& u ) const {

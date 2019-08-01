@@ -23,6 +23,7 @@ class RadiHydroClosure1D : public Closure
     virtual void DS( Vector& ds, const Vector& u ) const;
     virtual void SolveClosure( Matrix& lambdaFull, const Matrix& uFull, unsigned refLevel );
     virtual void Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned refLevel );
+    virtual void Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel );
     virtual void AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y, unsigned nTotal ) const;
     virtual void SubstractVectorMatrixOnVector( Vector& b, const Matrix& A, unsigned nTotal ) const;
 };
