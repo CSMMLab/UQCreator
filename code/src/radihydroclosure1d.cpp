@@ -1,7 +1,7 @@
 #include "radihydroclosure1d.h"
 
 RadiHydroClosure1D::RadiHydroClosure1D( Settings* settings ) : Closure( settings ), _gamma( _settings->GetGamma() ) {
-    _alpha        = 0.5;
+    _alpha        = 1.0;
     _nMoments     = 4;
     _nHydroStates = 3;
     _gamma        = 5.0 / 3.0;

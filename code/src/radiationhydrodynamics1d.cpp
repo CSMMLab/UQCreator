@@ -266,6 +266,9 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
         TR   = 855.72;
     }
 
+    double shockPosition = 0.0;
+    shockPosition += _settings->GetSigma()[0] * xi[0];
+
     if( x[0] < 0.0 ) {
         y[_nMoments + 0]      = rhoL / _rhoRef;
         y[_nMoments + 1]      = rhoL * uL / ( _rhoRef * _aRef );
