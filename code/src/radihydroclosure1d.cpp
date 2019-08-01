@@ -84,10 +84,10 @@ void RadiHydroClosure1D::DS( Vector& ds, const Vector& u ) const {
     double rhoU       = u[_nMoments + 1];
     double rhoU2      = pow( rhoU, 2 );
     double rhoE       = u[_nMoments + 2];
-    ds[_nMoments + 0] = ( rhoU2 + gamma * ( 2 * rho * rhoE - rhoU2 ) ) / ( -2 * rho * rhoE + rhoU2 ) -
+    ds[_nMoments + 0] = 0 * ( rhoU2 + gamma * ( 2 * rho * rhoE - rhoU2 ) ) / ( -2 * rho * rhoE + rhoU2 ) -
                         std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
-    ds[_nMoments + 1] = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 ) );
-    ds[_nMoments + 2] = -( rho / ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
+    ds[_nMoments + 1] = -0 * ( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 ) );
+    ds[_nMoments + 2] = -1.0;    //-( rho / ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
     for( unsigned s = 0; s < _nMoments; ++s ) ds[s] = u[s];
 }
 
