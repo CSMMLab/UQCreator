@@ -54,17 +54,17 @@ void EulerClosure::DU( Matrix& y, const Vector& Lambda ) {
                 ( 2.0 * Lambda[1] / ( 2.0 * pow( Lambda[2], 2 ) ) ) * E;
     y( 2, 2 ) = ( pow( Lambda[1], 2 ) / ( pow( Lambda[2], -3 ) ) + pow( Lambda[2], -2 ) ) * E +
                 ( ( pow( Lambda[1], 2 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2 ) ) ) * dEdv3;
-
-    Matrix yCheck( 3, 3 );
-    double v1 = Lambda[0];
-    double v2 = Lambda[1];
-    double v3 = Lambda[2];
-    E         = exp( ( 2 * v1 * v3 - 2 * v3 * log( -v3 ) - 2 * v3 * _gamma - pow( v2, 2 ) ) / ( 2 * v3 * ( _gamma - 1 ) ) );
-    dEdv1     = ( 1 / ( _gamma - 1 ) ) * E;
-    dEdv2     = -( v2 / ( v3 * ( _gamma - 1 ) ) ) * E;
-    dEdv3     = ( ( -2 * _gamma + 2 * v1 - 2 * log( -v3 ) - 2 ) / ( 2 * ( _gamma - 1 ) * v3 ) -
-              ( -2 * _gamma * v3 + 2 * v1 * v3 - pow( v2, 2 ) - 2 * v3 * log( -v3 ) ) / ( 2 * ( _gamma - 1 ) * pow( v3, 2 ) ) ) *
-            E;
+    /*
+        Matrix yCheck( 3, 3 );
+        double v1 = Lambda[0];
+        double v2 = Lambda[1];
+        double v3 = Lambda[2];
+        E         = exp( ( 2 * v1 * v3 - 2 * v3 * log( -v3 ) - 2 * v3 * _gamma - pow( v2, 2 ) ) / ( 2 * v3 * ( _gamma - 1 ) ) );
+        dEdv1     = ( 1 / ( _gamma - 1 ) ) * E;
+        dEdv2     = -( v2 / ( v3 * ( _gamma - 1 ) ) ) * E;
+        dEdv3     = ( ( -2 * _gamma + 2 * v1 - 2 * log( -v3 ) - 2 ) / ( 2 * ( _gamma - 1 ) * v3 ) -
+                  ( -2 * _gamma * v3 + 2 * v1 * v3 - pow( v2, 2 ) - 2 * v3 * log( -v3 ) ) / ( 2 * ( _gamma - 1 ) * pow( v3, 2 ) ) ) *
+                E;*/
 }
 
 void EulerClosure::DS( Vector& ds, const Vector& u ) const {

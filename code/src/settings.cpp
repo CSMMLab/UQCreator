@@ -209,9 +209,12 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( closureTypeString->compare( "LassoFilter" ) == 0 ) {
                 _closureType = ClosureType::C_LASSOFILTER;
             }
+            else if( closureTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
+                _closureType = ClosureType::C_RADHYDRO;
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogSin, "
-                            "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
+                            "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter,RadiationHydrodynamics" );
                 validConfig = false;
             }
         }

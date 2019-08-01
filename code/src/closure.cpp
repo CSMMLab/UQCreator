@@ -6,6 +6,7 @@
 #include "lassofilter.h"
 #include "logsin.h"
 #include "mathtools.h"
+#include "radihydroclosure1d.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
 #include "stochasticgalerkin.h"
@@ -129,6 +130,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_LASSOFILTER ) {
         return new LassoFilter( settings );
+    }
+    else if( closureType == ClosureType::C_RADHYDRO ) {
+        return new RadiHydroClosure1D( settings );
     }
     else {
         log->error( "[closure]: Invalid closure type" );
