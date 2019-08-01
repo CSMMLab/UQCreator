@@ -378,13 +378,12 @@ int main( int argc, char* argv[] ) {
     }
     delete closure;
 
-    auto uMoments = u;
-
     // perform reduction to obtain full moments on all PEs
     std::vector<int> PEforCell = settings->GetPEforCell();
     for( unsigned j = 0; j < nCells; ++j ) {
+        Matrix uMoments = u[j];
         u[j].reset();
-        MPI_Reduce( uMoments[j].GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+        MPI_Reduce( uMoments.GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
     }
 
     if( settings->GetMyPE() == 0 ) {
