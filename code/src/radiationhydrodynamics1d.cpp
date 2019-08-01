@@ -3,6 +3,9 @@
 RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEquations( settings, true ) {
     _N = 1;    // set moment order
 
+    // specify test case
+    _testCase = 2;
+
     // constants
     double k = 1.38064852e-16;         // Boltzmann's constant [cm^2 g / (s^2 K)]
     _gamma   = 5.0 / 3.0;              // adiabatic constant
@@ -12,19 +15,31 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     _h       = 6.62607004 * 1e-27;     // Planck's constant [cm^2 g/s]
 
     // initial chock states
-    double rhoL = 5.45887 * 1e-13;    // [g/cm^3]
-    double uL   = 2.3545 * 1e5;       // [cm/s]
-    double TL   = 100.0;              // [K]
-    double rhoR = 1.2479 * 1e-12;
-    double uR   = 1.03 * 1e5;
-    double TR   = 207.757;
+    double rhoL, uL, TL, rhoR, uR, TR, lRef;
+    if( _testCase == 1 ) {
+        rhoL = 5.45887 * 1e-13;    // [g/cm^3]
+        uL   = 2.3545 * 1e5;       // [cm/s]
+        TL   = 100.0;              // [K]
+        rhoR = 1.2479 * 1e-12;
+        uR   = 1.03 * 1e5;
+        TR   = 207.757;
+        lRef = 1000;
+    }
+    else {
+        rhoL = 5.45887 * 1e-13;    // [g/cm^3]
+        uL   = 2.3545 * 1e5;       // [cm/s]
+        TL   = 100.0;              // [K]
+        rhoR = 1.964050 * 1e-12;
+        uR   = 1.63 * 1e5;
+        TR   = 855.72;
+        lRef = 4000;
+    }
 
     // reference values
-    double lRef = 1000;                           // reference length [cm]
-    _rhoRef     = rhoR;                           // reference density [g/cm^3]
-    _TRef       = TR;                             // reference temperature [K]
-    _aRef       = sqrt( _gamma * _R * _TRef );    // reference speed of sound [cm/s]
-    _pRef       = _rhoRef * pow( _aRef, 2 );      // update pRef with speed of sound
+    _rhoRef = rhoR;                           // reference density [g/cm^3]
+    _TRef   = TR;                             // reference temperature [K]
+    _aRef   = sqrt( _gamma * _R * _TRef );    // reference speed of sound [cm/s]
+    _pRef   = _rhoRef * pow( _aRef, 2 );      // update pRef with speed of sound
 
     std::cout << "vL = " << uL << ", aRef = " << _aRef << std::endl;
 
@@ -233,16 +248,25 @@ Vector RadiationHydrodynamics1D::Fr0( const Vector& u ) const {
 
 Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
+    double k = 1.38064852e-16;    // Boltzmann's constant [cm^2 g / (s^2 K)]
+
     // initial chock states
-    double rhoL = 5.45887 * 1e-13;
-    double uL   = 2.3545 * 1e5;
-    double TL   = 100.0;
-    double rhoR = 1.2479 * 1e-12;
-    double uR   = 1.03 * 1e5;
-    double TR   = 207.757;
-    double k    = 1.38064852e-16;    // Boltzmann's constant [cm^2 g / (s^2 K)]
+    double rhoL, uL, TL, rhoR, uR, TR;
+    rhoL = 5.45887 * 1e-13;    // [g/cm^3]
+    uL   = 2.3545 * 1e5;       // [cm/s]
+    TL   = 100.0;              // [K]
+    if( _testCase == 1 ) {
+        rhoR = 1.2479 * 1e-12;
+        uR   = 1.03 * 1e5;
+        TR   = 207.757;
+    }
+    else {
+        rhoR = 1.964050 * 1e-12;
+        uR   = 1.63 * 1e5;
+        TR   = 855.72;
+    }
+
     if( x[0] < 0.0 ) {
-        // y[0]                  = std::pow( TL, 4 ) * k / ( std::pow( _TRef, 3 ) * _aR * _cLight * _h ) * 1e-7;
         y[_nMoments + 0]      = rhoL / _rhoRef;
         y[_nMoments + 1]      = rhoL * uL / ( _rhoRef * _aRef );
         double pL             = TL * ( _R * rhoL ) / _pRef;
@@ -267,10 +291,6 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
         double v   = y[_nMoments + 1] / rho;
         y[0]       = pow( _gamma * ( _gamma - 1.0 ) * ( y[_nMoments + 2] / rho - 0.5 * ( pow( v, 2 ) ) ), 4 );
     }
-    double x0    = 0.0;
-    double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
-    double floor = 1e-7;
-    // y[0]         = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) ) / 4.0 / s2 ) );
     return y;
 }
 

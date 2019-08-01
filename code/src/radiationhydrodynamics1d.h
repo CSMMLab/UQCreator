@@ -15,6 +15,7 @@ class RadiationHydrodynamics1D : public PNEquations
     double _aR;            // radiation constant
     double _gamma;         // adiabatic constant
     unsigned _nMoments;    // number of angular moments
+    unsigned _testCase;
 
     // reference values
     double _rhoRef;
