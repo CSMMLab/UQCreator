@@ -29,7 +29,7 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     std::cout << "vL = " << uL << ", aRef = " << _aRef << std::endl;
 
     _c = _cLight / _aRef;
-    _P = _aR * pow( _TRef, 4 ) / ( _rhoRef * pow( _aRef, 2 ) ) * 100;
+    _P = _aR * pow( _TRef, 4 ) / ( _rhoRef * pow( _aRef, 2 ) );    // * 100;
 
     // set cross sections
     _sigmaA = 3.93 * 1e-5 * lRef;    // absorption coefficient
