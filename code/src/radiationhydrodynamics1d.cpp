@@ -21,15 +21,15 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
 
     // reference values
     double lRef = 1000;                           // reference length [cm]
-    _rhoRef     = rhoL;                           // reference density [g/cm^3]
-    _TRef       = TL;                             // reference temperature [K]
+    _rhoRef     = rhoR;                           // reference density [g/cm^3]
+    _TRef       = TR;                             // reference temperature [K]
     _aRef       = sqrt( _gamma * _R * _TRef );    // reference speed of sound [cm/s]
     _pRef       = _rhoRef * pow( _aRef, 2 );      // update pRef with speed of sound
 
     std::cout << "vL = " << uL << ", aRef = " << _aRef << std::endl;
 
     _c = _cLight / _aRef;
-    _P = _aR * pow( _TRef, 4 ) / ( _rhoRef * pow( _aRef, 2 ) );
+    _P = _aR * pow( _TRef, 4 ) / ( _rhoRef * pow( _aRef, 2 ) ) * 100;
 
     // set cross sections
     _sigmaA = 3.93 * 1e-5 * lRef;    // absorption coefficient
@@ -338,7 +338,7 @@ Vector RadiationHydrodynamics1D::G( const Vector& u, const Vector& v, const Vect
     }
 
     // write radiation part on _nMoments entries
-    // std::cout << "c = " << _c << ", LF = " << norm( n ) / _settings->GetDT() << std::endl;
+    // std::cout << "c = " << _c << ", LF = " << 1 / ( dx / _settings->GetDT() ) << std::endl;
     // out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * nUnit - 0.5 * ( vRadiation - uRadiation ) * dx / _settings->GetDT();
     out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * nUnit - 0.5 * _c * ( vRadiation - uRadiation ) * norm( nUnit );
 
@@ -365,6 +365,8 @@ double RadiationHydrodynamics1D::ComputeDt( const Matrix& u, double dx, unsigned
     unsigned kEnd = _settings->GetNqPEAtRef( level );
 
     cfl = _settings->GetCFL();
+
+    // std::cout << "dx = " << dx << std::endl;
 
     for( unsigned k = 0; k < kEnd; ++k ) {
         rhoInv = 1.0 / u( _nMoments + 0, k );

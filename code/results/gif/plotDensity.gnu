@@ -1,6 +1,6 @@
 set terminal gif animate delay 10
 set output "T.gif"
-do for [i=0:50] {
+do for [i=0:176] {
    j=i*1000+1
    plot sprintf('RadiationHydrodynamics_1D_newExpectedValue_%d', j) using 1:2 with lines
    pause 0.1
