@@ -142,6 +142,8 @@ void RadiHydroClosure1D::SolveClosure( Matrix& lambdaFull, const Matrix& uFull, 
             u( s, i )      = uFull( _nMoments + s, i );
         }
     }
+    // std::cout << u << std::endl;
+    // std::cout << lambda << std::endl;
 
     // save SG result for radiation part
     for( unsigned s = 0; s < _nMoments; ++s ) {
