@@ -388,12 +388,13 @@ int main( int argc, char* argv[] ) {
     for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
         for( unsigned j = 0; j < nCells; ++j ) {
             for( unsigned s = 0; s < nStates; ++s ) {
+                double fXi = 1.0;
                 for( unsigned l = 0; l < settings->GetNDimXi(); ++l ) {
                     if( settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                     if( settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                    variance[j][s] = variance[j][s] +
-                                     w[k] * pow( uQ[k - settings->GetKStart()][j]( s, 0 ) - expectationValue[j][s], 2 ) * quadVec[n]->fXi( xi[k][l] );
+                    fXi *= quadVec[n]->fXi( xi[k][l] );
                 }
+                variance[j][s] = variance[j][s] + w[k] * pow( uQ[k - settings->GetKStart()][j]( s, 0 ) - expectationValue[j][s], 2 ) * fXi;
             }
         }
     }
