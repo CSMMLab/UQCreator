@@ -81,19 +81,7 @@ Vector CalculateError( const Matrix& solution, Settings* settings, Mesh* mesh, u
     return error;
 }
 
-void WriteErrors( const MatVec& u, Settings* settings, Mesh* mesh ) {
-    Matrix meanAndVar( 2 * settings->GetNStates(), settings->GetNumCells(), 0.0 );
-    for( unsigned j = 0; j < settings->GetNumCells(); ++j ) {
-        // expected value
-        for( unsigned s = 0; s < settings->GetNStates(); ++s ) {
-            meanAndVar( s, j ) = u[j]( s, 0 );
-        }
-        // variance
-        for( unsigned s = 0; s < settings->GetNStates(); ++s ) {
-            for( unsigned i = 1; i < settings->GetNTotal(); ++i ) meanAndVar( s + settings->GetNStates(), j ) += std::pow( u[j]( s, i ), 2 );
-        }
-    }
-
+void WriteErrors( const Matrix& meanAndVar, Settings* settings, Mesh* mesh ) {
     if( settings->GetProblemType() == P_SHALLOWWATER_2D )
         mesh->ExportShallowWater( meanAndVar );
     else
@@ -341,63 +329,104 @@ int main( int argc, char* argv[] ) {
     Mesh* mesh           = Mesh::Create( settings );
     Problem* problem     = Problem::Create( settings );
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );
-    Closure* closure     = Closure::Create( settings, quad );
 
     std::vector<MatVec> uQ;
     uQ.resize( settings->GetKEnd() - settings->GetKStart() + 1 );
     std::vector<Vector> xi = quad->GetNodes();
+    Vector w               = quad->GetWeights();
     delete quad;
 
     unsigned nCells  = settings->GetNumCells();
     unsigned nStates = settings->GetNStates();
-    unsigned nTotal  = settings->GetNTotal();
 
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
+    unsigned n = 0;
+
+    std::vector<Polynomial*> quadVec;
+    quadVec.resize( 2 );
+    quadVec[0] = Polynomial::Create( settings, 1, DistributionType::D_LEGENDRE );
+    quadVec[1] = Polynomial::Create( settings, 1, DistributionType::D_HERMITE );
+
     // std::cout << "PE " << settings->GetMyPE() << ": kStart is " << settings->GetKStart() << " kEnd is " << settings->GetKEnd() << std::endl;
+    // Run forward solver on quad points
     for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
         // std::cout << "PE " << settings->GetMyPE() << ": xi = " << xi[k] << std::endl;
         uQ[k - settings->GetKStart()] = solver->Solve( xi[k] );
     }
 
     log->info( "" );
-    log->info( "Process exited normally on PE {:03.8f} .", double( settings->GetMyPE() ) );
+    log->info( "Forward Solves DONE on PE {:03.8f} .", double( settings->GetMyPE() ) );
 
-    // compute Moments
-    MatVec u( nCells, Matrix( nStates, nTotal ) );
-    MatVec uQFinalPE( nCells, Matrix( nStates, settings->GetKEnd() - settings->GetKStart() + 1 ) );
-    for( unsigned j = 0; j < nCells; ++j ) {
-        uQFinalPE[j].reset();
-        for( unsigned l = 0; l < nStates; ++l ) {
-            for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
-                uQFinalPE[j]( l, k - settings->GetKStart() ) = uQ[k - settings->GetKStart()][j]( l, 0 );
+    // compute partial Expectation Value
+    std::vector<Vector> expectationValue( nCells, Vector( nStates, 0.0 ) );
+    for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
+        for( unsigned j = 0; j < nCells; ++j ) {
+            for( unsigned s = 0; s < nStates; ++s ) {
+                double fXi = 1.0;
+                for( unsigned l = 0; l < settings->GetNDimXi(); ++l ) {
+                    if( settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                    if( settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                    fXi *= quadVec[n]->fXi( xi[k][l] );
+                }
+                expectationValue[j][s] = expectationValue[j][s] + w[k] * uQ[k - settings->GetKStart()][j]( s, 0 ) * fXi;
             }
         }
-        u[j].reset();
-        multOnPENoReset( uQFinalPE[j], closure->GetPhiTildeWf(), u[j], settings->GetKStart(), settings->GetKEnd() );
     }
-    delete closure;
 
-    // perform reduction to obtain full moments on all PEs
+    // perform reduction to obtain full Expectation Value on all PEs
     std::vector<int> PEforCell = settings->GetPEforCell();
     for( unsigned j = 0; j < nCells; ++j ) {
-        Matrix uMoments = u[j];
-        u[j].reset();
-        MPI_Reduce( uMoments.GetPointer(), u[j].GetPointer(), int( nStates * nTotal ), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+        for( unsigned s = 0; s < nStates; ++s ) {
+            double expCurrent = expectationValue[j][s];
+            MPI_Allreduce( &expCurrent, &( expectationValue[j][s] ), 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
+        }
+    }
+
+    // compute partial Variance
+    std::vector<Vector> variance( nCells, Vector( nStates, 0.0 ) );
+    for( unsigned k = settings->GetKStart(); k <= settings->GetKEnd(); ++k ) {
+        for( unsigned j = 0; j < nCells; ++j ) {
+            for( unsigned s = 0; s < nStates; ++s ) {
+                for( unsigned l = 0; l < settings->GetNDimXi(); ++l ) {
+                    if( settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+                    if( settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+                    variance[j][s] = variance[j][s] +
+                                     w[k] * pow( uQ[k - settings->GetKStart()][j]( s, 0 ) - expectationValue[j][s], 2 ) * quadVec[n]->fXi( xi[k][l] );
+                }
+            }
+        }
+    }
+
+    // perform reduction to obtain full Variance on master
+    for( unsigned j = 0; j < nCells; ++j ) {
+        for( unsigned s = 0; s < nStates; ++s ) {
+            double varCurrent = variance[j][s];
+            variance[j][s]    = 0;
+            MPI_Reduce( &varCurrent, &( variance[j][s] ), 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+        }
     }
 
     if( settings->GetMyPE() == 0 ) {
+        // solve expected value and variance in solution field
+        Matrix meanAndVar( 2 * settings->GetNStates(), settings->GetNumCells(), 0.0 );
+        for( unsigned j = 0; j < settings->GetNumCells(); ++j ) {
+            // expected value
+            for( unsigned s = 0; s < settings->GetNStates(); ++s ) {
+                meanAndVar( s, j ) = expectationValue[j][s];
+            }
+            // variance
+            for( unsigned s = 0; s < settings->GetNStates(); ++s ) {
+                meanAndVar( s + settings->GetNStates(), j ) = variance[j][s];
+            }
+        }
+        WriteErrors( meanAndVar, settings, mesh );
+
         std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
         log->info( "" );
         log->info( "Finished!" );
         log->info( "" );
         log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
-
-        // std::cout << u[nCells - 1] << std::endl;
-        // std::cout << "Exporting solution..." << std::endl;
-        // export moments
-        solver->Export( u );
-        WriteErrors( u, settings, mesh );
     }
 
     delete solver;
