@@ -1,7 +1,8 @@
 [general]
 problem = "RadiationHydrodynamics"
-outputDir = "../results/gif"
+outputDir = "../results"
 writeFrequency = 1000
+restartFile = "../input/restart_rad_hydro_Ma4"
 
 [mesh]
 dimension = 1
@@ -15,8 +16,8 @@ outputFile = "RadiationHydrodynamics_1D_new"
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.0]]
-CFL = 0.2 # 0.1
-tEnd = 0.02
+CFL = 0.22 # 0.1
+tEnd = 0.035
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
