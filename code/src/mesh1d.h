@@ -41,7 +41,7 @@ class Mesh1D : public Mesh
 
   public:
     virtual std::vector<Vector> Import() const;
-    virtual void Export( const Matrix& results ) const;
+    virtual void Export( const Matrix& results, std::string label ) const;
 
     Mesh1D( Settings* settings );
     virtual Vector GetNodePositionsX() const;

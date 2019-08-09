@@ -64,7 +64,7 @@ class Mesh2D : public Mesh
     virtual Vector GetNodePositionsX() const;
 
     virtual std::vector<Vector> Import() const;
-    virtual void Export( const Matrix& results ) const;
+    virtual void Export( const Matrix& results, std::string label ) const;
     virtual void ExportShallowWater( const Matrix& results ) const;
 };
 

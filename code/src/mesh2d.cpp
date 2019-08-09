@@ -370,9 +370,9 @@ std::vector<Vector> Mesh2D::Import() const {
     return data;
 }
 
-void Mesh2D::Export( const Matrix& results ) const {
+void Mesh2D::Export( const Matrix& results, std::string label ) const {
     assert( results.rows() == _settings->GetNStates() * 2 );
-    std::string vtkFile = _settings->GetOutputFile();
+    std::string vtkFile = _settings->GetOutputFile() + label;
     auto writer         = vtkUnstructuredGridWriterSP::New();
     if( vtkFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "vtk" ) {
         vtkFile.append( ".vtk" );

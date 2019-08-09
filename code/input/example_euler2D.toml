@@ -16,7 +16,7 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.5]]
 CFL = 0.9
-tEnd = 2.0
+tEnd = 0.000001
 residual = 2.2e-4
 
 [moment_system]

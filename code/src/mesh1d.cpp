@@ -87,10 +87,10 @@ std::vector<Vector> Mesh1D::Import() const {
     return data;
 }
 
-void Mesh1D::Export( const Matrix& results ) const {
+void Mesh1D::Export( const Matrix& results, std::string label ) const {
     assert( results.rows() >= _settings->GetNStates() * 2 );
     double height       = ( _nodes[_numCells]->coords[0] - _nodes[0]->coords[0] ) / 10;
-    std::string vtkFile = _settings->GetOutputFile();
+    std::string vtkFile = _settings->GetOutputFile() + label;
     auto writer         = vtkUnstructuredGridWriterSP::New();
     if( vtkFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "vtk" ) {
         vtkFile.append( ".vtk" );

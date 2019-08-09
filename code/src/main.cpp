@@ -136,7 +136,7 @@ void WriteErrors( const MatVec& u, Settings* settings, Mesh* mesh ) {
     if( settings->GetProblemType() == P_SHALLOWWATER_2D )
         mesh->ExportShallowWater( meanAndVar );
     else
-        mesh->Export( meanAndVar );
+        mesh->Export( meanAndVar, "" );
 
     if( settings->HasReferenceFile() ) {
         // define rectangle for error computation
@@ -159,7 +159,7 @@ void WriteErrors( const MatVec& u, Settings* settings, Mesh* mesh ) {
 
         // compute error field with 2 norm for vtk plot
         auto errorField = CalculateErrorField( meanAndVar, settings, mesh, 2 );
-        mesh->Export( errorField );
+        mesh->Export( errorField, "_errors" );
 
         std::ostringstream osL1ErrorMean, osL2ErrorMean, osLInfErrorMean, osL1ErrorVar, osL2ErrorVar, osLInfErrorVar;
         for( unsigned i = 0; i < settings->GetNStates(); ++i ) {
