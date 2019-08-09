@@ -81,6 +81,45 @@ Vector CalculateError( const Matrix& solution, Settings* settings, Mesh* mesh, u
     return error;
 }
 
+Matrix CalculateErrorField( const Matrix& solution, Settings* settings, Mesh* mesh, unsigned LNorm ) {
+    auto referenceSolution = mesh->Import();
+    unsigned nStates       = settings->GetNStates();
+    unsigned nCells        = settings->GetNumCells();
+    Matrix error( 2 * nStates, nCells, 0.0 );
+    Vector refNorm( 2 * nStates, 0.0 );
+
+    for( unsigned j = 0; j < nCells; ++j ) {
+        switch( LNorm ) {
+            case 1:
+                for( unsigned s = 0; s < nStates; ++s ) {
+                    error( s, j )           = std::fabs( ( solution( s, j ) - referenceSolution[j][s] ) );
+                    error( nStates + s, j ) = std::fabs( ( solution( nStates + s, j ) - referenceSolution[j][s + nStates] ) );
+                    refNorm[s] += std::fabs( referenceSolution[j][s] ) * mesh->GetArea( j );
+                    refNorm[s + nStates] += std::fabs( referenceSolution[j][s + nStates] ) * mesh->GetArea( j );
+                }
+                break;
+            case 2:
+                for( unsigned s = 0; s < nStates; ++s ) {
+                    error( s, j )           = std::pow( ( solution( s, j ) - referenceSolution[j][s] ), 2 );
+                    error( nStates + s, j ) = std::pow( ( solution( nStates + s, j ) - referenceSolution[j][s + nStates] ), 2 );
+                    refNorm[s] += std::pow( referenceSolution[j][s], 2 ) * mesh->GetArea( j );
+                    refNorm[s + nStates] += std::pow( referenceSolution[j][s + nStates], 2 ) * mesh->GetArea( j );
+                }
+                break;
+            default: exit( EXIT_FAILURE );
+        }
+    }
+
+    for( unsigned j = 0; j < nCells; ++j ) {
+        for( unsigned s = 0; s < nStates; ++s ) {
+            error( s, j )           = error( s, j ) / refNorm[s];
+            error( nStates + s, j ) = error( nStates + s, j ) / refNorm[s + nStates];
+        }
+    }
+
+    return error;
+}
+
 void WriteErrors( const MatVec& u, Settings* settings, Mesh* mesh ) {
     Matrix meanAndVar( 2 * settings->GetNStates(), settings->GetNumCells(), 0.0 );
     for( unsigned j = 0; j < settings->GetNumCells(); ++j ) {
@@ -117,6 +156,10 @@ void WriteErrors( const MatVec& u, Settings* settings, Mesh* mesh ) {
         auto l1Error   = CalculateError( meanAndVar, settings, mesh, 1, a, b );
         auto l2Error   = CalculateError( meanAndVar, settings, mesh, 2, a, b );
         auto lInfError = CalculateError( meanAndVar, settings, mesh, 0, a, b );
+
+        // compute error field with 2 norm for vtk plot
+        auto errorField = CalculateErrorField( meanAndVar, settings, mesh, 2 );
+        mesh->Export( errorField );
 
         std::ostringstream osL1ErrorMean, osL2ErrorMean, osLInfErrorMean, osL1ErrorVar, osL2ErrorVar, osLInfErrorVar;
         for( unsigned i = 0; i < settings->GetNStates(); ++i ) {
