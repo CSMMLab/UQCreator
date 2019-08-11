@@ -20,6 +20,7 @@ RegularizedEuler2D::RegularizedEuler2D( Settings* settings )
 RegularizedEuler2D::~RegularizedEuler2D() {}
 
 void RegularizedEuler2D::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+
     Vector uKinetic( _nStates, 0.0 );
     unsigned nTotal = _nTotalForRef[refLevel];
     g.reset();
@@ -70,7 +71,7 @@ void RegularizedEuler2D::Hessian( Matrix& H, const Matrix& lambda, unsigned refL
             for( unsigned m = 0; m < _nStates; ++m ) {
                 for( unsigned j = 0; j < nTotal; ++j ) {
                     for( unsigned i = 0; i < nTotal; ++i ) {
-                        H( m * nTotal + j, l * nTotal + i ) += _hPartial[k]( j, i ) * dUdLambda( l, m );
+                        H( m * nTotal + j, l * nTotal + i ) += _hPartial[k]( j, i ) * _wGrid[refLevel][k] * dUdLambda( l, m );
                     }
                 }
             }

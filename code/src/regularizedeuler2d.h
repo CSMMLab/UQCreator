@@ -6,7 +6,6 @@
 class RegularizedEuler2D : public EulerClosure2D
 {
   private:
-    double _gamma;
     double _eta;       // regularization parameter
     double _lambda;    // filter strength
     Vector _filterFunction;

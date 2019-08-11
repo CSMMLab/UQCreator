@@ -33,6 +33,6 @@ moments = [["totalDegree"],[4]]
 quadPoints = [["sparseGrid"],[3]]
 #cRetardation = [[1,2,4],[0.01,0.005,0.001]]
 #refinementThresholds = [0.0001, 0.00001]
-regularizationStrength = 0.00001
+regularizationStrength = 0.0
 maxIterations = 1
 epsilon = 1e-7
