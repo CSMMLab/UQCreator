@@ -337,6 +337,12 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             _coarsenThreshold    = ( *refinementThresholds )[1];
         }
 
+        _regularizationStrength = moment_system->get_as<double>( "regularizationStrength" ).value_or( -1.0 );
+        if( _regularizationStrength < 0 )
+            _regularization = false;
+        else
+            _regularization = true;
+
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
         _hasSource     = false;
@@ -443,6 +449,7 @@ unsigned Settings::GetPolyDegreeforRefLevel( unsigned level ) const { return _re
 GridType Settings::GetGridType() const { return _gridType; }
 VectorU Settings::GetQuadLevel() const { return _quadLevel; }
 std::vector<unsigned> Settings::GetIndicesQforRef( unsigned level ) const { return _kIndicesAtRef[level]; }
+bool Settings::HasRegularization() const { return _regularization; }
 
 // Set Total number of Quadrature points at each refinement level
 void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
@@ -478,6 +485,8 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
 unsigned Settings::GetNQTotalForRef( unsigned level ) const { return _nQTotalForRef[level]; }
 VectorU Settings::GetNQTotalForRef() const { return _nQTotalForRef; }
 unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }
+double Settings::GetFilterStrength() const { return 0.0; }
+double Settings::GetRegularizationStrength() const { return _regularizationStrength; }
 
 // plot
 unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }

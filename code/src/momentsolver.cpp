@@ -69,6 +69,9 @@ void MomentSolver::Solve() {
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
 
+    // perform initial step for regularization
+    if( _settings->HasRegularization() ) PerformInitialStep( refinementLevel, u );
+
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
         double residual = 0;
@@ -133,7 +136,13 @@ void MomentSolver::Solve() {
 
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
-            u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
+            if( _settings->HasRegularization() )
+                // skip recomputation step if regularization is applied
+                u[j] = uNew[j];
+            else {
+                // recompute moments with inexact dual variables
+                u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
+            }
         }
 
         // determine time step size
@@ -811,4 +820,22 @@ void MomentSolver::WriteErrors( const VectorU& refinementLevel ) {
     l1ErrorVarLog->info( osL1ErrorVar.str() );
     l2ErrorVarLog->info( osL2ErrorVar.str() );
     lInfErrorVarLog->info( osLInfErrorVar.str() );
+}
+void MomentSolver::PerformInitialStep( const VectorU& refinementLevel, MatVec& u ) {
+// initial dual solve
+#pragma omp parallel for schedule( dynamic, 10 )
+    for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+        _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+    }
+
+    MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
+    // compute solution at quad points
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevel[j], refinementLevel[j] ) );
+    }
+
+    // compute partial moment vectors on each PE (for inexact dual variables)
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
+    }
 }

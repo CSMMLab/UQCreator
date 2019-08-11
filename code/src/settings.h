@@ -51,6 +51,8 @@ class Settings
     std::filesystem::path _restartFile;
     std::filesystem::path _referenceFile;
     bool _loadLambda;
+    bool _regularization;
+    double _regularizationStrength;
 
     int _writeFrequency;    // number of time steps until error to reference solution is computed
 
@@ -191,6 +193,9 @@ class Settings
     void SetMaxIterations( unsigned maxIterations );
     double GetEpsilon() const;
     GridType GetGridType() const;
+    bool HasRegularization() const;
+    double GetFilterStrength() const;
+    double GetRegularizationStrength() const;
 
     // plot
     bool GetPlotEnabled() const;
