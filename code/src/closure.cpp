@@ -7,6 +7,7 @@
 #include "logsin.h"
 #include "mathtools.h"
 #include "radihydroclosure1d.h"
+#include "regularizedeuler2d.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
 #include "stochasticgalerkin.h"
@@ -117,7 +118,10 @@ Closure* Closure::Create( Settings* settings ) {
         return new EulerClosure( settings );
     }
     else if( closureType == ClosureType::C_EULER_2D ) {
-        return new EulerClosure2D( settings );
+        if( settings->HasRegularization() )
+            return new RegularizedEuler2D( settings );
+        else
+            return new EulerClosure2D( settings );
     }
     else if( closureType == ClosureType::C_SHALLOWWATER_1D ) {
         return new ShallowWaterClosure( settings );
