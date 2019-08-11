@@ -81,43 +81,65 @@ First, it sticks out that again, the intrusive methods yield a smaller error lev
 
  and compare against Collocation with $5$ collocation points as well as SG and IPM with $5$ moments and $10$ quadrature points. Furthermore, we use convergence accelerated (caIPM) as well as convergence accelerated one-shot IPM (caosIPM), which we introduced in Sections \ref{sec:collIPM} and \ref{sec:OneShotIPM} with $10$ moments and $15$ quadrature points to converge the collocation solution with $5$ quadrature points to an entropy solution with increased accuracy.
 
+
+
 \newgeometry{top=1.5cm, left=1.0cm}
+\begin{figure}[h!]
+\centering
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+				\includegraphics[scale=0.25]{figs/Euler1DPlots5/{sc100_ERho}.png}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+				\includegraphics[scale=0.25]{figs/Euler1DPlots5/{sc100_VarRho}.png}
+		\label{fig:sub2}
+	\end{subfigure}
+	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
+	\label{fig:L2ErrorSolution}
+\end{figure}
+
 \begin{figure}[h!]
 \centering
 	\begin{subfigure}{0.33\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_sc_n5_s05_aoa}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{EulerSC5-2Res1e-6_ERho}.png}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\begin{subfigure}{0.33\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_sg_n5_nq10_s05_aoa}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{sg_4_9_ERho}.png}
 		\label{fig:sub2}
 	\end{subfigure}%
 	\begin{subfigure}{0.33\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_ipm_n5_nq10_s05_aoa}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{osIPM4-4_ERho}.png}
 		\label{fig:sub1}
 	\end{subfigure}
 	
-	\begin{subfigure}{0.33\linewidth}
+		\begin{subfigure}{0.33\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_caipm_n10_nq15_s05_aoa}.png}
-		\label{fig:sub2}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{EulerSC5-2Res1e-6_VarRho}.png}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\begin{subfigure}{0.33\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/{euler2D_nacaCoarse_sc_n50_s05_aoa_legend}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{sg_4_9_VarRho}.png}
 		\label{fig:sub2}
 	\end{subfigure}%
-	\caption{E$[\rho]$ (from top left to bottom right) SC, SG, IPM, caIPM, caosIPM, reference solution.}
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{osIPM4-4_VarRho}.png}
+		\label{fig:sub1}
+	\end{subfigure}
+	\caption{E$[\rho]$ and Var$[\rho]$ computed with SC$^5$, SG$_5$, IPM$_5$ (from left to right).}
 	\label{fig:Obstacles2D}
 \end{figure}
+
+
+
+
 
 \begin{figure}[h!]
 \centering
