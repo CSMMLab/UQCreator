@@ -17,6 +17,7 @@ class RegularizedEuler2D : public EulerClosure2D
   public:
     RegularizedEuler2D( Settings* settings );
     virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel );
+    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel );
     virtual ~RegularizedEuler2D();
 };
 
