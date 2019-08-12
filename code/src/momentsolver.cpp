@@ -102,8 +102,11 @@ void MomentSolver::Solve() {
         // determine refinement level of cells on current PE
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            // double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
-            double indicator = 0.0;
+            double indicator;
+            if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D )
+                indicator = 0.0;
+            else
+                indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
             if( indicator > _settings->GetRefinementThreshold() &&
                 refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels( retCounter ) - 1 )
                 refinementLevel[_cellIndexPE[j]] += 1;
@@ -167,8 +170,10 @@ void MomentSolver::Solve() {
         }
 
         if( _settings->HasRegularization() ) {
+            // add eta*lambda to obtain old moments
             for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-                u[_cellIndexPE[j]] = u[_cellIndexPE[j]] + _settings->GetRegularizationStrength() * _lambda[_cellIndexPE[j]];
+                u[_cellIndexPE[j]] = u[_cellIndexPE[j]].Add(
+                    _settings->GetRegularizationStrength() * _lambda[_cellIndexPE[j]], _nStates, _nTotalForRef[refinementLevelOld[_cellIndexPE[j]]] );
             }
         }
 

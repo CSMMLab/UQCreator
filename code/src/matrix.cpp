@@ -20,6 +20,7 @@ template <class T> class Matrix    // column major
     ~Matrix();
     void operator=( const Matrix<T>& other );
     void resize( unsigned rows, unsigned columns );
+    Matrix<T> Add( const Matrix<T>& other, unsigned rows, unsigned columns ) const;
 
     T& operator()( unsigned i, unsigned j );
     const T& operator()( unsigned i, unsigned j ) const;
@@ -102,6 +103,17 @@ template <class T> void Matrix<T>::operator=( const Matrix<T>& other ) {
             ( *this )( i, j ) = other( i, j );
         }
     }
+}
+
+template <class T> Matrix<T> Matrix<T>::Add( const Matrix<T>& other, unsigned rows, unsigned columns ) const {
+    Matrix<T> res( _rows, _columns, true );
+
+    for( unsigned j = 0; j < columns; ++j ) {
+        for( unsigned i = 0; i < rows; ++i ) {
+            res( i, j ) = ( *this )( i, j ) + other( i, j );
+        }
+    }
+    return res;
 }
 
 template <class T> T& Matrix<T>::operator()( unsigned i, unsigned j ) { return _data[j * _rows + i]; }
