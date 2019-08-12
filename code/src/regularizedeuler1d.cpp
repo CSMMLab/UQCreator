@@ -2,9 +2,9 @@
 
 RegularizedEuler1D::RegularizedEuler1D( Settings* settings )
     : EulerClosure( settings ), _eta( _settings->GetRegularizationStrength() ), _lambda( _settings->GetFilterStrength() ) {
-    unsigned nMoments = _settings->GetNMoments();
-    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
+    _filterFunction = Vector( _settings->GetNTotal(), 1.0 );
     /*
+    unsigned nMoments = _settings->GetNMoments();
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
@@ -85,12 +85,12 @@ void RegularizedEuler1D::Hessian( Matrix& H, const Matrix& lambda, unsigned refL
 
 void RegularizedEuler1D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
     unsigned nTotal = _nTotalForRef[refLevel];
-    Matrix uF( _settings->GetNStates(), nTotal );
+    /*Matrix uF( _settings->GetNStates(), nTotal );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < nTotal; ++i ) {
             uF( s, i ) = _filterFunction[i] * u( s, i );
         }
-    }
+    }*/
     int maxRefinements = 1000;
 
     Vector g( _nStates * nTotal );
@@ -100,6 +100,7 @@ void RegularizedEuler1D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
+    Gradient( g, lambda, u, refLevel );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
     // calculate initial Hessian and gradient
@@ -151,12 +152,12 @@ void RegularizedEuler1D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned
 
 void RegularizedEuler1D::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
     unsigned nTotal = _nTotalForRef[refLevel];
-    Matrix uF( _settings->GetNStates(), nTotal );
+    /*Matrix uF( _settings->GetNStates(), nTotal );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < nTotal; ++i ) {
             uF( s, i ) = _filterFunction[i] * u( s, i );
         }
-    }
+    }*/
     int maxRefinements = 1000;
 
     Vector g( _nStates * nTotal );

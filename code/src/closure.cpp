@@ -119,8 +119,9 @@ Closure* Closure::Create( Settings* settings ) {
         if( settings->HasRegularization() ) {
             return new RegularizedEuler1D( settings );
         }
-        else
+        else {
             return new EulerClosure( settings );
+        }
     }
     else if( closureType == ClosureType::C_EULER_2D ) {
         if( settings->HasRegularization() ) {

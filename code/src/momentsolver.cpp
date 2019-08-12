@@ -56,9 +56,6 @@ void MomentSolver::Solve() {
 
     std::vector<int> PEforCell = _settings->GetPEforCell();
 
-    MatVec uNew = u;
-    MatVec uOld = u;
-
     // set up function pointer for right hand side
     auto numFluxPtr = std::bind( &MomentSolver::numFlux, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3 );
 
@@ -75,6 +72,9 @@ void MomentSolver::Solve() {
     std::cout << "Before initial step" << std::endl;
     if( _settings->HasRegularization() ) PerformInitialStep( refinementLevel, u );
     std::cout << "After initial step" << std::endl;
+
+    MatVec uNew = u;
+    MatVec uOld = u;
 
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {

@@ -100,6 +100,7 @@ void RegularizedEuler2D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
+    Gradient( g, lambda, u, refLevel );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
     // calculate initial Hessian and gradient
