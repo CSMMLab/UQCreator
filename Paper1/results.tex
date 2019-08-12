@@ -42,10 +42,10 @@ The quantities of interests are now computed with the different methods. All met
 		\includegraphics[scale=0.7]{figs/{ConvergenceQuadrature}.pdf}
 		\label{fig:sub1}
 	\caption{Relative L$^2$ error with different quadrature levels.}
-	\label{fig:Obstacles2D}
+	\label{fig:ErrorDifferentQuad}
 \end{figure}
 
-Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rule to approximate integrals. We start by investigating the effects this quadrature has on the solution accuracy. For this, we run the IPM method with a moment order ranging from three to seven \comment{[use IPM instead of osIPM]} using a Clenshaw-Curtis quadrature rule with level three (i.e. 9 quadrature points) and level four (i.e. 17 quadrature points). The results are given in Figure TODO. It can be seen that the error stagnates when the chosen quadrature is not sufficiently accurate. This behavior results from aliasing effects, which dominate the accuracy level. Note that SC can be interpreted as an intrusive method which uses as many moments as quadrature points to compute the numerical flux. Therefore, we can conclude that the error of SC is dominated by aliasing effects and will not reach the same accuracy level as an intrusive method with a sufficiently accurate quadrature rule. Especially for high dimensional problems, this potentially decreases the number of unknowns to reach a certain accuracy level significantly. However note, that since the numerical flux evaluation requires $O(N\cdot Q)$ evaluations, the numerical costs will depend on the chosen quadrature rule.
+Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rule to approximate integrals. We start by investigating the effects this quadrature has on the solution accuracy. For this, we run the IPM method with a moment order ranging from three to seven using a Clenshaw-Curtis quadrature rule with level three (i.e. 9 quadrature points) and level four (i.e. 17 quadrature points). The results are given in Figure~\ref{fig:ErrorDifferentQuad}. It can be seen that the error stagnates when the chosen quadrature is not sufficiently accurate. This behavior results from aliasing effects, which dominate the accuracy level. Note that SC can be interpreted as an intrusive method which uses as many moments as quadrature points to compute the numerical flux. Therefore, we can conclude that the error of SC is dominated by aliasing effects and will not reach the same accuracy level as an intrusive method with a sufficiently accurate quadrature rule. Especially for high dimensional problems, this potentially decreases the number of unknowns to reach a certain accuracy level significantly. However note, that since the numerical flux evaluation requires $O(N\cdot Q)$ evaluations, the numerical costs will depend on the chosen quadrature rule.
 
 Let us now compare stochastic-Collocation with stochastic-Galerkin and IPM as well as its proposed acceleration techniques. Note that since IPM generalizes SG, all proposed techniques can be used for this method as well. The methods are iterated until the expectation value of the density fulfills the stopping criterion \eqref{eq:residualSteady} with $\varepsilon = 5\cdot 10^{-5}$. Note that the adaptive SG method fails, since it yields negative densities during the iteration. The standard SG method however remains in the admissible set. The change of the relative L$^2$ error during the iteration to the steady state has been recorded in Figure~\ref{fig:L2ErrorSolution}.
 \begin{figure}[h!]
@@ -134,7 +134,29 @@ First, it sticks out that again, the intrusive methods yield a smaller error lev
 		\label{fig:sub1}
 	\end{subfigure}
 	\caption{E$[\rho]$ and Var$[\rho]$ computed with SC$^5$, SG$_5$, IPM$_5$ (from left to right).}
-	\label{fig:Obstacles2D}
+	\label{fig:ERhoVarRho5}
+\end{figure}
+
+\newgeometry{top=1.5cm, left=1.0cm}
+\begin{figure}[h!]
+\centering
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+				\includegraphics[scale=0.25]{figs/Euler1DPlots10/{EulerSC4-17Res1e-6_errors_ERho}.png}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+				\includegraphics[scale=0.25]{figs/Euler1DPlots10/{euler2D_nacaCoarse_sg_n9_sg4_s05_aoa_errors_ERho}.png}
+		\label{fig:sub2}
+	\end{subfigure}
+		\begin{subfigure}{0.33\linewidth}
+		\centering
+				\includegraphics[scale=0.25]{figs/Euler1DPlots10/{euler2D_nacaCoarse_ipm_n9_sg4_s05_aoa_errors_ERho}.png}
+		\label{fig:sub2}
+	\end{subfigure}
+	\caption{Errors E$[\rho]$ for SC$^{17}$, SG$_{10}$, IPM$_{10}$ (from left to right).}
+	\label{fig:ErrorsERho}
 \end{figure}
 
 
