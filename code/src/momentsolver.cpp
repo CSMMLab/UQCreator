@@ -140,14 +140,8 @@ void MomentSolver::Solve() {
 
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
-            if( _settings->HasRegularization() ) {
-                // skip recomputation step if regularization is applied
-                u[j] = uNew[j];
-            }
-            else {
-                // recompute moments with inexact dual variables
-                u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
-            }
+            // recompute moments with inexact dual variables
+            u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
 
         // determine time step size
@@ -170,6 +164,12 @@ void MomentSolver::Solve() {
         // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
+        }
+
+        if( _settings->HasRegularization() ) {
+            for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+                u[_cellIndexPE[j]] = u[_cellIndexPE[j]] + _settings->GetRegularizationStrength() * _lambda[_cellIndexPE[j]];
+            }
         }
 
         // compute residual
