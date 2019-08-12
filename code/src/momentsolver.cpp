@@ -49,7 +49,9 @@ void MomentSolver::Solve() {
     Closure* prevClosure   = DeterminePreviousClosure( prevSettings );
     if( _settings->HasRestartFile() ) _tStart = prevSettings->GetTEnd();
     MatVec u = DetermineMoments( prevSettings->GetNTotal() );
+    std::cout << "Before dual set step" << std::endl;
     SetDuals( prevSettings, prevClosure, u );
+    std::cout << "After dual set step" << std::endl;
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
 
     std::vector<int> PEforCell = _settings->GetPEforCell();
@@ -70,7 +72,9 @@ void MomentSolver::Solve() {
     double residualFull = minResidual + 1.0;
 
     // perform initial step for regularization
+    std::cout << "Before initial step" << std::endl;
     if( _settings->HasRegularization() ) PerformInitialStep( refinementLevel, u );
+    std::cout << "After initial step" << std::endl;
 
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
@@ -572,7 +576,6 @@ MatVec MomentSolver::SetupIC() const {
                 column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );
             }
         }
-
         u[j] = uIC * phiTildeWf;
     }
     return u;

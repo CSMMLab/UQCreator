@@ -21,7 +21,7 @@ outputFile = "retardedEuler"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.25],[0.025]]
+distribution = [["Legendre","Legendre"],[0.25,0.025]]
 CFL = 0.9
 tEnd = 100.0
 residual = 1e-6
@@ -30,9 +30,9 @@ residual = 1e-6
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "Euler2D"
 moments = [["totalDegree"],[4]]
-quadPoints = [["sparseGrid"],[3]]
+quadPoints = [["sparseGrid"],[4]]
 #cRetardation = [[1,2,4],[0.01,0.005,0.001]]
 #refinementThresholds = [0.0001, 0.00001]
-regularizationStrength = 0.0
+regularizationStrength = 0.0001
 maxIterations = 1
 epsilon = 1e-7
