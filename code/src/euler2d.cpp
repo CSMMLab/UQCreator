@@ -162,7 +162,7 @@ double Euler2D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
 Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
     _sigma            = _settings->GetSigma();
-    bool pipeTestCase = false;
+    bool pipeTestCase = true;
     if( pipeTestCase ) {    // pipe testcase
         double gamma = 1.4;
         double R     = 287.87;
@@ -178,18 +178,23 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
 
         double rhoFarfield = p / ( R * T );
 
-        y[0] = 1.0;
-        y[1] = 0.0;
-        y[2] = 0.0;
-        y[3] = 1.0;
+        y[0]                  = rhoFarfield;
+        y[1]                  = rhoFarfield * uF;
+        y[2]                  = rhoFarfield * vF;
+        double kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
+        double innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
+        y[3]                  = kineticEnergyL + innerEnergyL;
 
-        if( x[0] > 0.5 + _sigma[0] * xi[0] ) {
-            y[0] = 0.2;
-            if( _settings->GetNDimXi() > 1 ) y[0] += _sigma[1] * xi[1];
-            y[1] = 0.0;
-            y[2] = 0.0;
-            y[3] = 0.2;
-            if( _settings->GetNDimXi() > 2 ) y[3] += _sigma[2] * xi[2];
+        double scalingRho = 0.8;
+        double scalingP   = 0.1;
+        if( x[1] < 0.8 + _sigma[0] * xi[0] ) {
+            y[0]           = scalingRho * rhoFarfield;
+            y[1]           = rhoFarfield * uF;
+            y[2]           = rhoFarfield * vF;
+            p              = scalingP * p;
+            kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
+            innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
+            y[3]           = ( kineticEnergyL + innerEnergyL );
         }
         /*
          if( x[1] < 1.1 + sigma && x[1] < 1.1 - sigma ) {
@@ -209,7 +214,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         double T     = 273.15;
         double p     = 101325.0;
         double Ma    = 0.8;
-        if( xi.size() > 1 ) {
+        if( xi.size() == 2 ) {
             Ma = Ma + xi[1] * _sigma[1];
         }
         double a = sqrt( gamma * R * T );
@@ -230,7 +235,6 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         return y;
     }
 }
-
 Vector Euler2D::LoadIC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
 

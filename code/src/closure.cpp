@@ -54,6 +54,25 @@ Closure::Closure( Settings* settings )
     // set total number of quadrature points
     _nQTotal = _quadGrid->GetNodeCount();
 
+    std::cout << "xi = " << std::endl;
+    for( unsigned k = 0; k < _nQTotal; ++k ) {
+        for( unsigned l = 0; l < _numDimXi; ++l ) {
+            std::cout << _xiGrid[k][l] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    double tmp = 0.0;
+    std::cout << "w = " << std::endl;
+    for( unsigned k = 0; k < _nQTotal; ++k ) {
+        for( unsigned l = 0; l < _numDimXi; ++l ) {
+            std::cout << _wGrid[_settings->GetNRefinementLevels() - 1][k] << " ";
+            tmp += _wGrid[_settings->GetNRefinementLevels() - 1][k];
+        }
+        std::cout << std::endl;
+    }
+    std::cout << tmp << std::endl;
+
     // compute basis functions evaluated at the quadrature points
     _phiTilde    = Matrix( _nQTotal, _nTotal, 1.0 );
     _phiTildeF   = Matrix( _nQTotal, _nTotal, 1.0 );
@@ -83,17 +102,17 @@ Closure::Closure( Settings* settings )
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         _hPartial[k] = outer( column( _phiTildeTrans, k ), column( phiTildeFTrans, k ) );    // TODO
     }
-    /*
-        // Test if polynomials are orthonormal
-        Matrix testQuad( _nTotal, _nTotal, 0.0 );
-        for( unsigned i = 0; i < _nTotal; ++i ) {
-            for( unsigned j = 0; j < _nTotal; ++j ) {
-                for( unsigned k = 0; k < _nQTotal; ++k ) {
-                    testQuad( i, j ) += _phiTilde( k, i ) * _phiTildeWf( k, j );
-                }
+
+    // Test if polynomials are orthonormal
+    Matrix testQuad( _nTotal, _nTotal, 0.0 );
+    for( unsigned i = 0; i < _nTotal; ++i ) {
+        for( unsigned j = 0; j < _nTotal; ++j ) {
+            for( unsigned k = 0; k < _nQTotal; ++k ) {
+                testQuad( i, j ) += _phiTilde( k, i ) * _phiTildeWf( k, j );
             }
         }
-        std::cout << "test I " << testQuad << std::endl;*/
+    }
+    std::cout << "test I " << testQuad << std::endl;
 }
 
 Closure::~Closure() {

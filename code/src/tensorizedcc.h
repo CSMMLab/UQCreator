@@ -17,9 +17,11 @@ class TensorizedCC : public QuadratureGrid
     unsigned _nQTotal;
     double** _nodes;
     double* _weights;
+    std::vector<std::vector<unsigned>> _counter;
     void CreateGrid();
     Vector computeNodes1D(unsigned level);
     Vector computeWeights1D(unsigned level );
+    void DetermineCounter( unsigned level );
 
   public:
     TensorizedCC( Settings* settings );

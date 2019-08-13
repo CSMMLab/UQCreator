@@ -1,5 +1,6 @@
 #include "tensorizedcc.h"
 #include "legendre.h"
+#include "uniformsparsegrid.h"
 
 TensorizedCC::TensorizedCC( Settings* settings ) : _settings( settings ), _nQuadPoints( settings->GetNQuadPoints() ) {
     // compute total number of quad points
@@ -77,31 +78,24 @@ void TensorizedCC::CreateGrid() {
         }
     }
 
-    // sort indices according to level
-    for( unsigned k = 0; k < _nQTotal; ++k ) {
-    }
+    auto quadGrid = new UniformSparseGrid( _nQuadPoints, 1 );
 
     // store quad points and weights for individual distributions
-    Vector xi = computeNodes1D( _nQuadPoints );
-    Vector w  = computeWeights1D( _nQuadPoints );
+    std::vector<Vector> xi = quadGrid->GetNodes();
+    std::cout << "size = " << xi.size() << std::endl;
+    Vector w = quadGrid->GetWeights();
 
     // std::cout << "xi = " << xi << std::endl;
     // std::cout << "w = " << w << std::endl;
     // std::cout << std::endl;
 
     // setup weights and nodes
-    // std::cout << "------------------" << std::endl;
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         for( unsigned l = 0; l < _numDimXi; ++l ) {
-            // std::cout << indicesQ[k][l] << " ";
-            _nodes[l][k] = xi[indicesQ[k][l]];
+            _nodes[l][k] = xi[indicesQ[k][l]][0];
             _weights[k] *= w[indicesQ[k][l]];
         }
-        // std::cout << std::endl;
     }
-    // std::cout << "------------------" << std::endl;
-    std::cout << w << std::endl;
-    exit( EXIT_FAILURE );
 }
 
 std::vector<Vector> TensorizedCC::GetNodes() {
@@ -236,7 +230,6 @@ void TensorizedCC::DetermineCounter( unsigned level ) {
 
 Vector TensorizedCC::computeWeights1D( unsigned level ) {
     unsigned order;
-    unsigned counter = 3;
     if( level == 0 ) {
         order = 1;
     }
@@ -268,5 +261,15 @@ Vector TensorizedCC::computeWeights1D( unsigned level ) {
     w[0] /= order - 1;
     for( unsigned i = 1; i < order - 1; i++ ) w[i] *= 2.0 / ( order - 1 );
     w[order - 1] /= order - 1;
+
+    Vector wNew( order, 0.0 );
+
+    for( unsigned l = 2; l <= level; ++l ) {
+        for( unsigned j = pow( 2, level - l ) - 1; j <= order; j += std::floor( ( order - 1 ) / 2 * ( l - 1 ) ) ) {
+            std::cout << j << " ";
+        }
+        std::cout << std::endl;
+    }
+
     return w;
 }

@@ -72,9 +72,7 @@ void MomentSolver::Solve() {
     double residualFull = minResidual + 1.0;
 
     // perform initial step for regularization
-    std::cout << "Before initial step" << std::endl;
     if( _settings->HasRegularization() ) PerformInitialStep( refinementLevel, uNew );
-    std::cout << "After initial step" << std::endl;
 
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
@@ -87,7 +85,7 @@ void MomentSolver::Solve() {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
             //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
-            _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+            _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
         }
 
         // MPI Broadcast lambdas to all PEs

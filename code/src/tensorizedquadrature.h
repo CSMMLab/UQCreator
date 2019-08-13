@@ -22,6 +22,7 @@ class TensorizedQuadrature : public QuadratureGrid
   public:
     TensorizedQuadrature( Settings* settings );
     TensorizedQuadrature( Settings* settings, unsigned level );
+    TensorizedQuadrature( Settings* settings, unsigned level, unsigned dim );
     ~TensorizedQuadrature();
     std::vector<Vector> GetNodes();
     Vector GetWeights();
