@@ -214,7 +214,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         double T     = 273.15;
         double p     = 101325.0;
         double Ma    = 0.8;
-        if( xi.size() == 2 ) {
+        if( xi.size() > 1 ) {
             Ma = Ma + xi[1] * _sigma[1];
         }
         double a = sqrt( gamma * R * T );
