@@ -53,6 +53,8 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
 
     std::cout << "C = " << _c << " , P = " << _P << std::endl;
 
+    _settings->SetGamma( _gamma );
+
     if( _N == 1 )    // GlobalIndex has different ordering here
         _nMoments = 4;
     else

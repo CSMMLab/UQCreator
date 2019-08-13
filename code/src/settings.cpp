@@ -298,6 +298,13 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 _gridType = G_TENSORIZEDGRID;
                 _nQTotal  = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
             }
+            else if( quadratureType->at( 0 ).compare( "tensorizedCCGrid" ) == 0 ) {    // tensorizedCC
+                _gridType = G_TENSORIZEDCC;
+                if( _nQuadPoints == 0 )
+                    _nQTotal = 1;
+                else
+                    _nQTotal = unsigned( std::pow( static_cast<unsigned>( std::pow( 2, _nQuadPoints ) + 1 ), _numDimXi ) );
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'quadType' not defined!" );
                 validConfig = false;
