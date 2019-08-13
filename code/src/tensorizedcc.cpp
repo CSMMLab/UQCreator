@@ -117,34 +117,55 @@ unsigned TensorizedCC::GetNodeCount() { return _nQTotal; }
 
 Vector TensorizedCC::computeNodes1D( unsigned level ) {
     double value;
-    unsigned order;
+    unsigned order, i;
+    unsigned counter = 3;
+    std::vector<std::vector<unsigned>> counterFor;
+    counterFor.resize( level );
     Vector nodes;
     if( level == 0 ) {
         order = 1;
+        return Vector( 1, 0.0 );
     }
     else {
         order = static_cast<unsigned>( std::pow( 2, level ) + 1 );
     }
     nodes.resize( order );
-    for( unsigned i = 1; i <= order; ++i ) {
-        if( order < 1 )
-            value = std::numeric_limits<unsigned>::min();
-        else if( i < 1 || order < i )
-            value = std::numeric_limits<unsigned>::min();
-        else if( order == 1 )
-            value = 0.0;
-        else if( 2 * ( order - i ) == order - 1 )
-            value = 0.0;
-        else
-            value = std::cos( ( order - i ) * M_PI / ( order - 1 ) );
-        nodes[i - 1] = value;
+    for( unsigned l = 1; l <= level; ++l ) {
+        std::cout << "Level " << l << std::endl;
+        // determine order, i.e. number of points
+        order = static_cast<unsigned>( std::pow( 2, l ) + 1 );
+        counterFor[l - 1].resize( order );
+
+        if( l == 1 ) {
+            nodes[0] = -1.0;
+            nodes[1] = 0.0;
+            nodes[2] = 1.0;
+            continue;
+        }
+
+        for( unsigned i = 2; i <= order; i += 2 ) {
+            std::cout << "Order " << i << std::endl;
+            if( order < 1 )
+                value = std::numeric_limits<unsigned>::min();
+            else if( i < 1 || order < i )
+                value = std::numeric_limits<unsigned>::min();
+            else if( order == 1 )
+                value = 0.0;
+            else if( 2 * ( order - i ) == order - 1 )
+                value = 0.0;
+            else
+                value = std::cos( ( order - i ) * M_PI / ( order - 1 ) );
+            nodes[counter]           = value;
+            counterFor[l - 1][i - 1] = counter;
+            ++counter;
+        }
     }
 
     return nodes;
 }
 
 Vector TensorizedCC::computeWeights1D( unsigned level ) {
-    unsigned order;
+    unsigned order, counter;
     if( level == 0 ) {
         order = 1;
     }
