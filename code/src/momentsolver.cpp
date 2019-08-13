@@ -49,9 +49,7 @@ void MomentSolver::Solve() {
     Closure* prevClosure   = DeterminePreviousClosure( prevSettings );
     if( _settings->HasRestartFile() ) _tStart = prevSettings->GetTEnd();
     MatVec u = DetermineMoments( prevSettings->GetNTotal() );
-    std::cout << "Before dual set step" << std::endl;
     SetDuals( prevSettings, prevClosure, u );
-    std::cout << "After dual set step" << std::endl;
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
 
     std::vector<int> PEforCell = _settings->GetPEforCell();
@@ -81,10 +79,8 @@ void MomentSolver::Solve() {
         // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            // if( _cellIndexPE[j] == 297 ) exit( EXIT_FAILURE );
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
-            //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
+            // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]]<< ", u = " << u[_cellIndexPE[j]] << std::endl;
             _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
         }
 

@@ -82,12 +82,7 @@ void TensorizedCC::CreateGrid() {
 
     // store quad points and weights for individual distributions
     std::vector<Vector> xi = quadGrid->GetNodes();
-    std::cout << "size = " << xi.size() << std::endl;
-    Vector w = quadGrid->GetWeights();
-
-    // std::cout << "xi = " << xi << std::endl;
-    // std::cout << "w = " << w << std::endl;
-    // std::cout << std::endl;
+    Vector w               = quadGrid->GetWeights();
 
     // setup weights and nodes
     for( unsigned k = 0; k < _nQTotal; ++k ) {
@@ -156,7 +151,6 @@ Vector TensorizedCC::computeNodes1D( unsigned level ) {
     }
     nodes.resize( order );
     for( unsigned l = 1; l <= level; ++l ) {
-        // std::cout << "Level " << l << std::endl;
         // determine order, i.e. number of points
         order = static_cast<unsigned>( std::pow( 2, l ) + 1 );
 
@@ -171,7 +165,6 @@ Vector TensorizedCC::computeNodes1D( unsigned level ) {
         }
 
         for( unsigned i = 2; i <= order; i += 2 ) {
-            // std::cout << "Order " << i << std::endl;
             if( order < 1 )
                 value = std::numeric_limits<unsigned>::min();
             else if( i < 1 || order < i )
@@ -183,50 +176,12 @@ Vector TensorizedCC::computeNodes1D( unsigned level ) {
             else
                 value = std::cos( ( order - i ) * M_PI / ( order - 1 ) );
             nodes[counter] = value;
-            //_counter[l - 1][i - 1] = counter;
             ++counter;
         }
     }
-    /*
-        for( unsigned i = 0; i < _counter.size(); ++i ) {
-            for( unsigned k = 0; k < _counter[i].size(); ++k ) {
-                std::cout << _counter[i][k] << " ";
-            }
-            std::cout << std::endl;
-        }*/
 
     return nodes;
 }
-/*
-void TensorizedCC::DetermineCounter( unsigned level ) {
-    unsigned order;
-    unsigned counter = 3;
-    _counter.resize( level );
-    if( level == 0 ) {
-        _counter[0].push_back( 0 );
-        return;
-    }
-
-    for( unsigned l = 1; l <= level; ++l ) {
-        order = static_cast<unsigned>( std::pow( 2, l ) + 1 );
-        _counter[l - 1].resize( order );
-
-        if( l == 1 ) {
-            nodes[0] = -1.0;
-            nodes[1] = 0.0;
-            nodes[2] = 1.0;
-            _counter[l - 1][];
-            continue;
-        }
-
-        for( unsigned i = 2; i <= order; i += 2 ) {
-            _counter[l - 1][i - 1] = counter;
-            ++counter;
-        }
-    }
-
-    return nodes;
-}*/
 
 Vector TensorizedCC::computeWeights1D( unsigned level ) {
     unsigned order;
@@ -263,13 +218,6 @@ Vector TensorizedCC::computeWeights1D( unsigned level ) {
     w[order - 1] /= order - 1;
 
     Vector wNew( order, 0.0 );
-
-    for( unsigned l = 2; l <= level; ++l ) {
-        for( unsigned j = pow( 2, level - l ) - 1; j <= order; j += std::floor( ( order - 1 ) / 2 * ( l - 1 ) ) ) {
-            std::cout << j << " ";
-        }
-        std::cout << std::endl;
-    }
 
     return w;
 }
