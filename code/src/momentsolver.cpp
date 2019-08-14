@@ -34,7 +34,7 @@ MomentSolver::~MomentSolver() {
 }
 
 void MomentSolver::Solve() {
-    bool writeSolutionInTime = true;
+    bool writeSolutionInTime = false;
     unsigned retCounter      = 0;    // counter for retardation level
     // unsigned retLevel        = _settings->GetResidualRetardation( 0 );
     VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );       // vector carries refinement level for each cell
