@@ -75,9 +75,25 @@ Let us now compare stochastic-Collocation with stochastic-Galerkin and IPM as we
 	\label{fig:L2ErrorSolution}
 \end{figure}
 
-Note that in the case of SC, the error cannot be recorded without destroying the non-intrusive framework and adding extra costs, which is why we only plot the final error and the corresponding run time. To account for the fact that sparse grids need to be used in higher dimensions, we use Clenshaw-Curtis quadrature rules to compute the different solutions. Stochastic-Collocation uses quadrature levels $2,3$ and $4$, which corresponds to $5,9$ and $17$ quadrature points. All adaptive methods use gPC polynomials of order 2 to 9 (i.e. 3 to 10 moments). Order 2 uses a level 2, orders 3 to 6 use a level 3 and orders 8 and 9 use a level 4 quadrature rule. The remaining methods have been computed with a level 4 quadrature rule.
+Note that in the case of SC, the error cannot be recorded without violating the non-intrusive framework and adding extra costs, which is why we only plot the final error and the corresponding run time. To account for the fact that sparse grids need to be used in high dimensional problems, we use Clenshaw-Curtis quadrature rules to compute the different solutions. Stochastic-Collocation uses quadrature levels $2,3$ and $4$, which corresponds to $5,9$ and $17$ quadrature points. All adaptive methods use gPC polynomials of order 2 to 9 (i.e. 3 to 10 moments). Order 2 uses a level 2, orders 3 to 6 use a level 3 and orders 8 and 9 use a level 4 quadrature rule. The remaining methods have been computed with a level 4 quadrature rule.
 
 First, it sticks out that again, the intrusive methods yield a smaller error level for the same number of unknowns compared to SC. For the same number of unknowns, the run time of the intrusive methods is always bigger than the corresponding SC method. However, the error of SG and IPM lies in the area of SC$^{17}$ at which the adaptive method has a smaller run time than SC. While SG shows a slightly better approximation of the expectation value, IPM shows a smaller error of the variance. When comparing the different methods without acceleration techniques, 
+
+
+
+\begin{center}
+\begin{tabular}{ | m{3cm} || m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | } 
+\hline
+residual \eqref{eq:residualSteady} & 5e-06 & 4e-06 & 3e-06 & 2e-06 & 1e-06 & 9e-07 & 8e-07 & 7e-07 & 6e-07 & 5e-07  \\ 
+\hline
+error E[$\rho$] in e-03 & 1.506 & 1.464 & 1.438 & 1.401 & 1.368 & 1.360 & 1.359 & 1.358 & 1.358 & 1.357  \\ 
+\hline
+error Var[$\rho$] in e-03 & 1.339 & 1.332 & 1.292 & 1.248 & 1.217 & 1.215 & 1.214 & 1.213 & 1.213 & 1.213  \\ 
+\hline
+\end{tabular}
+\end{center}
+
+
 
  and compare against Collocation with $5$ collocation points as well as SG and IPM with $5$ moments and $10$ quadrature points. Furthermore, we use convergence accelerated (caIPM) as well as convergence accelerated one-shot IPM (caosIPM), which we introduced in Sections \ref{sec:collIPM} and \ref{sec:OneShotIPM} with $10$ moments and $15$ quadrature points to converge the collocation solution with $5$ quadrature points to an entropy solution with increased accuracy.
 
@@ -137,131 +153,45 @@ First, it sticks out that again, the intrusive methods yield a smaller error lev
 	\label{fig:ERhoVarRho5}
 \end{figure}
 
-\newgeometry{top=1.5cm, left=1.0cm}
 \begin{figure}[h!]
 \centering
 	\begin{subfigure}{0.33\linewidth}
 		\centering
-				\includegraphics[scale=0.25]{figs/Euler1DPlots10/{EulerSC4-17Res1e-6_errors_ERho}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_refadosipm_n2-9_sg2-4_s05_aoa_oneRet_ERho}.png}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\begin{subfigure}{0.33\linewidth}
 		\centering
-				\includegraphics[scale=0.25]{figs/Euler1DPlots10/{euler2D_nacaCoarse_sg_n9_sg4_s05_aoa_errors_ERho}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_refadosipm_n2-9_sg2-4_s05_aoa_oneRet_VarRho}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_refadosipm_n2-9_sg2-4_s05_aoa_oneRet_refinementLevel}.png}
+		\label{fig:sub1}
+	\end{subfigure}
+	\caption{E$[\rho]$, Var$[\rho]$ and refinement level for readosIPM$_{2-9}$}
+	\label{fig:ERhoVarRho5}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+				\includegraphics[scale=0.2]{figs/Euler1DPlots10/{EulerSC4-17Res1e-6_errors_ERho}.png}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+				\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_sg_n9_sg4_s05_aoa_errors_ERho}.png}
 		\label{fig:sub2}
 	\end{subfigure}
 		\begin{subfigure}{0.33\linewidth}
 		\centering
-				\includegraphics[scale=0.25]{figs/Euler1DPlots10/{euler2D_nacaCoarse_ipm_n9_sg4_s05_aoa_errors_ERho}.png}
+				\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_ipm_n9_sg4_s05_aoa_errors_ERho}.png}
 		\label{fig:sub2}
 	\end{subfigure}
 	\caption{Errors E$[\rho]$ for SC$^{17}$, SG$_{10}$, IPM$_{10}$ (from left to right).}
 	\label{fig:ErrorsERho}
 \end{figure}
-
-
-
-
-
-\begin{figure}[h!]
-\centering
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_sc_n5_s05_aoa_var}.png}
-		\label{fig:sub1}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_sg_n5_nq10_s05_aoa_var}.png}
-		\label{fig:sub2}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_ipm_n5_nq10_s05_aoa_var}.png}
-		\label{fig:sub1}
-	\end{subfigure}
-	
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_caipm_n10_nq15_s05_aoa_var}.png}
-		\label{fig:sub2}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa_var}.png}
-		\label{fig:sub1}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/{euler2D_nacaCoarse_sc_n50_s05_aoa_var_legend}.png}
-		\label{fig:sub2}
-	\end{subfigure}%
-	\caption{Var$[\rho]$ (from top left to bottom right) SC, SG, IPM, caIPM, caosIPM, reference solution.}
-	\label{fig:Obstacles2D}
-\end{figure}
-
-%%% error plots %%%
-\begin{figure}[h!]
-\centering
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/errors/{euler2D_nacaCoarse_sc_n5_s05_aoa_error_legend}.png}
-		\label{fig:sub1}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/errors/{euler2D_nacaCoarse_sg_n5_nq10_s05_aoa_error_legend}.png}
-		\label{fig:sub2}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/errors/{euler2D_nacaCoarse_ipm_n5_nq10_s05_aoa_error_legend}.png}
-		\label{fig:sub1}
-	\end{subfigure}
-	
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/errors/{euler2D_nacaCoarse_caipm_n10_nq15_s05_aoa_error_legend}.png}
-		\label{fig:sub2}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/expectedRho/errors/{euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa_error_legend}.png}
-		\label{fig:sub1}
-	\end{subfigure}
-	\caption{E$[\rho]$ distance to reference solution (from top left to bottom right) SC, SG, IPM, caIPM, caosIPM.}
-	\label{fig:Obstacles2D}
-\end{figure}
-
-\begin{figure}[h!]
-\centering
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/errors/{euler2D_nacaCoarse_sc_n5_s05_aoa_var_error_legend}.png}
-		\label{fig:sub1}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/errors/{euler2D_nacaCoarse_sg_n5_nq10_s05_aoa_var_error_legend}.png}
-		\label{fig:sub2}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/errors/{euler2D_nacaCoarse_ipm_n5_nq10_s05_aoa_var_error_legend}.png}
-		\label{fig:sub1}
-	\end{subfigure}
-	
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/errors/{euler2D_nacaCoarse_caipm_n10_nq15_s05_aoa_var_error_legend}.png}
-		\label{fig:sub2}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		\includegraphics[scale=0.2]{figs/varRho/errors/{euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa_var_error_legend}.png}
-		\label{fig:sub1}
-	\end{subfigure}
-	\caption{Var$[\rho]$ distance to reference solution (from top left to bottom right) SC, SG, IPM, caIPM, caosIPM.}
-	\label{fig:Obstacles2D}
-\end{figure}
-\newgeometry{top=2.5cm, bottom=2.5cm}
+\newgeometry{top=2.5cm, left=2.5cm}
