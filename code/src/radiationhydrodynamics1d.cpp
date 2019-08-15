@@ -13,9 +13,9 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     double rhoL = 5.45887 * 1e-13;
     double uL   = 2.3545 * 1e5;
     double TL   = 100.0;
-    double rhoR = 1.2479 * 1e-12;
-    double uR   = 1.03 * 1e5;
-    double TR   = 207.757;
+    // double rhoR = 1.2479 * 1e-12;
+    // double uR   = 1.03 * 1e5;
+    // double TR   = 207.757;
 
     // reference values
     double lRef = 1000;

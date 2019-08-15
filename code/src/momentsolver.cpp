@@ -63,8 +63,8 @@ void MomentSolver::Solve() {
     if( _settings->GetMyPE() == 0 ) log->info( "{:10}   {:10}", "t", "residual" );
 
     // init time and residual
-    double t      = _tStart;
-    int timeIndex = 0;
+    double t           = _tStart;
+    unsigned timeIndex = 0;
     double dt;
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
@@ -457,6 +457,7 @@ Settings* MomentSolver::DeterminePreviousSettings() const {
         prevSettings->SetNStates( _settings->GetNStates() );
         prevSettings->SetGamma( _settings->GetGamma() );
         prevSettings->SetClosureType( _settings->GetClosureType() );
+        prevSettings->SetNumCells( _settings->GetNumCells() );
     }
     else {
         prevSettings = _settings;
@@ -468,6 +469,7 @@ Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const 
     Closure* prevClosure;
     if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) {
         prevClosure = Closure::Create( prevSettings );
+        std::cout << "foo" << std::endl;
     }
     else {
         prevClosure = _closure;
@@ -532,9 +534,9 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         }
         _closure->SetMaxIterations( maxIterations );
         // delete reload closures and settings
-        delete prevSettings;
+        // delete prevSettings;
     }
-    if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete prevClosure;
+    // if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete prevClosure;
 }
 
 MatVec MomentSolver::SetupIC() const {
@@ -602,6 +604,9 @@ Settings* MomentSolver::ImportPrevSettings() const {
         if( line.find( "Config file" ) != std::string::npos ) {
             configSection = true;
             for( unsigned i = 0; i < 4; ++i ) std::getline( file, line );
+            // while( line.find( "==================================" ) != std::string::npos ) {
+            //    std::getline( file, line );
+            //}
         }
         else if( configSection && line.find( "==================================" ) != std::string::npos ) {
             break;

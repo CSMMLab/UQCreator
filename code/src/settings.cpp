@@ -101,7 +101,11 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             _restartFile = _inputDir.string() + "/" + *restartFile;
             if( restart ) _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
         }
-        if( !restart ) _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
+        if( !restart )
+            _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
+        else {
+            _loadLambda = false;
+        }
 
         auto icFile = general->get_as<std::string>( "icFile" );
         if( icFile ) {
@@ -110,7 +114,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
 
         if( !restart ) {
             auto refFile    = general->get_as<std::string>( "referenceSolution" );
-            _writeFrequency = general->get_as<int>( "writeFrequency" ).value_or( 1000 );
+            _writeFrequency = general->get_as<unsigned>( "writeFrequency" ).value_or( 1000 );
             if( refFile ) {
                 _referenceFile = _inputDir.string() + "/" + *refFile;
             }
@@ -286,7 +290,6 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             if( quadratureType->at( 0 ).compare( "sparseGrid" ) == 0 ) {
                 _gridType = G_SPARSEGRID;
                 _nQTotal  = unsigned( std::pow( 2, _nQuadPoints ) ) + 1u;
-                _nQTotal  = 13;
             }
             else if( quadratureType->at( 0 ).compare( "tensorizedGrid" ) == 0 ) {    // tensorizedGrid
                 _gridType = G_TENSORIZEDGRID;
@@ -330,6 +333,10 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             _refinementThreshold = ( *refinementThresholds )[0];
             _coarsenThreshold    = ( *refinementThresholds )[1];
         }
+        else {
+            _refinementThreshold = std::numeric_limits<double>::infinity();
+            _coarsenThreshold    = 0.0;
+        }
 
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
@@ -352,7 +359,7 @@ void Settings::SetNStates( unsigned n ) { _nStates = n; }
 std::string Settings::GetInputFile() const { return _inputFile; }
 std::string Settings::GetInputDir() const { return _inputDir; }
 std::string Settings::GetOutputDir() const { return _outputDir; }
-int Settings::GetWriteFrequency() const { return _writeFrequency; }
+unsigned Settings::GetWriteFrequency() const { return _writeFrequency; }
 
 // mesh
 unsigned Settings::GetMeshDimension() const { return _meshDimension; }
@@ -419,7 +426,6 @@ unsigned Settings::GetNQuadPoints() const { return _nQuadPoints; }
 void Settings::SetNQuadPoints( unsigned nqNew ) { _nQuadPoints = nqNew; }
 unsigned Settings::GetNQTotal() const { return _nQTotal; }
 bool Settings::UsesMaxDegree() const { return _useMaxDegree; }
-LimiterType Settings::GetLimiterType() const { return _limiterType; }
 unsigned Settings::GetMaxIterations() const { return _maxIterations; }
 void Settings::SetMaxIterations( unsigned maxIterations ) { _maxIterations = maxIterations; }
 double Settings::GetEpsilon() const { return _epsilon; }
@@ -472,10 +478,6 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
 unsigned Settings::GetNQTotalForRef( unsigned level ) const { return _nQTotalForRef[level]; }
 VectorU Settings::GetNQTotalForRef() const { return _nQTotalForRef; }
 unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }
-
-// plot
-unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }
-double Settings::GetPlotTimeInterval() const { return _plotTimeInterval; }
 
 // MPI
 int Settings::GetMyPE() const { return _mype; }

@@ -31,7 +31,6 @@ enum ClosureType {
     C_L2FILTER,
     C_LASSOFILTER
 };
-enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };
 enum DistributionType { D_LEGENDRE, D_HERMITE };
 enum GridType { G_SPARSEGRID, G_TENSORIZEDGRID };
@@ -50,7 +49,7 @@ class Settings
     std::filesystem::path _referenceFile;
     bool _loadLambda;
 
-    int _writeFrequency;    // number of time steps until error to reference solution is computed
+    unsigned _writeFrequency;    // number of time steps until error to reference solution is computed
 
     // requied settings
     unsigned _meshDimension;
@@ -61,9 +60,7 @@ class Settings
     unsigned _nQTotal;               // number of quadrature points in all dimensions
     unsigned _nQPE;                  // number of total quadrature points on PE
     VectorU _nQPEAtRef;              // number of total quadrature points on PE for all refinement levels
-    unsigned _kStart;                // start point in quadrature point array for PE
     MatrixU _kIndicesAtRef;          // quadrature indices for PE at different refinement levels
-    unsigned _kEnd;                  // end point in quadrature point array for PE
     VectorU _quadLevel;              // quadrature level array
     VectorU _nQTotalForRef;          // number of quadrature points on different refinement levels
     Vector _residualRetardation;     // stores residual at different refinement levels
@@ -96,9 +93,7 @@ class Settings
     double _tEnd;
     double _minResidual;    // residual at which iteration is stopped for steady problems
     double _dt;             // timestepsize only required if no function ComputeDt provided in problem
-    unsigned _plotStepInterval;
-    double _plotTimeInterval;
-    LimiterType _limiterType;
+
     ClosureType _closureType;
     ProblemType _problemType;
     TimesteppingType _timesteppingType;
@@ -126,7 +121,7 @@ class Settings
     std::string GetInputFile() const;
     std::string GetInputDir() const;
     std::string GetOutputDir() const;
-    int GetWriteFrequency() const;
+    unsigned GetWriteFrequency() const;
 
     // mesh
     unsigned GetMeshDimension() const;
@@ -184,16 +179,10 @@ class Settings
     void SetNQuadPoints( unsigned nqNew );
     unsigned GetNQTotal() const;
     bool UsesMaxDegree() const;
-    LimiterType GetLimiterType() const;
     unsigned GetMaxIterations() const;
     void SetMaxIterations( unsigned maxIterations );
     double GetEpsilon() const;
     GridType GetGridType() const;
-
-    // plot
-    bool GetPlotEnabled() const;
-    unsigned GetPlotStepInterval() const;
-    double GetPlotTimeInterval() const;
 
     // MPI
     int GetMyPE() const;

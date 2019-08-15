@@ -120,13 +120,13 @@ Matrix ShallowWater2D::BoundaryFlux( const Matrix& u, const Vector& nUnit, const
         Vector v( 2, 0.0 );
         v.reset();
 
-        v[0]           = u( 1, k ) / u( 0, k );
-        v[1]           = u( 2, k ) / u( 0, k );
-        double vn      = dot( nUnit, v );
-        Vector Vn      = vn * nUnit;
-        Vector Vb      = -Vn + v;
-        double velMagB = Vb[0] * Vb[0] + Vb[1] * Vb[1];
-        double velMag  = v[0] * v[0] + v[1] * v[1];
+        v[0]      = u( 1, k ) / u( 0, k );
+        v[1]      = u( 2, k ) / u( 0, k );
+        double vn = dot( nUnit, v );
+        Vector Vn = vn * nUnit;
+        Vector Vb = -Vn + v;
+        // double velMagB = Vb[0] * Vb[0] + Vb[1] * Vb[1];
+        // double velMag  = v[0] * v[0] + v[1] * v[1];
         double rho     = u( 0, k );
         uB[0]          = rho;
         uB[1]          = rho * ( Vb[0] );
