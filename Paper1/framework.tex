@@ -1,8 +1,8 @@
 \section{Discretization of the IPM system}
 \label{sec:framework}
 \subsection{Finite Volume Discretization}
-In the following, we discretize the moment system in space and time according to \cite{kusch2017maximum}. Due to the fact, that stochastic-Galerkin can be interpreted as IPM with a quadratic entropy, it suffices to only derive a discretization of the IPM moment system \eqref{eq:SGMomentSystem}.  
-Omitting initial conditions and assuming a one-dimensional spatial domain, we can write this system  as
+In the following, we discretize the moment system in space and time according to \cite{kusch2017maximum}. Due to the fact, that stochastic-Galerkin can be interpreted as IPM with a quadratic entropy, it suffices to only derive a discretization of the IPM moment system. Hence, we discretize the system \eqref{eq:SGMomentSystem} with the more general IPM solution ansatz \eqref{eq:ansatz}.  
+Omitting initial conditions and assuming a one-dimensional spatial domain, we can write the IPM system  as
 \begin{align*}
 \partial_t \bm{\hat u}+\partial_x \bm{F}(\bm{\hat u}) = \bm{0}
 \end{align*}
@@ -17,11 +17,11 @@ If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\
 for $j = 1,\cdots,N_x$ and $n = 0,\cdots,N_t$. Here, the number of spatial cells is denoted by $N_x$ and the number of time steps by $N_t$.
 The numerical flux is assumed to be consistent, i.e. $\bm{G}(\bm{\hat{u}},\bm{\hat{u}})=\bm{F}(\bm{\hat{u}})$.
 
-When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the original problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take
+When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the original problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take the numerical flux
 \begin{align*}
- \bm{\tilde G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T.
+ \bm{\tilde G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T
 \end{align*}
-Commonly, this integral cannot be evaluated analytically and therefore needs to be approximated by a quadrature rule
+in \eqref{eq:IPMDiscretization}. Commonly, this integral cannot be evaluated analytically and therefore needs to be approximated by a quadrature rule
 \begin{align*}
 \langle h \rangle \approx \langle h \rangle_{Q} := \sum_{k=1}^Q w_k h(\bm{\xi}_k)f_{\Xi}(\bm{\xi}_k).
 \end{align*}
@@ -37,7 +37,7 @@ meaning that the IPM ansatz \eqref{eq:ansatz} at cell $j$ in timestep $n$ can be
 \begin{align*}
 \mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{s}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
 \end{align*}
-The computation of the so called entropy variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. Hence, to determine the dual variables for a given moment vector $\bm{\hat{u}}$, the cost function
+The computation of the dual variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. Hence, to determine the dual variables for a given moment vector $\bm{\hat{u}}$, the cost function
 \begin{align}\label{eq:L}
 L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle_Q - \sum_{i\leq M}\bm{\lambda}_i^T \bm{\hat u}_i
 \end{align}

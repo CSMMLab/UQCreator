@@ -15,7 +15,7 @@ This gives algorithm
 \For{$j=0$ to $N_x+1$}
 \State $\bm{u}_j^0 \leftarrow \frac{1}{\Delta x} \int_{x_{j-1/ 2}}^{x_{j+1/ 2}} \langle u_{\text{IC}}(x, \cdot) \bm{\varphi} \rangle_Q dx$
 \EndFor
-\While{\eqref{eq:residualUnsteady} is violated}
+\While{\eqref{eq:residualSteady} is violated}
 \For{$j=1$ to $N_x$}
 \State $\bm{\lambda}_j^{n+1} \leftarrow \bm{d}(\bm{\lambda}_{j}^{n};\bm{\hat u}_j^{n})$
 \State $\bm{\hat u}_j^{n+1} \leftarrow \bm{c}(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_j^{n+1},\bm{\lambda}_{j+1}^{n+1})$
