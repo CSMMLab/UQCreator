@@ -14,7 +14,6 @@ class QuadratureGrid
     QuadratureGrid();
     virtual ~QuadratureGrid() {}
     static QuadratureGrid* Create( Settings* settings );
-    static QuadratureGrid* Create( Settings* settings, unsigned level );
 
     virtual unsigned GetNodeCount()        = 0;
     virtual std::vector<Vector> GetNodes() = 0;

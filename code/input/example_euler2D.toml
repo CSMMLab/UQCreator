@@ -23,6 +23,6 @@ residual = 2.2e-4
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "StochasticGalerkin"
 moments = [["totalDegree"],[2]]
-quadPoints = [["tensorized"],[2]]
+quadPoints = [["tensorizedCCGrid"],[2]]
 maxIterations = 1
 epsilon = 5e-5
