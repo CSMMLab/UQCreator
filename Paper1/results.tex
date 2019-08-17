@@ -38,16 +38,38 @@ The quantities of interests are now computed with the different methods. All met
 
 \begin{figure}[h!]
 \centering
+\centering
+	\begin{subfigure}{0.5\linewidth}
 		\centering
-		\includegraphics[scale=0.7]{figs/{ConvergenceQuadrature}.pdf}
-		\label{fig:sub1}
-	\caption{Relative L$^2$ error with different quadrature levels.}
+				\includegraphics[scale=0.544]{figs/StudyQuadrature/{L2_error_E[rho]}.pdf}
+		\caption{}
+		\label{fig:ErrorDifferentQuadA}
+	\end{subfigure}%
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+				\includegraphics[scale=0.544]{figs/StudyQuadrature/{L2_error_Var[rho]}.pdf}
+		\caption{}
+		\label{fig:ErrorDifferentQuadB}
+	\end{subfigure}
+	\caption{Relative L$^2$ error with different quadrature levels. The subscript denotes the moment order, the superscript denotes the Clenshaw-Curtis quadrature level.}
 	\label{fig:ErrorDifferentQuad}
 \end{figure}
 
-Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rule to approximate integrals. We start by investigating the effects this quadrature has on the solution accuracy. For this, we run the IPM method with a moment order ranging from three to seven using a Clenshaw-Curtis quadrature rule with level three (i.e. 9 quadrature points) and level four (i.e. 17 quadrature points). The results are given in Figure~\ref{fig:ErrorDifferentQuad}. It can be seen that the error stagnates when the chosen quadrature is not sufficiently accurate. This behavior results from aliasing effects, which dominate the accuracy level. Note that SC can be interpreted as an intrusive method which uses as many moments as quadrature points to compute the numerical flux. Therefore, we can conclude that the error of SC is dominated by aliasing effects and will not reach the same accuracy level as an intrusive method with a sufficiently accurate quadrature rule. Especially for high dimensional problems, this potentially decreases the number of unknowns to reach a certain accuracy level significantly. However note, that since the numerical flux evaluation requires $O(N\cdot Q)$ evaluations, the numerical costs will depend on the chosen quadrature rule.
+Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rule to approximate integrals. We start by investigating the effects this quadrature has on the solution accuracy. For this, we run the IPM method with a moment order ranging from three to seven using a Clenshaw-Curtis quadrature rule with level three (i.e. 9 quadrature points) and level four (i.e. 17 quadrature points). A comparison of the error obtained with these two quadrature levels is given in Figure~\ref{fig:ErrorDifferentQuad}. When for example comparing the error obtained with IPM$_8^3$ and IPM$_8^4$ it can be seen that the error stagnates when the chosen quadrature is not sufficiently accurate. This behavior results from aliasing effects in the numerical flux, which dominate the accuracy level. Furthermore, Figure~\ref{fig:ErrorDifferentQuadA} reveals that the IPM error of E[$\rho$] with 9 quadrature points stagnates at the error level of SC$^9$, whereas the error of the variance in Figure~\ref{fig:ErrorDifferentQuadB} shows that IPM with 9 quadrature points yields an improved variance results over SC$^9$ even with only four moments. Hence, the number of moments needed for IPM to obtain a certain variance error is significantly smaller than the number of quadrature points needed for SC. This result will show throughout the results of this work. Especially for high dimensional problems, this potentially decreases the number of unknowns to reach a certain accuracy level significantly. However note, that since the numerical flux evaluation requires $O(N\cdot Q)$ evaluations, the numerical costs will depend on the chosen quadrature rule.
 
-Let us now compare stochastic-Collocation with stochastic-Galerkin and IPM as well as its proposed acceleration techniques. Note that since IPM generalizes SG, all proposed techniques can be used for this method as well. The methods are iterated until the expectation value of the density fulfills the stopping criterion \eqref{eq:residualSteady} with $\varepsilon = 5\cdot 10^{-5}$. Note that the adaptive SG method fails, since it yields negative densities during the iteration. The standard SG method however remains in the admissible set. The change of the relative L$^2$ error during the iteration to the steady state has been recorded in Figure~\ref{fig:L2ErrorSolution}.
+Let us now compare stochastic-Collocation with stochastic-Galerkin and IPM at a fixed moment order 9 as well as its proposed acceleration techniques. Note that since IPM generalizes SG, all proposed techniques can be used for this method as well. All intrusive methods are iterated until the expectation value of the density fulfills the stopping criterion \eqref{eq:residualSteady} with $\varepsilon = 5\cdot 10^{-6}$, however it can be seen that the error saturates already at a bigger residual. For every quadrature point, SC iterates the solution until the density reaches a certain residual level $\varepsilon$.  We observed that the SC error requires a smaller residual level to reach a constant state and we have recorded this behavior in the following table for the SC$^{17}$ solution.
+\begin{center}
+\begin{tabular}{ | m{3cm} || m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | } 
+\hline
+residual $\rho$ & 5e-06 & 4e-06 & 3e-06 & 2e-06 & 1e-06 & 9e-07 & 8e-07 & 7e-07 & 6e-07 & 5e-07  \\ 
+\hline
+error E[$\rho$] in e-03 & 1.506 & 1.464 & 1.438 & 1.401 & 1.368 & 1.360 & 1.359 & 1.358 & 1.358 & 1.357  \\ 
+\hline
+error Var[$\rho$] in e-03 & 1.339 & 1.332 & 1.292 & 1.248 & 1.217 & 1.215 & 1.214 & 1.213 & 1.213 & 1.213  \\ 
+\hline
+\end{tabular}
+\end{center}
+Hence, we can deduce that SC requires a smaller
 \begin{figure}[h!]
 \centering
 	\begin{subfigure}{0.5\linewidth}
@@ -75,23 +97,14 @@ Let us now compare stochastic-Collocation with stochastic-Galerkin and IPM as we
 	\label{fig:L2ErrorSolution}
 \end{figure}
 
-Note that in the case of SC, the error cannot be recorded without violating the non-intrusive framework and adding extra costs, which is why we only plot the final error and the corresponding run time. To account for the fact that sparse grids need to be used in high dimensional problems, we use Clenshaw-Curtis quadrature rules to compute the different solutions. Stochastic-Collocation uses quadrature levels $2,3$ and $4$, which corresponds to $5,9$ and $17$ quadrature points. All adaptive methods use gPC polynomials of order 2 to 9 (i.e. 3 to 10 moments). Order 2 uses a level 2, orders 3 to 6 use a level 3 and orders 8 and 9 use a level 4 quadrature rule. The remaining methods have been computed with a level 4 quadrature rule.
+First, let us mention that the adaptive SG method fails, since it yields negative densities during the iteration. The standard SG method however preserves positivity of mass, energy and pressure. The change of the relative L$^2$ error during the iteration to the steady state has been recorded in Figure~\ref{fig:L2ErrorSolution}. Note that in the case of SC, the error cannot be recorded without violating the non-intrusive framework and adding extra costs, which is why we only plot the final error and the corresponding run time. To account for the fact that sparse grids need to be used in high dimensional problems, we use Clenshaw-Curtis quadrature rules to compute the different solutions. Stochastic-Collocation uses quadrature levels $2,3$ and $4$, which corresponds to $5,9$ and $17$ quadrature points. All adaptive methods use gPC polynomials of order 2 to 9 (i.e. 3 to 10 moments). Order 2 uses a level 2, orders 3 to 6 use a level 3 and orders 8 and 9 use a level 4 quadrature rule. The remaining methods have been computed with a level 4 quadrature rule. 
+
 
 First, it sticks out that again, the intrusive methods yield a smaller error level for the same number of unknowns compared to SC. For the same number of unknowns, the run time of the intrusive methods is always bigger than the corresponding SC method. However, the error of SG and IPM lies in the area of SC$^{17}$ at which the adaptive method has a smaller run time than SC. While SG shows a slightly better approximation of the expectation value, IPM shows a smaller error of the variance. When comparing the different methods without acceleration techniques, 
 
 
 
-\begin{center}
-\begin{tabular}{ | m{3cm} || m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | } 
-\hline
-residual \eqref{eq:residualSteady} & 5e-06 & 4e-06 & 3e-06 & 2e-06 & 1e-06 & 9e-07 & 8e-07 & 7e-07 & 6e-07 & 5e-07  \\ 
-\hline
-error E[$\rho$] in e-03 & 1.506 & 1.464 & 1.438 & 1.401 & 1.368 & 1.360 & 1.359 & 1.358 & 1.358 & 1.357  \\ 
-\hline
-error Var[$\rho$] in e-03 & 1.339 & 1.332 & 1.292 & 1.248 & 1.217 & 1.215 & 1.214 & 1.213 & 1.213 & 1.213  \\ 
-\hline
-\end{tabular}
-\end{center}
+
 
 
 
