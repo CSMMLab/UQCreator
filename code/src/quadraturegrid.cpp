@@ -1,5 +1,6 @@
 #include "quadraturegrid.h"
 
+#include "tensorizedcc.h"
 #include "tensorizedquadrature.h"
 #include "uniformsparsegrid.h"
 
@@ -13,6 +14,9 @@ QuadratureGrid* QuadratureGrid::Create( Settings* settings ) {
     }
     else if( gridType == GridType::G_TENSORIZEDGRID ) {
         return new TensorizedQuadrature( settings );
+    }
+    else if( gridType == GridType::G_TENSORIZEDCC ) {
+        return new TensorizedCC( settings );
     }
     else {
         log->error( "[quadratureGrid]: Invalid grid type" );

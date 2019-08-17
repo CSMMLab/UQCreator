@@ -25,7 +25,7 @@ enum ClosureType {
 enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };
 enum DistributionType { D_LEGENDRE, D_HERMITE };
-enum GridType { G_SPARSEGRID, G_TENSORIZEDGRID };
+enum GridType { G_SPARSEGRID, G_TENSORIZEDGRID, G_TENSORIZEDCC };
 
 class Settings
 {
