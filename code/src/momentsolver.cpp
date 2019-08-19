@@ -469,7 +469,6 @@ Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const 
     Closure* prevClosure;
     if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) {
         prevClosure = Closure::Create( prevSettings );
-        std::cout << "foo" << std::endl;
     }
     else {
         prevClosure = _closure;
