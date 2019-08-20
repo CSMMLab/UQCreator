@@ -119,9 +119,6 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 _referenceFile = _inputDir.string() + "/" + *refFile;
             }
         }
-        else {
-            _writeFrequency = general->get_as<unsigned>( "writeFrequency" ).value_or( 100 );
-        }
 
         // section problem
         auto problem                = file->get_table( "problem" );
