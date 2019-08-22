@@ -1,29 +1,29 @@
 [general]
 problem = "Euler2D"
-outputDir = "../results"
-writeFrequency = 10
+outputDir = "../results/pipeL2New"
+writeFrequency = 2
 
 [mesh]
 dimension = 2
 format = "SU2"
 SU2MeshFile = "pipe.su2"
 SU2BC = [["inlet","dirichlet"],["outlet","dirichlet"], ["walls", "noslip"]]
-outputFile = "pipeNewL2Lambda0-0000015"
+outputFile = "pipeTestL2Lambda0-000002"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre","Legendre","Legendre"],[0.1,0.1,0.1]]
+distribution = [["Legendre"],[0.2]]
 #distribution = [["Legendre"],[0.1]]
-CFL = 0.6
-tEnd = 2.0
+CFL = 0.9
+tEnd = 0.0035 #0.0035
 residual = 1e-6
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
-closure = "Euler2D"
+closure = "L2Filter"
 moments = [["totalDegree"],[4]]
-quadPoints = [["tensorizedGrid"],[6]]
+quadPoints = [["tensorizedGrid"],[10]]
 maxIterations = 1000
 epsilon = 1e-7

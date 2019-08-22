@@ -16,7 +16,8 @@ LassoFilter::LassoFilter( Settings* settings ) : Closure( settings ) {
         for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
             // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
             // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-            unsigned index = unsigned( ( i - i % unsigned( std::pow( nMoments, l ) ) ) / unsigned( std::pow( nMoments, l ) ) ) % nMoments;
+            unsigned index =
+                unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
             _filterParam[i] *= index * ( index + 1 );
         }
     }

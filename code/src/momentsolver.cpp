@@ -4,7 +4,6 @@
 MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
     _log         = spdlog::get( "event" );
     _nCells      = _settings->GetNumCells();
-    _nMoments    = _settings->GetNMoments();
     _tStart      = 0.0;
     _tEnd        = _settings->GetTEnd();
     _nStates     = _settings->GetNStates();

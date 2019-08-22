@@ -25,7 +25,6 @@ class MomentSolver
     Problem* _problem;                         // specified problem defines right hand side and initial condition
     double _dt, _tStart, _tEnd;                // timestep, start and end time
     unsigned _nCells;                          // number of spatial cells
-    unsigned _nMoments;                        // number of moments in one uncertain dimension
     unsigned _nStates;                         // number of states of the original system
     unsigned _nQuadPoints;                     // number of moments in one uncertain dimension
     unsigned _nQTotal;                         // total number of quad points
