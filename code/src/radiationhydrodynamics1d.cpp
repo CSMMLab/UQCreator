@@ -26,8 +26,8 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
         lRef = 1000;
     }
     else {
+        uL   = 5.88588 * 1e5;      // [cm/s]   from Zhang paper
         rhoL = 5.45887 * 1e-13;    // [g/cm^3]
-        uL   = 2.3545 * 1e5;       // [cm/s]
         TL   = 100.0;              // [K]
         rhoR = 1.964050 * 1e-12;
         uR   = 1.63 * 1e5;
@@ -255,7 +255,6 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     // initial chock states
     double rhoL, uL, TL, rhoR, uR, TR;
     rhoL = 5.45887 * 1e-13;    // [g/cm^3]
-    uL   = 2.3545 * 1e5;       // [cm/s]
     TL   = 100.0;              // [K]
     if( _testCase == 1 ) {
         rhoR = 1.2479 * 1e-12;
@@ -263,13 +262,29 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
         TR   = 207.757;
     }
     else {
+        // double Ma = 5;
+        uL   = 5.88588 * 1e5;    // [cm/s] Zhang values
         rhoR = 1.964050 * 1e-12;
-        uR   = 1.63 * 1e5;
+        uR   = 1.63592 * 1e5 + _settings->GetSigma()[0] * xi[0];
         TR   = 855.72;
+        // double a  = sqrt( _gamma * _R * TR );
+        // uR        = Ma * a;
+        //_R = pow( uR / Ma, 2 ) / ( _gamma * TR );
+        // std::cout << "R Ma 5 = " << _R << std::endl;
+
+        // Ma   = 2;
+        // rhoR = 1.2479 * 1e-12;
+        // uR   = 1.03 * 1e5;
+        // TR   = 207.757;
+
+        //_R = pow( uR / Ma, 2 ) / ( _gamma * TR );
+
+        // std::cout << "R Ma 2 = " << _R << std::endl;
+        // exit( EXIT_FAILURE );
     }
 
     double shockPosition = 0.0;
-    shockPosition += _settings->GetSigma()[0] * xi[0];
+    // shockPosition += _settings->GetSigma()[0] * xi[0];
 
     if( x[0] < shockPosition ) {
         y[_nMoments + 0]      = rhoL / _rhoRef;

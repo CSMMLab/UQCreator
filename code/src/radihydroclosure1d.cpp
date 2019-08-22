@@ -190,7 +190,10 @@ void RadiHydroClosure1D::SolveClosure( Matrix& lambdaFull, const Matrix& uFull, 
             Gradient( dlambdaNew, lambdaNew, u, refLevel );
         }
         int refinementCounter = 0;
-        while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) ) {
+        // std::cout << "H = " << std::endl << H << std::endl;
+        // std::cout << "g = " << std::endl << g << std::endl;
+        // std::cout << "Res " << CalcNorm( dlambdaNew, nTotal ) << std::endl;
+        while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) || !std::isfinite( CalcNorm( dlambdaNew, nTotal ) ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
             Gradient( dlambdaNew, lambdaNew, u, refLevel );

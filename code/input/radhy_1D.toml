@@ -1,8 +1,8 @@
 [general]
 problem = "RadiationHydrodynamics"
-outputDir = "../results"
-writeFrequency = 1000
-restartFile = "../input/restart_rad_hydro_Ma4"
+outputDir = "../results/rad_hydro"
+writeFrequency = 100
+#restartFile = "../input/restart_rad_hydro_Ma4"
 
 [mesh]
 dimension = 1
@@ -15,14 +15,14 @@ outputFile = "RadiationHydrodynamics_1D_new"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.0]]
+distribution = [["Legendre"],[100000.0]]
 CFL = 0.22 # 0.1
-tEnd = 0.035
+tEnd = 0.0001
 
 [moment_system]
-# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
-closure = "StochasticGalerkin"
-moments = [["totalDegree"],[0]]
-quadPoints = [["tensorizedGrid"],[1]]
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics
+closure = "RadiationHydrodynamics"
+moments = [["totalDegree"],[5]]
+quadPoints = [["tensorizedGrid"],[10]]
 maxIterations = 1000
 epsilon = 1e-7
