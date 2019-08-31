@@ -257,6 +257,7 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     rhoL = 5.45887 * 1e-13;    // [g/cm^3]
     TL   = 100.0;              // [K]
     if( _testCase == 1 ) {
+        uL   = 2.3545 * 1e5;    // [cm/s]
         rhoR = 1.2479 * 1e-12;
         uR   = 1.03 * 1e5;
         TR   = 207.757;
@@ -289,10 +290,10 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     if( x[0] < shockPosition ) {
         y[_nMoments + 0]      = rhoL / _rhoRef;
         y[_nMoments + 1]      = rhoL * uL / ( _rhoRef * _aRef );
-        double pL             = TL * ( _R * rhoL ) / _pRef;
-        double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
+        double pL             = TL * ( _R * rhoL );
+        double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 );
         double innerEnergyL   = ( pL / ( _gamma - 1.0 ) );
-        y[_nMoments + 2]      = kineticEnergyL + innerEnergyL;
+        y[_nMoments + 2]      = ( kineticEnergyL + innerEnergyL ) / ( _rhoRef * pow( _aRef, 2 ) );
 
         double rho = y[_nMoments + 0];
         double v   = y[_nMoments + 1] / rho;
@@ -301,10 +302,10 @@ Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     else {
         y[_nMoments + 0]      = rhoR / _rhoRef;
         y[_nMoments + 1]      = rhoR * uR / ( _rhoRef * _aRef );
-        double pR             = TR * ( _R * rhoR ) / _pRef;
-        double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
+        double pR             = TR * ( _R * rhoR );
+        double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 );
         double innerEnergyR   = ( pR / ( _gamma - 1.0 ) );
-        y[_nMoments + 2]      = kineticEnergyR + innerEnergyR;
+        y[_nMoments + 2]      = ( kineticEnergyR + innerEnergyR ) / ( _rhoRef * pow( _aRef, 2 ) );
 
         double rho = y[_nMoments + 0];
         double v   = y[_nMoments + 1] / rho;
