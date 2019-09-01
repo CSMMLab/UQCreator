@@ -40,6 +40,15 @@ void MomentSolver::Solve() {
     VectorU refinementLevelOld( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );    // vector carries old refinement level for each cell
     VectorU refinementLevelTransition( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );
 
+    // set Dirichlet Cells to finest refinement level
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) {
+            refinementLevel[j]           = _settings->GetNRefinementLevels() - 1;
+            refinementLevelOld[j]        = _settings->GetNRefinementLevels() - 1;
+            refinementLevelTransition[j] = _settings->GetNRefinementLevels() - 1;
+        }
+    }
+
     auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
 
