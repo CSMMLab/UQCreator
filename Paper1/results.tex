@@ -27,7 +27,23 @@ Since the fluid of the following test cases is air, we choose the heat capacity 
 
 The computational domain is a circle with a diameter of $40$ meters. In the center, the NACA0012 airfoil with a length of one meter is located. The discretization is composed of a coarsely refined far field and a finely resolved region around the airfoil, since we are interested in the flow solution at the airfoil. Altogether, the mesh consists of 22361 triangular elements.
 
-The aim is to quantify the effects arising from the one-dimensional uncertainty $\xi$ and to investigate its effects on the solution with different methods. To be able to measure the quality of the obtained solutions, we compute a reference solution using stochastic-Collocation with $100$ Gauss-Lobatto quadrature points. In the following, we investigate the L$^2$ error of the variance and the expectation value. The L$^2$ error of the discrete quantity $\bm e_{\Delta}=(\bm e_1,\cdots,\bm e_{N_x})^T$, where $\bm e_j$ denotes the cell average in spatial cell $j$ is denoted by
+\begin{figure}[h!]
+\centering
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+				\includegraphics[scale=0.2]{figs/Euler1DPlots5/{sc100_ERho}.png}
+		\label{fig:referenceSolutionsub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+				\includegraphics[scale=0.2]{figs/Euler1DPlots5/{sc100_VarRho}.png}
+		\label{fig:referenceSolutionsub2}
+	\end{subfigure}
+	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
+	\label{fig:referenceSolution}
+\end{figure}
+
+The aim is to quantify the effects arising from the one-dimensional uncertainty $\xi$ and to investigate its effects on the solution with different methods. To be able to measure the quality of the obtained solutions, we compute a reference solution using stochastic-Collocation with $100$ Gauss-Lobatto quadrature points, which can be found in Figure~\ref{fig:referenceSolution}. In the following, we investigate the L$^2$ error of the variance and the expectation value. The L$^2$ error of the discrete quantity $\bm e_{\Delta}=(\bm e_1,\cdots,\bm e_{N_x})^T$, where $\bm e_j$ denotes the cell average in spatial cell $j$ is denoted by
 \begin{align*}
 \Vert \bm e_{\Delta} \Vert_{\Delta} := \sqrt{\sum_{j=1}^{N_x} \Delta x_j \bm e_j^2}.
 \end{align*}
@@ -66,7 +82,7 @@ Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rul
 \end{itemize}
 Let us now compare stochastic-Collocation with stochastic-Galerkin and IPM as well as its proposed acceleration techniques at a fixed moment order 9. Note that since IPM generalizes SG, all proposed techniques can be used for stochastic-Galerkin as well. To account for the fact that sparse grids need to be used in high dimensional problems, we use Clenshaw-Curtis quadrature rules to compute the different solutions. Stochastic-Collocation uses quadrature levels $2,3$ and $4$, which corresponds to $5,9$ and $17$ quadrature points. All adaptive methods use gPC polynomials of order 2 to 9 (i.e. 3 to 10 moments). Order 2 uses a level 2, orders 3 to 6 use a level 3 and orders 8 and 9 use a level 4 quadrature rule. The remaining methods have been computed with a level 4 quadrature rule. 
 
-All intrusive methods are iterated until the expectation value of the density fulfills the stopping criterion \eqref{eq:residualSteady} with $\varepsilon = 5\cdot 10^{-6}$, however it can be seen that the error saturates already at a bigger residual. For every quadrature point, SC iterates the solution until the density reaches a certain residual level $\varepsilon$.  We observed that the SC error requires a smaller residual level to reach a constant state and we have recorded this behavior in the following table for the SC$^{17}$ solution.
+All intrusive methods are iterated until the expectation value of the density fulfills the stopping criterion \eqref{eq:residualSteady} with $\varepsilon = 5\cdot 10^{-6}$, however it can be seen that the error saturates already at a bigger residual. For every quadrature point, SC iterates the solution until the density reaches a certain residual level $\varepsilon$. We observed that the SC error requires a smaller residual level to reach a constant state and we have recorded this behavior in the following table for the SC$^{17}$ solution.
 \begin{center}
 \begin{tabular}{ | m{3cm} || m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | } 
 \hline
@@ -116,36 +132,8 @@ The proposed acceleration techniques show the following behavior:
 \begin{itemize}
 \item The one shot IPM (osIPM) method proposed in in Section~\ref{sec:OneShotIPM} reduces the runtime while yielding the same error as the classical IPM method.
 \item When using adaptivity (see Algorithm~\ref{alg:ad-IPM}) in combination with the one-shot idea, the method is denoted by \textit{adaptive one-shot IPM} (adosIPM). This method reaches the steady state IPM solution with a faster runtime than SG.
-\item The idea of refinement retardation combined with adosIPM (see Algorithm~\ref{alg:adosIPM}) is denoted by retardation adosIPM (readosIPM), which further decreases runtime. Here, we use two different strategies: ...
+\item The idea of refinement retardation combined with adosIPM (see Algorithm~\ref{alg:adosIPM}) is denoted by retardation adosIPM (readosIPM), which further decreases runtime. Here, we use two different strategies: First, we steadily increase the maximal truncation order when the residual approaches zero. To determine residual values for a given set of truncation orders $2,4,5$ and $8$, we study at which residual level the IPM method reaches a saturated error level for each truncation order. The residual values are then determined to be $0.00006,0.00003,0.000022$ and $0.00002$. The second, straight forward strategy converges the solution on a low truncation order of $2$ to a residual of $10^{-5}$ and then switches to a maximal truncation order of $9$. Strategy 1 is depicted in red, Strategy 2 is depicted in green. It can be seen that both approaches reach the IPM$_9$ error for the same run time. Hence, we deduce that a naive choice of the refinement retardation strategy suffices to yield a satisfactory behavior.
 \end{itemize}
-
-
-Let us now discuss the different acceleration techniques used in this work. The IPM method combined with the one-shot idea discussed in Section~\ref{sec:OneShotIPM} is denoted by one-shot IPM (osIPM). When looking at the error in Figure~\ref{fig:L2ErrorSolution}, one can see that osIPM$_9$ reaches the same steady state error with a reduced runtime. When using the one-shot idea in combination with adaptivity, the method is denoted by \textit{adaptive one-shot IPM} (adosIPM). \comment{TODO: eins der beiden adosIPM Ergebnisse rausnehmen}
-
-
-
-
-
-
-
- and compare against Collocation with $5$ collocation points as well as SG and IPM with $5$ moments and $10$ quadrature points. Furthermore, we use convergence accelerated (caIPM) as well as convergence accelerated one-shot IPM (caosIPM), which we introduced in Sections \ref{sec:collIPM} and \ref{sec:OneShotIPM} with $10$ moments and $15$ quadrature points to converge the collocation solution with $5$ quadrature points to an entropy solution with increased accuracy.
-
-\newgeometry{top=1.5cm, left=1.0cm}
-\begin{figure}[h!]
-\centering
-	\begin{subfigure}{0.5\linewidth}
-		\centering
-				\includegraphics[scale=0.15]{figs/Euler1DPlots5/{sc100_ERho}.png}
-		\label{fig:sub1}
-	\end{subfigure}%
-	\begin{subfigure}{0.5\linewidth}
-		\centering
-				\includegraphics[scale=0.15]{figs/Euler1DPlots5/{sc100_VarRho}.png}
-		\label{fig:sub2}
-	\end{subfigure}
-	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
-	\label{fig:L2ErrorSolution}
-\end{figure}
 \begin{figure}[h!]
 \centering
 	\begin{subfigure}{0.33\linewidth}
@@ -182,7 +170,12 @@ Let us now discuss the different acceleration techniques used in this work. The 
 	\caption{E$[\rho]$ and Var$[\rho]$ computed with SC$^5$, SG$_5$, IPM$_5$ (from left to right).}
 	\label{fig:ERhoVarRho5}
 \end{figure}
-
+Let us finally take a look at the expectation value and variance computed with different methods. All results are depicted for a zoomed view around the airfoil. Figure~\ref{fig:ERhoVarRho5} shows the expectation value (first row) and variance (second row) computed with $5$ quadrature points for SC and $5$ moments for SG and IPM. One can observe the following
+\begin{itemize}
+\item All methods yield non-physical step-like profiles of the expectation value and variance along the airfoil. 
+\item The jump position of the intrusive solution profiles capture the exact behavior more accurately.
+\end{itemize}
+The readosIPM results as well as the corresponding refinement levels are depicted in Figure~\ref{fig:readosIPMEVar}.
 \begin{figure}[h!]
 \centering
 	\begin{subfigure}{0.33\linewidth}
@@ -201,7 +194,7 @@ Let us now discuss the different acceleration techniques used in this work. The 
 		\label{fig:sub1}
 	\end{subfigure}
 	\caption{E$[\rho]$, Var$[\rho]$ and refinement level for readosIPM$_{2-9}$}
-	\label{fig:ERhoVarRho5}
+	\label{fig:readosIPMEVar}
 \end{figure}
 
 \begin{figure}[h!]
@@ -224,7 +217,7 @@ Let us now discuss the different acceleration techniques used in this work. The 
 	\caption{Errors E$[\rho]$ for SC$^{17}$, SG$_{10}$, IPM$_{10}$ (from left to right).}
 	\label{fig:ErrorsERho}
 \end{figure}
-\newgeometry{top=2.5cm, left=2.5cm}
+%\newgeometry{top=2.5cm, left=2.5cm}
 
 \subsection{2D Euler equations with a two dimensional uncertainty}
 
