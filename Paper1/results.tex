@@ -197,30 +197,31 @@ The readosIPM results as well as the corresponding refinement levels are depicte
 	\label{fig:readosIPMEVar}
 \end{figure}
 
-\begin{figure}[h!]
-\centering
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-				\includegraphics[scale=0.2]{figs/Euler1DPlots10/{EulerSC4-17Res1e-6_errors_ERho}.png}
-		\label{fig:sub1}
-	\end{subfigure}%
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-				\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_sg_n9_sg4_s05_aoa_errors_ERho}.png}
-		\label{fig:sub2}
-	\end{subfigure}%
-		\begin{subfigure}{0.33\linewidth}
-		\centering
-				\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_ipm_n9_sg4_s05_aoa_errors_ERho}.png}
-		\label{fig:sub2}
-	\end{subfigure}
-	\caption{Errors E$[\rho]$ for SC$^{17}$, SG$_{10}$, IPM$_{10}$ (from left to right).}
-	\label{fig:ErrorsERho}
-\end{figure}
+%\begin{figure}[h!]
+%\centering
+%	\begin{subfigure}{0.33\linewidth}
+%		\centering
+%				\includegraphics[scale=0.2]{figs/Euler1DPlots10/{EulerSC4-17Res1e-6_errors_ERho}.png}
+%		\label{fig:sub1}
+%	\end{subfigure}%
+%	\begin{subfigure}{0.33\linewidth}
+%		\centering
+%				\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_sg_n9_sg4_s05_aoa_errors_ERho}.png}
+%		\label{fig:sub2}
+%	\end{subfigure}%
+%		\begin{subfigure}{0.33\linewidth}
+%		\centering
+%				\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_ipm_n9_sg4_s05_aoa_errors_ERho}.png}
+%		\label{fig:sub2}
+%	\end{subfigure}
+%	\caption{Errors E$[\rho]$ for SC$^{17}$, SG$_{10}$, IPM$_{10}$ (from left to right).}
+%	\label{fig:ErrorsERho}
+%\end{figure}
 %\newgeometry{top=2.5cm, left=2.5cm}
 
 \subsection{2D Euler equations with a two dimensional uncertainty}
 
+In the following, we assume a fixed angle of attack with $\phi = 1.25$ degrees and study the effect of two sources of uncertainties, namely the farfield pressure and Mach number. The farfield pressure is $p \sim U(100\;325,102\;325)$ Pa and the Mach number is $Ma \sim U(0.775,0.825)$. Since this problem has only a two-dimensional uncertainty, we use a tensorized quadrature set, which proved to be more efficient than a sparse grid quadrature. For SC, we use quadrature sets with $5^2$, $9^2$ and $17^2$ quadrature nodes and compare against SG with moments up to total degree $9$ as well as adaptive IPM with refinement retardation (with and without the one-shot strategy). The IPM method uses moment orders ranging from $1$ to $9$ adaptively with refinement barriers of $\delta_{-} = 1\cdot 10^{-4}$ and $\delta_{+} = 1\cdot 10^{-5}$. The refinement retardation allows the truncation order to have a maximal total degree of $1$ until a residual of $\varepsilon = 1.5\cdot 10^{-5}$ and then increases the truncation order by one when the residual is reduced by an amount of $5\cdot 10^{-6}$. Hence, the maximal truncation order of $9$ is reached when the residual is below $\varepsilon = 7\cdot 10^{-6}$. Again, the refinement strategy let to negative densities for SG resulting in a failure of the method.
 \begin{figure}[h!]
 \centering
 	\begin{subfigure}{0.5\linewidth}
@@ -244,8 +245,44 @@ The readosIPM results as well as the corresponding refinement levels are depicte
 				\includegraphics[scale=0.5]{figs/Euler2D/{L2_error_Var[rhoE]}.pdf}
 		\label{fig:sub2}
 	\end{subfigure}
-	\caption{Relative L$^2$ error with 17 MPI threads for density and energy.}
-	\label{fig:L2ErrorSolution}
+	\caption{Relative L$^2$ error with 16 MPI threads for density and energy.}
+	\label{fig:L2ErrorSolution2D}
+\end{figure}
+The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolution2D}. As in the one-dimensional NACA testcase, the acceleration techniques lead to a heavily reduced runtime of the IPM method. Furthermore, the error obtained with the intrusive methods requires a total degree of $M = 9$, i.e. $N = 55$ moments to reach the error level of SC with 17 quadrature points per dimension i.e. $17^2 = 289$ collocation points. Note that this effect has also been observed in the one-dimensional case, however now for multi-dimensional problems, the reduced number of unknowns needed for intrusive methods to obtain a certain error weighs in more heavily. This shows one promising characteristic of intrusive techniques and points to their applicability for higher dimensional problems. In contrast to before, the SG error level is smaller than the IPM error for both, the expectation value and variance.
+\begin{figure}[h!]
+\centering
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+				\includegraphics[scale=0.2]{figs/Euler2D/{sc50UncertainMaSigma0-025PSigma1000-0Dim2_ERho}.png}
+		\label{fig:referenceSolutionsub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+				\includegraphics[scale=0.2]{figs/Euler2D/{sc50UncertainMaSigma0-025PSigma1000-0Dim2_VarRho}.png}
+		\label{fig:referenceSolutionsub2}
+	\end{subfigure}
+	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
+	\label{fig:referenceSolution2D}
+\end{figure}
+\begin{figure}[h!]
+\centering
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/Euler2D/{retadosIPM9-4MaP_4_ERho}.png}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/Euler2D/{retadosIPM9-4MaP_4_VarRho}.png}
+		\label{fig:sub2}
+	\end{subfigure}%
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/Euler2D/{retadosIPM9-4MaP_4_refinementLevel}.png}
+		\label{fig:sub1}
+	\end{subfigure}
+	\caption{E$[\rho]$, Var$[\rho]$ and refinement level for readosIPM$_{1-9}$}
+	\label{fig:readosIPMEVar2D}
 \end{figure}
 
-It sticks out that again, the intrusive methods (SG$_9$,IPM$_9$) yield a smaller error level for the same number of unknowns compared to SC. For the same number of unknowns, the run time of the intrusive methods is always bigger than the corresponding SC method. However, the error of SG and IPM lies in the area of SC$^{17}$ at which the adaptive method has a smaller run time than SC. While SG shows a slightly better approximation of the expectation value, IPM shows a smaller error of the variance.
+

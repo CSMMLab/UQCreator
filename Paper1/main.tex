@@ -110,7 +110,7 @@
 
 \begin{abstract}
 Methods for quantifying the effects of uncertainties in hyperbolic problems can be divided into intrusive and non-intrusive techniques. Non-intrusive methods allow using a given deterministic solver as a black box while being embarrassingly parallel. Intrusive methods on the other hand do not suffer from aliasing effects and provide a more general framework for adaptive refinement techniques. Since the moment system solved by intrusive methods is not necessarily hyperbolic, the Intrusive Polynomial Moment (IPM) method has been introduced. IPM maintains hyperbolicity but comes at the cost of having to solve an optimization problem in every spatial cell and every time step.
-In this work, we propose acceleration techniques for intrusive methods. When solving steady problems, the numerical costs arising from repeatedly solving the IPM optimization problem can be reduced by borrowing ideas from shape optimization. Integrating the iteration to solve the optimization problem into the moment update guarantees local convergence while reducing numerical costs. Furthermore, we propose to use non-intrusive methods as a preconditioner for intrusive methods. Consequently, a large amount of iterations to the steady solution are performed by a cheap method, while maintaining the increased accuracy of an intrusive method. Additionally, we propose an adaptive implementation of the IPM method, which further reduces numerical costs. We demonstrate the effectiveness of the proposed strategies by comparing results of the uncertain NACA0012 testcase as well as a bent shock tube experiment with non-intrusive methods.
+In this work, we propose acceleration techniques for intrusive methods. When solving steady problems, the numerical costs arising from repeatedly solving the IPM optimization problem can be reduced by borrowing ideas from shape optimization. Integrating the iteration to solve the optimization problem into the moment update guarantees local convergence while reducing numerical costs. Additionally, we propose an adaptive implementation of the IPM method, which further reduces numerical costs. We demonstrate the effectiveness of the proposed strategies by comparing results of the uncertain NACA0012 testcase as well as a bent shock tube experiment with non-intrusive methods.
 \end{abstract}
 
 \begin{keyword}
@@ -121,16 +121,16 @@ uncertainty quantification, conservation laws, hyperbolic, intrusive, stochastic
 
 \input{introduction}
 \input{framework}
-\section{Strategies for steady problems}
-\input{colloc_ipm}
+%\section{Strategies for steady problems}
+%\input{colloc_ipm}
 \input{one_shot_ipm}
 \input{adaptivity}
 \input{implementation}
 \input{results}
 \input{summary_outlook}
-\input{appendix}
 
 \newpage
 \bibliographystyle{unsrt}  
 \bibliography{references}
+\input{appendix}
 \end{document}

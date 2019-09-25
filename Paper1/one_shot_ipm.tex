@@ -1,5 +1,20 @@
-\subsection{One-shot IPM}
+\section{One-shot IPM}
 \label{sec:OneShotIPM}
+
+In the following, we look at steady state problems, i.e. we have
+\begin{align}\label{eq:hyperbolicProblemSteady}
+\nabla\cdot\bm{f}(\bm{u}(\bm{x},\bm{\xi})) = \bm{0} \enskip \text{ in } D
+\end{align}
+with adequate boundary conditions. A general strategy for computing the steady state solution to \eqref{eq:hyperbolicProblemSteady} is to introduce a pseudo-time and numerically treat \eqref{eq:hyperbolicProblemSteady} as an unsteady problem. A steady state solution is then obtained by iterating in pseudo-time until the solution remains constant. It is important to point out that the time it takes to converge to a steady state solution is crucially affected by the chosen initial condition and its distance to the steady state solution.
+Similar to the unsteady case \eqref{eq:hyperbolicProblem}, we can again derive a moment system for \eqref{eq:hyperbolicProblemSteady} given by
+\begin{align}\label{eq:MomentSystemSteady}
+\nabla\cdot\langle\bm{f}(\bm{u}(\bm{x},\bm{\xi}))\bm{\varphi}^T\rangle^T = \bm{0} \enskip \text{ in } D
+\end{align}
+which is again needed for the construction of intrusive methods. By adding a pseudo-time and using the IPM closure, we obtain the same system as in \eqref{eq:SGMomentSystem}, i.e. Algorithm \ref{alg:IPM} can be used to iterate to a steady state solution. Note that now, the time iteration is not performed for a fixed number of time steps $N_t$, but until the condition
+\begin{align}\label{eq:residualSteady}
+\sum_{j = 1}^{N_x} \Delta x_j \Vert \bm{\hat{u}}_j^n - \bm{\hat{u}}_j^{n-1} \Vert \leq \varepsilon
+\end{align}
+is fulfilled. Since one is generally interested in low order moments such as the expectation value, this residual can be modified by only accounting for the zero order moments.
 
 In this section we aim at breaking up the inner loop in the IPM algorithm \ref{alg:IPM}, i.e. to just perform one iteration of the dual problem in each time step. Consequently, the IPM reconstruction given by \eqref{eq:primalProblem} is not done exactly, meaning that the reconstructed solution does not minimize the entropy while not fulfilling the moment constraint. However, the fact that the moment vectors are not yet converged to the steady solution seems to permit such an inexact reconstruction. Hence, we aim at iterating the moments to steady state and the dual variables to the exact solution of the IPM optimization problem \eqref{eq:primalProblem} simultaneously.
 By successively performing one update of the moment iteration and one update of the dual iteration, we obtain 
