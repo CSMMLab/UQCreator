@@ -474,6 +474,10 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
         kEnd += nQTotalForRefOld;
         kStart += nQTotalForRefOld;
 
+        // clear vector
+        _kIndicesAtRef[l].clear();
+        _kIndicesAtRef[l].resize( 0 );
+
         // save old indices on current refinement level
         if( l > 0 )
             for( unsigned i = 0; i < _kIndicesAtRef[l - 1].size(); ++i ) _kIndicesAtRef[l].push_back( _kIndicesAtRef[l - 1][i] );
