@@ -3,6 +3,7 @@
 #include "burgers.h"
 #include "euler.h"
 #include "euler2d.h"
+#include "navierstokes.h"
 #include "pnequations.h"
 #include "pnequations1d.h"
 #include "problem.h"
@@ -46,6 +47,9 @@ Problem* Problem::Create( Settings* settings ) {
     }
     else if( settings->GetProblemType() == ProblemType::P_RADIATIONHYDRO_1D ) {
         return new RadiationHydrodynamics1D( settings );
+    }
+    else if( settings->GetProblemType() == ProblemType::P_NAVIERSTOKES_1D ) {
+        return new NavierStokes( settings );
     }
     else {
         log->error( "[Problem] Invalid problem type!" );

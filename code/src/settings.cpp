@@ -72,6 +72,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 else if( _meshDimension == 2 )
                     _problemType = ProblemType::P_RADIATIONHYDRO_2D;
             }
+            else if( problemTypeString->compare( "NavierStokes" ) == 0 ) {
+                _problemType = ProblemType::P_NAVIERSTOKES_1D;
+            }
             else {
                 log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers1D, Euler1D, "
                             "Euler2D,ShallowWater1D,ShallowWater2D,PNEquations2D,RadiationHydrodynamics" );
