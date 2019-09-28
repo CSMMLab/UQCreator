@@ -73,28 +73,6 @@ The quantities of interests are now computed with the different methods. All met
 	\caption{Relative L$^2$ error with different quadrature levels. The subscript denotes the moment order, the superscript denotes the Clenshaw-Curtis quadrature level.}
 	\label{fig:ErrorDifferentQuad}
 \end{figure}
-
-Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rule to approximate integrals. We start by investigating the effects this quadrature has on the solution accuracy. For this, we run the IPM method with a moment order ranging from three to seven using a Clenshaw-Curtis quadrature rule with level three (i.e. 9 quadrature points) and level four (i.e. 17 quadrature points). A comparison of the error obtained with these two quadrature levels is given in Figure~\ref{fig:ErrorDifferentQuad}. To denote the quadrature level, we use a superscript and the moment order is denoted by a subscript.
-\begin{itemize}
-\item When for example comparing the error obtained with IPM$_8^3$ and IPM$_8^4$ it can be seen that the error stagnates when the chosen quadrature is not sufficiently accurate. This behavior results from aliasing effects in the numerical flux, which dominate the accuracy level.
-\item If the truncation order is sufficiently small, both quadrature levels yield the same accuracy. Note that this holds for the expectation value until a truncation order of $N=5$ and for the variance for $N=4$. Hence, the variance is more sensitive to aliasing errors.
-\item Figure~\ref{fig:ErrorDifferentQuadA} reveals that the IPM error of E[$\rho$] with 9 quadrature points stagnates at the error level of SC$^9$, i.e. the aliasing error heavily affects the accuracy. This behavior becomes more dominant when looking at the variance error in Figure~\ref{fig:ErrorDifferentQuadB}. Here, IPM$_8^4$ yields a significantly improved result compared to IPM$_8^3$. Again, the IPM$_8^3$ result stagnates at the SC$^9$ accuracy level, which can be reached with IPM when only using four moments (combined with a sufficiently accurate quadrature level). Hence, the number of moments needed for IPM to obtain a certain variance error is significantly smaller than the number of quadrature points needed for SC. This result can be observed throughout the results of this work. Especially for high dimensional problems, this potentially decreases the number of unknowns to reach a certain accuracy level significantly. However note, that since the numerical flux evaluation requires $O(N\cdot Q)$ operations, the numerical costs will depend on the chosen quadrature rule.
-\end{itemize}
-Let us now compare stochastic-Collocation with stochastic-Galerkin and IPM as well as its proposed acceleration techniques at a fixed moment order 9. Note that since IPM generalizes SG, all proposed techniques can be used for stochastic-Galerkin as well. To account for the fact that sparse grids need to be used in high dimensional problems, we use Clenshaw-Curtis quadrature rules to compute the different solutions. Stochastic-Collocation uses quadrature levels $2,3$ and $4$, which corresponds to $5,9$ and $17$ quadrature points. All adaptive methods use gPC polynomials of order 2 to 9 (i.e. 3 to 10 moments). Order 2 uses a level 2, orders 3 to 6 use a level 3 and orders 8 and 9 use a level 4 quadrature rule. When the smoothness indicator \eqref{eq:errorIndicator} lies below $\delta_{-} = 2\cdot 10^{-4}$, the truncation order is decreased, if it lies above $\delta_{+} = 2\cdot 10^{-5}$ the truncation order is increased. The remaining methods have been computed with a level 4 quadrature rule. 
-
-All intrusive methods are iterated until the expectation value of the density fulfills the stopping criterion \eqref{eq:residualSteady} with $\varepsilon = 5\cdot 10^{-6}$, however it can be seen that the error saturates already at a bigger residual. For every quadrature point, SC iterates the solution until the density reaches a certain residual level $\varepsilon$. We observed that the SC error requires a smaller residual level to reach a constant state and we have recorded this behavior in the following table for the SC$^{17}$ solution.
-\begin{center}
-\begin{tabular}{ | m{3cm} || m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | } 
-\hline
-residual $\rho$ & 5e-06 & 4e-06 & 3e-06 & 2e-06 & 1e-06 & 9e-07 & 8e-07 & 7e-07 & 6e-07 & 5e-07  \\ 
-\hline
-error E[$\rho$] in e-03 & 1.506 & 1.464 & 1.438 & 1.401 & 1.368 & 1.360 & 1.359 & 1.358 & 1.358 & 1.357  \\ 
-\hline
-error Var[$\rho$] in e-03 & 1.339 & 1.332 & 1.292 & 1.248 & 1.217 & 1.215 & 1.214 & 1.213 & 1.213 & 1.213  \\ 
-\hline
-\end{tabular}
-\end{center}
-Hence, we can deduce that SC requires a smaller residual to converge to a steady state solution. Therefore, the results for SC$^{17}$ will be presented for a residual of $\varepsilon = 5\cdot 10^{-6}$ as well as a reduced residual of $\varepsilon = 10^{-6}$. Note that in the case of SC, the error cannot be recorded without violating the non-intrusive framework and adding extra costs, which is why we only plot the final error and the corresponding run time.    %One possible reason for this behavior could be that SC is less synchronized, meaning that the solution certain quadrature points 
 \begin{figure}[h!]
 \centering
 	\begin{subfigure}{0.5\linewidth}
@@ -121,19 +99,6 @@ Hence, we can deduce that SC requires a smaller residual to converge to a steady
 	\caption{Relative L$^2$ error with 5 MPI threads for density and energy.}
 	\label{fig:L2ErrorSolution}
 \end{figure}
-
-First, let us mention that the adaptive SG method fails, since it yields negative densities during the iteration. The standard SG method however preserves positivity of mass, energy and pressure. The change of the relative L$^2$ error during the iteration to the steady state has been recorded in Figure~\ref{fig:L2ErrorSolution}. When comparing intrusive methods without acceleration techniques as well as SC, the following properties stick out:
-\begin{itemize}
-\item Compared to IPM, stochastic-Galerkin comes at a heavily reduced runtime, meaning that the IPM optimization problem requires a significant computational effort.
-\item SG$_9$ shows a smaller error compared to IPM$_9$ for the expectation value. For the variance, we see the opposite, i.e. IPM yields a better solution approximation than SG.
-\item Again, intrusive methods yield improved solutions compared to SC with the same number of unknowns. Actually, the error obtained with 17 unknowns when using SC is comparable with the error obtained with 10 unknowns when using intrusive methods.
-\end{itemize}
-The proposed acceleration techniques show the following behavior:
-\begin{itemize}
-\item The one shot IPM (osIPM) method proposed in in Section~\ref{sec:OneShotIPM} reduces the runtime while yielding the same error as the classical IPM method.
-\item When using adaptivity (see Algorithm~\ref{alg:ad-IPM}) in combination with the one-shot idea, the method is denoted by \textit{adaptive one-shot IPM} (adosIPM). This method reaches the steady state IPM solution with a faster runtime than SG.
-\item The idea of refinement retardation combined with adosIPM (see Algorithm~\ref{alg:adosIPM}) is denoted by retardation adosIPM (readosIPM), which further decreases runtime. Here, we use two different strategies: First, we steadily increase the maximal truncation order when the residual approaches zero. To determine residual values for a given set of truncation orders $2,4,5$ and $8$, we study at which residual level the IPM method reaches a saturated error level for each truncation order. The residual values are then determined to be $0.00006,0.00003,0.000022$ and $0.00002$. The second, straight forward strategy converges the solution on a low truncation order of $2$ to a residual of $10^{-5}$ and then switches to a maximal truncation order of $9$. Strategy 1 is depicted in red, Strategy 2 is depicted in green. It can be seen that both approaches reach the IPM$_9$ error for the same run time. Hence, we deduce that a naive choice of the refinement retardation strategy suffices to yield a satisfactory behavior.
-\end{itemize}
 \begin{figure}[h!]
 \centering
 	\begin{subfigure}{0.33\linewidth}
@@ -170,6 +135,42 @@ The proposed acceleration techniques show the following behavior:
 	\caption{E$[\rho]$ and Var$[\rho]$ computed with SC$^5$, SG$_5$, IPM$_5$ (from left to right).}
 	\label{fig:ERhoVarRho5}
 \end{figure}
+
+Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rule to approximate integrals. We start by investigating the effects this quadrature has on the solution accuracy. For this, we run the IPM method with a moment order ranging from three to seven using a Clenshaw-Curtis quadrature rule with level three (i.e. 9 quadrature points) and level four (i.e. 17 quadrature points). A comparison of the error obtained with these two quadrature levels is given in Figure~\ref{fig:ErrorDifferentQuad}. To denote the quadrature level, we use a superscript and the moment order is denoted by a subscript.
+\begin{itemize}
+\item When for example comparing the error obtained with IPM$_8^3$ and IPM$_8^4$ it can be seen that the error stagnates when the chosen quadrature is not sufficiently accurate. This behavior results from aliasing effects in the numerical flux, which dominate the accuracy level.
+\item If the truncation order is sufficiently small, both quadrature levels yield the same accuracy. Note that this holds for the expectation value until a truncation order of $N=5$ and for the variance for $N=4$. Hence, the variance is more sensitive to aliasing errors.
+\item Figure~\ref{fig:ErrorDifferentQuadA} reveals that the IPM error of E[$\rho$] with 9 quadrature points stagnates at the error level of SC$^9$, i.e. the aliasing error heavily affects the accuracy. This behavior becomes more dominant when looking at the variance error in Figure~\ref{fig:ErrorDifferentQuadB}. Here, IPM$_8^4$ yields a significantly improved result compared to IPM$_8^3$. Again, the IPM$_8^3$ result stagnates at the SC$^9$ accuracy level, which can be reached with IPM when only using four moments (combined with a sufficiently accurate quadrature level). Hence, the number of moments needed for IPM to obtain a certain variance error is significantly smaller than the number of quadrature points needed for SC. This result can be observed throughout the results of this work. Especially for high dimensional problems, this potentially decreases the number of unknowns to reach a certain accuracy level significantly. However note, that since the numerical flux evaluation requires $O(N\cdot Q)$ operations, the numerical costs will depend on the chosen quadrature rule.
+\end{itemize}
+Let us now compare stochastic-Collocation with stochastic-Galerkin and IPM as well as its proposed acceleration techniques at a fixed moment order 9. Note that since IPM generalizes SG, all proposed techniques can be used for stochastic-Galerkin as well. To account for the fact that sparse grids need to be used in high dimensional problems, we use Clenshaw-Curtis quadrature rules to compute the different solutions. Stochastic-Collocation uses quadrature levels $2,3$ and $4$, which corresponds to $5,9$ and $17$ quadrature points. All adaptive methods use gPC polynomials of order 2 to 9 (i.e. 3 to 10 moments). Order 2 uses a level 2, orders 3 to 6 use a level 3 and orders 8 and 9 use a level 4 quadrature rule. When the smoothness indicator \eqref{eq:errorIndicator} lies below $\delta_{-} = 2\cdot 10^{-4}$, the truncation order is decreased, if it lies above $\delta_{+} = 2\cdot 10^{-5}$ the truncation order is increased. The remaining methods have been computed with a level 4 quadrature rule. 
+
+All intrusive methods are iterated until the expectation value of the density fulfills the stopping criterion \eqref{eq:residualSteady} with $\varepsilon = 5\cdot 10^{-6}$, however it can be seen that the error saturates already at a bigger residual. For every quadrature point, SC iterates the solution until the density reaches a certain residual level $\varepsilon$. We observed that the SC error requires a smaller residual level to reach a constant state and we have recorded this behavior in the following table for the SC$^{17}$ solution.
+\begin{center}
+\begin{tabular}{ | m{3cm} || m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | m{0.9cm} | } 
+\hline
+residual $\rho$ & 5e-06 & 4e-06 & 3e-06 & 2e-06 & 1e-06 & 9e-07 & 8e-07 & 7e-07 & 6e-07 & 5e-07  \\ 
+\hline
+error E[$\rho$] in e-03 & 1.506 & 1.464 & 1.438 & 1.401 & 1.368 & 1.360 & 1.359 & 1.358 & 1.358 & 1.357  \\ 
+\hline
+error Var[$\rho$] in e-03 & 1.339 & 1.332 & 1.292 & 1.248 & 1.217 & 1.215 & 1.214 & 1.213 & 1.213 & 1.213  \\ 
+\hline
+\end{tabular}
+\end{center}
+Hence, we can deduce that SC requires a smaller residual to converge to a steady state solution. Therefore, the results for SC$^{17}$ will be presented for a residual of $\varepsilon = 5\cdot 10^{-6}$ as well as a reduced residual of $\varepsilon = 10^{-6}$. Note that in the case of SC, the error cannot be recorded without violating the non-intrusive framework and adding extra costs, which is why we only plot the final error and the corresponding run time.    %One possible reason for this behavior could be that SC is less synchronized, meaning that the solution certain quadrature points 
+
+First, let us mention that the adaptive SG method fails, since it yields negative densities during the iteration. The standard SG method however preserves positivity of mass, energy and pressure. The change of the relative L$^2$ error during the iteration to the steady state has been recorded in Figure~\ref{fig:L2ErrorSolution}. When comparing intrusive methods without acceleration techniques as well as SC, the following properties stick out:
+\begin{itemize}
+\item Compared to IPM, stochastic-Galerkin comes at a heavily reduced runtime, meaning that the IPM optimization problem requires a significant computational effort.
+\item SG$_9$ shows a smaller error compared to IPM$_9$ for the expectation value. For the variance, we see the opposite, i.e. IPM yields a better solution approximation than SG.
+\item Again, intrusive methods yield improved solutions compared to SC with the same number of unknowns. Actually, the error obtained with 17 unknowns when using SC is comparable with the error obtained with 10 unknowns when using intrusive methods.
+\end{itemize}
+The proposed acceleration techniques show the following behavior:
+\begin{itemize}
+\item The one shot IPM (osIPM) method proposed in in Section~\ref{sec:OneShotIPM} reduces the runtime while yielding the same error as the classical IPM method.
+\item When using adaptivity (see Algorithm~\ref{alg:ad-IPM}) in combination with the one-shot idea, the method is denoted by \textit{adaptive one-shot IPM} (adosIPM). This method reaches the steady state IPM solution with a faster runtime than SG.
+\item The idea of refinement retardation combined with adosIPM (see Algorithm~\ref{alg:adosIPM}) is denoted by retardation adosIPM (readosIPM), which further decreases runtime. Here, we use two different strategies: First, we steadily increase the maximal truncation order when the residual approaches zero. To determine residual values for a given set of truncation orders $2,4,5$ and $8$, we study at which residual level the IPM method reaches a saturated error level for each truncation order. The residual values are then determined to be $0.00006,0.00003,0.000022$ and $0.00002$. The second, straight forward strategy converges the solution on a low truncation order of $2$ to a residual of $10^{-5}$ and then switches to a maximal truncation order of $9$. Strategy 1 is depicted in red, Strategy 2 is depicted in green. It can be seen that both approaches reach the IPM$_9$ error for the same run time. Hence, we deduce that a naive choice of the refinement retardation strategy suffices to yield a satisfactory behavior.
+\end{itemize}
+
 Let us finally take a look at the expectation value and variance computed with different methods. All results are depicted for a zoomed view around the airfoil. Figure~\ref{fig:ERhoVarRho5} shows the expectation value (first row) and variance (second row) computed with $5$ quadrature points for SC and $5$ moments for SG and IPM. One can observe the following
 \begin{itemize}
 \item All methods yield non-physical step-like profiles of the expectation value and variance along the airfoil. 
@@ -248,7 +249,7 @@ In the following, we assume a fixed angle of attack with $\phi = 1.25$ degrees a
 	\caption{Relative L$^2$ error with 16 MPI threads for density and energy.}
 	\label{fig:L2ErrorSolution2D}
 \end{figure}
-The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolution2D}. As in the one-dimensional NACA testcase, the acceleration techniques lead to a heavily reduced runtime of the IPM method. Furthermore, the error obtained with the intrusive methods requires a total degree of $M = 9$, i.e. $N = 55$ moments to reach the error level of SC with 17 quadrature points per dimension i.e. $17^2 = 289$ collocation points. Note that this effect has also been observed in the one-dimensional case, however now for multi-dimensional problems, the reduced number of unknowns needed for intrusive methods to obtain a certain error weighs in more heavily. This shows one promising characteristic of intrusive techniques and points to their applicability for higher dimensional problems. In contrast to before, the SG error level is smaller than the IPM error for both, the expectation value and variance.
+The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolution2D}. To determine the error, we used Stochastic-Collocation with a $50$ by $50$ Gauss quadrature rule. As in the one-dimensional NACA testcase, the acceleration techniques lead to a heavily reduced runtime of the IPM method. Furthermore, the error obtained with the intrusive methods requires a total degree of $M = 9$, i.e. $N = 55$ moments to reach the error level of SC with 17 quadrature points per dimension i.e. $17^2 = 289$ collocation points. Note that this effect has also been observed in the one-dimensional case, however now for multi-dimensional problems, the reduced number of unknowns needed for intrusive methods to obtain a certain error weighs in more heavily. This shows one promising characteristic of intrusive techniques and points to their applicability for higher dimensional problems. In contrast to before, the SG error level is smaller than the IPM error for both, the expectation value and variance. Furthermore, when comparing IPM with and without one-shot, one can observe that the effect of this acceleration strategy weighs in more heavily than it did for the one-dimensional case. This behavior is expected, since every iterate of the optimization problem becomes more expensive when the dimension is increased. I.e. using a method with less iterations for every computation of the dual variables heavily reduces computational costs, which is why we consider the one-shot strategy an effective approach, especially for problems with high uncertain dimension.
 \begin{figure}[h!]
 \centering
 	\begin{subfigure}{0.5\linewidth}
@@ -269,20 +270,25 @@ The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolut
 	\begin{subfigure}{0.33\linewidth}
 		\centering
 		\includegraphics[scale=0.2]{figs/Euler2D/{retadosIPM9-4MaP_4_ERho}.png}
+		\caption{}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\begin{subfigure}{0.33\linewidth}
 		\centering
 		\includegraphics[scale=0.2]{figs/Euler2D/{retadosIPM9-4MaP_4_VarRho}.png}
+		\caption{}
 		\label{fig:sub2}
 	\end{subfigure}%
 	\begin{subfigure}{0.33\linewidth}
 		\centering
 		\includegraphics[scale=0.2]{figs/Euler2D/{retadosIPM9-4MaP_4_refinementLevel}.png}
-		\label{fig:sub1}
+		\caption{}
+		\label{fig:readosIPMEVar2DRefinement}
 	\end{subfigure}
-	\caption{E$[\rho]$, Var$[\rho]$ and refinement level for readosIPM$_{1-9}$}
+	\caption{(a) E$[\rho]$, (b) Var$[\rho]$ and (c) refinement level for readosIPM$_{1-9}$}
 	\label{fig:readosIPMEVar2D}
 \end{figure}
+When looking at the computed IPM expectation value and variance in Figure~\ref{fig:readosIPMEVar2D} and compare the results against the reference solution in Figure~\ref{fig:referenceSolution2D}, one can observe that since the uncertainty effects the result more heavily than in the one-dimensional case, the IPM solution still shows a step-like profile. However, we are able to capture the main features of the reference solution. The increased effect of the uncertainty can again be seen in Figure~\ref{fig:readosIPMEVar2DRefinement}, where a refinement level of $8$, i.e. a truncation order of $9$ is chosen on a larger portion than for the one-dimensional case.
 
-
+\subsection{Pipe Testcase}
+\comment{TODO: Pipe testcase}
