@@ -18,21 +18,42 @@ NavierStokes::NavierStokes( Settings* settings ) : Problem( settings ) {
 
 NavierStokes::~NavierStokes() {}
 
-Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    double rhoInv = 1.0 / u[0];
-    double vU     = u[1] * rhoInv;
-    double p      = ( _gamma - 1.0 ) * ( u[2] - 0.5 * u[0] * pow( vU, 2 ) );
-    double aU     = sqrt( _gamma * p * rhoInv );
-    rhoInv        = 1.0 / v[0];
-    double vV     = v[1] * rhoInv;
-    p             = ( _gamma - 1.0 ) * ( v[2] - 0.5 * v[0] * pow( vV, 2 ) );
-    double aV     = sqrt( _gamma * p * rhoInv );
+Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n, const double& length ) {
 
-    double uUProjected = nUnit[0] * vU;
-    double uVProjected = nUnit[0] * vV;
+    // gas property
+    double inK = (3.0 - _gamma) / (_gamma - 1.0);
+    double vis = 0.001;
+    
+    // left interface
+    double wL[3], primL[3];
+    
+    wL[0] = u[0];
+    wL[1] = u[1];
+    wL[2] = u[2];
+    
+    get_primitive(primL, wL, _gamma);
+    
+    double pL = ( _gamma - 1.0 ) * ( wL[2] - 0.5 * wL[0] * pow( wL[1], 2 ) );
+    double ssL = sqrt( _gamma * pL / primL[0] );
+    
+    // right interface
+    double wR[3], primR[3];
+    
+    wR[0] = v[0];
+    wR[1] = v[1];
+    wR[2] = v[2];
+    
+    get_primitive(primR, wR, _gamma);
+    
+    double pR = ( _gamma - 1.0 ) * ( wR[2] - 0.5 * wR[0] * pow( wR[1], 2 ) );
+    double ssR = sqrt( _gamma * pR / primR[0] );
 
-    double lambdaMin = uUProjected - aU;
-    double lambdaMax = uVProjected + aV;
+    // projection
+    double uUProjected = nUnit[0] * primL[1];
+    double uVProjected = nUnit[0] * primR[1];
+
+    double lambdaMin = uUProjected - ssL;
+    double lambdaMax = uVProjected + ssR;
 
     if( lambdaMin >= 0 )
         return F( u ) * nUnit;
@@ -41,6 +62,11 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     else {
         return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( u ) * nUnit - lambdaMin * F( v ) * nUnit + lambdaMax * lambdaMin * ( v - u ) );
     }
+
+
+
+
+
 }
 
 Matrix NavierStokes::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
@@ -98,3 +124,5 @@ Vector NavierStokes::IC( const Vector& x, const Vector& xi ) {
     }
     return y;
 }
+
+
