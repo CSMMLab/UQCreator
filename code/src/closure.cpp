@@ -5,6 +5,7 @@
 #include "l2filter.h"
 #include "lassofilter.h"
 #include "logsin.h"
+#include "m1ipmclosure.h"
 #include "mathtools.h"
 #include "radihydroclosure1d.h"
 #include "regularizedeuler1d.h"
@@ -144,6 +145,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_RADHYDRO ) {
         return new RadiHydroClosure1D( settings );
+    }
+    else if( closureType == ClosureType::C_M1_1D ) {
+        return new M1IPMClosure( settings );
     }
     else {
         log->error( "[closure]: Invalid closure type" );

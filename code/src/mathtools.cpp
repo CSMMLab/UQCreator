@@ -110,3 +110,10 @@ int MathTools::Factorial( int i ) {
     }
     return fact;
 }
+
+double MathTools::csch( const double x ) {
+    // return 1.0 / sinh( x );
+    return fabs( x ) / ( x * fabs( sinh( x ) ) );
+}
+
+double MathTools::coth( const double x ) { return sinh( 2.0 * x ) / ( cosh( 2.0 * x ) - 1.0 ); }

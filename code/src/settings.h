@@ -17,6 +17,7 @@ enum ProblemType {
     P_SHALLOWWATER_1D,
     P_SHALLOWWATER_2D,
     P_PNEQUATIONS_1D,
+    P_M1EQUATIONS_1D,
     P_PNEQUATIONS_2D,
     P_RADIATIONHYDRO_1D,
     P_RADIATIONHYDRO_2D,
@@ -32,7 +33,8 @@ enum ClosureType {
     C_SHALLOWWATER_2D,
     C_L2FILTER,
     C_LASSOFILTER,
-    C_RADHYDRO
+    C_RADHYDRO,
+    C_M1_1D
 };
 enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };

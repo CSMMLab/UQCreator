@@ -3,6 +3,7 @@
 #include "burgers.h"
 #include "euler.h"
 #include "euler2d.h"
+#include "m1equations1d.h"
 #include "navierstokes.h"
 #include "pnequations.h"
 #include "pnequations1d.h"
@@ -41,6 +42,9 @@ Problem* Problem::Create( Settings* settings ) {
     }
     else if( settings->GetProblemType() == ProblemType::P_PNEQUATIONS_1D ) {
         return new PNEquations1D( settings );
+    }
+    else if( settings->GetProblemType() == ProblemType::P_M1EQUATIONS_1D ) {
+        return new M1Equations1D( settings );
     }
     else if( settings->GetProblemType() == ProblemType::P_RADIATIONHYDRO_2D ) {
         return new RadiationHydrodynamics( settings );

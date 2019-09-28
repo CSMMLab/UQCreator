@@ -66,6 +66,12 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 else if( _meshDimension == 2 )
                     _problemType = ProblemType::P_PNEQUATIONS_2D;
             }
+            else if( problemTypeString->compare( "M1Equations" ) == 0 ) {
+                if( _meshDimension == 1 )
+                    _problemType = ProblemType::P_M1EQUATIONS_1D;
+                else
+                    std::cerr << "M1 for 2D not implemented" << std::endl;
+            }
             else if( problemTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
                 if( _meshDimension == 1 )
                     _problemType = ProblemType::P_RADIATIONHYDRO_1D;
@@ -77,7 +83,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             }
             else {
                 log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers1D, Euler1D, "
-                            "Euler2D,ShallowWater1D,ShallowWater2D,PNEquations2D,RadiationHydrodynamics" );
+                            "Euler2D,ShallowWater1D,ShallowWater2D,PNEquations2D,RadiationHydrodynamics,M1Equations,NavierStokes" );
                 validConfig = false;
             }
         }
@@ -215,9 +221,12 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( closureTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
                 _closureType = ClosureType::C_RADHYDRO;
             }
+            else if( closureTypeString->compare( "M1" ) == 0 ) {
+                _closureType = ClosureType::C_M1_1D;
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogSin, "
-                            "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter,RadiationHydrodynamics" );
+                            "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter,RadiationHydrodynamics,M1" );
                 validConfig = false;
             }
         }
