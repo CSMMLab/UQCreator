@@ -35,8 +35,8 @@ Matrix M1Equations1D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, 
 Matrix M1Equations1D::F( const Vector& u ) {
     Matrix flux( u.size(), 1 );
 
-    double alpha = Bisection( -100.0, 100.0, u[1] / u[0] );    // ComputeAlpha( u[1] / u[0] );
-    double u2Du0 = 4.0 / ( alpha - alpha * exp( 2.0 * alpha ) ) - 2.0 / alpha + 2.0 / std::pow( alpha, 2 ) + 1;
+    double alpha = Bisection( -500.0, 100.1, u[1] / u[0] );    // ComputeAlpha( u[1] / u[0] );
+    double u2Du0 = 4.0 / ( alpha - alpha * exp( 2.0 * alpha ) ) - 2.0 / alpha + 2.0 / std::pow( alpha, 2 ) + 1.0;
 
     flux( 0, 0 ) = u[1];
     flux( 1, 0 ) = u2Du0 * u[0];
@@ -64,7 +64,8 @@ double M1Equations1D::RootFun( const double alpha, const double u1Du0 ) const { 
 
 double M1Equations1D::Bisection( double alphaA, double alphaB, const double u1Du0 ) const {
     if( RootFun( alphaA, u1Du0 ) * RootFun( alphaB, u1Du0 ) >= 0 ) {
-        std::cout << "Incorrect a and b with vals " << RootFun( alphaA, u1Du0 ) << ", " << RootFun( alphaB, u1Du0 ) << std::endl;
+        std::cerr << "[Bisection] Incorrect a and b with vals " << RootFun( alphaA, u1Du0 ) << ", " << RootFun( alphaB, u1Du0 ) << std::endl;
+        exit( EXIT_FAILURE );
         return -1.0;
     }
 
@@ -73,7 +74,11 @@ double M1Equations1D::Bisection( double alphaA, double alphaB, const double u1Du
 
     while( std::abs( alphaB - alphaA ) >= e ) {
         alphaC = ( alphaA + alphaB ) / 2;
-        if( RootFun( alphaC, u1Du0 ) == 0.0 ) {
+        if( !std::isfinite( RootFun( alphaC, u1Du0 ) ) ) {
+            std::cerr << "[Bisection] Infinite RootFunction" << std::endl;
+            exit( EXIT_FAILURE );
+        }
+        else if( RootFun( alphaC, u1Du0 ) == 0.0 ) {
             return alphaC;
         }
         else if( RootFun( alphaC, u1Du0 ) * RootFun( alphaA, u1Du0 ) < 0 ) {

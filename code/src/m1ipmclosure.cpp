@@ -37,10 +37,46 @@ void M1IPMClosure::DU( Matrix& y, const Vector& Lambda ) {
     y( 1, 1 ) = ( exp( Lambda[0] - Lambda[1] ) *
                   ( -2.0 - 2.0 * Lambda[1] - pow( Lambda[1], 2 ) + exp( 2.0 * Lambda[1] ) * ( 2.0 - 2.0 * Lambda[1] + pow( Lambda[1], 2 ) ) ) ) /
                 pow( Lambda[1], 3 );
-    std::cout << y << std::endl;
+    // std::cout << y << std::endl;
 }
 
 void M1IPMClosure::DS( Vector& ds, const Vector& u ) const {
-    ds[0] = 5.0;
-    ds[1] = 0.01;
+    double alpha1 = Bisection( -10.0, 10.1, u[1] / u[0] );
+    double alpha0 = -log( ( exp( alpha1 ) - exp( -alpha1 ) ) / ( alpha1 * u[0] ) );
+
+    ds[0] = alpha0;
+    ds[1] = alpha1;
+    std::cout << ds << std::endl;
+}
+
+double M1IPMClosure::RootFun( const double alpha, const double u1Du0 ) const { return MathTools::coth( alpha ) - 1.0 / alpha - u1Du0; }
+
+double M1IPMClosure::Bisection( double alphaA, double alphaB, const double u1Du0 ) const {
+    if( RootFun( alphaA, u1Du0 ) * RootFun( alphaB, u1Du0 ) >= 0 ) {
+        std::cout << "Incorrect a and b with vals " << RootFun( alphaA, u1Du0 ) << ", " << RootFun( alphaB, u1Du0 ) << std::endl;
+        exit( EXIT_FAILURE );
+    }
+
+    double alphaC = alphaA;
+    double e      = 1e-10;
+
+    while( std::fabs( alphaB - alphaA ) >= e ) {
+        alphaC = ( alphaA + alphaB ) / 2;
+        if( !std::isfinite( RootFun( alphaC, u1Du0 ) ) ) {
+            std::cerr << "[Bisection] Infinite RootFunction" << std::endl;
+            exit( EXIT_FAILURE );
+        }
+        else if( RootFun( alphaC, u1Du0 ) == 0.0 ) {
+            return alphaC;
+        }
+        else if( RootFun( alphaC, u1Du0 ) * RootFun( alphaA, u1Du0 ) < 0 ) {
+            alphaB = alphaC;
+        }
+        else {
+            alphaA = alphaC;
+        }
+    }
+    std::cout << "result = " << alphaC << std::endl;
+    // exit( EXIT_FAILURE );
+    return alphaC;
 }

@@ -9,6 +9,9 @@ class M1IPMClosure : public Closure
     double _gamma;
     M1IPMClosure() = delete;
 
+    double RootFun( const double alpha, const double u1Du0 ) const;
+    double Bisection( double alphaA, double alphaB, const double u1Du0 ) const;
+
   public:
     M1IPMClosure( Settings* settings );
     virtual ~M1IPMClosure();
@@ -20,4 +23,4 @@ class M1IPMClosure : public Closure
     virtual void DS( Vector& ds, const Vector& u ) const;
 };
 
-#endif // M1IPMCLOSURE_H
+#endif    // M1IPMCLOSURE_H
