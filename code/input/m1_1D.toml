@@ -1,0 +1,28 @@
+[general]
+problem = "M1Equations"
+outputDir = "../results"
+writeFrequency = 100
+#restartFile = "../input/restart_rad_hydro_Ma4"
+
+[mesh]
+dimension = 1
+numberOfCells = 500
+a = -0.7
+b = 0.7
+outputFile = "M1"
+
+[problem]
+# available timesteppings: explicitEuler
+timestepping = "explicitEuler"
+# available distributions: Legendre, Hermite
+distribution = [["Legendre"],[1.0]]
+CFL = 1.0 # 0.1
+tEnd = 0.45
+
+[moment_system]
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics, M1
+closure = "StochasticGalerkin"
+moments = [["totalDegree"],[5]]
+quadPoints = [["tensorizedGrid"],[10]]
+maxIterations = 1000
+epsilon = 1e-3
