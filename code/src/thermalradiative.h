@@ -23,7 +23,6 @@ class ThermalRadiative : public Problem
     virtual double ComputeDt( const Matrix& u, double dx, unsigned level ) const;
     virtual Vector IC( const Vector& x, const Vector& xi );
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
-    virtual Matrix ExactSolution( double t, const Matrix& x, const Vector& xi ) const;
 };
 
 #endif // THERMALRADIATIVE_H
