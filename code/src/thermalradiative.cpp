@@ -73,24 +73,11 @@ Matrix ThermalRadiative::F( const Matrix& u ) {
 }
 
 double ThermalRadiative::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
-    double dtMinTotal = 1e10;
-    double dtMin;
-    double rhoInv, v, p, a, cfl;
-    unsigned kEnd = _settings->GetNqPEAtRef( level );
+    double cfl = _settings->GetCFL();
 
-    cfl = _settings->GetCFL();
+    double maxVelocity = 1.0 / _c / _epsilon;
 
-    for( unsigned k = 0; k < kEnd; ++k ) {
-        rhoInv = 1.0 / u( 0, k );
-        v      = u( 1, k ) * rhoInv;
-        p      = ( _gamma - 1.0 ) * ( u( 2, k ) - 0.5 * u( 0, k ) * pow( v, 2 ) );
-        a      = sqrt( _gamma * p * rhoInv );
-
-        dtMin      = ( cfl * dx ) * std::min( std::fabs( 1.0 / ( v - a ) ), std::fabs( 1.0 / ( v + a ) ) );
-        dtMinTotal = std::min( dtMin, dtMinTotal );
-    }
-
-    return dtMinTotal;
+    return ( cfl * dx ) / maxVelocity;
 }
 
 Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
@@ -104,8 +91,8 @@ Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
     double uL   = 0.0;
     double uR   = 0.0;
     Vector y( _nStates );
-    _sigma = _settings->GetSigma();
-    if( x[0] < x0 + _sigma[0] * xi[0] ) {
+    auto sigma = _settings->GetSigma();
+    if( x[0] < x0 + sigma[0] * xi[0] ) {
         y[0]                  = rhoL;
         y[1]                  = rhoL * uL;
         double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 );
@@ -115,10 +102,10 @@ Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
     else {
         y[0] = rhoR;
         if( xi.size() > 1 ) {
-            y[0] += _sigma[1] * xi[1];
+            y[0] += sigma[1] * xi[1];
         }
         if( xi.size() > 2 ) {
-            pR += _sigma[2] * xi[2];
+            pR += sigma[2] * xi[2];
         }
         y[1]                  = rhoR * uR;
         double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 );
