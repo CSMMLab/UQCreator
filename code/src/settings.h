@@ -99,6 +99,7 @@ class Settings
 
     unsigned _numDimXi;
     double _epsilon;
+    double _filterStrength;    // strength for filter methods
     double _CFL;
     double _tEnd;
     double _minResidual;    // residual at which iteration is stopped for steady problems

@@ -2,19 +2,19 @@
 
 RegularizedEuler1D::RegularizedEuler1D( Settings* settings )
     : EulerClosure( settings ), _eta( _settings->GetRegularizationStrength() ), _lambda( _settings->GetFilterStrength() ) {
-    _filterFunction = Vector( _settings->GetNTotal(), 1.0 );
-    /*
+    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
     unsigned nMoments = _settings->GetNMoments();
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
                 // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                 // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                unsigned index = unsigned( ( i - i % unsigned( std::pow( nMoments, l ) ) ) / unsigned( std::pow( nMoments, l ) ) ) % nMoments;
+                unsigned index =
+                    unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
                 _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
             }
         }
-    }*/
+    }
 }
 
 RegularizedEuler1D::~RegularizedEuler1D() {}
@@ -85,22 +85,24 @@ void RegularizedEuler1D::Hessian( Matrix& H, const Matrix& lambda, unsigned refL
 
 void RegularizedEuler1D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
     unsigned nTotal = _nTotalForRef[refLevel];
-    /*Matrix uF( _settings->GetNStates(), nTotal );
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < nTotal; ++i ) {
-            uF( s, i ) = _filterFunction[i] * u( s, i );
+    Matrix uF       = u;
+    if( _lambda > 0 ) {
+        for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+            for( unsigned i = 0; i < nTotal; ++i ) {
+                uF( s, i ) = _filterFunction[i] * u( s, i );
+            }
         }
-    }*/
+    }
     int maxRefinements = 1000;
 
     Vector g( _nStates * nTotal );
 
     // check if initial guess is good enough
-    GradientNoRegularizaton( g, lambda, u, refLevel );
+    GradientNoRegularizaton( g, lambda, uF, refLevel );
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
-    Gradient( g, lambda, u, refLevel );
+    Gradient( g, lambda, uF, refLevel );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
     // calculate initial Hessian and gradient
@@ -114,23 +116,23 @@ void RegularizedEuler1D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned
     }
     Matrix lambdaNew( _nStates, nTotal );
     AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew, nTotal );
-    Gradient( dlambdaNew, lambdaNew, u, refLevel );
+    Gradient( dlambdaNew, lambdaNew, uF, refLevel );
     // perform Newton iterations
     for( unsigned l = 0; l < _maxIterations; ++l ) {
         double stepSize = 1.0;
         if( l != 0 ) {
-            Gradient( g, lambda, u, refLevel );
+            Gradient( g, lambda, uF, refLevel );
             dlambda = -g;
             Hessian( H, lambda, refLevel );
             posv( H, g );
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
-            Gradient( dlambdaNew, lambdaNew, u, refLevel );
+            Gradient( dlambdaNew, lambdaNew, uF, refLevel );
         }
         int refinementCounter = 0;
         while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
-            Gradient( dlambdaNew, lambdaNew, u, refLevel );
+            Gradient( dlambdaNew, lambdaNew, uF, refLevel );
             if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
                 lambda = lambdaNew;
                 return;
@@ -152,18 +154,20 @@ void RegularizedEuler1D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned
 
 void RegularizedEuler1D::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
     unsigned nTotal = _nTotalForRef[refLevel];
-    /*Matrix uF( _settings->GetNStates(), nTotal );
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < nTotal; ++i ) {
-            uF( s, i ) = _filterFunction[i] * u( s, i );
+    Matrix uF       = u;
+    if( _lambda > 0 ) {
+        for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+            for( unsigned i = 0; i < nTotal; ++i ) {
+                uF( s, i ) = _filterFunction[i] * u( s, i );
+            }
         }
-    }*/
+    }
     int maxRefinements = 1000;
 
     Vector g( _nStates * nTotal );
 
     // check if initial guess is good enough
-    GradientNoRegularizaton( g, lambda, u, refLevel );
+    GradientNoRegularizaton( g, lambda, uF, refLevel );
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
@@ -180,23 +184,23 @@ void RegularizedEuler1D::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsi
     }
     Matrix lambdaNew( _nStates, nTotal );
     AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew, nTotal );
-    Gradient( dlambdaNew, lambdaNew, u, refLevel );
+    Gradient( dlambdaNew, lambdaNew, uF, refLevel );
     // perform Newton iterations
     for( unsigned l = 0; l < _maxIterations; ++l ) {
         double stepSize = 1.0;
         if( l != 0 ) {
-            Gradient( g, lambda, u, refLevel );
+            Gradient( g, lambda, uF, refLevel );
             dlambda = -g;
             Hessian( H, lambda, refLevel );
             posv( H, g );
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
-            Gradient( dlambdaNew, lambdaNew, u, refLevel );
+            Gradient( dlambdaNew, lambdaNew, uF, refLevel );
         }
         int refinementCounter = 0;
         while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) || !std::isfinite( CalcNorm( dlambdaNew, nTotal ) ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
-            Gradient( dlambdaNew, lambdaNew, u, refLevel );
+            Gradient( dlambdaNew, lambdaNew, uF, refLevel );
             if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
                 lambda = lambdaNew;
                 return;

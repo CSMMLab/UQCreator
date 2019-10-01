@@ -362,6 +362,8 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
         else
             _regularization = true;
 
+        _filterStrength = moment_system->get_as<double>( "filterStrength" ).value_or( -1.0 );
+
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
         _hasSource     = false;
@@ -508,7 +510,7 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
 unsigned Settings::GetNQTotalForRef( unsigned level ) const { return _nQTotalForRef[level]; }
 VectorU Settings::GetNQTotalForRef() const { return _nQTotalForRef; }
 unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }
-double Settings::GetFilterStrength() const { return 0.0; }
+double Settings::GetFilterStrength() const { return _filterStrength; }
 double Settings::GetRegularizationStrength() const { return _regularizationStrength; }
 
 // plot

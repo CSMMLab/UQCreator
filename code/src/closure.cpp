@@ -172,6 +172,18 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel )
     Vector dlambda = -g;
     // std::cout << g << std::endl;
     Hessian( H, lambda, refLevel );
+
+    // double eps     = 0.00001;
+    // lambda( 1, 0 ) = lambda( 1, 0 ) + eps;
+
+    // Vector gEps( _nStates * nTotal );
+
+    // Gradient( gEps, lambda, u, refLevel );
+
+    // std::cout << "H_FD = " << ( gEps - g ) / eps << std::endl;
+    // std::cout << "H = " << H << std::endl;
+    // exit( EXIT_FAILURE );
+
     posv( H, g );
     if( _maxIterations == 1 ) {
         AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda, nTotal );
@@ -192,6 +204,7 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel )
             Gradient( dlambdaNew, lambdaNew, u, refLevel );
         }
         int refinementCounter = 0;
+        // std::cout << CalcNorm( dlambdaNew, nTotal ) << std::endl;
         while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
