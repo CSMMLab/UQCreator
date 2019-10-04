@@ -4,20 +4,20 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 500
-a = 0
-b = 0.5
-outputFile = "navier_stokes_out_small"
+numberOfCells = 100
+a = 0.0
+b = 1.0
+outputFile = "navier_stokes_out"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.0]]
-CFL = 0.01
+CFL = 0.3
 tEnd = 0.05
 gamma = 1.4
-mu = 1000
+mu = 0.001
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter

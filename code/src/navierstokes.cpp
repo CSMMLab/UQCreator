@@ -1,5 +1,5 @@
 #include "navierstokes.h"
-#include "gks.cpp"
+//#include "gks.cpp"
 
 void get_conserved( double* w, double prim[3], double gam ) {
     w[0] = prim[0];
@@ -201,11 +201,11 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     double ssR = sqrt( _gamma * pR / primR[0] );
 
     // projection
-    // double uUProjected = nUnit[0] * primL[1];
-    // double uVProjected = nUnit[0] * primR[1];
+    double uUProjected = nUnit[0] * primL[1];
+    double uVProjected = nUnit[0] * primR[1];
 
-    // double lambdaMin = uUProjected - ssL;
-    // double lambdaMax = uVProjected + ssR;
+    double lambdaMin = uUProjected - ssL;
+    double lambdaMax = uVProjected + ssR;
 
     double dt = _settings->GetDT();
 
@@ -270,16 +270,16 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     fluxMatrix( 1, 0 ) = flux[1];
     fluxMatrix( 2, 0 ) = flux[2];
 
-    return fluxMatrix * nUnit;
+    //return fluxMatrix * nUnit;
 
-    // if( lambdaMin >= 0 )
-    //    return F( u ) * nUnit;
-    // else if( lambdaMax <= 0 )
-    //    return F( v ) * nUnit;
-    // else {
-    //    return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( u ) * nUnit - lambdaMin * F( v ) * nUnit + lambdaMax * lambdaMin * ( v - u )
-    //    );
-    //}
+     if( lambdaMin >= 0 )
+        return F( u ) * nUnit;
+     else if( lambdaMax <= 0 )
+        return F( v ) * nUnit;
+     else {
+        return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( u ) * nUnit - lambdaMin * F( v ) * nUnit + lambdaMax * lambdaMin * ( v - u )
+        );
+    }
 }
 
 Matrix NavierStokes::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
@@ -304,13 +304,13 @@ Matrix NavierStokes::F( const Vector& u ) {
 }
 
 Vector NavierStokes::IC( const Vector& x, const Vector& xi ) {
-    double x0    = 0.3;
+    double x0    = 0.5;
     double gamma = 1.4;
 
     double rhoL = 1.0;
-    double rhoR = 0.9;
+    double rhoR = 0.3;
     double pL   = 1.0;
-    double pR   = 0.9;
+    double pR   = 0.3;
     double uL   = 0.0;
     double uR   = 0.0;
     Vector y( _nStates );
