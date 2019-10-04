@@ -7,7 +7,7 @@ class NavierStokes : public Problem
 {
   private:
     double _gamma;
-    double _vis;
+    double _mu;
 
   public:
     NavierStokes( Settings* settings );
