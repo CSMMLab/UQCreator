@@ -10,6 +10,7 @@ NavierStokes::NavierStokes( Settings* settings ) : Problem( settings ) {
         auto problem = file->get_table( "problem" );
         _gamma       = problem->get_as<double>( "gamma" ).value_or( 1.4 );
         _settings->SetGamma( _gamma );
+        _vis = problem->get_as<double>( "vis" ).value_or( 0.001 );
     } catch( const cpptoml::parse_exception& e ) {
         _log->error( "[Euler] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
@@ -21,31 +22,32 @@ NavierStokes::~NavierStokes() {}
 Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n, const double& length ) {
 
     // gas property
-    double inK = (3.0 - _gamma) / (_gamma - 1.0);
-    double vis = 0.001;
-    
+    double inK = ( 3.0 - _gamma ) / ( _gamma - 1.0 );
+    double dx  = norm( n );
+    double vis = _vis;
+
     // left interface
     double wL[3], primL[3];
-    
+
     wL[0] = u[0];
     wL[1] = u[1];
     wL[2] = u[2];
-    
-    get_primitive(primL, wL, _gamma);
-    
-    double pL = ( _gamma - 1.0 ) * ( wL[2] - 0.5 * wL[0] * pow( wL[1], 2 ) );
+
+    get_primitive( primL, wL, _gamma );
+
+    double pL  = ( _gamma - 1.0 ) * ( wL[2] - 0.5 * wL[0] * pow( wL[1], 2 ) );
     double ssL = sqrt( _gamma * pL / primL[0] );
-    
+
     // right interface
     double wR[3], primR[3];
-    
+
     wR[0] = v[0];
     wR[1] = v[1];
     wR[2] = v[2];
-    
-    get_primitive(primR, wR, _gamma);
-    
-    double pR = ( _gamma - 1.0 ) * ( wR[2] - 0.5 * wR[0] * pow( wR[1], 2 ) );
+
+    get_primitive( primR, wR, _gamma );
+
+    double pR  = ( _gamma - 1.0 ) * ( wR[2] - 0.5 * wR[0] * pow( wR[1], 2 ) );
     double ssR = sqrt( _gamma * pR / primR[0] );
 
     // projection
@@ -55,6 +57,8 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     double lambdaMin = uUProjected - ssL;
     double lambdaMax = uVProjected + ssR;
 
+    double dt = _settings->GetDT();
+
     if( lambdaMin >= 0 )
         return F( u ) * nUnit;
     else if( lambdaMax <= 0 )
@@ -62,11 +66,6 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     else {
         return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( u ) * nUnit - lambdaMin * F( v ) * nUnit + lambdaMax * lambdaMin * ( v - u ) );
     }
-
-
-
-
-
 }
 
 Matrix NavierStokes::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
@@ -124,5 +123,3 @@ Vector NavierStokes::IC( const Vector& x, const Vector& xi ) {
     }
     return y;
 }
-
-
