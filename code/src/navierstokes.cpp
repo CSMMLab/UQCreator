@@ -1,4 +1,5 @@
 #include "navierstokes.h"
+#include "gks.cpp"
 
 NavierStokes::NavierStokes( Settings* settings ) : Problem( settings ) {
     _nStates = 3;
@@ -19,12 +20,12 @@ NavierStokes::NavierStokes( Settings* settings ) : Problem( settings ) {
 
 NavierStokes::~NavierStokes() {}
 
-Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n, const double& length ) {
+Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
 
     // gas property
     double inK = ( 3.0 - _gamma ) / ( _gamma - 1.0 );
     double dx  = norm( n );
-    double vis = _vis;
+    //double vis = _vis;
 
     // left interface
     double wL[3], primL[3];
@@ -51,21 +52,89 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     double ssR = sqrt( _gamma * pR / primR[0] );
 
     // projection
-    double uUProjected = nUnit[0] * primL[1];
-    double uVProjected = nUnit[0] * primR[1];
+    //double uUProjected = nUnit[0] * primL[1];
+    //double uVProjected = nUnit[0] * primR[1];
 
-    double lambdaMin = uUProjected - ssL;
-    double lambdaMax = uVProjected + ssR;
+    //double lambdaMin = uUProjected - ssL;
+    //double lambdaMax = uVProjected + ssR;
 
     double dt = _settings->GetDT();
 
-    if( lambdaMin >= 0 )
-        return F( u ) * nUnit;
-    else if( lambdaMax <= 0 )
-        return F( v ) * nUnit;
-    else {
-        return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( u ) * nUnit - lambdaMin * F( v ) * nUnit + lambdaMax * lambdaMin * ( v - u ) );
+    // central interface
+    double Mu[7], MuL[7], MuR[7], Mxi[3];
+    double Mau[3], MauL[3], MauR[3];
+
+    calc_moment(Mu, MuL, MuR, Mxi, primL, inK);
+    moment_uv(MauL, Mu, Mxi, 0, 0);
+    
+    calc_moment(Mu, MuL, MuR, Mxi, primR, inK);
+    moment_uv(MauR, Mu, Mxi, 0, 0);
+
+    double w[3], prim[3], tau;
+    for (int i=0;i<=2;i++)
+    {
+        w[i] = primL[0] * MauL[i] + primR[1] * MauR[i];
     }
+
+    get_primitive(prim, w, gam);
+    
+    tau = get_tau(primL[0], primR[0], prim[0], primL[2], primR[2], prim[2], mu, dt);
+    
+    // time integral terms
+    double Mt[5];
+
+    Mt[3] = tau * (1.0 - exp(-dt / tau));
+    Mt[4] = -tau * dt * exp(-dt / tau) + tau * Mt[3];
+    Mt[0] = dt - Mt[3];
+    Mt[1] = -tau * Mt[0] + Mt[4];
+    Mt[2] = dt * dt / 2.0 - tau * Mt[0];
+
+    // calculate the flux of conservative variables related to g0
+    calc_moment(Mu, MuL, MuR, Mxi, prim, inK);
+    moment_uv(Mau, Mu, Mxi, 1, 0);
+    
+    double flux[3]
+    for (int i=0;i<=2;i++)
+    {
+        flux[i] = Mt[0] * primL[0] * Mau[i];
+    }
+
+    // calculate the flux of conservative variables related to f0
+    calc_moment(Mu, MuL, MuR, Mxi, primL, inK);
+    moment_uv(Mau, Mu, Mxi, 1, 0);
+    for (int i=0;i<=2;i++)
+    {
+        flux[i] += Mt[3] * primL[0] * Mau[i];
+    }
+    
+    calc_moment(Mu, MuL, MuR, Mxi, primR, inK);
+    moment_uv(Mau, Mu, Mxi, 1, 0);
+    for (int i=0;i<=2;i++)
+    {
+        flux[i] += Mt[3] * primR[0] * Mau[i];
+    }
+    
+    // final flux
+    for (int i=0;i<=2;i++)
+    {
+        flux[i] = flux[i] / dt;
+    }
+
+    // return value
+    Matrix fluxMatrix( u.size(), 1 );
+    fluxMatrix( 0, 0 ) = flux[0];
+    fluxMatrix( 1, 0 ) = flux[1];
+    fluxMatrix( 2, 0 ) = flux[2];
+
+    return fluxMatrix;
+
+    //if( lambdaMin >= 0 )
+    //    return F( u ) * nUnit;
+    //else if( lambdaMax <= 0 )
+    //    return F( v ) * nUnit;
+    //else {
+    //    return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( u ) * nUnit - lambdaMin * F( v ) * nUnit + lambdaMax * lambdaMin * ( v - u ) );
+    //}
 }
 
 Matrix NavierStokes::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
