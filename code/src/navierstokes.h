@@ -14,7 +14,7 @@ class NavierStokes : public Problem
     virtual ~NavierStokes();
     inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level );
-    Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n, const double& length );
+    Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     // virtual Matrix Source( const Matrix& uQ ) const;
     Matrix F( const Vector& u );
     // Matrix F( const Matrix& u );
