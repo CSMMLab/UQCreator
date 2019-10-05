@@ -1,41 +1,49 @@
 #include "navierstokes.h"
 //#include "gks.cpp"
 
+/* Transform between conservative and primitive variables */
 void get_conserved( double* w, double prim[3], double gam ) {
+    double smv = 1e-6;
+    
     w[0] = prim[0];
     w[1] = prim[0] * prim[1];
-    w[2] = 0.5 * prim[0] / prim[2] / ( gam - 1.0 ) + 0.5 * prim[0] * prim[1] * prim[1];
+    w[2] = 0.5 * prim[0] / ( prim[2] + smv ) / ( gam - 1.0 ) + 0.5 * prim[0] * prim[1] * prim[1];
 }
 
 void get_primitive( double* prim, double w[3], double gam ) {
+    double smv = 1e-6;
+    
     prim[0] = w[0];
-    prim[1] = w[1] / w[0];
-    prim[2] = 0.5 * w[0] / ( gam - 1.0 ) / ( w[2] - 0.5 * w[1] * w[1] / w[0] );
+    prim[1] = w[1] / ( w[0] + smv );
+    prim[2] = 0.5 * w[0] / ( gam - 1.0 ) / ( w[2] - 0.5 * w[1] * w[1] / ( w[0] + smv ) + smv );
 }
 
-double
-get_tau( double density_left, double density_right, double density0, double lambda_left, double lambda_right, double lambda0, double mu, double dt ) {
-    double tau_num = 1000.0 * fabs( density_left / lambda_left - density_right / lambda_right ) /
-                     fabs( density_left / lambda_left + density_right / lambda_right ) * dt;
+/* Calculate particle collision time */
+double get_tau( double density_left, double density_right, double density0, double lambda_left, double lambda_right, double lambda0, double mu, double dt ) {
+    double smv = 1e-6;
 
-    double tau_ns = 2.0 * mu * lambda0 / density0;
+    double tau_num = 10.0 * fabs( density_left / (lambda_left + smv) - density_right / (lambda_right +smv) ) /
+                     fabs( density_left / (lambda_left + smv) + density_right / (lambda_right + smv) ) * dt;
+    double tau_ns = 2.0 * mu * lambda0 / (density0 + smv);
 
     return tau_num + tau_ns;
 }
 
+/* Calculate moments over particle velocity space */
 void calc_moment( double* Mu, double* Mu_L, double* Mu_R, double* Mxi, double prim[3], double inK ) {
 
+    double smv = 1e-6;
     const double PI = 3.1415926535;
 
     // moments of normal velocity
     Mu_L[0] = 0.5 * erfc( -sqrt( prim[2] ) * prim[1] );
-    Mu_L[1] = prim[1] * Mu_L[0] + 0.5 * exp( -prim[2] * pow( prim[1], 2 ) ) / sqrt( PI * prim[2] );
+    Mu_L[1] = prim[1] * Mu_L[0] + 0.5 * exp( -prim[2] * pow( prim[1], 2 ) ) / sqrt( PI * prim[2] + smv );
     Mu_R[0] = 0.5 * erfc( sqrt( prim[2] ) * prim[1] );
-    Mu_R[1] = prim[1] * Mu_R[0] - 0.5 * exp( -prim[2] * pow( prim[1], 2 ) ) / sqrt( PI * prim[2] );
+    Mu_R[1] = prim[1] * Mu_R[0] - 0.5 * exp( -prim[2] * pow( prim[1], 2 ) ) / sqrt( PI * prim[2] + smv );
 
     for( int i = 2; i <= 6; i++ ) {
-        Mu_L[i] = prim[1] * Mu_L[i - 1] + 0.5 * ( i - 1 ) * Mu_L[i - 2] / prim[2];
-        Mu_R[i] = prim[1] * Mu_R[i - 1] + 0.5 * ( i - 1 ) * Mu_R[i - 2] / prim[2];
+        Mu_L[i] = prim[1] * Mu_L[i-1] + 0.5 * ( i - 1 ) * Mu_L[i-2] / ( prim[2] + smv );
+        Mu_R[i] = prim[1] * Mu_R[i-1] + 0.5 * ( i - 1 ) * Mu_R[i-2] / ( prim[2] + smv );
     }
 
     for( int i = 0; i <= 6; i++ ) {
@@ -44,14 +52,14 @@ void calc_moment( double* Mu, double* Mu_L, double* Mu_R, double* Mxi, double pr
 
     // moments of inner degrees of freedom
     Mxi[0] = 1.0;
-    Mxi[1] = 0.5 * inK / prim[2];
-    Mxi[2] = ( pow( inK, 2 ) + 2.0 * inK ) / ( 4.0 * pow( prim[2], 2 ) );
+    Mxi[1] = 0.5 * inK / ( prim[2] + smv );
+    Mxi[2] = ( pow( inK, 2 ) + 2.0 * inK ) / ( 4.0 * pow( prim[2], 2 ) + smv );
 }
 
 void moment_uv( double* moment_uv, double Mu[7], double Mxi[3], int alpha, int delta ) {
-    moment_uv[0] = Mu[alpha] * Mxi[delta / 2];
-    moment_uv[1] = Mu[alpha + 1] * Mxi[delta / 2];
-    moment_uv[2] = 0.5 * ( Mu[alpha + 2] * Mxi[delta / 2] + Mu[alpha] * Mxi[( delta + 2 ) / 2] );
+    moment_uv[0] = Mu[alpha] * Mxi[delta/2];
+    moment_uv[1] = Mu[alpha+1] * Mxi[delta/2];
+    moment_uv[2] = 0.5 * ( Mu[alpha+2] * Mxi[delta/2] + Mu[alpha] * Mxi[(delta+2)/2] );
 }
 
 void moment_au( double* moment_au, double a[3], double Mu[7], double Mxi[3], int alpha ) {
@@ -67,7 +75,54 @@ void moment_au( double* moment_au, double a[3], double Mu[7], double Mxi[3], int
     }
 }
 
-void GKS( double* flux, double u[3], double v[3], double gam, double mu, double dt ) {
+/* Gas kinetic flux function */
+void GKS( double* flux, const Vector& u, const Vector& v, double gam, double mu, double dt ) {
+    
+    /* HLL Flux */
+    // left interface
+    double wL[3], primL[3];
+
+    wL[0] = u[0];
+    wL[1] = u[1];
+    wL[2] = u[2];
+
+    get_primitive( primL, wL, gam );
+
+    double pL  = ( gam - 1.0 ) * ( wL[2] - 0.5 * wL[0] * pow( wL[1], 2 ) );
+    double ssL = sqrt( gam * pL / wL[0] );
+
+    // right interface
+    double wR[3], primR[3];
+
+    wR[0] = v[0];
+    wR[1] = v[1];
+    wR[2] = v[2];
+
+    get_primitive( primR, wR, gam );
+
+    double pR  = ( gam - 1.0 ) * ( wR[2] - 0.5 * wR[0] * pow( wR[1], 2 ) );
+    double ssR = sqrt( gam * pR / wR[0] );
+
+    double lambdaMin = primL[1] - ssL;
+    double lambdaMax = primR[1] + ssR;
+
+    if( lambdaMin >= 0 ) {
+        flux[0] = wL[1];
+        flux[1] = wL[1] * primL[1] + pL;
+        flux[2] = ( wL[2] + pL ) * primL[1];
+    }
+    else if( lambdaMax <= 0 ) {
+        flux[0] = wR[1];
+        flux[1] = wR[1] * primR[1] + pR;
+        flux[2] = ( wR[2] + pR ) * primR[1];
+    }
+    else {
+        flux[0] = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * wL[1] - lambdaMin * wR[1] + lambdaMax * lambdaMin * ( wR[0] - wL[0] ) );
+        flux[1] = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * (wL[1] * primL[1] + pL) - lambdaMin * (wR[1] * primR[1] + pR) + lambdaMax * lambdaMin * ( wR[1] - wL[1] ) );
+        flux[2] = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * (( wL[2] + pL ) * primL[1]) - lambdaMin * (( wR[2] + pR ) * primR[1]) + lambdaMax * lambdaMin * ( wR[2] - wL[2] ) );
+    }
+
+    /* GKS
     // gas property
     double inK = ( 3.0 - gam ) / ( gam - 1.0 );
 
@@ -80,9 +135,6 @@ void GKS( double* flux, double u[3], double v[3], double gam, double mu, double 
 
     get_primitive( primL, wL, gam );
 
-    double pL  = ( gam - 1.0 ) * ( wL[2] - 0.5 * wL[0] * pow( wL[1], 2 ) );
-    double ssL = sqrt( gam * pL / primL[0] );
-
     // right interface
     double wR[3], primR[3];
 
@@ -92,22 +144,19 @@ void GKS( double* flux, double u[3], double v[3], double gam, double mu, double 
 
     get_primitive( primR, wR, gam );
 
-    double pR  = ( gam - 1.0 ) * ( wR[2] - 0.5 * wR[0] * pow( wR[1], 2 ) );
-    double ssR = sqrt( gam * pR / primR[0] );
-
     // central interface
     double Mu[7], MuL[7], MuR[7], Mxi[3];
     double Mau[3], MauL[3], MauR[3];
 
     calc_moment( Mu, MuL, MuR, Mxi, primL, inK );
-    moment_uv( MauL, Mu, Mxi, 0, 0 );
+    moment_uv( MauL, MuL, Mxi, 0, 0 );
 
     calc_moment( Mu, MuL, MuR, Mxi, primR, inK );
-    moment_uv( MauR, Mu, Mxi, 0, 0 );
+    moment_uv( MauR, MuR, Mxi, 0, 0 );
 
     double w[3], prim[3], tau;
     for( int i = 0; i <= 2; i++ ) {
-        w[i] = primL[0] * MauL[i] + primR[1] * MauR[i];
+        w[i] = primL[0] * MauL[i] + primR[0] * MauR[i];
     }
 
     get_primitive( prim, w, gam );
@@ -117,37 +166,38 @@ void GKS( double* flux, double u[3], double v[3], double gam, double mu, double 
     // time integral terms
     double Mt[5];
 
-    Mt[3] = tau * ( 1.0 - exp( -dt / tau ) );
-    Mt[4] = -tau * dt * exp( -dt / tau ) + tau * Mt[3];
+    Mt[3] = dt;//tau * ( 1.0 - exp( -dt / tau ) );
+    //Mt[4] = -tau * dt * exp( -dt / tau ) + tau * Mt[3];
     Mt[0] = dt - Mt[3];
-    Mt[1] = -tau * Mt[0] + Mt[4];
-    Mt[2] = dt * dt / 2.0 - tau * Mt[0];
+    //Mt[1] = -tau * Mt[0] + Mt[4];
+    //Mt[2] = dt * dt / 2.0 - tau * Mt[0];
 
     // calculate the flux of conservative variables related to g0
     calc_moment( Mu, MuL, MuR, Mxi, prim, inK );
     moment_uv( Mau, Mu, Mxi, 1, 0 );
 
     for( int i = 0; i <= 2; i++ ) {
-        flux[i] = Mt[0] * primL[0] * Mau[i];
+        flux[i] = 0;//Mt[0] * prim[0] * Mau[i];
     }
 
     // calculate the flux of conservative variables related to f0
     calc_moment( Mu, MuL, MuR, Mxi, primL, inK );
-    moment_uv( Mau, Mu, Mxi, 1, 0 );
+    moment_uv( MauL, MuL, Mxi, 1, 0 );
     for( int i = 0; i <= 2; i++ ) {
-        flux[i] += Mt[3] * primL[0] * Mau[i];
+        flux[i] += Mt[3] * primL[0] * MauL[i];
     }
 
     calc_moment( Mu, MuL, MuR, Mxi, primR, inK );
-    moment_uv( Mau, Mu, Mxi, 1, 0 );
+    moment_uv( MauR, MuR, Mxi, 1, 0 );
     for( int i = 0; i <= 2; i++ ) {
-        flux[i] += Mt[3] * primR[0] * Mau[i];
+        flux[i] += Mt[3] * primR[0] * MauR[i];
     }
 
     // final flux
     for( int i = 0; i <= 2; i++ ) {
         flux[i] = flux[i] / dt;
     }
+    */
 }
 
 NavierStokes::NavierStokes( Settings* settings ) : Problem( settings ) {
@@ -171,10 +221,7 @@ NavierStokes::~NavierStokes() {}
 
 Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
 
-    // gas property
-    double inK = ( 3.0 - _gamma ) / ( _gamma - 1.0 );
-    double dx  = norm( n );
-    // double vis = _vis;
+    /* HLL Flux 
 
     // left interface
     double wL[3], primL[3];
@@ -186,7 +233,7 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     get_primitive( primL, wL, _gamma );
 
     double pL  = ( _gamma - 1.0 ) * ( wL[2] - 0.5 * wL[0] * pow( wL[1], 2 ) );
-    double ssL = sqrt( _gamma * pL / primL[0] );
+    double ssL = sqrt( _gamma * pL / wL[0] );
 
     // right interface
     double wR[3], primR[3];
@@ -198,30 +245,103 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     get_primitive( primR, wR, _gamma );
 
     double pR  = ( _gamma - 1.0 ) * ( wR[2] - 0.5 * wR[0] * pow( wR[1], 2 ) );
-    double ssR = sqrt( _gamma * pR / primR[0] );
+    double ssR = sqrt( _gamma * pR / wR[0] );
 
     // projection
-    double uUProjected = nUnit[0] * primL[1];
-    double uVProjected = nUnit[0] * primR[1];
+    //double uUProjected = nUnit[0] * primL[1];
+    //double uVProjected = nUnit[0] * primR[1];
 
-    double lambdaMin = uUProjected - ssL;
-    double lambdaMax = uVProjected + ssR;
+    //double lambdaMin = uUProjected - ssL;
+    //double lambdaMax = uVProjected + ssR;
+    double lambdaMin = primL[1] - ssL;
+    double lambdaMax = primR[1] + ssR;
+    */
 
+    /*
+    if( lambdaMin >= 0 )
+        return F( u ) * nUnit;
+    else if( lambdaMax <= 0 )
+        return F( v ) * nUnit;
+    else {
+        return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( u ) * nUnit - lambdaMin * F( v ) * nUnit + lambdaMax * lambdaMin * ( v - u ) );
+    }
+    */
+
+    /*
+    if( lambdaMin >= 0 )
+        return FF( u );
+    else if( lambdaMax <= 0 )
+        return FF( v );
+    else {
+        return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * FF( u ) - lambdaMin * FF( v ) + lambdaMax * lambdaMin * ( v - u ) );
+    }
+    */
+    
+    /*
+    Vector flux(3);
+    if( lambdaMin > 0 ) {
+        flux[0] = wL[1];
+        flux[1] = wL[1] * primL[1] + pL;
+        flux[2] = ( wL[2] + pL ) * primL[1];
+    }
+    else if( lambdaMax < 0 ) {
+        flux[0] = wR[1];
+        flux[1] = wR[1] * primR[1] + pR;
+        flux[2] = ( wR[2] + pR ) * primR[1];
+    }
+    else {
+        flux[0] = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * wL[1] - lambdaMin * wR[1] + lambdaMax * lambdaMin * ( v[0] - u[0] ) );
+        flux[1] = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * (wL[1] * primL[1] + pL) - lambdaMin * (wR[1] * primR[1] + pR) + lambdaMax * lambdaMin * ( v[1] - u[1] ) );
+        flux[2] = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * (( wL[2] + pL ) * primL[1]) - lambdaMin * (( wR[2] + pR ) * primR[1]) + lambdaMax * lambdaMin * ( v[2] - u[2] ) );
+    }
+
+    return flux;
+    */
+
+    /* GKS Flux */
+    
+    // computational parameters
+    double dx  = norm( n );
     double dt = _settings->GetDT();
+    double inK = ( 3.0 - _gamma ) / ( _gamma - 1.0 );
+    
+    // left interface
+    double wL[3], primL[3];
+
+    wL[0] = u[0];
+    wL[1] = u[1];
+    wL[2] = u[2];
+
+    get_primitive( primL, wL, _gamma );
+
+    double pL  = ( _gamma - 1.0 ) * ( wL[2] - 0.5 * wL[0] * pow( wL[1], 2 ) );
+    double ssL = sqrt( _gamma * pL / wL[0] );
+
+    // right interface
+    double wR[3], primR[3];
+
+    wR[0] = v[0];
+    wR[1] = v[1];
+    wR[2] = v[2];
+
+    get_primitive( primR, wR, _gamma );
+
+    double pR  = ( _gamma - 1.0 ) * ( wR[2] - 0.5 * wR[0] * pow( wR[1], 2 ) );
+    double ssR = sqrt( _gamma * pR / wR[0] );
 
     // central interface
     double Mu[7], MuL[7], MuR[7], Mxi[3];
     double Mau[3], MauL[3], MauR[3];
 
     calc_moment( Mu, MuL, MuR, Mxi, primL, inK );
-    moment_uv( MauL, Mu, Mxi, 0, 0 );
+    moment_uv( MauL, MuL, Mxi, 0, 0 );
 
     calc_moment( Mu, MuL, MuR, Mxi, primR, inK );
-    moment_uv( MauR, Mu, Mxi, 0, 0 );
+    moment_uv( MauR, MuR, Mxi, 0, 0 );
 
     double w[3], prim[3], tau;
     for( int i = 0; i <= 2; i++ ) {
-        w[i] = primL[0] * MauL[i] + primR[1] * MauR[i];
+        w[i] = primL[0] * MauL[i] + primR[0] * MauR[i];
     }
 
     get_primitive( prim, w, _gamma );
@@ -231,11 +351,11 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     // time integral terms
     double Mt[5];
 
-    Mt[3] = dt;    // tau * ( 1.0 - exp( -dt / tau ) );
-    Mt[4] = -tau * dt * exp( -dt / tau ) + tau * Mt[3];
-    Mt[0] = 1e-8;    // dt - Mt[3];
-    Mt[1] = -tau * Mt[0] + Mt[4];
-    Mt[2] = dt * dt / 2.0 - tau * Mt[0];
+    Mt[3] = dt;//tau * ( 1.0 - exp( -dt / tau ) );
+    //Mt[4] = -tau * dt * exp( -dt / tau ) + tau * Mt[3];
+    Mt[0] = 0.0;//dt - Mt[3];
+    //Mt[1] = -tau * Mt[0] + Mt[4];
+    //Mt[2] = dt * dt / 2.0 - tau * Mt[0];
 
     // calculate the flux of conservative variables related to g0
     calc_moment( Mu, MuL, MuR, Mxi, prim, inK );
@@ -243,20 +363,20 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
 
     double flux[3];
     for( int i = 0; i <= 2; i++ ) {
-        flux[i] = Mt[0] * primL[0] * Mau[i];
+        flux[i] = 0.0;//Mt[0] * prim[0] * Mau[i];
     }
 
     // calculate the flux of conservative variables related to f0
     calc_moment( Mu, MuL, MuR, Mxi, primL, inK );
-    moment_uv( Mau, Mu, Mxi, 1, 0 );
+    moment_uv( MauL, MuL, Mxi, 1, 0 );
     for( int i = 0; i <= 2; i++ ) {
-        flux[i] += Mt[3] * primL[0] * Mau[i];
+        flux[i] += Mt[3] * primL[0] * MauL[i];
     }
 
     calc_moment( Mu, MuL, MuR, Mxi, primR, inK );
-    moment_uv( Mau, Mu, Mxi, 1, 0 );
+    moment_uv( MauR, MuR, Mxi, 1, 0 );
     for( int i = 0; i <= 2; i++ ) {
-        flux[i] += Mt[3] * primR[0] * Mau[i];
+        flux[i] += Mt[3] * primR[0] * MauR[i];
     }
 
     // final flux
@@ -264,22 +384,14 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
         flux[i] = flux[i] / dt;
     }
 
-    // return value
+
     Matrix fluxMatrix( u.size(), 1 );
     fluxMatrix( 0, 0 ) = flux[0];
     fluxMatrix( 1, 0 ) = flux[1];
     fluxMatrix( 2, 0 ) = flux[2];
 
-    //return fluxMatrix * nUnit;
-
-     if( lambdaMin >= 0 )
-        return F( u ) * nUnit;
-     else if( lambdaMax <= 0 )
-        return F( v ) * nUnit;
-     else {
-        return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * F( u ) * nUnit - lambdaMin * F( v ) * nUnit + lambdaMax * lambdaMin * ( v - u )
-        );
-    }
+    return fluxMatrix * nUnit;
+    
 }
 
 Matrix NavierStokes::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
@@ -303,14 +415,25 @@ Matrix NavierStokes::F( const Vector& u ) {
     return flux;
 }
 
+Vector NavierStokes::FF( const Vector& u ) {
+    double rhoInv = 1.0 / u[0];
+    double v      = u[1] * rhoInv;
+    double p      = ( _gamma - 1.0 ) * ( u[2] - 0.5 * u[0] * pow( v, 2 ) );
+    Vector flux( u.size() );
+    flux[0] = u[1];
+    flux[1] = u[1] * v + p;
+    flux[2] = ( u[2] + p ) * v;
+    return flux;
+}
+
 Vector NavierStokes::IC( const Vector& x, const Vector& xi ) {
     double x0    = 0.5;
     double gamma = 1.4;
 
     double rhoL = 1.0;
-    double rhoR = 0.3;
+    double rhoR = 0.9;
     double pL   = 1.0;
-    double pR   = 0.3;
+    double pR   = 0.9;
     double uL   = 0.0;
     double uR   = 0.0;
     Vector y( _nStates );

@@ -14,8 +14,8 @@ outputFile = "navier_stokes_out"
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.0]]
-CFL = 0.3
-tEnd = 0.05
+CFL = 0.1
+tEnd = 0.1
 gamma = 1.4
 mu = 0.001
 
