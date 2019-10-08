@@ -221,7 +221,7 @@ NavierStokes::~NavierStokes() {}
 
 Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
 
-    /* HLL Flux 
+    /* HLL Flux */
 
     // left interface
     double wL[3], primL[3];
@@ -255,7 +255,7 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     //double lambdaMax = uVProjected + ssR;
     double lambdaMin = primL[1] - ssL;
     double lambdaMax = primR[1] + ssR;
-    */
+    
 
     /*
     if( lambdaMin >= 0 )
@@ -267,15 +267,18 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     }
     */
 
-    /*
+    double interfaceSign = nUnit[0];
+
+    //std::cout<<"nUnit = "<<nUnit<<std::endl;   
+    
     if( lambdaMin >= 0 )
-        return FF( u );
+        return FF( u )*interfaceSign;
     else if( lambdaMax <= 0 )
-        return FF( v );
+        return FF( v )*interfaceSign;
     else {
-        return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * FF( u ) - lambdaMin * FF( v ) + lambdaMax * lambdaMin * ( v - u ) );
+        return ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * FF( u )*interfaceSign - lambdaMin * FF( v )*interfaceSign + lambdaMax * lambdaMin * ( v - u ) );
     }
-    */
+    
     
     /*
     Vector flux(3);
@@ -296,10 +299,10 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     }
 
     return flux;
-    */
+    
 
     /* GKS Flux */
-    
+    /*
     // computational parameters
     double dx  = norm( n );
     double dt = _settings->GetDT();
@@ -391,7 +394,7 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
     fluxMatrix( 2, 0 ) = flux[2];
 
     return fluxMatrix * nUnit;
-    
+    */
 }
 
 Matrix NavierStokes::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
