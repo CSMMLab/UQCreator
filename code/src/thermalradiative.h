@@ -12,6 +12,7 @@ class ThermalRadiative : public Problem
     double _TRef;
     double _sigma;
     double _alpha;
+
   public:
     ThermalRadiative( Settings* settings );
     virtual ~ThermalRadiative();
@@ -25,4 +26,4 @@ class ThermalRadiative : public Problem
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
 };
 
-#endif // THERMALRADIATIVE_H
+#endif    // THERMALRADIATIVE_H

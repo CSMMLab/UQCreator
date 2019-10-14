@@ -6,7 +6,7 @@ M1Equations1D::M1Equations1D( Settings* settings ) : Problem( settings ) {
     _settings->SetNStates( _nStates );
     _settings->SetSource( true );
     _sigmaA = 0.0;    // absorption coefficient
-    _sigmaS = 1.0;    // scattering coefficient
+    _sigmaS = 0.0;    // scattering coefficient
     _sigmaT = _sigmaA + _sigmaS;
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -35,8 +35,29 @@ Matrix M1Equations1D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, 
 Matrix M1Equations1D::F( const Vector& u ) {
     Matrix flux( u.size(), 1 );
 
-    double alpha = Bisection( -500.0, 100.1, u[1] / u[0] );    // ComputeAlpha( u[1] / u[0] );
+    double alpha = Bisection( -100.0, 100.1, u[1] / u[0] );    // ComputeAlpha( u[1] / u[0] );
+
+    /*
+    Vector uM( 2 );
+    uM[0]        = 0.001;
+    uM[1]        = 0.0;
+    double alpha = Bisection( -500.0, 100.1, uM[1] / uM[0] );
+    std::cout << "alpha = " << alpha << std::endl;
+    std::cout << "f(alpha) = " << alpha << std::endl;
+
     double u2Du0 = 4.0 / ( alpha - alpha * exp( 2.0 * alpha ) ) - 2.0 / alpha + 2.0 / std::pow( alpha, 2 ) + 1.0;
+
+    std::cout << "u2Du0 = " << RootFun( alpha, uM[1] / uM[0] ) << std::endl;
+    exit( EXIT_FAILURE );
+*/
+
+    double u2Du0;
+
+    // perform limit evaluation if alpha close to zero
+    if( fabs( alpha ) < 1e-6 )
+        u2Du0 = 1.0 / 3.0;
+    else
+        u2Du0 = 4.0 / ( alpha - alpha * exp( 2.0 * alpha ) ) - 2.0 / alpha + 2.0 / std::pow( alpha, 2 ) + 1.0;
 
     flux( 0, 0 ) = u[1];
     flux( 1, 0 ) = u2Du0 * u[0];
@@ -123,15 +144,25 @@ double M1Equations1D::ComputeDt( const Matrix& u, double dx, unsigned level ) co
 
 Vector M1Equations1D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
-    double x0      = 0.0;
-    double s2      = 1.0 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
-    double floor   = 1e-4;
-    _sigma         = _settings->GetSigma();
-    double sigmaXi = _sigma[0] * xi[0];
-
-    y[0] = std::fmax(
-        floor, pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) * exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
-
+    bool shockTestCase = true;
+    double x0          = 0.0;
+    double s2          = 1.0 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
+    double floor       = 1e-4;
+    _sigma             = _settings->GetSigma();
+    double sigmaXi     = _sigma[0] * xi[0];
+    if( shockTestCase ) {
+        if( x[0] < _sigma[0] * xi[0] ) {
+            y[0] = 1.0;
+        }
+        else {
+            y[0] = 0.5;
+        }
+    }
+    else {
+        y[0] = std::fmax( floor,
+                          pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) *
+                              exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
+    }
     return y;
 }
 

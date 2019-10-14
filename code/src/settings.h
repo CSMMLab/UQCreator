@@ -21,6 +21,7 @@ enum ProblemType {
     P_PNEQUATIONS_2D,
     P_RADIATIONHYDRO_1D,
     P_RADIATIONHYDRO_2D,
+    P_THERMALRAD_1D,
     P_NAVIERSTOKES_1D
 };
 enum ClosureType {

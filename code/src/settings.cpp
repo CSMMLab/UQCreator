@@ -78,6 +78,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 else if( _meshDimension == 2 )
                     _problemType = ProblemType::P_RADIATIONHYDRO_2D;
             }
+            else if( problemTypeString->compare( "ThermalRadiativeTransfer" ) == 0 ) {
+                _problemType = ProblemType::P_THERMALRAD_1D;
+            }
             else if( problemTypeString->compare( "NavierStokes" ) == 0 ) {
                 _problemType = ProblemType::P_NAVIERSTOKES_1D;
             }
