@@ -125,7 +125,11 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
 
         if( !restart ) {
             auto refFile    = general->get_as<std::string>( "referenceSolution" );
-            _writeFrequency = general->get_as<int>( "writeFrequency" ).value_or( 1000 );
+            _writeFrequency = general->get_as<int>( "writeFrequency" ).value_or( -1 );
+            if( _writeFrequency == -1 )
+                _writeInTime = false;
+            else
+                _writeInTime = true;
             if( refFile ) {
                 _referenceFile = _inputDir.string() + "/" + *refFile;
             }
