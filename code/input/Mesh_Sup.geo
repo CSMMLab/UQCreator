@@ -1,4 +1,6 @@
 lcFine = 0.04;
+lcFN = 0.08;
+lcNF = 0.12;
 lcNormal = 0.15;
 Point(1) = {0, 1, 0, lcFine};
 Point(2) = {0.451145, 1.17431, 0, lcFine};
@@ -14,12 +16,12 @@ Point(11) = {3.43637, 2.18938, 0, lcFine};
 Point(12) = {3.67404, 2.24954, 0, lcFine};
 Point(13) = {3.91967, 2.30841, 0, lcFine};
 Point(14) = {4.17432, 2.36602, 0, lcFine};
-Point(15) = {4.43896, 2.42236, 0, lcNormal};
-Point(16) = {4.71452, 2.47738, 0, lcNormal};
-Point(17) = {5.00193, 2.53097, 0, lcNormal};
-Point(18) = {5.30215, 2.58301, 0, lcNormal};
-Point(19) = {5.6161, 2.63333, 0, lcNormal};
-Point(20) = {5.9447, 2.68172, 0, lcNormal};
+Point(15) = {4.43896, 2.42236, 0, lcFine};
+Point(16) = {4.71452, 2.47738, 0, lcFine};
+Point(17) = {5.00193, 2.53097, 0, lcFine};
+Point(18) = {5.30215, 2.58301, 0, lcFine};
+Point(19) = {5.6161, 2.63333, 0, lcFine};
+Point(20) = {5.9447, 2.68172, 0, lcFine};
 Point(21) = {6.28903, 2.72796, 0, lcNormal};
 Point(22) = {6.65014, 2.77179, 0, lcNormal};
 Point(23) = {7.02916, 2.8129, 0, lcNormal};
@@ -34,6 +36,20 @@ Point(31) = {10.8604, 2.99484, 0, lcNormal};
 Point(32) = {10.8604, 0, 0, lcNormal};
 Point(33) = {0, 0, 0, lcFine};
 Point(34) = {0, 1, 0, lcNormal};
+
+// lc points on center line
+Point(105) = {4, -0, 0, lcFine};
+Point(106) = {7, 0, 0, lcFN};
+Point(107) = {8.8, -0, 0, lcNF};
+Point(108) = {2, -0, -0, lcFine};
+
+// center line
+Line(81) = {33, 108};
+Line(82) = {108, 105};
+Line(83) = {105, 106};
+Line(84) = {106, 107};
+Line(85) = {107, 32};
+
 Line(1) = {1, 2};
 Line(2) = {2, 3};
 Line(3) = {3, 4};
@@ -65,11 +81,9 @@ Line(28) = {28, 29};
 Line(29) = {29, 30};
 Line(30) = {30, 31};
 Line(31) = {31, 32};
-Line(32) = {32, 33};
+//Line(32) = {32, 33};
 Line(33) = {33, 34};
 Line(34) = {34, 1};
-Line Loop(35) = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34};
-Plane Surface(36) = {35};
 //+
 Point(35) = {-1, 1, 0, lcFine};
 //+
@@ -95,32 +109,48 @@ Line(40) = {36, 33};
 //+
 Line(41) = {35, 36};
 //+
-Curve Loop(36) = {38, 39, -41, 36, 37};
+//Curve Loop(36) = {38, 39, -41, 36, 37};
 //+
-Plane Surface(37) = {36};
+//Plane Surface(37) = {36};
 //+
-Curve Loop(37) = {41, 40, 33, 34, 35};
+//Curve Loop(37) = {41, 40, 33, 34, 35};
 //+
-Plane Surface(38) = {37};
+//Plane Surface(38) = {37};
 
 Symmetry {0, 1, 0, 0} {
-  Duplicata { Curve{38}; Point{38}; Point{39}; Point{37}; Point{35}; Point{36}; Curve{33}; Curve{1}; Point{33}; Point{1}; Point{2}; Point{3}; Point{4}; Curve{4}; Point{5}; Point{6}; Point{7}; Point{8}; Curve{8}; Point{9}; Point{10}; Point{11}; Point{12}; Point{13}; Point{14}; Point{15}; Point{16}; Point{17}; Point{18}; Curve{18}; Point{19}; Point{20}; Point{21}; Point{22}; Curve{23}; Point{23}; Point{24}; Point{25}; Point{26}; Point{27}; Point{28}; Point{29}; Point{30}; Point{31}; Point{32}; Curve{32}; Curve{2}; Curve{31}; Curve{30}; Curve{29}; Curve{28}; Curve{27}; Curve{26}; Curve{25}; Curve{24}; Curve{22}; Curve{21}; Curve{20}; Curve{19}; Curve{17}; Curve{16}; Curve{15}; Curve{14}; Curve{13}; Curve{12}; Curve{11}; Curve{10}; Curve{9}; Curve{7}; Curve{6}; Curve{5}; Curve{3}; Curve{39}; Curve{37}; Curve{36}; Curve{41}; Curve{40}; Curve{35}; }
+  Duplicata { Curve{38}; Point{38}; Point{39}; Point{37}; Point{35}; Point{36}; Curve{33}; Curve{1}; Point{33}; Point{1}; Point{2}; Point{3}; Point{4}; Curve{4}; Point{5}; Point{6}; Point{7}; Point{8}; Curve{8}; Point{9}; Point{10}; Point{11}; Point{12}; Point{13}; Point{14}; Point{15}; Point{16}; Point{17}; Point{18}; Curve{18}; Point{19}; Point{20}; Point{21}; Point{22}; Curve{23}; Point{23}; Point{24}; Point{25}; Point{26}; Point{27}; Point{28}; Point{29}; Point{30}; Point{31}; Point{32}; Curve{2}; Curve{31}; Curve{30}; Curve{29}; Curve{28}; Curve{27}; Curve{26}; Curve{25}; Curve{24}; Curve{22}; Curve{21}; Curve{20}; Curve{19}; Curve{17}; Curve{16}; Curve{15}; Curve{14}; Curve{13}; Curve{12}; Curve{11}; Curve{10}; Curve{9}; Curve{7}; Curve{6}; Curve{5}; Curve{3}; Curve{39}; Curve{37}; Curve{36}; Curve{41}; Curve{40}; Curve{35}; Point{106}; Point{107}; Point{108}; Curve{81}; Curve{82}; Curve{83}; Curve{84}; Curve{85}; }
 }
+
 //+
-Curve Loop(38) = {42, 39, -79, 78, 77};
+Characteristic Length {119} = lcFine;
+
+
 //+
-Plane Surface(39) = {38};
+Curve Loop(1) = {37, 38, 39, -41, 36};
 //+
-Curve Loop(39) = {40, 43, 81, 79};
+Plane Surface(1) = {1};
 //+
-Plane Surface(40) = {39};
+Curve Loop(2) = {86, 39, -122, 121, 120};
 //+
-Curve Loop(40) = {32, 43, 44, 50, 75, 45, 74, 73, 72, 46, 71, 70, 69, 68, 67, 66, 65, 64, 63, 47, 62, 61, 60, 59, 48, 58, 57, 56, 55, 54, 53, 52, 51};
+Plane Surface(2) = {2};
 //+
-Plane Surface(41) = {40};
+Curve Loop(3) = {35, 41, 40, 33};
 //+
-Physical Curve("walls") = {37, 38, 42, 77, 78, 81, 36, 35, 2, 1, 44, 50, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 75, 45, 74, 73, 72, 46, 71, 70, 69, 68, 67, 66, 65, 64, 63, 47, 62, 61, 60, 59, 48, 58, 57, 56, 55, 27, 28, 29, 30, 54, 53, 52};
+Plane Surface(3) = {3};
 //+
-Physical Curve("outlet") = {51, 31};
+Curve Loop(4) = {81, 82, 83, 84, 85, -31, -30, -29, -28, -27, -26, -25, -24, -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, -33};
 //+
-Characteristic Length {50} = lcFine;
+Plane Surface(4) = {4};
+//+
+Curve Loop(5) = {81, 82, 83, 84, 85, -94, -95, -96, -97, -98, -99, -100, -101, -92, -102, -103, -104, -105, -91, -106, -107, -108, -109, -110, -111, -112, -113, -114, -90, -115, -116, -117, -89, -118, -93, -88, -87};
+//+
+Plane Surface(5) = {5};
+//+
+Curve Loop(6) = {124, 122, 40, 87};
+//+
+Plane Surface(6) = {6};
+
+//+
+Physical Curve("walls") = {30, 29, 28, 27, 26, 25, 24, 22, 23, 21, 20, 19, 17, 18, 16, 15, 13, 12, 11, 10, 8, 6, 4, 2, 1, 35, 36, 37, 120, 121, 124, 88, 93, 118, 89, 117, 116, 115, 114, 90, 113, 112, 111, 110, 109, 108, 107, 106, 91, 105, 104, 103, 92, 102, 101, 100, 99, 98, 97, 96, 95, 3, 5, 7, 9, 14, 38, 86};
+//+
+Physical Curve("outlet") = {31, 94};
