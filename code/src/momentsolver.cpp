@@ -838,7 +838,7 @@ void MomentSolver::PerformInitialStep( const VectorU& refinementLevel, MatVec& u
 // initial dual solve
 #pragma omp parallel for schedule( dynamic, 10 )
     for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-        _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+        _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
     }
 
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );

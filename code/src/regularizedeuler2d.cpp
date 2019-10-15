@@ -4,17 +4,15 @@ RegularizedEuler2D::RegularizedEuler2D( Settings* settings )
     : EulerClosure2D( settings ), _eta( _settings->GetRegularizationStrength() ), _lambda( _settings->GetFilterStrength() ) {
     unsigned nMoments = _settings->GetNMoments();
     _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
-    /*
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                unsigned index = unsigned( ( i - i % unsigned( std::pow( nMoments, l ) ) ) / unsigned( std::pow( nMoments, l ) ) ) % nMoments;
+                unsigned index =
+                    unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
                 _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
             }
         }
-    }*/
+    }
 }
 
 RegularizedEuler2D::~RegularizedEuler2D() {}
@@ -100,7 +98,7 @@ void RegularizedEuler2D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
-    Gradient( g, lambda, u, refLevel );
+    Gradient( g, lambda, uF, refLevel );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
     // calculate initial Hessian and gradient
@@ -114,23 +112,23 @@ void RegularizedEuler2D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned
     }
     Matrix lambdaNew( _nStates, nTotal );
     AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew, nTotal );
-    Gradient( dlambdaNew, lambdaNew, u, refLevel );
+    Gradient( dlambdaNew, lambdaNew, uF, refLevel );
     // perform Newton iterations
     for( unsigned l = 0; l < _maxIterations; ++l ) {
         double stepSize = 1.0;
         if( l != 0 ) {
-            Gradient( g, lambda, u, refLevel );
+            Gradient( g, lambda, uF, refLevel );
             dlambda = -g;
             Hessian( H, lambda, refLevel );
             posv( H, g );
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
-            Gradient( dlambdaNew, lambdaNew, u, refLevel );
+            Gradient( dlambdaNew, lambdaNew, uF, refLevel );
         }
         int refinementCounter = 0;
         while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
-            Gradient( dlambdaNew, lambdaNew, u, refLevel );
+            Gradient( dlambdaNew, lambdaNew, uF, refLevel );
             if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
                 lambda = lambdaNew;
                 return;
@@ -167,6 +165,7 @@ void RegularizedEuler2D::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsi
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
+    Gradient( g, lambda, uF, refLevel );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
     // calculate initial Hessian and gradient
@@ -180,23 +179,23 @@ void RegularizedEuler2D::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsi
     }
     Matrix lambdaNew( _nStates, nTotal );
     AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew, nTotal );
-    Gradient( dlambdaNew, lambdaNew, u, refLevel );
+    Gradient( dlambdaNew, lambdaNew, uF, refLevel );
     // perform Newton iterations
     for( unsigned l = 0; l < _maxIterations; ++l ) {
         double stepSize = 1.0;
         if( l != 0 ) {
-            Gradient( g, lambda, u, refLevel );
+            Gradient( g, lambda, uF, refLevel );
             dlambda = -g;
             Hessian( H, lambda, refLevel );
             posv( H, g );
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
-            Gradient( dlambdaNew, lambdaNew, u, refLevel );
+            Gradient( dlambdaNew, lambdaNew, uF, refLevel );
         }
         int refinementCounter = 0;
         while( CalcNorm( dlambda, nTotal ) < CalcNorm( dlambdaNew, nTotal ) || !std::isfinite( CalcNorm( dlambdaNew, nTotal ) ) ) {
             stepSize *= 0.5;
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
-            Gradient( dlambdaNew, lambdaNew, u, refLevel );
+            Gradient( dlambdaNew, lambdaNew, uF, refLevel );
             if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
                 lambda = lambdaNew;
                 return;
