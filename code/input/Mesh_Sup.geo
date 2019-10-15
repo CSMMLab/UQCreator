@@ -1,5 +1,5 @@
-lcFine = 0.04;
-lcFN = 0.08;
+lcFine = 0.03;
+lcFN = 0.07;
 lcNF = 0.12;
 lcNormal = 0.15;
 Point(1) = {0, 1, 0, lcFine};
