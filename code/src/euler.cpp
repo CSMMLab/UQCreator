@@ -97,7 +97,7 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
     double gamma = 1.4;
 
     double rhoL = 1.0;
-    double rhoR = 0.1;
+    double rhoR = 0.8;
     double pL   = 1.0;
     double pR   = 0.125;
     double uL   = 0.0;
@@ -137,8 +137,8 @@ Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const
     double rho_l = 1.0;
     double P_l   = 1.0;
     double u_l   = 0.0;
-    double rho_r = 0.1;
-    double P_r   = 0.125;
+    double rho_r = 0.8;
+    double P_r   = 0.1;
     double u_r   = 0.0;
 
     if( xi.size() > 1 ) {

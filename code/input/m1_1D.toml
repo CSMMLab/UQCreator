@@ -7,22 +7,23 @@ writeFrequency = 100
 [mesh]
 dimension = 1
 numberOfCells = 500
-a = -0.7
-b = 0.7
+a = -0.75
+b = 0.75
 outputFile = "M1"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[1.0]]
-CFL = 1.0 # 0.1
-tEnd = 0.45
+distribution = [["Legendre"],[0.5]]
+CFL = 0.75 # 0.1
+tEnd = 0.1
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics, M1
-closure = "StochasticGalerkin"
-moments = [["totalDegree"],[5]]
-quadPoints = [["tensorizedGrid"],[10]]
+closure = "L2Filter"
+moments = [["totalDegree"],[10]]
+quadPoints = [["tensorizedGrid"],[15]]
+filterStrength = 0.001
 maxIterations = 1000
 epsilon = 1e-3

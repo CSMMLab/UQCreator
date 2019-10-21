@@ -1,5 +1,5 @@
 lcC = 2.0; // resolution farfield
-lcF = 0.015;
+lcF = 0.01;
 
 // inner rectangle points
 Point(1)={0, 0, 0, lcF};

@@ -7,11 +7,13 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     _settings->SetSource( false );
 
     // physical constants
-    _c     = 299792458.0 * 100.0;    // speed of light in [cm/s]
-    _a     = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
-    _TRef  = 1.0;                    // reference temperature
-    _sigma = 1.0;                    // opacity
-    _alpha = 1.0;                    // heat capacity parameter c_v = alpha T^3
+    _c             = 299792458.0 * 100.0;    // speed of light in [cm/s]
+    _a             = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
+    _TRef          = 1.0;                    // reference temperature
+    _sigma         = 1.0;                    // opacity
+    _alpha         = 1.0;                    // heat capacity parameter c_v = alpha T^3
+    double sigmaSB = 5.6704 * 1e-5;          // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
+    _a             = 4.0 * sigmaSB / _c;
 
     _epsilon = 4.0 * _a / _alpha;
 
@@ -62,7 +64,7 @@ Matrix ThermalRadiative::Source( const Matrix& uQ ) const {
         double U  = uQ( 2, k );
         y( 0, k ) = ( -( E - U ) + Q ) / _epsilon;
         y( 1, k ) = -F / _epsilon;
-        y( 0, k ) = E - U;
+        y( 2, k ) = E - U;
     }
 
     return y;
@@ -88,8 +90,9 @@ Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
     auto sigma     = _settings->GetSigma();
     double sigmaXi = sigma[0] * xi[0];
 
-    double E = std::fmax(
-        floor, pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) * exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
+    double E = 1e-7;    // std::fmax( 1e-4 * _a,
+                        //_a * pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) *
+                        //  exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
     double F = 0;
     double T = 1.0;
 

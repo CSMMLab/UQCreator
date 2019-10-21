@@ -8,7 +8,7 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "nozzleFine.su2"
 SU2BC = [["outlet","dirichlet"], ["walls", "noslip"]]
-outputFile = "nozzleIPM_L2FilterLam0-000002Reg1e-4"
+outputFile = "nozzleIPM_L2FilterLam2e-6"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -24,6 +24,6 @@ closure = "Euler2D"
 moments = [["totalDegree"],[5]]
 quadPoints = [["tensorizedGrid"],[10]]
 filterStrength = 0.000002
-regularizationStrength = 1e-4
+#regularizationStrength = 1e-4
 maxIterations = 1000
 epsilon = 1e-7
