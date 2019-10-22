@@ -46,9 +46,10 @@ class MomentSolver
      * @param Moments for in- and output
      * @param solution at quadrature points
      * @param time step size
+     * @param current time
      * @param refinement level
      */
-    void Source( MatVec& uNew, const MatVec& uQ, double dt, const VectorU& refLevel ) const;
+    void Source( MatVec& uNew, const MatVec& uQ, double dt, double t, const VectorU& refLevel ) const;
     /**
      * sets up moments for specified initial condition
      * @return output moment matrix

@@ -4,7 +4,7 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     _nStates = 3;
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
-    _settings->SetSource( false );
+    _settings->SetSource( true );
 
     // physical constants
     _c             = 299792458.0 * 100.0;    // speed of light in [cm/s]
@@ -14,6 +14,8 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     _alpha         = 1.0;                    // heat capacity parameter c_v = alpha T^3
     double sigmaSB = 5.6704 * 1e-5;          // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
+    _c             = 1.0;
+    _a             = 1.0;
 
     _epsilon = 4.0 * _a / _alpha;
 
@@ -52,11 +54,15 @@ Matrix ThermalRadiative::F( const Vector& u ) {
     return flux;
 }
 
-Matrix ThermalRadiative::Source( const Matrix& uQ ) const {
+Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t ) const {
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = static_cast<unsigned>( uQ.columns() );
     Matrix y( nStates, Nq, 0.0 );
-    double Q = 0.0;    // source, needs to be defined
+    double S = 0.0;    // source, needs to be defined
+
+    if( t < 10 && std::fabs( x[0] ) < 0.5 ) S = 1.0;
+
+    double Q = S / _sigma / _a / std::pow( _TRef, 4 );
 
     for( unsigned k = 0; k < Nq; ++k ) {
         double E  = uQ( 0, k );
@@ -90,11 +96,11 @@ Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
     auto sigma     = _settings->GetSigma();
     double sigmaXi = sigma[0] * xi[0];
 
-    double E = 1e-7;    // std::fmax( 1e-4 * _a,
-                        //_a * pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) *
-                        //  exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
+    double E = 0.0;    // std::fmax( 1e-4 * _a,
+                       //_a * pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) *
+                       //  exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
     double F = 0;
-    double T = 1.0;
+    double T = 0.0;
 
     y[0] = E / _a / pow( _TRef, 4 );
     y[1] = F / _a / pow( _TRef, 4 );
