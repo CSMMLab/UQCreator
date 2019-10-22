@@ -21,6 +21,7 @@ enum ProblemType {
     P_PNEQUATIONS_2D,
     P_RADIATIONHYDRO_1D,
     P_RADIATIONHYDRO_2D,
+    P_THERMALRAD_1D,
     P_NAVIERSTOKES_1D
 };
 enum ClosureType {
@@ -55,6 +56,7 @@ class Settings
     std::filesystem::path _referenceFile;
     bool _loadLambda;
     bool _regularization;
+    bool _writeInTime;
     double _regularizationStrength;
 
     int _writeFrequency;    // number of time steps until error to reference solution is computed
@@ -165,6 +167,7 @@ class Settings
     void SetExactSolution( bool hasExactSolution );
     bool HasExactSolution() const;
     bool HasSource() const;
+    bool WriteInTime() const { return _writeInTime; }
     void SetSource( bool hasSource );
 
     // moment_system

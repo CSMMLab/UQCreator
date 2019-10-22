@@ -4,6 +4,7 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     _nStates = 3;
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
+    _settings->SetSource( false );
 
     // physical constants
     _c     = 299792458.0 * 100.0;    // speed of light in [cm/s]
@@ -12,7 +13,7 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     _sigma = 1.0;                    // opacity
     _alpha = 1.0;                    // heat capacity parameter c_v = alpha T^3
 
-    _epsilon = 4 * _a / _alpha;
+    _epsilon = 4.0 * _a / _alpha;
 
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -81,37 +82,20 @@ double ThermalRadiative::ComputeDt( const Matrix& u, double dx, unsigned level )
 }
 
 Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
-    double x0    = 0.3;
-    double gamma = 1.4;
+    Vector y( _nStates, 0.0 );
+    double x0      = 0.0;
+    double floor   = 1e-4;
+    auto sigma     = _settings->GetSigma();
+    double sigmaXi = sigma[0] * xi[0];
 
-    double rhoL = 1.0;
-    double rhoR = 0.1;
-    double pL   = 1.0;
-    double pR   = 0.125;
-    double uL   = 0.0;
-    double uR   = 0.0;
-    Vector y( _nStates );
-    auto sigma = _settings->GetSigma();
-    if( x[0] < x0 + sigma[0] * xi[0] ) {
-        y[0]                  = rhoL;
-        y[1]                  = rhoL * uL;
-        double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 );
-        double innerEnergyL   = ( pL / ( rhoL * ( gamma - 1 ) ) ) * rhoL;
-        y[2]                  = kineticEnergyL + innerEnergyL;
-    }
-    else {
-        y[0] = rhoR;
-        if( xi.size() > 1 ) {
-            y[0] += sigma[1] * xi[1];
-        }
-        if( xi.size() > 2 ) {
-            pR += sigma[2] * xi[2];
-        }
-        y[1]                  = rhoR * uR;
-        double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 );
-        double innerEnergyR   = ( pR / ( rhoR * ( gamma - 1 ) ) ) * rhoR;
-        y[2]                  = kineticEnergyR + innerEnergyR;
-    }
+    double E = std::fmax(
+        floor, pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) * exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
+    double F = 0;
+    double T = 1.0;
+
+    y[0] = E / _a / pow( _TRef, 4 );
+    y[1] = F / _a / pow( _TRef, 4 );
+    y[2] = pow( T, 4 ) / pow( _TRef, 4 );
     return y;
 }
 

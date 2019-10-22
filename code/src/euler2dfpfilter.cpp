@@ -1,104 +1,36 @@
-#include "regularizedeuler2d.h"
+#include "euler2dfpfilter.h"
 
-RegularizedEuler2D::RegularizedEuler2D( Settings* settings )
-    : EulerClosure2D( settings ), _eta( _settings->GetRegularizationStrength() ), _lambda( _settings->GetFilterStrength() ) {
+Euler2DFPFilter::Euler2DFPFilter( Settings* settings ) : EulerClosure2D( settings ), _lambda( _settings->GetFilterStrength() ) {
     unsigned nMoments = _settings->GetNMoments();
-    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
+    _filterCoeffs     = Vector( _settings->GetNTotal(), 1.0 );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
                 unsigned index =
                     unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
-                _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
+                _filterCoeffs[i] *= exp( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
             }
         }
     }
 }
 
-RegularizedEuler2D::~RegularizedEuler2D() {}
-
-void RegularizedEuler2D::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    Vector uKinetic( _nStates, 0.0 );
+void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+    // check if initial guess is good enough
     unsigned nTotal = _nTotalForRef[refLevel];
-    g.reset();
-
-    for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-        U( uKinetic, EvaluateLambda( lambda, k, nTotal ) );
-        for( unsigned i = 0; i < nTotal; ++i ) {
-            for( unsigned l = 0; l < _nStates; ++l ) {
-                g[l * nTotal + i] += uKinetic[l] * _phiTildeF( k, i ) * _wGrid[refLevel][k];
-            }
-        }
+    Vector g( _nStates * nTotal );
+    Gradient( g, lambda, u, refLevel );
+    if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
+        return;
     }
 
-    for( unsigned i = 0; i < nTotal; ++i ) {
-        for( unsigned l = 0; l < _nStates; ++l ) {
-            g[l * nTotal + i] += _eta * lambda( l, i );
-        }
-    }
-
-    SubstractVectorMatrixOnVector( g, u, _nTotalForRef[refLevel] );
-}
-
-void RegularizedEuler2D::GradientNoRegularizaton( Vector& g, const Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    Vector uKinetic( _nStates, 0.0 );
-    unsigned nTotal = _nTotalForRef[refLevel];
-    g.reset();
-
-    for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-        U( uKinetic, EvaluateLambda( lambda, k, nTotal ) );
-        for( unsigned i = 0; i < nTotal; ++i ) {
-            for( unsigned l = 0; l < _nStates; ++l ) {
-                g[l * nTotal + i] += uKinetic[l] * _phiTildeF( k, i ) * _wGrid[refLevel][k];
-            }
-        }
-    }
-
-    SubstractVectorMatrixOnVector( g, u, _nTotalForRef[refLevel] );
-}
-
-void RegularizedEuler2D::Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel ) {
-    H.reset();
-    Matrix dUdLambda( _nStates, _nStates );    // TODO: preallocate Matrix for Hessian computation -> problems omp
-    unsigned nTotal = _nTotalForRef[refLevel];
-
-    for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {    // TODO: reorder to avoid cache misses
-        DU( dUdLambda, EvaluateLambda( lambda, k, nTotal ) );
-        for( unsigned l = 0; l < _nStates; ++l ) {
-            for( unsigned m = 0; m < _nStates; ++m ) {
-                for( unsigned j = 0; j < nTotal; ++j ) {
-                    for( unsigned i = 0; i < nTotal; ++i ) {
-                        H( m * nTotal + j, l * nTotal + i ) += _hPartial[k]( j, i ) * _wGrid[refLevel][k] * dUdLambda( l, m );
-                    }
-                }
-            }
-        }
-    }
-    for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned i = 0; i < nTotal; ++i ) {
-            H( l * nTotal + i, l * nTotal + i ) += _eta;
-        }
-    }
-}
-
-void RegularizedEuler2D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    unsigned nTotal = _nTotalForRef[refLevel];
     Matrix uF( _settings->GetNStates(), nTotal );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < nTotal; ++i ) {
-            uF( s, i ) = _filterFunction[i] * u( s, i );
+            uF( s, i ) = _filterCoeffs[i] * u( s, i );
         }
     }
     int maxRefinements = 1000;
 
-    Vector g( _nStates * nTotal );
-
-    // check if initial guess is good enough
-    GradientNoRegularizaton( g, lambda, u, refLevel );
-    if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
-        return;
-    }
-    Gradient( g, lambda, uF, refLevel );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
     // calculate initial Hessian and gradient
@@ -148,7 +80,7 @@ void RegularizedEuler2D::SolveClosure( Matrix& lambda, const Matrix& u, unsigned
     exit( EXIT_FAILURE );
 }
 
-void RegularizedEuler2D::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
     unsigned nTotal = _nTotalForRef[refLevel];
     Matrix uF( _settings->GetNStates(), nTotal );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
