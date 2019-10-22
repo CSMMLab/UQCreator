@@ -2,13 +2,12 @@
 
 Euler2DFPFilter::Euler2DFPFilter( Settings* settings ) : EulerClosure2D( settings ), _lambda( _settings->GetFilterStrength() ) {
     unsigned nMoments = _settings->GetNMoments();
-    _filterCoeffs     = Vector( _settings->GetNTotal(), 1.0 );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
                 unsigned index =
                     unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
-                _filterCoeffs[i] *= exp( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
+                _filterFunction[i] *= exp( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
             }
         }
     }
@@ -26,7 +25,7 @@ void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned re
     Matrix uF( _settings->GetNStates(), nTotal );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < nTotal; ++i ) {
-            uF( s, i ) = _filterCoeffs[i] * u( s, i );
+            uF( s, i ) = _filterFunction[i] * u( s, i );
         }
     }
     int maxRefinements = 1000;
@@ -93,11 +92,10 @@ void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigne
     Vector g( _nStates * nTotal );
 
     // check if initial guess is good enough
-    GradientNoRegularizaton( g, lambda, u, refLevel );
+    Gradient( g, lambda, uF, refLevel );
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
-    Gradient( g, lambda, uF, refLevel );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
     // calculate initial Hessian and gradient
