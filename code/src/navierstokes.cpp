@@ -314,7 +314,7 @@ Vector NavierStokes::G( const Vector& u, const Vector& v, const Vector& nUnit, c
 
     double pL, ssL, pR, ssR;
     double wR[3], primR[3], wL[3], primL[3];
-    if( interfaceSign > 1 ) {
+    if( interfaceSign > 0.0 ) {
         // left interface
         wL[0] = u[0];
         wL[1] = u[1];
