@@ -4,7 +4,7 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 100
+numberOfCells = 200
 a = 0.0
 b = 1.0
 outputFile = "navier_stokes_out"
@@ -14,8 +14,8 @@ outputFile = "navier_stokes_out"
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.0]]
-CFL = 0.1
-tEnd = 0.1
+CFL = 0.2
+tEnd = 0.2
 gamma = 1.4
 mu = 0.001
 

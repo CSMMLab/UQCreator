@@ -18,6 +18,7 @@ class NavierStokes : public Problem
     // virtual Matrix Source( const Matrix& uQ ) const;
     Matrix F( const Vector& u );
     Vector FF( const Vector& u );
+    Vector GKS( const Vector& u, const Vector& v, double gam, double inK, double mu, double dt, double dx );
     // Matrix F( const Matrix& u );
     // virtual double ComputeDt( const Matrix& u, double dx, unsigned level ) const;
     virtual Vector IC( const Vector& x, const Vector& xi );
