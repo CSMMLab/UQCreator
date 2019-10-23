@@ -76,7 +76,7 @@ Matrix ThermalRadiative::F( const Matrix& u ) {
 double ThermalRadiative::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     double cfl = _settings->GetCFL();
 
-    double maxVelocity = 1.0 / _c / _epsilon;
+    double maxVelocity = _c / 3.0 / _epsilon;
 
     return ( cfl * dx ) / maxVelocity;
 }
