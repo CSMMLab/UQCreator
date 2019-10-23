@@ -1,5 +1,6 @@
 #include "closure.h"
 #include "boundedbarrier.h"
+#include "euler2dfpfilter.h"
 #include "eulerclosure.h"
 #include "eulerclosure2d.h"
 #include "l2filter.h"
@@ -125,7 +126,10 @@ Closure* Closure::Create( Settings* settings ) {
         }
     }
     else if( closureType == ClosureType::C_EULER_2D ) {
-        if( settings->HasRegularization() ) {
+        if( settings->HasRegularization() && settings->GetFilterStrength() > 0 ) {
+            return new RegularizedEuler2D( settings );
+        }
+        else if( !settings->HasRegularization() && settings->GetFilterStrength() > 0 ) {
             return new RegularizedEuler2D( settings );
         }
         else
