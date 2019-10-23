@@ -23,7 +23,7 @@ mu = 0.001
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
 closure = "StochasticGalerkin"
 moments = [["totalDegree"],[1]]
-quadPoints = [["tensorizedGrid"],[2]]
+quadPoints = [["tensorizedGrid"],[5]]
 #refinementThresholds = [0.0001, 0.00001]
 #regularizationStrength = 1e-5
 maxIterations = 10000

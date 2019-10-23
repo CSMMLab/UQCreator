@@ -92,10 +92,11 @@ void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigne
     Vector g( _nStates * nTotal );
 
     // check if initial guess is good enough
-    Gradient( g, lambda, uF, refLevel );
+    Gradient( g, lambda, u, refLevel );
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
+    Gradient( g, lambda, uF, refLevel );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
     // calculate initial Hessian and gradient
