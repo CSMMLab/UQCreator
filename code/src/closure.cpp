@@ -132,8 +132,9 @@ Closure* Closure::Create( Settings* settings ) {
         else if( !settings->HasRegularization() && settings->GetFilterStrength() > 0 ) {
             return new Euler2DFPFilter( settings );
         }
-        else
+        else {
             return new EulerClosure2D( settings );
+        }
     }
     else if( closureType == ClosureType::C_SHALLOWWATER_1D ) {
         return new ShallowWaterClosure( settings );

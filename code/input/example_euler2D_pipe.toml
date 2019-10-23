@@ -6,7 +6,7 @@ outputDir = "../results/nozzle"
 [mesh]
 dimension = 2
 format = "SU2"
-SU2MeshFile = "nozzleFine.su2"
+SU2MeshFile = "nozzleCoarse.su2"
 SU2BC = [["outlet","dirichlet"], ["walls", "noslip"]]
 outputFile = "nozzleIPMFP"
 
@@ -15,7 +15,7 @@ outputFile = "nozzleIPMFP"
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.5]]
-CFL = 0.9
+CFL = 0.7
 tEnd = 4.0 #0.0035
 
 [moment_system]

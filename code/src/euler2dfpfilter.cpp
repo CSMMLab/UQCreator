@@ -2,12 +2,13 @@
 
 Euler2DFPFilter::Euler2DFPFilter( Settings* settings ) : EulerClosure2D( settings ), _lambda( _settings->GetFilterStrength() ) {
     unsigned nMoments = _settings->GetNMoments();
+    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
                 unsigned index =
                     unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
-                _filterFunction[i] *= exp( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
+                _filterFunction[i] *= exp( -_lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
             }
         }
     }
@@ -80,7 +81,6 @@ void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned re
 }
 
 void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    std::cout << "FP" << std::endl;
     unsigned nTotal = _nTotalForRef[refLevel];
     Matrix uF( _settings->GetNStates(), nTotal );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {

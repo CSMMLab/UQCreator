@@ -81,6 +81,7 @@ void MomentSolver::Solve() {
 
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
+
         double residual = 0;
 
         // Solve dual problem
@@ -88,7 +89,7 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
-            _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+            _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
             // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
         }
 
