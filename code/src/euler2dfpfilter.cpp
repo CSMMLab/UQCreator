@@ -80,6 +80,7 @@ void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned re
 }
 
 void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+    std::cout << "FP" << std::endl;
     unsigned nTotal = _nTotalForRef[refLevel];
     Matrix uF( _settings->GetNStates(), nTotal );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {

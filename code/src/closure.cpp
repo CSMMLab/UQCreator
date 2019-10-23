@@ -130,7 +130,7 @@ Closure* Closure::Create( Settings* settings ) {
             return new RegularizedEuler2D( settings );
         }
         else if( !settings->HasRegularization() && settings->GetFilterStrength() > 0 ) {
-            return new RegularizedEuler2D( settings );
+            return new Euler2DFPFilter( settings );
         }
         else
             return new EulerClosure2D( settings );
