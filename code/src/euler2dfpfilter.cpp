@@ -14,8 +14,19 @@ Euler2DFPFilter::Euler2DFPFilter( Settings* settings ) : EulerClosure2D( setting
     }
 }
 
+Matrix Euler2DFPFilter::Filter( const Matrix& u, unsigned nTotal ) const {
+    Matrix uF( _settings->GetNStates(), nTotal );
+    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        for( unsigned i = 0; i < nTotal; ++i ) {
+            uF( s, i ) = _filterFunction[i] * u( s, i );
+        }
+    }
+    return uF;
+}
+
 void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    unsigned nTotal = _nTotalForRef[refLevel];
+    unsigned nTotal    = _nTotalForRef[refLevel];
+    int maxRefinements = 1000;
     // check if initial guess is good enough
     Vector g( _nStates * nTotal );
     Gradient( g, lambda, u, refLevel );
@@ -23,13 +34,7 @@ void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned re
         return;
     }
 
-    Matrix uF( _settings->GetNStates(), nTotal );
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < nTotal; ++i ) {
-            uF( s, i ) = _filterFunction[i] * u( s, i );
-        }
-    }
-    int maxRefinements = 1000;
+    Matrix uF = Filter( u, nTotal );
 
     Gradient( g, lambda, uF, refLevel );
 
@@ -83,7 +88,9 @@ void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned re
 }
 
 void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    unsigned nTotal = _nTotalForRef[refLevel];
+    unsigned nTotal    = _nTotalForRef[refLevel];
+    int maxRefinements = 1000;
+
     // check if initial guess is good enough
     Vector g( _nStates * nTotal );
     Gradient( g, lambda, u, refLevel );
@@ -91,13 +98,7 @@ void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigne
         return;
     }
 
-    Matrix uF( _settings->GetNStates(), nTotal );
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < nTotal; ++i ) {
-            uF( s, i ) = _filterFunction[i] * u( s, i );
-        }
-    }
-    int maxRefinements = 1000;
+    Matrix uF = Filter( u, nTotal );
 
     Gradient( g, lambda, uF, refLevel );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
