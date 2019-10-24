@@ -3,33 +3,41 @@
 Euler2DFPFilter::Euler2DFPFilter( Settings* settings ) : EulerClosure2D( settings ), _lambda( _settings->GetFilterStrength() ) {
     unsigned nMoments = _settings->GetNMoments();
     _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
+    _hyperbolicityFix = true;    // turns on Graham's hyperbolicity fix
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
                 unsigned index =
                     unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
-                _filterFunction[i] *= exp( -_lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
+                _filterFunction[i] *= std::exp( -_lambda * index * ( index + 1 ) );
             }
         }
     }
 }
 
-void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    // check if initial guess is good enough
-    unsigned nTotal = _nTotalForRef[refLevel];
-    Vector g( _nStates * nTotal );
-    Gradient( g, lambda, u, refLevel );
-    if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
-        return;
-    }
-
+Matrix Euler2DFPFilter::Filter( const Matrix& u, unsigned nTotal ) const {
     Matrix uF( _settings->GetNStates(), nTotal );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < nTotal; ++i ) {
             uF( s, i ) = _filterFunction[i] * u( s, i );
         }
     }
+    return uF;
+}
+
+void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+    unsigned nTotal    = _nTotalForRef[refLevel];
     int maxRefinements = 1000;
+    // check if initial guess is good enough
+    Vector g( _nStates * nTotal );
+    Gradient( g, lambda, u, refLevel );
+    if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
+        return;
+    }
+
+    Matrix uF = Filter( u, nTotal );
+
+    Gradient( g, lambda, uF, refLevel );
 
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
@@ -40,6 +48,7 @@ void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned re
     posv( H, g );
     if( _maxIterations == 1 ) {
         AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda, nTotal );
+        if( _hyperbolicityFix ) lambda = Filter( lambda, nTotal );
         return;
     }
     Matrix lambdaNew( _nStates, nTotal );
@@ -62,7 +71,10 @@ void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned re
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
             Gradient( dlambdaNew, lambdaNew, uF, refLevel );
             if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
-                lambda = lambdaNew;
+                if( _hyperbolicityFix )
+                    lambda = Filter( lambdaNew, nTotal );
+                else
+                    lambda = lambdaNew;
                 return;
             }
             else if( ++refinementCounter > maxRefinements ) {
@@ -72,7 +84,10 @@ void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned re
         }
         lambda = lambdaNew;
         if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
-            lambda = lambdaNew;
+            if( _hyperbolicityFix )
+                lambda = Filter( lambdaNew, nTotal );
+            else
+                lambda = lambdaNew;
             return;
         }
     }
@@ -81,22 +96,18 @@ void Euler2DFPFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned re
 }
 
 void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    unsigned nTotal = _nTotalForRef[refLevel];
-    Matrix uF( _settings->GetNStates(), nTotal );
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < nTotal; ++i ) {
-            uF( s, i ) = _filterFunction[i] * u( s, i );
-        }
-    }
+    unsigned nTotal    = _nTotalForRef[refLevel];
     int maxRefinements = 1000;
 
-    Vector g( _nStates * nTotal );
-
     // check if initial guess is good enough
+    Vector g( _nStates * nTotal );
     Gradient( g, lambda, u, refLevel );
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
+
+    Matrix uF = Filter( u, nTotal );
+
     Gradient( g, lambda, uF, refLevel );
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     Vector dlambdaNew( _nStates * nTotal );
@@ -107,6 +118,7 @@ void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigne
     posv( H, g );
     if( _maxIterations == 1 ) {
         AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda, nTotal );
+        if( _hyperbolicityFix ) lambda = Filter( lambda, nTotal );
         return;
     }
     Matrix lambdaNew( _nStates, nTotal );
@@ -129,7 +141,10 @@ void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigne
             AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
             Gradient( dlambdaNew, lambdaNew, uF, refLevel );
             if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
-                lambda = lambdaNew;
+                if( _hyperbolicityFix )
+                    lambda = Filter( lambdaNew, nTotal );
+                else
+                    lambda = lambdaNew;
                 return;
             }
             else if( ++refinementCounter > maxRefinements ) {
@@ -139,7 +154,10 @@ void Euler2DFPFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigne
         }
         lambda = lambdaNew;
         if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
-            lambda = lambdaNew;
+            if( _hyperbolicityFix )
+                lambda = Filter( lambdaNew, nTotal );
+            else
+                lambda = lambdaNew;
             return;
         }
     }
