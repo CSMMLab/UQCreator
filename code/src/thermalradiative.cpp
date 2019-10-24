@@ -11,7 +11,7 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     _a             = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
     _TRef          = 1.0;                    // reference temperature
     _sigma         = 1.0;                    // opacity
-    _alpha         = 1.0;                    // heat capacity parameter c_v = alpha T^3
+    _alpha         = 4.0 * _a;               // heat capacity parameter c_v = alpha T^3
     double sigmaSB = 5.6704 * 1e-5;          // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
     //_c             = 1.0;
@@ -60,10 +60,9 @@ Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t ) c
     Matrix y( nStates, Nq, 0.0 );
     double S = 0.0;    // source, needs to be defined
 
-    if( t < 10 && std::fabs( x[0] ) < 0.5 ) S = 1.0;
+    if( t < 10 && std::fabs( x[0] ) < 0.5 ) S = _a;
 
-    double Q = S / _sigma / _a / std::pow( _TRef, 4 );    // TODO: is S = 1 or Q = 1 ?
-    Q        = S;
+    double Q = S / _sigma / _a / std::pow( _TRef, 4 );
 
     for( unsigned k = 0; k < Nq; ++k ) {
         double E  = uQ( 0, k );
