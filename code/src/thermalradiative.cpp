@@ -14,8 +14,8 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     _alpha         = 1.0;                    // heat capacity parameter c_v = alpha T^3
     double sigmaSB = 5.6704 * 1e-5;          // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
-    _c             = 1.0;
-    _a             = 1.0;
+    //_c             = 1.0;
+    //_a             = 1.0;
 
     _epsilon = 4.0 * _a / _alpha;
 
@@ -62,7 +62,8 @@ Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t ) c
 
     if( t < 10 && std::fabs( x[0] ) < 0.5 ) S = 1.0;
 
-    double Q = S / _sigma / _a / std::pow( _TRef, 4 );
+    double Q = S / _sigma / _a / std::pow( _TRef, 4 );    // TODO: is S = 1 or Q = 1 ?
+    Q        = S;
 
     for( unsigned k = 0; k < Nq; ++k ) {
         double E  = uQ( 0, k );
@@ -84,15 +85,13 @@ Matrix ThermalRadiative::F( const Matrix& u ) {
 double ThermalRadiative::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     double cfl = _settings->GetCFL();
 
-    double maxVelocity = 1.0 / _c / _epsilon;
+    double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
 
     return ( cfl * dx ) / maxVelocity;
 }
 
 Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
-    double x0      = 0.0;
-    double floor   = 1e-4;
     auto sigma     = _settings->GetSigma();
     double sigmaXi = sigma[0] * xi[0];
 
