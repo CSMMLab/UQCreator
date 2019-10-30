@@ -315,7 +315,7 @@ void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, double t, 
                                         //#pragma omp parallel for
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
-        out     = _problem->Source( uQ[j], _mesh->GetCenterPos( j ), t ) * _closure->GetPhiTildeWfAtRef( refLevel[j] );
+        out     = _problem->Source( uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] ) * _closure->GetPhiTildeWfAtRef( refLevel[j] );
         uNew[j] = uNew[j] + dt * out;    // TODO: check dt*dx correct?  vorher * _mesh->GetArea( j )
     }
 }

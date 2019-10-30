@@ -1,4 +1,5 @@
 #include "thermalradiative.h"
+#include "quadraturegrid.h"
 
 ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     _nStates = 3;
@@ -18,6 +19,13 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     //_a             = 1.0;
 
     _epsilon = 4.0 * _a / _alpha;
+
+    // compute xi Quadrature points
+    Vector xiEta( _settings->GetNDimXi() );
+    _variances = _settings->GetSigma();
+
+    auto grid = QuadratureGrid::Create( _settings, _settings->GetNQTotal() );
+    _xiQuad   = grid->GetNodes();
 
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -54,20 +62,30 @@ Matrix ThermalRadiative::F( const Vector& u ) {
     return flux;
 }
 
-Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t ) const {
+Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
-    unsigned Nq      = static_cast<unsigned>( uQ.columns() );
+    unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq, 0.0 );
-    double S = 0.0;    // source, needs to be defined
+    double S           = 0.0;    // source, needs to be defined
+    double varianceVal = 0;
 
-    if( t < 10 && std::fabs( x[0] ) < 0.5 ) S = _a;
-
-    double Q = S / _sigma / _a / std::pow( _TRef, 4 );
+    // std::cout << "level " << level << ", Nq = " << Nq << std::endl;
 
     for( unsigned k = 0; k < Nq; ++k ) {
-        double E  = uQ( 0, k );
-        double F  = uQ( 1, k );
-        double U  = uQ( 2, k );
+        if( t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[k][0] ) {
+            S           = _a;
+            varianceVal = _variances[0];
+        }
+        else {
+            S = 0.0;
+        }
+
+        double Q = S / _sigma / _a / std::pow( _TRef, 4 );
+
+        double E = uQ( 0, k );
+        double F = uQ( 1, k );
+        double U = uQ( 2, k );
+        // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
         y( 0, k ) = ( -( E - U ) + Q ) / _epsilon;
         y( 1, k ) = -F / _epsilon;
         y( 2, k ) = E - U;

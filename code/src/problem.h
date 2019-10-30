@@ -32,7 +32,7 @@ class Problem
     virtual Vector LoadIC( const Vector& x, const Vector& xi ) = 0;
     virtual Matrix ExactSolution( double t, const Matrix& x, const Vector& xi ) const;
     virtual Matrix Source( const Matrix& uQ ) const;
-    virtual Matrix Source( const Matrix& uQ, const Vector& x, double t ) const;
+    virtual Matrix Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const;
     virtual Matrix BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const;
 };
 
