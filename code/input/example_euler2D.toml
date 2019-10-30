@@ -30,7 +30,7 @@ residual = 1e-6
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "StochasticGalerkin"
-moments = [["totalDegree"],[17]]
+moments = [["totalDegree"],[16]]
 quadPoints = [["tensorizedCCGrid"],[4]]
 #cRetardation = [[1,2,4],[0.01,0.005,0.001]]
 #refinementThresholds = [0.0001, 0.00001]
