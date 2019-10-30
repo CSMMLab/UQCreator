@@ -78,6 +78,21 @@ Closure::Closure( Settings* settings )
         }
     }
 
+    assert( _nQTotal == _nTotal );
+    for( unsigned k = 0; k < _nQTotal; ++k ) {
+        for( unsigned i = 0; i < _nTotal; ++i ) {
+            if( k == i ) {
+                _phiTilde( k, i ) = 1.0 / sqrt( 0.5 * _wGrid[_settings->GetNRefinementLevels() - 1][k] );
+            }
+            else {
+                _phiTilde( k, i ) = 0;
+            }
+            _phiTildeF( k, i )  = _phiTilde( k, i ) * 0.5;
+            _phiTildeWf( k, i ) = _phiTildeF( k, i ) * _wGrid[_settings->GetNRefinementLevels() - 1][k];
+            _phiTildeVec[k][i]  = _phiTilde( k, i );
+        }
+    }
+
     _phiTildeTrans      = trans( _phiTilde );
     auto phiTildeFTrans = trans( _phiTildeF );
     // calculate partial matrix for Hessian calculation
@@ -95,7 +110,8 @@ Closure::Closure( Settings* settings )
                 }
             }
         }
-        std::cout << "test I " << testQuad << std::endl;*/
+        std::cout << "test I " << testQuad << std::endl;
+        exit( EXIT_FAILURE );*/
 }
 
 Closure::~Closure() {

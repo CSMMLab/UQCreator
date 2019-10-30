@@ -4,7 +4,7 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 2000
+numberOfCells = 1000
 a = 0
 b = 1
 outputFile = "euler_shock"
@@ -19,11 +19,11 @@ tEnd = 0.14
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
-closure = "Euler"
-moments = [["totalDegree"],[4]]
+closure = "StochasticGalerkin"
+moments = [["totalDegree"],[17]]
 quadPoints = [["tensorizedCCGrid"],[4]]
-refinementThresholds = [0.0001, 0.00001]
-regularizationStrength = 0.0
-filterStrength = 0.0
+#refinementThresholds = [0.0001, 0.00001]
+#regularizationStrength = 0.0
+#filterStrength = 0.0
 maxIterations = 10000
 epsilon = 1e-5

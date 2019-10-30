@@ -120,6 +120,7 @@ class Closure
 
     std::vector<Polynomial*> GetQuadrature();
     QuadratureGrid* GetQuadratureGrid();
+    Vector GetWGridAtRef( unsigned ref ) { return _wGrid[ref]; }
 };
 
 #endif    // CLOSURE_H

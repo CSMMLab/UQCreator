@@ -7,16 +7,16 @@ writeFrequency = 5
 #restartFile = "../../result_sync/SC/euler2D_nacaCoarse_sc_n5_s05_res1e-6_coutPrecise/2019-03-12_20:29:21"
 #restartFile = "../../result_sync/IPM/euler2D_nacaCoarse_ipm_n5_nq10_s05_aoa/2019-02-27_19:17:04"
 #restartFile = "../../result_sync/CAOS-IPM/euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa_res1e-6_precision/2019-03-13_10:30:57"
-restartFile = "2019-07-16_16:04:28"
+#restartFile = "2019-07-16_16:04:28"
 #importDualState = true
-referenceSolution = "sc100.vtk"
+#referenceSolution = "sc100.vtk"
 
 [mesh]
 dimension = 2
 format = "SU2"
 SU2MeshFile = "nacaCoarse.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "caEuler"
+outputFile = "Euler"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -29,8 +29,8 @@ residual = 1e-6
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
-closure = "Euler2D"
-moments = [["totalDegree"],[9]]
+closure = "StochasticGalerkin"
+moments = [["totalDegree"],[17]]
 quadPoints = [["tensorizedCCGrid"],[4]]
 #cRetardation = [[1,2,4],[0.01,0.005,0.001]]
 #refinementThresholds = [0.0001, 0.00001]

@@ -191,7 +191,7 @@ void MomentSolver::Solve() {
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
             if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
-            if( _settings->WriteInTime() && timeIndex % _settings->GetWriteFrequency() == 1 ) {
+            if( _settings->WriteInTime() && timeIndex % _settings->GetWriteFrequency() == 1 && false ) {
                 Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, false );
                 _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
                 if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
@@ -369,7 +369,13 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
         for( unsigned k = 0; k < _settings->GetNQTotalForRef( refinementLevel[j] ); ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotalForRef[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
-                meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
+                double wf = phiTildeWf( k, k );    // dirty fix for pSC, works only for uniform distributions
+                auto w    = _closure->GetWGridAtRef( refinementLevel[j] );
+                meanAndVar( i, j ) += tmp[i] * w[k] * 0.5;
+                // if( j == 4 ) {
+                //  std::cout << "uQ = " << tmp[0] << std::endl;
+                // std::cout << "wf = " << wf << std::endl;
+                //}
             }
         }
 
@@ -377,7 +383,9 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
         for( unsigned k = 0; k < _settings->GetNQTotalForRef( refinementLevel[j] ); ++k ) {
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotalForRef[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
-                meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
+                double wf = phiTildeWf( k, k );    // dirty fix for pSC, works only for uniform distributions + pSC
+                auto w    = _closure->GetWGridAtRef( refinementLevel[j] );
+                meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * w[k] * 0.5;
             }
         }
     }
