@@ -13,6 +13,7 @@
 #include "shallowwater.h"
 #include "shallowwater2d.h"
 #include "thermalradiative.h"
+#include "thermalradiativegeneral.h"
 
 Problem::Problem( Settings* settings ) : _settings( settings ) {
     _log = spdlog::get( "event" );
@@ -54,7 +55,7 @@ Problem* Problem::Create( Settings* settings ) {
         return new RadiationHydrodynamics1D( settings );
     }
     else if( settings->GetProblemType() == ProblemType::P_THERMALRAD_1D ) {
-        return new ThermalRadiative( settings );
+        return new ThermalRadiativeGeneral( settings );
     }
     else if( settings->GetProblemType() == ProblemType::P_NAVIERSTOKES_1D ) {
         return new NavierStokes( settings );

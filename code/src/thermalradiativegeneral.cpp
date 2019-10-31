@@ -1,7 +1,7 @@
-#include "thermalradiative.h"
+#include "thermalradiativegeneral.h"
 #include "quadraturegrid.h"
 
-ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
+ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem( settings ) {
     _nStates = 3;
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
@@ -31,20 +31,20 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
         auto problem = file->get_table( "problem" );
     } catch( const cpptoml::parse_exception& e ) {
-        _log->error( "[ThermalRadiative] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
+        _log->error( "[ThermalRadiativeGeneral] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
 }
 
-ThermalRadiative::~ThermalRadiative() {}
+ThermalRadiativeGeneral::~ThermalRadiativeGeneral() {}
 
-Vector ThermalRadiative::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+Vector ThermalRadiativeGeneral::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
     g[2]     = 0.0;    // set temperature flux to zero
     return g;
 }
 
-Matrix ThermalRadiative::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
+Matrix ThermalRadiativeGeneral::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
     unsigned nStates = u.rows();
     unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq );
@@ -54,7 +54,7 @@ Matrix ThermalRadiative::G( const Matrix& u, const Matrix& v, const Vector& nUni
     return y;
 }
 
-Matrix ThermalRadiative::F( const Vector& u ) {
+Matrix ThermalRadiativeGeneral::F( const Vector& u ) {
     Matrix flux( u.size(), 1 );
     flux( 0, 0 ) = 1.0 / _c / _epsilon * u[1];
     flux( 1, 0 ) = _c / _epsilon / 3.0 * u[0];
@@ -62,7 +62,7 @@ Matrix ThermalRadiative::F( const Vector& u ) {
     return flux;
 }
 
-Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+Matrix ThermalRadiativeGeneral::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq, 0.0 );
@@ -82,32 +82,52 @@ Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t, un
 
         double Q = S / _sigma / _a / std::pow( _TRef, 4 );
 
-        double E = uQ( 0, k );
-        double F = uQ( 1, k );
-        double U = uQ( 2, k );
+        double E      = uQ( 0, k );
+        double F      = uQ( 1, k );
+        double eTilde = uQ( 2, k );    // scaled internal energy
+        if( eTilde < 0 ) {
+            std::cout << "eTilde < 0 !!!!" << std::endl;
+            std::cout << "eTilde = " << eTilde << std::endl;
+            std::cout << "E = " << E << std::endl;
+            std::cout << "F = " << F << std::endl;
+        }
+        double TTilde = ScaledTemperature( eTilde );
         // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
-        y( 0, k ) = ( -( E - U ) + Q ) / _epsilon;
+
+        y( 0, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
         y( 1, k ) = -F / _epsilon;
-        y( 2, k ) = E - U;
+        y( 2, k ) = E - std::pow( TTilde, 4 );
     }
 
     return y;
 }
 
-Matrix ThermalRadiative::F( const Matrix& u ) {
-    _log->error( "[ThermalRadiative] Flux not implemented" );
+double ThermalRadiativeGeneral::ScaledInternalEnergy( double TTilde ) const {
+    double T = TTilde * _TRef;
+    double e = _alpha / 4.0 * pow( T, 4 );
+    return e / ( _a * pow( _TRef, 4 ) );
+}
+
+double ThermalRadiativeGeneral::ScaledTemperature( double eTilde ) const {
+    double e = eTilde * _a * pow( _TRef, 4 );
+    double T = pow( 4.0 * e / _alpha, 1.0 / 4.0 );
+    return T / _TRef;
+}
+
+Matrix ThermalRadiativeGeneral::F( const Matrix& u ) {
+    _log->error( "[ThermalRadiativeGeneral] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
 
-double ThermalRadiative::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+double ThermalRadiativeGeneral::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     double cfl = _settings->GetCFL();
 
-    double maxVelocity = std::sqrt( 1.0 / 3.0 ) / _epsilon;
+    double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
 
     return ( cfl * dx ) / maxVelocity;
 }
 
-Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
+Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
     auto sigma     = _settings->GetSigma();
     double sigmaXi = sigma[0] * xi[0];
@@ -115,16 +135,16 @@ Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
     double E = 0.0;    // std::fmax( 1e-4 * _a,
                        //_a * pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) *
                        //  exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
-    double F = 0;
-    double T = 0.0;
+    double F              = 0;
+    double internalEnergy = 1e-3 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy
 
     y[0] = E / _a / pow( _TRef, 4 );
     y[1] = F / _a / pow( _TRef, 4 );
-    y[2] = pow( T, 4 ) / pow( _TRef, 4 );
+    y[2] = internalEnergy / ( _a * pow( _TRef, 4 ) );
     return y;
 }
 
-Vector ThermalRadiative::LoadIC( const Vector& x, const Vector& xi ) {
-    _log->error( "[ThermalRadiative: LoadIC not implemented]" );
+Vector ThermalRadiativeGeneral::LoadIC( const Vector& x, const Vector& xi ) {
+    _log->error( "[ThermalRadiativeGeneral: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }
