@@ -88,7 +88,7 @@
 \def\lambdabar{\xoverline{\bm{\lambda}}}
 \def\lambdabarjn{\lambdabar_j^n}
 
-\newcommand{\commentJannick}[1]{{\textcolor{red}{#1}}}
+\def\comja#1{{\color{red}{\bfseries \fbox{Remark {\color{red}Jannick}}}\enspace #1}}
 \newcommand{\comment}[1]{{\textcolor{blue}{#1}}}
 
 \begin{document}
@@ -109,8 +109,8 @@
 
 
 \begin{abstract}
-Methods for quantifying the effects of uncertainties in hyperbolic problems can be divided into intrusive and non-intrusive techniques. Non-intrusive methods allow using a given deterministic solver as a black box while being embarrassingly parallel. Intrusive methods on the other hand do not suffer from aliasing effects and provide a more general framework for adaptive refinement techniques. Since the moment system solved by intrusive methods is not necessarily hyperbolic, the Intrusive Polynomial Moment (IPM) method has been introduced. IPM maintains hyperbolicity but comes at the cost of having to solve an optimization problem in every spatial cell and every time step.
-In this work, we propose acceleration techniques for intrusive methods. When solving steady problems, the numerical costs arising from repeatedly solving the IPM optimization problem can be reduced by borrowing ideas from shape optimization. Integrating the iteration to solve the optimization problem into the moment update guarantees local convergence while reducing numerical costs. Additionally, we propose an adaptive implementation of the IPM method, which further reduces numerical costs. We demonstrate the effectiveness of the proposed strategies by comparing results of the uncertain NACA0012 testcase as well as a bent shock tube experiment with non-intrusive methods.
+Methods for quantifying the effects of uncertainties in hyperbolic problems can be divided into intrusive and non-intrusive techniques. Non-intrusive methods allow \comja{the usage of} using a given deterministic solver \comja{in a black-box manner} as a black box\comja{,} while being embarrassingly parallel. Intrusive methods on the other hand do not suffer from aliasing effects and provide a more general framework for adaptive refinement techniques. Since the moment system solved by intrusive methods is not necessarily hyperbolic, the Intrusive Polynomial Moment (IPM) method has been introduced. IPM maintains hyperbolicity \comja{,} but comes at the cost of \comja{solving an additional} having to solve an optimization problem in every spatial cell and every time step.
+In this work, we propose acceleration techniques for intrusive methods. When solving steady problems, the numerical costs arising from repeatedly solving the IPM optimization problem can be reduced by borrowing ideas from shape optimization. Integrating the iteration \comja{from the numerical treatment of the opt...} to solve the optimization problem into the moment update \comja{reduces numerical costs, while still guaranteeing local convergence.} guarantees local convergence while reducing numerical costs. Additionally, we propose an adaptive implementation of the IPM method, which further reduces numerical costs. We demonstrate the effectiveness of the proposed strategies \comja{for multi-dimensional uncertainty spaces} by comparing results of the uncertain NACA0012 testcase as well as a bent shock tube experiment with non-intrusive methods.
 \end{abstract}
 
 \begin{keyword}
