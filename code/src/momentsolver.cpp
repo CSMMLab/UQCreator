@@ -801,30 +801,10 @@ void MomentSolver::WriteErrors( const VectorU& refinementLevel ) {
     auto l2ErrorVarLog    = spdlog::get( "l2ErrorVar" );
     auto lInfErrorVarLog  = spdlog::get( "lInfErrorVar" );
 
-    Matrix meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
-    Matrix phiTildeWf = _closure->GetPhiTildeWf();
-    Vector tmp( _nStates, 0.0 );
-    VectorU nTotal = _settings->GetNTotalRefinementLevel();
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        // expected value
-        for( unsigned k = 0; k < _nQTotal; ++k ) {
-            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, nTotal[refinementLevel[j]] ) );
-            for( unsigned i = 0; i < _nStates; ++i ) {
-                meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
-            }
-        }
-
-        // variance
-        for( unsigned k = 0; k < _nQTotal; ++k ) {
-            _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, nTotal[refinementLevel[j]] ) );
-            for( unsigned i = 0; i < _nStates; ++i ) {
-                meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
-            }
-        }
-    }
-    auto l1Error   = this->CalculateError( meanAndVar, 1, a, b );
-    auto l2Error   = this->CalculateError( meanAndVar, 2, a, b );
-    auto lInfError = this->CalculateError( meanAndVar, 0, a, b );
+    Matrix meanAndVar = this->WriteMeanAndVar( refinementLevel, 0, false );
+    auto l1Error      = this->CalculateError( meanAndVar, 1, a, b );
+    auto l2Error      = this->CalculateError( meanAndVar, 2, a, b );
+    auto lInfError    = this->CalculateError( meanAndVar, 0, a, b );
 
     std::ostringstream osL1ErrorMean, osL2ErrorMean, osLInfErrorMean, osL1ErrorVar, osL2ErrorVar, osLInfErrorVar;
     for( unsigned i = 0; i < _nStates; ++i ) {
