@@ -39,7 +39,7 @@ The computational domain is a circle with a diameter of $40$ meters. In the cent
 				\includegraphics[scale=0.2]{figs/Euler1DPlots5/{sc100_VarRho}.png}
 		\label{fig:referenceSolutionsub2}
 	\end{subfigure}
-	\caption{Reference solution E$[\rho]$ and Var$[\rho]$. \comment{TODO: Error-Box (gestrichelt) hinzufügen}}
+	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
 	\label{fig:referenceSolution}
 \end{figure}
 
@@ -70,7 +70,7 @@ The quantities of interests are now computed with the different methods. All met
 		\caption{}
 		\label{fig:ErrorDifferentQuadB}
 	\end{subfigure}
-	\caption{Relative L$^2$-error with different quadrature levels. The subscript denotes the moment order, the superscript denotes the Clenshaw-Curtis quadrature level.}
+	\caption{Relative L$^2$-error with different quadrature levels. The subscript denotes the moment order, the superscript denotes the Clenshaw-Curtis quadrature level.\frama{Sollen wir einige Linien hier raus nehmen, damit es \"ubersichtlicher bleibt?}}
 	\label{fig:ErrorDifferentQuad}
 \end{figure}
 \begin{figure}[h!]
@@ -140,15 +140,15 @@ The quantities of interests are now computed with the different methods. All met
 	\label{fig:ERhoVarRho5}
 \end{figure}
 
-Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rule to approximate integrals. We start by investigating the effects this quadrature has on the solution accuracy. For this, we run the IPM method with a moment order ranging from three to seven using a Clenshaw-Curtis quadrature rule with level three (i.e. 9 quadrature points) and level four (i.e. 17 quadrature points). A comparison of the error obtained with these two quadrature levels is given in Figure~\ref{fig:ErrorDifferentQuad}. To denote the quadrature level, we use a superscript and the moment order is denoted by a subscript.
+Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rule to approximate integrals. We start by investigating the effects this quadrature has on the solution accuracy. For this, we run the IPM method with a moment order ranging from three to seven using a Clenshaw-Curtis quadrature rule with level three (i.e. 9 quadrature points) and level four (i.e. 17 quadrature points). A comparison of the error obtained with these two quadrature levels is given in Figure~\ref{fig:ErrorDifferentQuad}. To denote the quadrature level, we use a superscript and the moment order is denoted by a subscript. We observe the following:
 \begin{itemize}
-\item When for example comparing the error obtained with IPM$_8^3$ and IPM$_8^4$ it can be seen that the error stagnates when the chosen quadrature is not sufficiently accurate. This behavior results from aliasing effects in the numerical flux, which dominate the accuracy level.
+\item When for example comparing the error obtained with IPM$_8^3$ and IPM$_8^4$ it can be seen that the error stagnates when the chosen quadrature is not sufficiently accurate. This behavior results from aliasing effects in the numerical flux, which dominate the accuracy level. \frama{Sollen wir hier Strang's Lemma erw\"ahnen? Also der Fehler der Quadratur sollte so gross sein wie der Fehler durch die moment truncation?}
 \item If the truncation order is sufficiently small, both quadrature levels yield the same accuracy. Note that this holds for the expectation value until a truncation order of $N=5$ and for the variance for $N=4$. Hence, the variance is more sensitive to aliasing errors.
 \item Figure~\ref{fig:ErrorDifferentQuadA} reveals that the IPM error of E[$\rho$] with 9 quadrature points stagnates at the error level of SC$^9$, i.e. the aliasing error heavily affects the accuracy. This behavior becomes more dominant when looking at the variance error in Figure~\ref{fig:ErrorDifferentQuadB}. Here, IPM$_8^4$ yields a significantly improved result compared to IPM$_8^3$. Again, the IPM$_8^3$ result stagnates at the SC$^9$ accuracy level, which can be reached with IPM when only using four moments (combined with a sufficiently accurate quadrature level). Hence, the number of moments needed for IPM to obtain a certain variance error is significantly smaller than the number of quadrature points needed for SC. This result can be observed throughout the results of this work. Especially for high dimensional problems, this potentially decreases the number of unknowns to reach a certain accuracy level significantly. However note, that since the numerical flux evaluation requires $O(N\cdot Q)$ operations, the numerical costs will depend on the chosen quadrature rule.
 \end{itemize}
-Let us now compare stochastic-Collocation with stochastic-Galerkin and IPM as well as its proposed acceleration techniques at a fixed moment order 9. Note that since IPM generalizes SG, all proposed techniques can be used for stochastic-Galerkin as well. To account for the fact that sparse grids need to be used in high dimensional problems, we use Clenshaw-Curtis quadrature rules to compute the different solutions. Stochastic-Collocation uses quadrature levels $2,3$ and $4$, which corresponds to $5,9$ and $17$ quadrature points. All adaptive methods use gPC polynomials of order 2 to 9 (i.e. 3 to 10 moments). Order 2 uses a level 2, orders 3 to 6 use a level 3 and orders 8 and 9 use a level 4 quadrature rule. When the smoothness indicator of the refinement retardation augmented IPM \eqref{eq:errorIndicator} lies below $\delta_{-} = 2\cdot 10^{-4}$, the truncation order is decreased, if it lies above $\delta_{+} = 2\cdot 10^{-5}$ the truncation order is increased. The remaining methods have been computed with a level 4 quadrature rule. 
+Let us now compare stochastic-Collocation with stochastic-Galerkin and IPM as well as its proposed acceleration techniques at a fixed moment order 9. Note that since IPM generalizes SG, all proposed techniques can be used for stochastic-Galerkin as well. To account for the fact that sparse grids need to be used in high dimensional problems, we use Clenshaw-Curtis quadrature rules to compute the different solutions. Stochastic-Collocation uses quadrature levels $2,3$ and $4$, which corresponds to $5,9$ and $17$ quadrature points. All adaptive methods use gPC polynomials of order 2 to 9 (i.e. 3 to 10 moments). Order 2 uses a level 2, orders 3 to 6 use a level 3 and orders 8 and 9 use a level 4 quadrature rule. When the smoothness indicator \eqref{eq:errorIndicator} lies below $\delta_{-} = 2\cdot 10^{-4}$, the adaptive methods decrease the truncation order, if it lies above $\delta_{+} = 2\cdot 10^{-5}$ the truncation order is increased. The remaining methods have been computed with a level 4 quadrature rule. 
 
-All intrusive methods are iterated until the expectation value of the density fulfills the stopping criterion \eqref{eq:residualSteady} with $\varepsilon = 5\cdot 10^{-6}$, however it can be seen that the error saturates already at a bigger residual. For every quadrature point, SC iterates the solution until the density reaches a certain residual level $\varepsilon$. We observed that the SC error requires a smaller residual level to reach a constant state and we have recorded this behavior in the following Table \ref{tab:resSC17} for the SC$^{17}$ solution.
+All intrusive methods are iterated until the expectation value of the density fulfills the stopping criterion \eqref{eq:residualSteady} with $\varepsilon = 5\cdot 10^{-6}$, however it can be seen that the error saturates already at a bigger residual. For every quadrature point, SC iterates the solution until the density reaches a certain residual level $\varepsilon$. We observed that the SC error requires a smaller residual level to reach a constant state and we have recorded this behavior in the following Table \ref{tab:resSC17} for the SC$^{17}$ solution. \frama{Sollen wir hier die Ergebnisse zu Frage 1 im zweiten Dokument einbauen?}
 \begin{center}
 \begin{table}
 \resizebox{\columnwidth}{!}{%
@@ -162,6 +162,7 @@ All intrusive methods are iterated until the expectation value of the density fu
 	\hline
 \end{tabular}
 }
+\caption{Error values at various residual levels when using SC.}
 \label{tab:resSC17}
 \end{table}
 
@@ -176,7 +177,7 @@ First, let us mention that the adaptive SG method fails, since it yields negativ
 \end{itemize}
 The proposed acceleration techniques show the following behavior:
 \begin{itemize}
-\item The One-Shot one shot IPM (osIPM) method proposed in Section~\ref{sec:OneShotIPM} reduces the runtime while yielding the same error as the classical IPM method.
+\item The One-Shot IPM (osIPM) method proposed in Section~\ref{sec:OneShotIPM} reduces the runtime while yielding the same error as the classical IPM method.
 \item When using adaptivity (see Algorithm~\ref{alg:ad-IPM}) in combination with the One-Shot idea, the method is denoted by \textit{adaptive One-Shot IPM} (adosIPM). This method reaches the steady state IPM solution with a faster runtime than SG.
 \item The idea of refinement retardation combined with adosIPM (see Algorithm~\ref{alg:adosIPM}) is denoted by retardation adosIPM (readosIPM), which further decreases runtime. Here, we use two different strategies: First, we steadily increase the maximal truncation order when the residual approaches zero. To determine residual values for a given set of truncation orders $2,4,5$ and $8$, we study at which residual level the IPM method reaches a saturated error level for each truncation order. The residual values are then determined to be $6e-05,3e-05,2.2e-5$ and $2e-05$. The second, straight forward strategy converges the solution on a low truncation order of $2$ to a residual of $10^{-5}$ and then switches to a maximal truncation order of $9$. Strategy 1 is depicted in red, Strategy 2 is depicted in green. It can be seen that both approaches reach the IPM$_9$ error for the same run time. Hence, we deduce that a naive choice of the refinement retardation strategy suffices to yield a satisfactory behavior.
 \end{itemize}
