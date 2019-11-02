@@ -15,6 +15,7 @@
 #include "shallowwaterclosure2d.h"
 #include "stochasticgalerkin.h"
 #include "tensorizedquadrature.h"
+#include "thermalradiationclosure.h"
 #include "uniformsparsegrid.h"
 
 Closure::Closure( Settings* settings )
@@ -150,6 +151,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_RADHYDRO ) {
         return new RadiHydroClosure1D( settings );
+    }
+    else if( closureType == ClosureType::C_THERMALRAD_1D ) {
+        return new ThermalRadiationClosure( settings );
     }
     else if( closureType == ClosureType::C_M1_1D ) {
         return new M1IPMClosure( settings );

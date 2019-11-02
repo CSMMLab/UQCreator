@@ -136,7 +136,7 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
                        //_a * pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) *
                        //  exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
     double F              = 0;
-    double internalEnergy = 1e-3 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy
+    double internalEnergy = 1e-7 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy - use 1e-3 without IPM
 
     y[0] = E / _a / pow( _TRef, 4 );
     y[1] = F / _a / pow( _TRef, 4 );

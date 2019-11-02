@@ -35,6 +35,7 @@ enum ClosureType {
     C_L2FILTER,
     C_LASSOFILTER,
     C_RADHYDRO,
+    C_THERMALRAD_1D,
     C_M1_1D
 };
 enum LimiterType { L_MINMOD, L_NONE };
