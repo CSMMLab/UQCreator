@@ -1,7 +1,7 @@
-\section{One-shot IPM}
+\section{One-Shot IPM}
 \label{sec:OneShotIPM}
 
-In the following \comja{section we only consider steady...}, we look at steady state problems, i.e. we have
+In the following section we only consider steady state problems, i.e. we have
 \begin{align}\label{eq:hyperbolicProblemSteady}
 \nabla\cdot\bm{f}(\bm{u}(\bm{x},\bm{\xi})) = \bm{0} \enskip \text{ in } D
 \end{align}
@@ -10,13 +10,13 @@ Similar to the unsteady case \eqref{eq:hyperbolicProblem}, we can again derive a
 \begin{align}\label{eq:MomentSystemSteady}
 \nabla\cdot\langle\bm{f}(\bm{u}(\bm{x},\bm{\xi}))\bm{\varphi}^T\rangle^T = \bm{0} \enskip \text{ in } D
 \end{align}
-which is again needed for the construction of intrusive methods. By \comja{introducing} adding a pseudo-time and using the IPM closure, we obtain the same system as in \eqref{eq:SGMomentSystem}, i.e. Algorithm \ref{alg:IPM} can be used to iterate to a steady state solution. Note that now, the time iteration is not performed for a fixed number of time steps $N_t$, but until the condition
+which is again needed for the construction of intrusive methods. By introducing a pseudo-time and using the IPM closure, we obtain the same system as in \eqref{eq:SGMomentSystem}, i.e. Algorithm \ref{alg:IPM} can be used to iterate to a steady state solution. Note that now, the time iteration is not performed for a fixed number of time steps $N_t$, but until the condition
 \begin{align}\label{eq:residualSteady}
 \sum_{j = 1}^{N_x} \Delta x_j \Vert \bm{\hat{u}}_j^n - \bm{\hat{u}}_j^{n-1} \Vert \leq \varepsilon
 \end{align}
 is fulfilled. Since one is generally interested in low order moments such as the expectation value, this residual can be modified by only accounting for the zero order moments.
 
-In this section we aim at breaking up the inner loop in the IPM \comja{Algorithm} algorithm \ref{alg:IPM}, i.e. to just perform one iteration of the dual problem in each time step. Consequently, the IPM reconstruction given by \eqref{eq:primalProblem} is not done exactly, meaning that the reconstructed solution does not minimize the entropy while not fulfilling the moment constraint. However, the fact that the moment vectors are not yet converged to the steady solution seems to permit such an inexact reconstruction. Hence, we aim at iterating the moments to steady state and the dual variables to the exact solution of the IPM optimization problem \eqref{eq:primalProblem} simultaneously.
+In this section we aim at breaking up the inner loop in the IPM Algorithm \ref{alg:IPM}, i.e. to just perform one iteration of the dual problem in each time step. Consequently, the IPM reconstruction given by \eqref{eq:primalProblem} is not done exactly, meaning that the reconstructed solution does not minimize the entropy while not fulfilling the moment constraint. However, the fact that the moment vectors are not yet converged to the steady solution seems to permit such an inexact reconstruction. Hence, we aim at iterating the moments to steady state and the dual variables to the exact solution of the IPM optimization problem \eqref{eq:primalProblem} simultaneously.
 By successively performing one update of the moment iteration and one update of the dual iteration, we obtain 
 \begin{subequations}\label{eq:oneshotIPM}
 \begin{align}
@@ -24,7 +24,7 @@ By successively performing one update of the moment iteration and one update of 
 &\bm{u}_j^{n+1} =  \bm{c}\left(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_{j}^{n+1},\bm{\lambda}_{j+1}^{n+1}\right)\label{eq:oneshotIPMmoment}.
 \end{align}
 \end{subequations}
-This gives algorithm \comja{yields Algotihm \ref{alg:osIPM}.}
+This yields Algotihm \ref{alg:osIPM}.
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
 \For{$j=0$ to $N_x+1$}
@@ -38,10 +38,10 @@ This gives algorithm \comja{yields Algotihm \ref{alg:osIPM}.}
 \State $n \leftarrow n+1$
 \EndWhile
 \end{algorithmic}
-\caption{One-shot IPM implementation}
+\caption{One-Shot IPM implementation}
 \label{alg:osIPM}
 \end{algorithm}
-We call this method One-Shot IPM, since it is inspired by One-shot \comja{Shot} optimization, see for example \cite{hazra2005aerodynamic}, which uses only a single iteration of the primal and dual step in order to update the design variables. Note that the dual variables from the One-Shot iteration are written without a hat to indicate that they are not the exact solution of the dual problem.
+We call this method One-Shot IPM, since it is inspired by One-Shot optimization, see for example \cite{hazra2005aerodynamic}, which uses only a single iteration of the primal and dual step in order to update the design variables. Note that the dual variables from the One-Shot iteration are written without a hat to indicate that they are not the exact solution of the dual problem.
 
 In the following, we will show that this iteration converges, if the chosen initial condition is sufficiently close to the steady state solution. For this we take an approach commonly chosen to prove local convergence properties of Newton's method: In Theorem \ref{th:Contractive}, we show that the iteration function is contractive at its fixed point and conclude in Theorem \ref{th:localConvergence} that this yields local convergence:
 
@@ -137,7 +137,6 @@ By Theorem \ref{th:Contractive}, the One-Shot scheme is contractive at its fixed
 \end{align*}
 Since the roots of a polynomial vary continuously with its coefficients, the eigenvalues of $\bm{J}$ are continuous w.r.t $(\bm{\lambda},\bm{\hat u})$. Hence there exists an open ball with radius $\delta$ around the fixed point in which the eigenvalues remain in the interval $(-1,1)$.
 \end{proof}
-\comja{ca-IPM ist raus - remark streichen?}
-\begin{remark}
-Since the preconditioning step of the Collocation-accelerated IPM method generates initial conditions which are close to the steady state solution, using One-Shot IPM instead of classical IPM is well suited. However, our numerical calculations show that one-shot IPM converges even if the solution is far away from its steady state. 
-\end{remark}
+%\begin{remark}
+%Since the preconditioning step of the Collocation-accelerated IPM method generates initial conditions which are close to the steady state solution, using One-Shot IPM instead of classical IPM is well suited. However, our numerical calculations show that One-Shot IPM converges even if the solution is far away from its steady state. 
+%\end{remark}
