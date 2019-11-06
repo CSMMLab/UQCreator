@@ -3,6 +3,7 @@
 #include "euler2dfpfilter.h"
 #include "eulerclosure.h"
 #include "eulerclosure2d.h"
+#include "hyperbolicitylimiter.h"
 #include "l2filter.h"
 #include "lassofilter.h"
 #include "logsin.h"
@@ -153,6 +154,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_M1_1D ) {
         return new M1IPMClosure( settings );
+    }
+    else if( closureType == ClosureType::C_HYPLIM ) {
+        return new HyperbolicityLimiter( settings );
     }
     else {
         log->error( "[closure]: Invalid closure type" );

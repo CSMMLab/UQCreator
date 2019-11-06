@@ -231,9 +231,12 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( closureTypeString->compare( "M1" ) == 0 ) {
                 _closureType = ClosureType::C_M1_1D;
             }
+            else if( closureTypeString->compare( "HyperbolicityLimiter" ) == 0 ) {
+                _closureType = ClosureType::C_HYPLIM;
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogSin, "
-                            "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter,RadiationHydrodynamics,M1" );
+                            "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter,RadiationHydrodynamics,M1,HyperbolicityLimiter" );
                 validConfig = false;
             }
         }

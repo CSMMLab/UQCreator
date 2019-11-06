@@ -35,7 +35,8 @@ enum ClosureType {
     C_L2FILTER,
     C_LASSOFILTER,
     C_RADHYDRO,
-    C_M1_1D
+    C_M1_1D,
+    C_HYPLIM
 };
 enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };
