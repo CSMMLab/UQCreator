@@ -6,7 +6,7 @@ outputDir = "../results"
 dimension = 1
 numberOfCells = 1000
 a = 0
-b = 1
+b = 0.6
 outputFile = "euler_shock"
 
 [problem]
@@ -19,7 +19,7 @@ tEnd = 0.14
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter
-closure = "HyperbolicityLimiter"
+closure = "Euler"
 moments = [["totalDegree"],[9]]
 quadPoints = [["tensorizedGrid"],[15]]
 #refinementThresholds = [0.0001, 0.00001]

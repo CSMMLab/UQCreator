@@ -3,7 +3,8 @@
 
 HyperbolicityLimiter::HyperbolicityLimiter( Settings* settings )
     : Closure( settings ), _gamma( _settings->GetGamma() ), _lambda( _settings->GetFilterStrength() ) {
-    _alpha            = 1.0;
+    _alpha = 1.0;
+    if( _lambda < 0 ) _lambda = 0.0;
     unsigned nMoments = _settings->GetNMoments();
     _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
@@ -114,15 +115,15 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
     }
 
     // save zero order moments (realizable solution)
-    double rho1 = u( 0, 0 );
-    double m1   = u( 1, 0 );
-    double E1   = u( 2, 0 );
+    double rho1 = uF( 0, 0 );
+    double m1   = uF( 1, 0 );
+    double E1   = uF( 2, 0 );
 
     // save zero order moment as full moment vector for output
     Matrix u2( _nStates, nTotal );
-    u2( 0, 0 ) = u( 0, 0 );
-    u2( 1, 0 ) = u( 1, 0 );
-    u2( 2, 0 ) = u( 2, 0 );
+    u2( 0, 0 ) = uF( 0, 0 );
+    u2( 1, 0 ) = uF( 1, 0 );
+    u2( 2, 0 ) = uF( 2, 0 );
 
     double t1Max = -1000;
 
@@ -172,5 +173,5 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
         if( t2MaxTmp > t2Max ) t2Max = t2MaxTmp;
     }
 
-    lambda = t2Max * u2 + ( 1 - t2Max ) * u;
+    lambda = t2Max * u2 + ( 1 - t2Max ) * uF;
 }
