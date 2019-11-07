@@ -28,6 +28,7 @@ class MomentSolver
     unsigned _nStates;                         // number of states of the original system
     unsigned _nQuadPoints;                     // number of moments in one uncertain dimension
     unsigned _nQTotal;                         // total number of quad points
+    VectorU _nQTotalForRef;                    // total number of quad points for each refinement level
     unsigned _nTotal;                          // total number of moments
     std::shared_ptr<spdlog::logger> _log;      // log file writer
     std::vector<Vector> _referenceSolution;    // reference solution stores expected value and variance for all states
@@ -121,6 +122,7 @@ class MomentSolver
     void ExportRefinementIndicator( const VectorU& refinementLevel, const MatVec& u, unsigned index ) const;
     double ComputeRefIndicator( const VectorU& refinementLevel, const Matrix& u, unsigned refLevel ) const;
     void PerformInitialStep( const VectorU& refinementLevel, MatVec& u );
+    void DetermineGradients( MatVec& duQx, MatVec& duQy, const MatVec& uQ, const VectorU& refLevel ) const;
 
   public:
     /**

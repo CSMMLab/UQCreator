@@ -9,8 +9,9 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
 
-    _nTotal       = _settings->GetNTotal();
-    _nTotalForRef = _settings->GetNTotalRefinementLevel();
+    _nTotal        = _settings->GetNTotal();
+    _nTotalForRef  = _settings->GetNTotalRefinementLevel();
+    _nQTotalForRef = _settings->GetNQTotalForRef();
 
     _cellIndexPE = _settings->GetCellIndexPE();
 
@@ -58,6 +59,9 @@ void MomentSolver::Solve() {
     MatVec u = DetermineMoments( prevSettings->GetNTotal() );
     SetDuals( prevSettings, prevClosure, u );
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
+    // slopes for slope limiter
+    MatVec duQx( _nCells, Matrix( _nStates, _settings->GetNqPE(), 0.0 ) );
+    MatVec duQy( _nCells, Matrix( _nStates, _settings->GetNqPE(), 0.0 ) );
 
     std::vector<int> PEforCell = _settings->GetPEforCell();
 
@@ -151,6 +155,8 @@ void MomentSolver::Solve() {
             // recompute moments with inexact dual variables
             u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
+
+        // compute derivative on quadrature points of certain PE
 
         // determine time step size
         double dtMinOnPE = 1e10;
@@ -473,6 +479,28 @@ MatVec MomentSolver::DetermineMoments( unsigned nTotal ) const {
         u = this->SetupIC();
     }
     return u;
+}
+
+// TODO: refLevel is stored for all x <-> MPI ?
+void MomentSolver::DetermineGradients( MatVec& duQx, MatVec& duQy, const MatVec& uQ, const VectorU& refLevel ) const {
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        duQx[j].reset();
+        duQy[j].reset();
+        auto cell        = _mesh->GetCell( j );
+        auto neighborIDs = cell->GetNeighborIDs();
+        // compute derivative for every quadrature point on PE
+        for( unsigned s = 0; s < _nStates; ++s ) {
+            for( unsigned k = 0; k < _nQTotalForRef[refLevel[j]]; ++k ) {
+                // use all neighboring cells for stencil
+                for( unsigned l = 0; l < neighborIDs.size(); ++l ) {
+                    duQx[j]( s, k ) =
+                        duQx[j]( s, k ) + 0.5 * ( uQ[j]( s, k ) + uQ[neighborIDs[l]]( s, k ) ) * cell->GetNormal( l )[0] / cell->GetArea();
+                    duQy[j]( s, k ) =
+                        duQy[j]( s, k ) + 0.5 * ( uQ[j]( s, k ) + uQ[neighborIDs[l]]( s, k ) ) * cell->GetNormal( l )[1] / cell->GetArea();
+                }
+            }
+        }
+    }
 }
 
 Settings* MomentSolver::DeterminePreviousSettings() const {
