@@ -123,6 +123,9 @@ class MomentSolver
     double ComputeRefIndicator( const VectorU& refinementLevel, const Matrix& u, unsigned refLevel ) const;
     void PerformInitialStep( const VectorU& refinementLevel, MatVec& u );
     void DetermineGradients( MatVec& duQx, MatVec& duQy, const MatVec& uQ, const VectorU& refLevel ) const;
+    void DetermineGradientsScalarField( Matrix& dux, Matrix& duy, const Matrix& u ) const;
+    void WriteGradientsScalarField( const Matrix& u ) const;
+    void Write2ndDerMeanAndVar( const Matrix& meanAndVar ) const;
 
   public:
     /**

@@ -264,6 +264,9 @@ void MomentSolver::Solve() {
 
         // export error plot
         _mesh->Export( meanAndVarErrors, "_errors" );
+
+        // export 2nd derivative error
+        Write2ndDerMeanAndVar( meanAndVar );
     }
 
     // export mean and variance
@@ -272,6 +275,8 @@ void MomentSolver::Solve() {
     else {
         _mesh->Export( meanAndVar, "" );
     }
+
+    WriteGradientsScalarField( meanAndVar );
 
     // export solution fields
     this->Export( uNew, _lambda );
@@ -500,6 +505,84 @@ void MomentSolver::DetermineGradients( MatVec& duQx, MatVec& duQy, const MatVec&
                 }
             }
         }
+    }
+}
+
+void MomentSolver::DetermineGradientsScalarField( Matrix& dux, Matrix& duy, const Matrix& u ) const {
+    dux.reset();
+    duy.reset();
+    unsigned nStates  = u.rows();
+    unsigned numCells = _mesh->GetNumCells();
+
+    for( unsigned s = 0; s < nStates; ++s ) {
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            auto cell = _mesh->GetCell( j );
+            if( cell->IsBoundaryCell() ) continue;
+            auto neighborIDs = cell->GetNeighborIDs();
+            // use all neighboring cells for stencil
+            for( unsigned l = 0; l < neighborIDs.size(); ++l ) {
+                dux( s, j ) = dux( s, j ) + 0.5 * ( u( s, j ) + u( s, neighborIDs[l] ) ) * cell->GetNormal( l )[0] / cell->GetArea();
+                duy( s, j ) = duy( s, j ) + 0.5 * ( u( s, j ) + u( s, neighborIDs[l] ) ) * cell->GetNormal( l )[1] / cell->GetArea();
+            }
+        }
+    }
+}
+
+void MomentSolver::WriteGradientsScalarField( const Matrix& u ) const {
+    unsigned nStates = u.rows();
+    Matrix dux( nStates, _nCells, 0.0 );
+    Matrix duy( nStates, _nCells, 0.0 );
+    DetermineGradientsScalarField( dux, duy, u );
+    _mesh->Export( dux, "_xDer" );
+    _mesh->Export( duy, "_yDer" );
+}
+
+void MomentSolver::Write2ndDerMeanAndVar( const Matrix& meanAndVar ) const {
+    Matrix MeanVar( 2 * _nStates, _nCells );
+    Matrix MeanVarExact( 2 * _nStates, _nCells );
+    std::cout << "meanAndVar rows " << meanAndVar.rows() << std::endl;
+    for( unsigned s = 0; s < _nStates; ++s ) {
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            MeanVar( s, j )                 = meanAndVar( 0 * _nStates + s, j );
+            MeanVar( _nStates + s, j )      = meanAndVar( 1 * _nStates + s, j );
+            MeanVarExact( s, j )            = _referenceSolution[j][s];
+            MeanVarExact( _nStates + s, j ) = _referenceSolution[j][s + _nStates];
+        }
+    }
+
+    Matrix dux( 2 * _nStates, _nCells, 0.0 );
+    Matrix duy( 2 * _nStates, _nCells, 0.0 );
+    DetermineGradientsScalarField( dux, duy, MeanVarExact - MeanVar );
+    _mesh->Export( dux, "_ErrorXDer" );
+    _mesh->Export( duy, "_ErrorYDer" );
+    Matrix duxx( 2 * _nStates, _nCells, 0.0 );
+    Matrix duyy( 2 * _nStates, _nCells, 0.0 );
+    DetermineGradientsScalarField( duxx, duyy, dux );
+    _mesh->Export( duxx, "_ErrorXXDer" );
+    _mesh->Export( duyy, "_ErrorXYDer" );
+    DetermineGradientsScalarField( duxx, duyy, duy );
+    _mesh->Export( duxx, "_ErrorYXDer" );
+    _mesh->Export( duyy, "_ErrorYYDer" );
+
+    Vector l1Error( 2 * _nStates, 0.0 );
+    Vector l2Error( 2 * _nStates, 0.0 );
+    for( unsigned s = 0; s < 2 * _nStates; ++s ) {
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            l1Error[s] += ( std::fabs( duxx( s, j ) ) + std::fabs( duyy( s, j ) ) ) * _mesh->GetArea( j );
+            l2Error[s] += ( std::pow( duxx( s, j ), 2 ) + std::pow( duyy( s, j ), 2 ) ) * _mesh->GetArea( j );
+        }
+        l2Error[s] = sqrt( l2Error[s] );
+    }
+
+    _log->info( "\nExpectation 2nd Der error w.r.t reference solution:" );
+    _log->info( "State   L1-error      L2-error" );
+    for( unsigned i = 0; i < _nStates; ++i ) {
+        _log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
+    }
+    _log->info( "\nVariance 2nd Der error w.r.t reference solution:" );
+    _log->info( "State   L1-error      L2-error" );
+    for( unsigned i = _nStates; i < 2 * _nStates; ++i ) {
+        _log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
     }
 }
 
