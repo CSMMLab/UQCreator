@@ -6,7 +6,7 @@ Omitting initial conditions and assuming a one-dimensional spatial domain, we ca
 \begin{align*}
 \partial_t \bm{\hat u}+\partial_x \bm{F}(\bm{\hat u}) = \bm{0}
 \end{align*}
-with the flux $\bm{F}:\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$, $\bm{F}(\bm{\hat u})=\langle \bm f(\mathcal{U}(\bm{\hat u}))\bm{\varphi}^T \rangle^T$. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. We choose the discrete unknowns which represent the solution to be the spatial averages over each cell at time $t_n$, given by
+with the flux $\bm{F}:\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$, $\bm{F}(\bm{\hat u})=\langle \bm f(\mathcal{U}(\bm{\hat u}))\bm{\varphi}^T \rangle^T$. Note that the inner transpose represent a dyadic product, i.e. the outer transpose is applied to a matrix. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. We choose the discrete unknowns which represent the solution to be the spatial averages over each cell at time $t_n$, given by
 \begin{align*}
 \bm{\hat u}_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}\bm{\hat u}_i(t_n,x) dx.
 \end{align*}
