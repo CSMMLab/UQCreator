@@ -119,19 +119,22 @@ Closure* Closure::Create( Settings* settings ) {
         return new StochasticGalerkin( settings );
     }
     else if( closureType == ClosureType::C_EULER_1D ) {
-        if( settings->HasRegularization() ) {
+        if( !settings->HasRegularization() && settings->GetFilterStrength() > 0 ) {
+            return new Euler2DFPFilter( settings );
+        }
+        else if( settings->HasRegularization() ) {
             return new RegularizedEuler1D( settings );
         }
         else {
-            return new EulerClosure( settings );
+            return new EulerClosure2D( settings );
         }
     }
     else if( closureType == ClosureType::C_EULER_2D ) {
-        if( settings->HasRegularization() && settings->GetFilterStrength() > 0 ) {
-            return new RegularizedEuler2D( settings );
-        }
-        else if( !settings->HasRegularization() && settings->GetFilterStrength() > 0 ) {
+        if( !settings->HasRegularization() && settings->GetFilterStrength() > 0 ) {
             return new Euler2DFPFilter( settings );
+        }
+        else if( settings->HasRegularization() ) {
+            return new RegularizedEuler2D( settings );
         }
         else {
             return new EulerClosure2D( settings );

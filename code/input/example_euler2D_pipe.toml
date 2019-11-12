@@ -1,7 +1,7 @@
 [general]
 problem = "Euler2D"
-outputDir = "../results"
-#referenceSolution = "../results/nozzle/nozzleRefDummy.vtk"
+outputDir = "../results/nozzle"
+referenceSolution = "../results/nozzle/nozzleRefDummy.vtk"
 #writeFrequency = 10
 
 [mesh]
@@ -21,7 +21,7 @@ tEnd = 4.0 #0.0035
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
-closure = "StochasticGalerkin"
+closure = "Euler2D"
 moments = [["totalDegree"],[1]]
 quadPoints = [["tensorizedGrid"],[5]]
 #filterStrength = 0.00001
