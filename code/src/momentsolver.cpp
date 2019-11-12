@@ -266,7 +266,7 @@ void MomentSolver::Solve() {
         _mesh->Export( meanAndVarErrors, "_errors" );
 
         // export 2nd derivative error
-        Write2ndDerMeanAndVar( meanAndVar );
+        if( _settings->HasReferenceFile() ) Write2ndDerMeanAndVar( meanAndVar );
     }
 
     // export mean and variance
@@ -276,7 +276,7 @@ void MomentSolver::Solve() {
         _mesh->Export( meanAndVar, "" );
     }
 
-    WriteGradientsScalarField( meanAndVar );
+    // WriteGradientsScalarField( meanAndVar );
 
     // export solution fields
     this->Export( uNew, _lambda );
