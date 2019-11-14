@@ -12,6 +12,7 @@ class ThermalRadiativeGeneral : public Problem
     double _TRef;
     double _sigma;
     double _alpha;
+    bool _suOlson;
     std::vector<Vector> _xiQuad;
     std::vector<double> _variances;
     double ScaledInternalEnergy(double TTilde )const;

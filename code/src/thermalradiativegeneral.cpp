@@ -6,6 +6,7 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
     _settings->SetSource( true );
+    _suOlson = false;
 
     // physical constants
     _c             = 299792458.0 * 100.0;    // speed of light in [cm/s]
@@ -17,6 +18,8 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _a             = 4.0 * sigmaSB / _c;
     //_c             = 1.0;
     //_a             = 1.0;
+
+    if( !_suOlson ) _TRef = pow( _a, -1.0 / 4.0 );
 
     _epsilon = 4.0 * _a / _alpha;
 
@@ -72,7 +75,7 @@ Matrix ThermalRadiativeGeneral::Source( const Matrix& uQ, const Vector& x, doubl
     // std::cout << "level " << level << ", Nq = " << Nq << std::endl;
 
     for( unsigned k = 0; k < Nq; ++k ) {
-        if( t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[k][0] ) {
+        if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[k][0] ) {
             S           = _a;
             varianceVal = _variances[0];
         }
@@ -131,12 +134,33 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
     auto sigma     = _settings->GetSigma();
     double sigmaXi = sigma[0] * xi[0];
+    double E, F, internalEnergy;
 
-    double E = 0.0;    // std::fmax( 1e-4 * _a,
-                       //_a * pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) *
-                       //  exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
-    double F              = 0;
-    double internalEnergy = 1e-7 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy - use 1e-3 without IPM
+    if( _suOlson ) {
+        E = 0.0;    // std::fmax( 1e-4 * _a,
+                    //_a * pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi + 2.0, 2 ) ) *
+                    //  exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi + 2.0, 2 ) ) );
+        F              = 0;
+        internalEnergy = 1e-7 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy - use 1e-3 without IPM
+    }
+    else {
+        double T;
+        double alpha = 0.5;
+        double beta  = 0.25;
+        double tau0  = 0.5;
+        if( x[0] < 0.0 )
+            T = alpha * _TRef;
+        else if( x[0] < tau0 )
+            T = _TRef;
+        else
+            T = beta * _TRef;
+        F              = 0.0;
+        internalEnergy = 1e-7 * _a * pow( T, 4 );
+        E              = _alpha / 4.0 * pow( T, 4 );
+    }
+
+    // std::cout << 1.0 / _a / pow( _TRef, 4 ) << std::endl;
+    // exit( EXIT_FAILURE );
 
     y[0] = E / _a / pow( _TRef, 4 );
     y[1] = F / _a / pow( _TRef, 4 );
