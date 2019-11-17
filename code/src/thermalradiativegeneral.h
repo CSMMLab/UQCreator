@@ -13,10 +13,11 @@ class ThermalRadiativeGeneral : public Problem
     double _sigma;
     double _alpha;
     bool _suOlson;
+    Matrix _AbsA;
     std::vector<Vector> _xiQuad;
     std::vector<double> _variances;
-    double ScaledInternalEnergy(double TTilde )const;
-    double ScaledTemperature(double eTilde ) const;
+    double ScaledInternalEnergy( double TTilde ) const;
+    double ScaledTemperature( double eTilde ) const;
 
   public:
     ThermalRadiativeGeneral( Settings* settings );
@@ -31,4 +32,4 @@ class ThermalRadiativeGeneral : public Problem
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
 };
 
-#endif // THERMALRADIATIVEGENERAL_H
+#endif    // THERMALRADIATIVEGENERAL_H

@@ -105,7 +105,7 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             double indicator;
-            if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D )
+            if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D || _settings->GetProblemType() == P_THERMALRAD_1D )
                 indicator = 0.0;
             else
                 indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );

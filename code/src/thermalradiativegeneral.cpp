@@ -5,7 +5,7 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _nStates = 3;
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
-    _settings->SetSource( true );
+    _settings->SetSource( false );
     _suOlson = false;
 
     // physical constants
@@ -27,8 +27,26 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     Vector xiEta( _settings->GetNDimXi() );
     _variances = _settings->GetSigma();
 
+    // get quadrature grid
     auto grid = QuadratureGrid::Create( _settings, _settings->GetNQTotal() );
     _xiQuad   = grid->GetNodes();
+
+    // compute Roe flux components
+    Matrix P( 2, 2, 1.0 );
+    P( 0, 0 ) = -sqrt( 3 ) / _c;
+    P( 0, 1 ) = sqrt( 3 ) / _c;
+    Matrix PInv( 2, 2, 0.5 );
+    PInv( 0, 0 ) = -_c / sqrt( 3 ) / 2.0;
+    PInv( 1, 0 ) = _c / sqrt( 3 ) / 2.0;
+    Matrix LambdaAbs( 2, 2, 0.0 );
+    LambdaAbs( 0, 0 ) = fabs( -1.0 / sqrt( 3 ) / _epsilon );
+    LambdaAbs( 1, 1 ) = fabs( 1.0 / sqrt( 3 ) / _epsilon );
+    Matrix AbsAPart   = PInv * LambdaAbs * P;
+    _AbsA             = Matrix( _nStates, _nStates, 0.0 );
+    _AbsA( 0, 0 )     = AbsAPart( 0, 0 );
+    _AbsA( 0, 1 )     = AbsAPart( 0, 1 );
+    _AbsA( 1, 0 )     = AbsAPart( 1, 0 );
+    _AbsA( 1, 1 )     = AbsAPart( 1, 1 );
 
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -42,7 +60,8 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
 ThermalRadiativeGeneral::~ThermalRadiativeGeneral() {}
 
 Vector ThermalRadiativeGeneral::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
+    // Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
+    Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * _AbsA * ( v - u );
     g[2]     = 0.0;    // set temperature flux to zero
     return g;
 }
@@ -145,9 +164,11 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
     }
     else {
         double T;
-        double alpha = 0.5;
-        double beta  = 0.25;
-        double tau0  = 0.5;
+        double a     = 0.271;
+        double b     = 0.1;
+        double alpha = pow( a, 1.0 / 4.0 );
+        double beta  = pow( b, 1.0 / 4.0 );
+        double tau0  = 1.5;
         if( x[0] < 0.0 )
             T = alpha * _TRef;
         else if( x[0] < tau0 )
@@ -155,8 +176,8 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
         else
             T = beta * _TRef;
         F              = 0.0;
-        internalEnergy = 1e-7 * _a * pow( T, 4 );
-        E              = _alpha / 4.0 * pow( T, 4 );
+        internalEnergy = ScaledInternalEnergy( T / _TRef ) * ( _a * pow( _TRef, 4 ) );    // 1e-7 * _a * pow( T, 4 );
+        E              = std::pow( T / _TRef, 4 );
     }
 
     // std::cout << 1.0 / _a / pow( _TRef, 4 ) << std::endl;

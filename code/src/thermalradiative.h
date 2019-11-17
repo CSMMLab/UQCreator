@@ -12,6 +12,8 @@ class ThermalRadiative : public Problem
     double _TRef;
     double _sigma;
     double _alpha;
+    bool _suOlson;
+    Matrix _AbsA;
     std::vector<Vector> _xiQuad;
     std::vector<double> _variances;
 
