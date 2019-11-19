@@ -8,11 +8,13 @@ class ThermalRadiativeGeneral : public Problem
   private:
     double _epsilon;
     double _c;
+    double _cV;
     double _a;
     double _TRef;
     double _sigma;
     double _alpha;
     bool _suOlson;
+    unsigned _constitutiveLaw;
     Matrix _AbsA;
     std::vector<Vector> _xiQuad;
     std::vector<double> _variances;

@@ -5,21 +5,21 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _nStates = 3;
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
-    _settings->SetSource( false );
-    _suOlson = false;
+    _settings->SetSource( true );
+    _suOlson         = false;
+    _constitutiveLaw = 2;    // 1 is Su Olson, 2 is constant
 
     // physical constants
     _c             = 299792458.0 * 100.0;    // speed of light in [cm/s]
     _a             = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
     _TRef          = 1.0;                    // reference temperature
     _sigma         = 1.0;                    // opacity
-    _alpha         = 4.0 * _a;               // heat capacity parameter c_v = alpha T^3
-    double sigmaSB = 5.6704 * 1e-5;          // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
+    _alpha         = 4.0 * _a;
+    _cV            = 1e7;              // 0.718 * 1e7 heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
+    double sigmaSB = 5.6704 * 1e-5;    // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
-    //_c             = 1.0;
-    //_a             = 1.0;
 
-    if( !_suOlson ) _TRef = pow( _a, -1.0 / 4.0 );
+    // if( !_suOlson ) _TRef = pow( _alpha / _a, 1.0 / 3.0 );
 
     _epsilon = 4.0 * _a / _alpha;
 
@@ -47,6 +47,13 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _AbsA( 0, 1 )     = AbsAPart( 0, 1 );
     _AbsA( 1, 0 )     = AbsAPart( 1, 0 );
     _AbsA( 1, 1 )     = AbsAPart( 1, 1 );
+
+    // DEBUG
+    double e = ScaledInternalEnergy( 1.0 );
+    std::cout << e << std::endl;
+    double T = ScaledTemperature( e );
+    std::cout << T << std::endl;
+    // exit( EXIT_FAILURE );
 
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -118,7 +125,7 @@ Matrix ThermalRadiativeGeneral::Source( const Matrix& uQ, const Vector& x, doubl
 
         y( 0, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
         y( 1, k ) = -F / _epsilon;
-        y( 2, k ) = E - std::pow( TTilde, 4 );
+        y( 2, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
     }
 
     return y;
@@ -126,13 +133,27 @@ Matrix ThermalRadiativeGeneral::Source( const Matrix& uQ, const Vector& x, doubl
 
 double ThermalRadiativeGeneral::ScaledInternalEnergy( double TTilde ) const {
     double T = TTilde * _TRef;
-    double e = _alpha / 4.0 * pow( T, 4 );
+    // std::cout << "T = " << T << std::endl;
+    double e;
+    if( _constitutiveLaw == 1 ) {
+        e = _alpha / 4.0 * pow( T, 4 );
+    }
+    else {
+        e = _cV * T;
+    }
+    // std::cout << "cV * T = " << e << std::endl;
     return e / ( _a * pow( _TRef, 4 ) );
 }
 
 double ThermalRadiativeGeneral::ScaledTemperature( double eTilde ) const {
     double e = eTilde * _a * pow( _TRef, 4 );
-    double T = pow( 4.0 * e / _alpha, 1.0 / 4.0 );
+    double T;
+    if( _constitutiveLaw == 1 ) {
+        T = pow( 4.0 * e / _alpha, 1.0 / 4.0 );
+    }
+    else {
+        T = e / _cV;
+    }
     return T / _TRef;
 }
 
@@ -154,6 +175,7 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
     auto sigma     = _settings->GetSigma();
     double sigmaXi = sigma[0] * xi[0];
     double E, F, internalEnergy;
+    double T = 0;
 
     if( _suOlson ) {
         E = 0.0;    // std::fmax( 1e-4 * _a,
@@ -163,18 +185,17 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
         internalEnergy = 1e-7 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy - use 1e-3 without IPM
     }
     else {
-        double T;
-        double a     = 0.271;
+        double a     = 0.275;
         double b     = 0.1;
         double alpha = pow( a, 1.0 / 4.0 );
         double beta  = pow( b, 1.0 / 4.0 );
-        double tau0  = 1.5;
+        double tau0  = 0.1;
         if( x[0] < 0.0 )
-            T = alpha * _TRef;
+            T = alpha;
         else if( x[0] < tau0 )
-            T = _TRef;
+            T = 1;
         else
-            T = beta * _TRef;
+            T = beta;
         F              = 0.0;
         internalEnergy = ScaledInternalEnergy( T / _TRef ) * ( _a * pow( _TRef, 4 ) );    // 1e-7 * _a * pow( T, 4 );
         E              = std::pow( T / _TRef, 4 );
@@ -184,8 +205,14 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
     // exit( EXIT_FAILURE );
 
     y[0] = E / _a / pow( _TRef, 4 );
+    if( !_suOlson ) y[0] = std::pow( T / _TRef, 4 );
     y[1] = F / _a / pow( _TRef, 4 );
     y[2] = internalEnergy / ( _a * pow( _TRef, 4 ) );
+
+    double TTilde = ScaledTemperature( y[2] );
+    std::cout << "diff " << y[0] - std::pow( TTilde, 4 ) << std::endl;
+    // std::cout << y[0] << " " << y[1] << " " << y[2] << std::endl;
+    // exit( EXIT_FAILURE );
     return y;
 }
 
