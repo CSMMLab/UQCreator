@@ -48,13 +48,6 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _AbsA( 1, 0 )     = AbsAPart( 1, 0 );
     _AbsA( 1, 1 )     = AbsAPart( 1, 1 );
 
-    // DEBUG
-    double e = ScaledInternalEnergy( 1.0 );
-    std::cout << e << std::endl;
-    double T = ScaledTemperature( e );
-    std::cout << T << std::endl;
-    // exit( EXIT_FAILURE );
-
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
         auto problem = file->get_table( "problem" );
@@ -201,18 +194,11 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
         E              = std::pow( T / _TRef, 4 );
     }
 
-    // std::cout << 1.0 / _a / pow( _TRef, 4 ) << std::endl;
-    // exit( EXIT_FAILURE );
-
     y[0] = E / _a / pow( _TRef, 4 );
     if( !_suOlson ) y[0] = std::pow( T / _TRef, 4 );
     y[1] = F / _a / pow( _TRef, 4 );
     y[2] = internalEnergy / ( _a * pow( _TRef, 4 ) );
 
-    double TTilde = ScaledTemperature( y[2] );
-    std::cout << "diff " << y[0] - std::pow( TTilde, 4 ) << std::endl;
-    // std::cout << y[0] << " " << y[1] << " " << y[2] << std::endl;
-    // exit( EXIT_FAILURE );
     return y;
 }
 
