@@ -163,7 +163,10 @@ void MomentSolver::Solve() {
         t += dt;
         ++timeIndex;
 
+        // perform time update flux
         _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
+
+        // perform time update source
         if( _settings->HasSource() ) {
             this->Source( uNew, uQ, dt, t, refinementLevel );
         }

@@ -14,12 +14,12 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _a             = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
     _TRef          = 1.0;                    // reference temperature
     _sigma         = 1.0;                    // opacity
-    _alpha         = 4.0 * _a;
-    _cV            = 1e7;              // 0.718 * 1e7 heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
-    double sigmaSB = 5.6704 * 1e-5;    // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
+    _alpha         = 4.0 * _a;               // closure relation
+    _cV            = 0.718 * 1e7;            // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
+    double sigmaSB = 5.6704 * 1e-5;          // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
 
-    // if( !_suOlson ) _TRef = pow( _alpha / _a, 1.0 / 3.0 );
+    if( !_suOlson ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
 
     _epsilon = 4.0 * _a / _alpha;
 
@@ -165,8 +165,7 @@ double ThermalRadiativeGeneral::ComputeDt( const Matrix& u, double dx, unsigned 
 
 Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
-    auto sigma     = _settings->GetSigma();
-    double sigmaXi = sigma[0] * xi[0];
+    auto sigma = _settings->GetSigma();
     double E, F, internalEnergy;
     double T = 0;
 
@@ -178,11 +177,18 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
         internalEnergy = 1e-7 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy - use 1e-3 without IPM
     }
     else {
-        double a     = 0.275;
-        double b     = 0.1;
+        double a = 0.275;
+        double b = 0.1;
+        if( xi.size() > 1 ) {
+            a = a + sigma[1] * xi[1];
+        }
+        if( xi.size() > 2 ) {
+            b = b + sigma[2] * xi[2];
+        }
         double alpha = pow( a, 1.0 / 4.0 );
         double beta  = pow( b, 1.0 / 4.0 );
-        double tau0  = 0.1;
+        double tau0  = 0.1 + sigma[0] * xi[0];
+
         if( x[0] < 0.0 )
             T = alpha;
         else if( x[0] < tau0 )
@@ -198,7 +204,7 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
     if( !_suOlson ) y[0] = std::pow( T / _TRef, 4 );
     y[1] = F / _a / pow( _TRef, 4 );
     y[2] = internalEnergy / ( _a * pow( _TRef, 4 ) );
-
+    std::cout << y[2] << std::endl;
     return y;
 }
 
