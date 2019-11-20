@@ -60,7 +60,7 @@
 %\numberwithin{theorem}{section}
 
 % Declare title and authors, without \thanks
-\newcommand{\TheTitle}{Intrusive acceleration strategies for Uncertainty Quantification} 
+\newcommand{\TheTitle}{Intrusive acceleration strategies for Uncertainty Quantification for hyperbolic systems of conservation laws} 
 
 \date{\today}
 
@@ -111,7 +111,7 @@
 
 \begin{abstract}
 Methods for quantifying the effects of uncertainties in hyperbolic problems can be divided into intrusive and non-intrusive techniques. Non-intrusive methods allow the usage of a given deterministic solver in a black-box manner, while being embarrassingly parallel. Intrusive methods on the other hand do not suffer from aliasing effects and provide a more general framework for adaptive refinement techniques. Since the moment system solved by intrusive methods is not necessarily hyperbolic, the Intrusive Polynomial Moment (IPM) method has been introduced. IPM maintains hyperbolicity, but comes at the cost of solving an additional problem in every spatial cell and every time step.
-In this work, we propose acceleration techniques for intrusive methods. When solving steady problems, the numerical costs arising from repeatedly solving the IPM optimization problem can be reduced by borrowing ideas from shape optimization. Integrating the iteration from the numerical treatment of the optimization problem into the moment update reduces numerical costs, while still guaranteeing local convergence. Additionally, we propose an adaptive implementation of the IPM method, which further reduces numerical costs. We demonstrate the effectiveness of the proposed strategies for multi-dimensional uncertainty spaces by comparing results of the uncertain NACA0012 testcase as well as a bent shock tube experiment with non-intrusive methods. \frama{Sollen die Erkenntnisse vom Vergleich mit SC schon hier erw\"ahnt werden?}
+In this work, we propose acceleration techniques for intrusive methods. When solving steady problems, the numerical costs arising from repeatedly solving the IPM optimization problem can be reduced by borrowing ideas from PDE-constrained optimization. Integrating the iteration from the numerical treatment of the optimization problem into the moment update reduces numerical costs, while still guaranteeing local convergence. Additionally, we propose an adaptive implementation of the IPM method, which further reduces numerical costs. We demonstrate the effectiveness of the proposed strategies for multi-dimensional uncertainty spaces by comparing results of the uncertain NACA0012 testcase as well as a bent shock tube experiment with non-intrusive methods. \frama{Sollen die Erkenntnisse vom Vergleich mit SC schon hier erw\"ahnt werden?}
 \end{abstract}
 
 \begin{keyword}
