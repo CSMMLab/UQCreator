@@ -6,18 +6,18 @@ Omitting initial conditions and assuming a one-dimensional spatial domain, we ca
 \begin{align*}
 \partial_t \bm{\hat u}+\partial_x \bm{F}(\bm{\hat u}) = \bm{0}
 \end{align*}
-with the flux $\bm{F}:\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$, $\bm{F}(\bm{\hat u})=\langle \bm f(\mathcal{U}(\bm{\hat u}))\bm{\varphi}^T \rangle^T$. Note that the inner transpose represent a dyadic product, i.e. the outer transpose is applied to a matrix. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. We choose the discrete unknowns which represent the solution to be the spatial averages over each cell at time $t_n$, given by
+with the flux $\bm{F}:\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$, $\bm{F}(\bm{\hat u})=\langle \bm f(\mathcal{U}(\bm{\hat u}))\bm{\varphi}^T \rangle^T$. Note that the inner transpose represent a dyadic product, i.e. the outer transpose is applied to a matrix. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. We choose the discrete unknowns which represent the solution to be the spatial averages over each cell at time $t_n$, given by
 \begin{align*}
 \bm{\hat u}_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}\bm{\hat u}_i(t_n,x) dx.
 \end{align*}
-If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{0j}^n,\cdots,\bm{\hat u}_{Nj}^n)^T\in\mathbb{R}^{N+1}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{N\times p}\times\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$ as
+If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{0j}^n,\cdots,\bm{\hat u}_{Nj}^n)^T\in\mathbb{R}^{N+1}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$ as
 \begin{align}\label{eq:IPMDiscretization}
 \bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}  - \frac{\Delta t}{\Delta x}\left( \bm{G}(\bm{\hat u}_{j}^{n},\bm{\hat u}_{j+1}^{n})- \bm{G}(\bm{\hat u}_{j-1}^{n},\bm{\hat u}_{j}^{n})\right)
 \end{align}
 for $j = 1,\cdots,N_x$ and $n = 0,\cdots,N_t$. Here, the number of spatial cells is denoted by $N_x$ and the number of time steps by $N_t$.
 The numerical flux is assumed to be consistent, i.e. $\bm{G}(\bm{\hat{u}},\bm{\hat{u}})=\bm{F}(\bm{\hat{u}})$.
 
-When a consistent numerical flux $\bm g:\mathbb{R}^p\times\mathbb{R}^p\to\mathbb{R}^p$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the original problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take the numerical flux
+When a consistent numerical flux $\bm g:\mathbb{R}^m\times\mathbb{R}^m\to\mathbb{R}^m$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the original problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take the numerical flux
 \begin{align*}
  \bm{\tilde G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T
 \end{align*}
@@ -45,13 +45,13 @@ needs to be minimized. Hence, one needs to find the root of
 \begin{align*}
 \nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}_i = \langle \bm u_s(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}_i,
 \end{align*}
-where we used $\nabla s_* \equiv \bm u_s$. The root is usually determined by using Newton's method. For simplicity, let us define the full gradient of the Lagrangian to be $\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}})\in\mathbb{R}^{N\cdot p}$, i.e. we store all entries in a vector. Newton's method uses the iteration function $\bm{d}:\mathbb{R}^{N\times p}\times\mathbb{R}^{N\times p}\to\mathbb{R}^{N\times p}$,
+where we used $\nabla s_* \equiv \bm u_s$. The root is usually determined by using Newton's method. For simplicity, let us define the full gradient of the Lagrangian to be $\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}})\in\mathbb{R}^{N\cdot p}$, i.e. we store all entries in a vector. Newton's method uses the iteration function $\bm{d}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$,
 \begin{align}\label{eq:dualIterationFunction}
 \bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{H}(\bm{\lambda})^{-1}\cdot\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}}),
 \end{align}
-where $\bm H\in\mathbb{R}^{p\cdot N\times p\cdot N}$ is the Hessian of \eqref{eq:L}, given by
+where $\bm H\in\mathbb{R}^{p\cdot N\times m\cdot N}$ is the Hessian of \eqref{eq:L}, given by
 \begin{align*}
-\bm{H}(\bm{\lambda}) := \langle \nabla \bm{u}_{\bm{s}} (\bm{\lambda}^T\bm{\varphi})\otimes\bm{\varphi}\bm{\varphi}^T\rangle_Q^{T}.
+\bm{H}(\bm{\lambda}) := \langle \nabla \bm{u}_{s} (\bm{\lambda}^T\bm{\varphi})\otimes\bm{\varphi}\bm{\varphi}^T\rangle_Q^{T}.
 \end{align*}
 The function $\bm d$ will in the following be called dual iteration function. Now, the Newton iteration for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
@@ -60,7 +60,7 @@ The function $\bm d$ will in the following be called dual iteration function. No
 The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$.
 To obtain a finite number of iterations for the iteration in cell $j$, a stopping criterion 
 \begin{align}\label{eq:tauCrit}
-\sum_{i=0}^p\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(m)};\bm{\hat{u}}_j^n) \right\Vert < \tau
+\sum_{i=0}^m\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(m)};\bm{\hat{u}}_j^n) \right\Vert < \tau
 \end{align}
 is used.
 

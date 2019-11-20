@@ -32,7 +32,7 @@ which again requires $O(N\cdot Q)$ operations, i.e. the costs are $O(N^2)$. The 
 \section{IPM for the 2D Euler equations}
 \label{app:IPM2DEuler}
 
-In the following, we provide details on the implementation of IPM for the 2D Euler equations. We for clarity, we denote the momentum by $m_1 := \rho v_1$ and $m_2:=\rho v_2$ and the energy by $E:=\rho e$. Then, the vector of conserved variables is $\bm u = (\rho,m_1,m_2,E)^T$. The entropy used is
+In the following, we provide details on the implementation of IPM for the 2D Euler equations. For ease of presentation, we denote the momentum by $m_1 := \rho v_1$ and $m_2:=\rho v_2$ and the energy by $E:=\rho e$. Then, the vector of conserved variables is $\bm u = (\rho,m_1,m_2,E)^T$. The entropy used is
 \begin{align*}
 s(\bm u) = -\rho \ln \left(\rho^{-\gamma} \left(E - \frac{m_1^2 + m_2^2}{2
 \rho}\right)\right).

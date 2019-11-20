@@ -37,7 +37,7 @@ In the following, we briefly introduce the notation and methods used in this wor
 \bm{u}(t=0,\bm{x},&\bm{\xi}) = \bm{u}_{\text{IC}}(\bm{x},\bm{\xi}),
 \end{align}
 \end{subequations}
-where the solution $\bm u\in\mathbb{R}^p$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subseteq \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subseteq\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. Hence, the probability density function of $\bm{\xi}$ is $f_{\Xi}(\bm\xi):=\prod_{i=1}^s f_{\Xi,i}(\xi_i)$. The physical flux is given by $\bm{f}:\mathbb{R}^p\to\mathbb{R}^{d\times p}$. To simplify notation, we assume that only the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
+where the solution $\bm u\in\mathbb{R}^m$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subseteq \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subseteq\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. Hence, the probability density function of $\bm{\xi}$ is $f_{\Xi}(\bm\xi):=\prod_{i=1}^s f_{\Xi,i}(\xi_i)$. The physical flux is given by $\bm{f}:\mathbb{R}^m\to\mathbb{R}^{d\times m}$. To simplify notation, we assume that only the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
 
 Due to the randomness of the solution, one is interested in determining the expectation value or the variance, i.e.
 \begin{align*}
@@ -53,9 +53,9 @@ basis functions when defining $|i|:=\sum_{n = 1}^s |i_n|$. Commonly, these funct
 \begin{align}\label{eq:SGClosure}
 \mathcal{U}(\bm{\hat u};\bm\xi):= \sum_{|i|\leq M} \bm{\hat{u}}_i\varphi_i(\bm{\xi}) = \hat{\bm u}^T\bm{\varphi}(\bm\xi),
 \end{align}
-where the deterministic expansion coefficients $\bm{\hat{u}}_i\in\mathbb{R}^p$ are called moments. To allow a more compact notation, we collect the $N$ moments for which $\vert i \vert \leq M$ holds in the moment matrix $\hat{\bm u}:=(\bm{\hat{u}}_i)_{|i|\leq M}\in\mathbb{R}^{N\times p}$ and the corresponding basis functions in $\bm{\varphi}:=(\varphi_i)_{|i|\leq M}\in\mathbb{R}^{N}$. In the following, the dependency of $\mathcal{U}$ on $\bm \xi$ will occasionally be omitted for sake of readability. The solution ansatz \eqref{eq:SGClosure} is $L^2$-optimal, if the moments are chosen to be the Fourier coefficients $\bm{\hat u}_i \equiv \langle \bm{u}\varphi_i \rangle\in\mathbb{R}^p$. One can also use the ansatz \eqref{eq:SGClosure} to compute the quantities of interest. Indeed, we have that
+where the deterministic expansion coefficients $\bm{\hat{u}}_i\in\mathbb{R}^m$ are called moments. To allow a more compact notation, we collect the $N$ moments for which $\vert i \vert \leq M$ holds in the moment matrix $\hat{\bm u}:=(\bm{\hat{u}}_i)_{|i|\leq M}\in\mathbb{R}^{N\times m}$ and the corresponding basis functions in $\bm{\varphi}:=(\varphi_i)_{|i|\leq M}\in\mathbb{R}^{N}$. In the following, the dependency of $\mathcal{U}$ on $\bm \xi$ will occasionally be omitted for sake of readability. The solution ansatz \eqref{eq:SGClosure} is $L^2$-optimal, if the moments are chosen to be the Fourier coefficients $\bm{\hat u}_i \equiv \langle \bm{u}\varphi_i \rangle\in\mathbb{R}^m$. One can also use the ansatz \eqref{eq:SGClosure} to compute the quantities of interest. Indeed, we have that
 \begin{align*}
-\text{E}[\mathcal{U}(\bm{\hat u})] = \bm{\hat u}_0,\quad \text{Var}[\mathcal{U}(\bm{\hat u})] = \text{E}[\mathcal{U}(\bm{\hat u})^2] - \text{E}[\mathcal{U}(\bm{\hat u})]^2 = \left(\sum_{i = 1}^N \hat{u}_{\ell i}^2\right)_{\ell = 1,\cdots,p}.
+\text{E}[\mathcal{U}(\bm{\hat u})] = \bm{\hat u}_0,\quad \text{Var}[\mathcal{U}(\bm{\hat u})] = \text{E}[\mathcal{U}(\bm{\hat u})^2] - \text{E}[\mathcal{U}(\bm{\hat u})]^2 = \left(\sum_{i = 1}^N \hat{u}_{\ell i}^2\right)_{\ell = 1,\cdots,m}.
 \end{align*}
 
 The core idea of the stochastic-Collocation method is to compute the moments in the gPC expansion with a quadrature rule. Given a set of $Q$ quadrature weights $w_k$ and quadrature points $\bm{\xi}_k$, the moments are approximated by
@@ -71,16 +71,16 @@ Intrusive methods derive a system which directly describes the time evolution of
 \bm{\hat u}_i(t=0,\bm{x}&) = \langle\bm{u}_{\text{IC}}(\bm{x},\cdot)\varphi_i\rangle,
 \end{align}
 \end{subequations}
-with $|i|\leq M$. As already mentioned, the SG moment system is not necessarily hyperbolic. To ensure hyperbolicity, the IPM method uses a solution ansatz which minimizes a given entropy under a moment constraint instead of a polynomial expansion \eqref{eq:SGClosure}. For a given convex entropy $s:\mathbb{R}^p\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, the IPM solution ansatz is given by
+with $|i|\leq M$. As already mentioned, the SG moment system is not necessarily hyperbolic. To ensure hyperbolicity, the IPM method uses a solution ansatz which minimizes a given entropy under a moment constraint instead of a polynomial expansion \eqref{eq:SGClosure}. For a given convex entropy $s:\mathbb{R}^m\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, the IPM solution ansatz is given by
 \begin{align}\label{eq:primalProblem}
 \mathcal{U}(\bm{\hat u}) = \argmin_{\bm u} \langle s(\bm u) \rangle \enskip \text{ subject to } \bm{\hat u}_i = \langle \bm u \varphi_i \rangle \text{ for } |i| \leq M.
 \end{align}
-Rewritten in its dual form, \eqref{eq:primalProblem} is transformed into an unconstrained optimization problem. Defining the variables $\bm{\lambda}_i\in\mathbb{R}^p$ where $i$ is again a multi index, gives the unconstrained dual problem
+Rewritten in its dual form, \eqref{eq:primalProblem} is transformed into an unconstrained optimization problem. Defining the variables $\bm{\lambda}_i\in\mathbb{R}^m$ where $i$ is again a multi index, gives the unconstrained dual problem
 \begin{align}\label{eq:dualProblem}
- \bm{\hat \lambda}(\bm{\hat u}) := \argmin_{\bm{\lambda} \in \mathbb{R}^{N \times p}}
+ \bm{\hat \lambda}(\bm{\hat u}) := \argmin_{\bm{\lambda} \in \mathbb{R}^{N \times m}}
   \left\{\langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{|i|\leq M}\bm{\lambda}_i^T \bm{\hat u}_i\right\},
 \end{align}
-where $s_*:\mathbb{R}^p\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}:=(\bm{\hat{\lambda}}_i)_{|i|\leq M}\in \mathbb{R}^{N \times p}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then given by
+where $s_*:\mathbb{R}^m\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}:=(\bm{\hat{\lambda}}_i)_{|i|\leq M}\in \mathbb{R}^{N \times m}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then given by
 \begin{align}\label{eq:ansatz}
  \mathcal{U}(\bm{\hat u}) = \left( \nabla_{\bm{u}} s \right)^{-1}(\bm{\hat{\lambda}}(\bm{\hat u})^T \bm{\varphi}).
 \end{align}
