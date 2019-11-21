@@ -5,7 +5,7 @@ Burgers::Burgers( Settings* settings ) : Problem( settings ) {
     _settings->SetNStates( _nStates );
 
     // for the one dimensional case an exact solution is specified
-    if( _settings->GetNDimXi() == 1 ) {
+    if( _settings->GetNDimXi() == 1 || true ) {
         _settings->SetExactSolution( true );
     }
 
@@ -48,7 +48,7 @@ Matrix Burgers::F( const Matrix& u ) { return 0.5 * pow( u, 2 ); }
 Vector Burgers::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
     _sigma = _settings->GetSigma();
-    if( xi.size() == 1 ) {
+    if( xi.size() == 1 || true ) {
         _x0 = 0.5;
         _x1 = 1.5;
         _uL = 12.0;

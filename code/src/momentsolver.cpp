@@ -371,7 +371,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
             for( unsigned i = 0; i < _nStates; ++i ) {
                 double wf = phiTildeWf( k, k );    // dirty fix for pSC, works only for uniform distributions
                 auto w    = _closure->GetWGridAtRef( refinementLevel[j] );
-                meanAndVar( i, j ) += tmp[i] * w[k] * 0.5;
+                meanAndVar( i, j ) += tmp[i] * w[k] * 0.25;    // hard code pdf: 2d uniform is 0.25
                 // if( j == 4 ) {
                 //  std::cout << "uQ = " << tmp[0] << std::endl;
                 // std::cout << "wf = " << wf << std::endl;
@@ -385,7 +385,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
             for( unsigned i = 0; i < _nStates; ++i ) {
                 double wf = phiTildeWf( k, k );    // dirty fix for pSC, works only for uniform distributions + pSC
                 auto w    = _closure->GetWGridAtRef( refinementLevel[j] );
-                meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * w[k] * 0.5;
+                meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * w[k] * 0.25;    // hard code pdf: 2d uniform is 0.25
             }
         }
     }

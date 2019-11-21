@@ -13,14 +13,14 @@ outputFile = "burgers_shock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.0]]
+distribution = [["Legendre","Legendre"],[0.1, 0.0]]
 CFL = 0.9
 tEnd = 0.12
 
 [moment_system]
 # available closures: BoundedBarrier, LogSin, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
 closure = "StochasticGalerkin"
-moments = [["totalDegree"],[1]]
-quadPoints = [["tensorizedGrid"],[1]]
+moments = [["maxDegree"],[4]]
+quadPoints = [["tensorizedCCGrid"],[2]]
 maxIterations = 2000
 epsilon = 5e-5
