@@ -31,12 +31,12 @@ The computational domain is a circle with a diameter of $40$ meters. In the cent
 \centering
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.2]{figs/Euler1DPlots5/{sc100_ERho}.png}
+				\includegraphics[scale=0.2]{figs/Euler1DPlots5/sc100_ERho.png}
 		\label{fig:referenceSolutionsub1}
 	\end{subfigure}%
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.2]{figs/Euler1DPlots5/{sc100_VarRho}.png}
+				\includegraphics[scale=0.2]{figs/Euler1DPlots5/sc100_VarRho.png}
 		\label{fig:referenceSolutionsub2}
 	\end{subfigure}
 	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
@@ -60,40 +60,52 @@ The quantities of interests are now computed with the different methods. All met
 \centering
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.544]{figs/StudyQuadrature/{L2_error_E[rho]}.pdf}
+				\includegraphics[scale=0.544]{figs/StudyQuadrature/L2_error_E[rho]_ipm.pdf}
 		\caption{}
-		\label{fig:ErrorDifferentQuadA}
+		\label{fig:ErrorDifferentQuadMeanIPM}
 	\end{subfigure}%
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.544]{figs/StudyQuadrature/{L2_error_Var[rho]}.pdf}
+				\includegraphics[scale=0.544]{figs/StudyQuadrature/L2_error_Var[rho]_ipm.pdf}
 		\caption{}
-		\label{fig:ErrorDifferentQuadB}
+		\label{fig:ErrorDifferentQuadVarIPM}
 	\end{subfigure}
-	\caption{Relative L$^2$-error with different quadrature levels. The subscript denotes the moment order, the superscript denotes the Clenshaw-Curtis quadrature level.\frama{Sollen wir einige Linien hier raus nehmen, damit es \"ubersichtlicher bleibt?}}
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+		\includegraphics[scale=0.544]{figs/StudyQuadrature/L2_error_E[rho]_mixed.pdf}
+		\caption{}
+		\label{fig:ErrorDifferentQuadMeanMixed}
+	\end{subfigure}%
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+		\includegraphics[scale=0.544]{figs/StudyQuadrature/L2_error_Var[rho]_mixed.pdf}
+		\caption{}
+		\label{fig:ErrorDifferentQuadVarMixed}
+	\end{subfigure}
+	\caption{Relative L$^2$-error with different quadrature levels for solely IPM (Figure \ref{fig:ErrorDifferentQuadMeanIPM} and \ref{fig:ErrorDifferentQuadVarIPM}) and in comparison with SC (Figure \ref{fig:ErrorDifferentQuadMeanMixed} and \ref{fig:ErrorDifferentQuadVarMixed}). The subscript denotes the moment order, the superscript denotes the number of Clenshaw-Curtis quadrature points.}
 	\label{fig:ErrorDifferentQuad}
 \end{figure}
 \begin{figure}[h!]
 \centering
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.55]{figs/errorEuler/{L2_error_E[rho]}.pdf}
+				\includegraphics[scale=0.55]{figs/errorEuler/L2_error_E[rho].pdf}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.55]{figs/errorEuler/{L2_error_Var[rho]}.pdf}
+				\includegraphics[scale=0.55]{figs/errorEuler/L2_error_Var[rho].pdf}
 		\label{fig:sub2}
 	\end{subfigure}
 	
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.55]{figs/errorEuler/{L2_error_E[rhoE]}.pdf}
+				\includegraphics[scale=0.55]{figs/errorEuler/L2_error_E[rhoE].pdf}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.55]{figs/errorEuler/{L2_error_Var[rhoE]}.pdf}
+				\includegraphics[scale=0.55]{figs/errorEuler/L2_error_Var[rhoE].pdf}
 		\label{fig:sub2}
 	\end{subfigure}
 	\caption{Relative L$^2$-error with 5 MPI threads for density and energy.\frama{Eventuell diese Plots aufteilen? Oder sind die Ergebnisse verst\"andlich?}}
@@ -103,37 +115,37 @@ The quantities of interests are now computed with the different methods. All met
 \centering
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{EulerSC5-2Res1e-6_ERho}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/EulerSC5-2Res1e-6_ERho.png}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{sg_4_9_ERho}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/sg_4_9_ERho.png}
 		\label{fig:sub2}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{osIPM4-4_ERho}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/osIPM4-4_ERho.png}
 		\label{fig:sub1}
 	\end{subfigure}\\
 	\vspace{-0.35cm}
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{EulerSC5-2Res1e-6_VarRho}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/EulerSC5-2Res1e-6_VarRho.png}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{sg_4_9_VarRho}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/sg_4_9_VarRho.png}
 		\label{fig:sub2}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler1DPlots5/{osIPM4-4_VarRho}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/osIPM4-4_VarRho.png}
 		\label{fig:sub1}
 	\end{subfigure}
 	\caption{E$[\rho]$ and Var$[\rho]$ computed with SC$^5$, SG$_4$, IPM$_4$ (from left to right). Compare to the refernce solution shown in Figure \ref{fig:referenceSolution}.}
@@ -192,19 +204,19 @@ The readosIPM results as well as the corresponding refinement levels are depicte
 \centering
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_refadosipm_n2-9_sg2-4_s05_aoa_oneRet_ERho}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots10/euler2D_nacaCoarse_refadosipm_n2-9_sg2-4_s05_aoa_oneRet_ERho.png}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_refadosipm_n2-9_sg2-4_s05_aoa_oneRet_VarRho}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots10/euler2D_nacaCoarse_refadosipm_n2-9_sg2-4_s05_aoa_oneRet_VarRho.png}
 		\label{fig:sub2}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler1DPlots10/{euler2D_nacaCoarse_refadosipm_n2-9_sg2-4_s05_aoa_oneRet_refinementLevel}.png}
+		\includegraphics[scale=0.2]{figs/Euler1DPlots10/euler2D_nacaCoarse_refadosipm_n2-9_sg2-4_s05_aoa_oneRet_refinementLevel.png}
 		\label{fig:sub1}
 	\end{subfigure}
 	\caption{E$[\rho]$, Var$[\rho]$ and refinement level for readosIPM$_{2-9}$}
@@ -240,23 +252,23 @@ In the following, we assume a fixed angle of attack with $\phi = 1.25$ degrees a
 \centering
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.5]{figs/Euler2D/{L2_error_E[rho]}.pdf}
+				\includegraphics[scale=0.5]{figs/Euler2D/L2_error_E[rho].pdf}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.5]{figs/Euler2D/{L2_error_Var[rho]}.pdf}
+				\includegraphics[scale=0.5]{figs/Euler2D/L2_error_Var[rho].pdf}
 		\label{fig:sub2}
 	\end{subfigure}
 	
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.5]{figs/Euler2D/{L2_error_E[rhoE]}.pdf}
+				\includegraphics[scale=0.5]{figs/Euler2D/L2_error_E[rhoE].pdf}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.5]{figs/Euler2D/{L2_error_Var[rhoE]}.pdf}
+				\includegraphics[scale=0.5]{figs/Euler2D/L2_error_Var[rhoE].pdf}
 		\label{fig:sub2}
 	\end{subfigure}
 	\caption{Relative L$^2$-error with 16 MPI threads for density and energy.}
@@ -267,12 +279,12 @@ The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolut
 \centering
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.2]{figs/Euler2D/{sc50UncertainMaSigma0-025PSigma1000-0Dim2_ERho}.png}
+				\includegraphics[scale=0.2]{figs/Euler2D/sc50UncertainMaSigma0-025PSigma1000-0Dim2_ERho.png}
 		\label{fig:referenceSolutionsub1}
 	\end{subfigure}%
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.2]{figs/Euler2D/{sc50UncertainMaSigma0-025PSigma1000-0Dim2_VarRho}.png}
+				\includegraphics[scale=0.2]{figs/Euler2D/sc50UncertainMaSigma0-025PSigma1000-0Dim2_VarRho.png}
 		\label{fig:referenceSolutionsub2}
 	\end{subfigure}
 	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
@@ -282,21 +294,21 @@ The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolut
 \centering
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler2D/{retadosIPM9-4MaP_4_ERho}.png}
+		\includegraphics[scale=0.2]{figs/Euler2D/retadosIPM9-4MaP_4_ERho.png}
 		\caption{}
 		\label{fig:sub1}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler2D/{retadosIPM9-4MaP_4_VarRho}.png}
+		\includegraphics[scale=0.2]{figs/Euler2D/retadosIPM9-4MaP_4_VarRho.png}
 		\caption{}
 		\label{fig:sub2}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.2]{figs/Euler2D/{retadosIPM9-4MaP_4_refinementLevel}.png}
+		\includegraphics[scale=0.2]{figs/Euler2D/retadosIPM9-4MaP_4_refinementLevel.png}
 		\caption{}
 		\label{fig:readosIPMEVar2DRefinement}
 	\end{subfigure}
@@ -306,4 +318,19 @@ The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolut
 When looking at the computed IPM expectation value and variance in Figure~\ref{fig:readosIPMEVar2D} and compare the results against the reference solution in Figure~\ref{fig:referenceSolution2D}, one can observe that since the uncertainty effects the result more heavily than in the one-dimensional case, the IPM solution still shows a step-like profile. However, we are able to capture the main features of the reference solution. The increased effect of the uncertainty can again be seen in Figure~\ref{fig:readosIPMEVar2DRefinement}, where a refinement level of $8$, i.e. a truncation order of $9$ is chosen on a larger portion than for the one-dimensional case.
 
 \subsection{Pipe Testcase}
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/pipe/pipe_sc_ref_n50_E(rho).png}
+		\label{fig:referenceSolutionsPipe1}
+	\end{subfigure}%
+	\begin{subfigure}{0.5\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/pipe/pipe_sc_ref_n50_Var(rho).png}
+		\label{fig:referenceSolutionsPipe2}
+	\end{subfigure}
+	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
+	\label{fig:referenceSolution3D}
+\end{figure}
 \comment{TODO: Pipe testcase}
