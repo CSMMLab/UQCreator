@@ -39,10 +39,10 @@ The strategy now is to perform the dual update for a set of moment vectors $\bm{
 \For{$j=0$ to $N_x+1$}
 \State $\bm{\lambda}_j^{(0)} \leftarrow \bm{\hat \lambda}_j^{n}$
 \While{\eqref{eq:tauCrit} is violated}
-\State $\bm{\lambda}_j^{(m+1)} \leftarrow \bm{d}_{\ell_j^n}(\bm{\lambda}_{j}^{(m)};\bm{\hat u}_j^{n})$
-\State $m \leftarrow m+1$
+\State $\bm{\lambda}_j^{(l+1)} \leftarrow \bm{d}_{\ell_j^n}(\bm{\lambda}_{j}^{(l)};\bm{\hat u}_j^{n})$
+\State $l \leftarrow l+1$
 \EndWhile
-\State $\bm{\hat \lambda}_j^{n+1} \leftarrow \bm{\lambda}_j^{(m)}$
+\State $\bm{\hat \lambda}_j^{n+1} \leftarrow \bm{\lambda}_j^{(l)}$
 \State $\ell_j^{n+1}\leftarrow \text{DetermineRefinementLevel}\left(\bm{\hat \lambda}_j^{n+1}\right)$
 \EndFor
 \For{$j=1$ to $N_x$}
@@ -54,7 +54,7 @@ The strategy now is to perform the dual update for a set of moment vectors $\bm{
 \caption{Adaptive IPM implementation}
 \label{alg:ad-IPM}
 \end{algorithm}
-Adaptivity can be used for intrusive methods in general as well as for steady and unsteady problems. In the case of steady problems, we can make use of a strategy, which we call \textit{refinement retardation}. Recall that the convergence to an admissible steady state solution is expensive and a high accuracy and desirable solution properties are only required at the end of this iteration process. Hence, we propose to iteratively increase the maximal refinement level whenever a certain residual \eqref{eq:residualSteady} is fulfilled. For a given set of maximal refinement levels $\ell_m^*$ and a set of residuals $\varepsilon_m^*$ at which the refinement level must be increased we can now perform a large amount of the required iterations on a lower but cheaper accuracy level.
+Adaptivity can be used for intrusive methods in general as well as for steady and unsteady problems. In the case of steady problems, we can make use of a strategy, which we call \textit{refinement retardation}. Recall that the convergence to an admissible steady state solution is expensive and a high accuracy and desirable solution properties are only required at the end of this iteration process. Hence, we propose to iteratively increase the maximal refinement level whenever a certain residual \eqref{eq:residualSteady} is fulfilled. For a given set of maximal refinement levels $\ell_l^*$ and a set of residuals $\varepsilon_l^*$ at which the refinement level must be increased we can now perform a large amount of the required iterations on a lower but cheaper accuracy level.
 The same strategy can be applied for One-Shot IPM. In this case, the algorithm is given by Algorithm \ref{alg:adosIPM}.
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
@@ -64,13 +64,13 @@ The same strategy can be applied for One-Shot IPM. In this case, the algorithm i
 \While{\eqref{eq:residualSteady} is violated}
 \For{$j=1$ to $N_x$}
 \State $\bm{\lambda}_j^{n+1} \leftarrow \bm{d}_{\ell_j^n}(\bm{\lambda}_{j}^{n};\bm{\hat u}_j^{n})$
-\State $\ell_j^{n+1}\leftarrow \max\{\text{DetermineRefinementLevel}\left(\bm{\lambda}_j^{n+1}\right),\ell_m^*\}$
+\State $\ell_j^{n+1}\leftarrow \max\{\text{DetermineRefinementLevel}\left(\bm{\lambda}_j^{n+1}\right),\ell_l^*\}$
 \State $\bm\ell' \leftarrow (\ell_{j-1}^n,\ell_{j}^n,\ell_{j+1}^n)^T$
 \State $\bm{\hat u}_j^{n+1} \leftarrow \bm{c}_{\ell_j^{n+1}}^{\bm\ell'}(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_j^{n+1},\bm{\lambda}_{j+1}^{n+1})$
 \EndFor
 \State $n \leftarrow n+1$
-\If{\eqref{eq:residualSteady} fulfills the stopping criterion $\varepsilon_m^*$}
-\State $m \leftarrow m+1$
+\If{\eqref{eq:residualSteady} fulfills the stopping criterion $\varepsilon_l^*$}
+\State $l \leftarrow l+1$
 \EndIf
 \EndWhile
 \end{algorithmic}

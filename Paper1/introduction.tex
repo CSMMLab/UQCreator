@@ -37,19 +37,19 @@ In the following, we briefly introduce the notation and methods used in this wor
 \bm{u}(t=0,\bm{x},&\bm{\xi}) = \bm{u}_{\text{IC}}(\bm{x},\bm{\xi}),
 \end{align}
 \end{subequations}
-where the solution $\bm u\in\mathbb{R}^m$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subseteq \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subseteq\mathbb{R}^s$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,s$. Hence, the probability density function of $\bm{\xi}$ is $f_{\Xi}(\bm\xi):=\prod_{i=1}^s f_{\Xi,i}(\xi_i)$. The physical flux is given by $\bm{f}:\mathbb{R}^m\to\mathbb{R}^{d\times m}$. To simplify notation, we assume that only the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
+where the solution $\bm u\in\mathbb{R}^m$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subseteq \mathbb{R}^d$ as well as a vector of random variables $\bm{\xi}\in\Theta\subseteq\mathbb{R}^p$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,p$. Hence, the probability density function of $\bm{\xi}$ is $f_{\Xi}(\bm\xi):=\prod_{i=1}^p f_{\Xi,i}(\xi_i)$. The physical flux is given by $\bm{f}:\mathbb{R}^m\to\mathbb{R}^{d\times m}$. To simplify notation, we assume that only the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
 
 Due to the randomness of the solution, one is interested in determining the expectation value or the variance, i.e.
 \begin{align*}
 \text{E}[\bm{u}] = \langle \bm{u} \rangle,\qquad \text{Var}[\bm{u}] = \langle \left( \bm{u}-\text{E}[\bm{u}]\right)^2\rangle,
 \end{align*}
-where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot f_{\Xi}(\bm\xi)d\xi_1 \cdots d\xi_s$. To approximate quantities of interest (such as expectation value, variance or higher order moments), the solution is spanned with a set of polynomial basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_s)$ we have $|i| \leq M$. Note that this yields
+where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot f_{\Xi}(\bm\xi)d\xi_1 \cdots d\xi_p$. To approximate quantities of interest (such as expectation value, variance or higher order moments), the solution is spanned with a set of polynomial basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_p)$ we have $|i| \leq M$. Note that this yields
 \begin{align}\label{eq:numberBasisFcts}
 N:=\begin{pmatrix}
-M+s \\ s
+M+p \\ p
 \end{pmatrix}
 \end{align}
-basis functions when defining $|i|:=\sum_{n = 1}^s |i_n|$. Commonly, these functions are chosen to be orthonormal polynomials \cite{wiener1938homogeneous} with respect to the probability function, i.e. $\langle \varphi_i \varphi_j \rangle =\prod_{n=1}^s\delta_{i_nj_n}$. The generalized polynomial chaos (gPC) expansion \cite{xiu2002wiener} approximates the solution by
+basis functions when defining $|i|:=\sum_{n = 1}^p |i_n|$. Commonly, these functions are chosen to be orthonormal polynomials \cite{wiener1938homogeneous} with respect to the probability function, i.e. $\langle \varphi_i \varphi_j \rangle =\prod_{n=1}^p\delta_{i_nj_n}$. The generalized polynomial chaos (gPC) expansion \cite{xiu2002wiener} approximates the solution by
 \begin{align}\label{eq:SGClosure}
 \mathcal{U}(\bm{\hat u};\bm\xi):= \sum_{|i|\leq M} \bm{\hat{u}}_i\varphi_i(\bm{\xi}) = \hat{\bm u}^T\bm{\varphi}(\bm\xi),
 \end{align}
@@ -62,7 +62,7 @@ The core idea of the stochastic-Collocation method is to compute the moments in 
 \begin{align*}
 \bm{\hat u}_i = \langle \bm{u}\varphi_i \rangle \approx \sum_{k = 1}^{Q}w_k \bm{u}({t,\bm{x},\bm{\xi}_k})\varphi_i(\bm{\xi}_k)f_{\Xi}(\bm{\xi}_k).
 \end{align*} 
-Hence, the moments can be computed by running a given deterministic solver for the original problem at each quadrature point. To reduce numerical costs in multi-dimensional settings, SC commonly uses sparse grids as quadrature rule: While tensorized quadrature sets require $O(M^s)$ quadrature points to integrate polynomials of maximal degree $M$ exactly, sparse grids are designed to integrate polynomials of total degree $M$, for which they only require $O(M(\log_2(M)^{s-1}))$ quadrature points. 
+Hence, the moments can be computed by running a given deterministic solver for the original problem at each quadrature point. To reduce numerical costs in multi-dimensional settings, SC commonly uses sparse grids as quadrature rule: While tensorized quadrature sets require $O(M^p)$ quadrature points to integrate polynomials of maximal degree $M$ exactly, sparse grids are designed to integrate polynomials of total degree $M$, for which they only require $O(M(\log_2(M)^{p-1}))$ quadrature points. 
 
 Intrusive methods derive a system which directly describes the time evolution of the moments: Plugging the solution ansatz \eqref{eq:SGClosure} into the set of equations \eqref{eq:hyperbolicProblem} and projecting the resulting residual to zero yields the stochastic-Galerkin moment system
 \begin{subequations}\label{eq:SGMomentSystem}

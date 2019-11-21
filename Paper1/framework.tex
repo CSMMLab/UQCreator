@@ -10,7 +10,7 @@ with the flux $\bm{F}:\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$, $\bm{F}(
 \begin{align*}
 \bm{\hat u}_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}\bm{\hat u}_i(t_n,x) dx.
 \end{align*}
-If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{0j}^n,\cdots,\bm{\hat u}_{Nj}^n)^T\in\mathbb{R}^{N+1}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$ as
+If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{0j}^n,\cdots,\bm{\hat u}_{Nj}^n)^T\in\mathbb{R}^{N\times m}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$ as
 \begin{align}\label{eq:IPMDiscretization}
 \bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}  - \frac{\Delta t}{\Delta x}\left( \bm{G}(\bm{\hat u}_{j}^{n},\bm{\hat u}_{j+1}^{n})- \bm{G}(\bm{\hat u}_{j-1}^{n},\bm{\hat u}_{j}^{n})\right)
 \end{align}
@@ -29,7 +29,7 @@ The approximated numerical flux then becomes
 \begin{align}\label{eq:numericalFluxIPM}
  \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T_Q.
 \end{align}
-Note that the numerical flux requires evaluating the ansatz $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define $\bm{u}_{s}:\mathbb{R}^s \to \mathbb{R}^s$,
+Note that the numerical flux requires evaluating the ansatz $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define $\bm{u}_{s}:\mathbb{R}^p \to \mathbb{R}^p$,
 \begin{align*}
 \bm{u}_{s}(\bm\Lambda):=\left( \nabla_{\bm{u}} s \right)^{-1}(\bm\Lambda),
 \end{align*}
@@ -45,22 +45,22 @@ needs to be minimized. Hence, one needs to find the root of
 \begin{align*}
 \nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}_i = \langle \bm u_s(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}_i,
 \end{align*}
-where we used $\nabla s_* \equiv \bm u_s$. The root is usually determined by using Newton's method. For simplicity, let us define the full gradient of the Lagrangian to be $\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}})\in\mathbb{R}^{N\cdot p}$, i.e. we store all entries in a vector. Newton's method uses the iteration function $\bm{d}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$,
+where we used $\nabla s_* \equiv \bm u_s$. The root is usually determined by using Newton's method. For simplicity, let us define the full gradient of the Lagrangian to be $\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}})\in\mathbb{R}^{N\cdot m}$, i.e. we store all entries in a vector. Newton's method uses the iteration function $\bm{d}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$,
 \begin{align}\label{eq:dualIterationFunction}
 \bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{H}(\bm{\lambda})^{-1}\cdot\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}}),
 \end{align}
-where $\bm H\in\mathbb{R}^{p\cdot N\times m\cdot N}$ is the Hessian of \eqref{eq:L}, given by
+where $\bm H\in\mathbb{R}^{m \cdot  N\times m\cdot N}$ is the Hessian of \eqref{eq:L}, given by
 \begin{align*}
 \bm{H}(\bm{\lambda}) := \langle \nabla \bm{u}_{s} (\bm{\lambda}^T\bm{\varphi})\otimes\bm{\varphi}\bm{\varphi}^T\rangle_Q^{T}.
 \end{align*}
 The function $\bm d$ will in the following be called dual iteration function. Now, the Newton iteration for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
-\bm{\lambda}^{(m+1)}_j = \bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j}).
+\bm{\lambda}^{(l+1)}_j = \bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}_j}).
 \end{align}
-The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(m)},\bm{\hat{u}_j^n})$.
+The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}_j^n})$.
 To obtain a finite number of iterations for the iteration in cell $j$, a stopping criterion 
 \begin{align}\label{eq:tauCrit}
-\sum_{i=0}^m\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(m)};\bm{\hat{u}}_j^n) \right\Vert < \tau
+\sum_{i=0}^m\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(l)};\bm{\hat{u}}_j^n) \right\Vert < \tau
 \end{align}
 is used.
 
@@ -74,7 +74,7 @@ The moment iteration is then given by
 \end{align}
 where the map from the moment vector to the dual variables, i.e. $\bm{\lambda}(\bm{\hat u}_{j}^n)$, is obtained by iterating
 \begin{align}\label{eq:dualIteration}
-\bm{\lambda}_j^{(m+1)} = \bm{d}(\bm{\lambda}_{j}^{(m)};\bm{\hat u}_j^{n}).
+\bm{\lambda}_j^{(l+1)} = \bm{d}(\bm{\lambda}_{j}^{(l)};\bm{\hat u}_j^{n}).
 \end{align}
 until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:IPM}.
 
@@ -87,10 +87,10 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 \For{$j=0$ to $N_x+1$}
 \State $\bm{\lambda}_j^{(0)} \leftarrow \bm{\hat \lambda}_j^{n}$
 \While{\eqref{eq:tauCrit} is violated}
-\State $\bm{\lambda}_j^{(m+1)} \leftarrow \bm{d}(\bm{\lambda}_{j}^{(m)};\bm{\hat u}_j^{n})$
-\State $m \leftarrow m+1$
+\State $\bm{\lambda}_j^{(l+1)} \leftarrow \bm{d}(\bm{\lambda}_{j}^{(l)};\bm{\hat u}_j^{n})$
+\State $l \leftarrow l+1$
 \EndWhile
-\State $\bm{\hat \lambda}_j^{n+1} \leftarrow \bm{\lambda}_j^{(m)}$
+\State $\bm{\hat \lambda}_j^{n+1} \leftarrow \bm{\lambda}_j^{(l)}$
 \EndFor
 \For{$j=1$ to $N_x$}
 \State $\bm{\hat u}_j^{n+1} \leftarrow \bm{c}(\bm{\hat \lambda}_{j-1}^{n+1},\bm{\hat \lambda}_j^{n+1},\bm{\hat \lambda}_{j+1}^{n+1})$
