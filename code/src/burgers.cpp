@@ -58,11 +58,11 @@ Vector Burgers::IC( const Vector& x, const Vector& xi ) {
             return y;
         }
         else if( x[0] < _x1 + _sigma[0] * xi[0] ) {
-            y[0] = _uL + ( _uR - _uL ) * ( _x0 + _sigma[0] * xi[0] - x[0] ) / ( _x0 - _x1 );
+            y[0] = _uL + ( _uR + _sigma[1] * xi[1] - _uL ) * ( _x0 + _sigma[0] * xi[0] - x[0] ) / ( _x0 - _x1 );
             return y;
         }
         else {
-            y[0] = _uR;
+            y[0] = _uR + _sigma[1] * xi[1];
             return y;
         }
     }
@@ -88,25 +88,25 @@ Vector Burgers::IC( const Vector& x, const Vector& xi ) {
 Matrix Burgers::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
     double x0, x1;
     Matrix y( _settings->GetNumCells(), _nStates );
-    if( t >= ( _x1 - _x0 ) / ( _uL - _uR ) ) {
-        double tS            = ( _x1 - _x0 ) / ( _uL - _uR );
+    if( t >= ( _x1 - _x0 ) / ( _uL - ( _uR + _sigma[1] * xi[1] ) ) ) {
+        double tS            = ( _x1 - _x0 ) / ( _uL - ( _uR + _sigma[1] * xi[1] ) );
         double x0BeforeShock = _x0 + _sigma[0] * xi[0] + tS * _uL;
         // double x1BeforeShock = _x1 + _sigma[0] * xi[0] + tS * _uR;
-        x0 = x0BeforeShock + ( t - tS ) * ( _uL + _uR ) * 0.5;
+        x0 = x0BeforeShock + ( t - tS ) * ( _uL + _uR + _sigma[1] * xi[1] ) * 0.5;
         x1 = x0 - 1.0;
     }
     else {
         x0 = _x0 + _sigma[0] * xi[0] + t * _uL;
-        x1 = _x1 + _sigma[0] * xi[0] + t * _uR;
+        x1 = _x1 + _sigma[0] * xi[0] + t * ( _uR + _sigma[1] * xi[1] );
     }
 
     for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
         if( x( j, 0 ) < x0 )
             y( j, 0 ) = _uL;
         else if( x( j, 0 ) < x1 )
-            y( j, 0 ) = _uL + ( _uR - _uL ) * ( x( j, 0 ) - x0 ) / ( x1 - x0 );
+            y( j, 0 ) = _uL + ( _uR + _sigma[1] * xi[1] - _uL ) * ( x( j, 0 ) - x0 ) / ( x1 - x0 );
         else
-            y( j, 0 ) = _uR;
+            y( j, 0 ) = _uR + _sigma[1] * xi[1];
     }
     return y;
 }

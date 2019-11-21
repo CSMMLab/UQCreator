@@ -13,7 +13,7 @@ outputFile = "burgers_shock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre","Legendre"],[0.1, 0.0]]
+distribution = [["Legendre","Legendre"],[0.1, 0.7]]
 CFL = 0.9
 tEnd = 0.12
 
