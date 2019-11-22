@@ -1,11 +1,11 @@
 [general]
-problem = "PNEquations2D"
+problem = "PNEquations"
 outputDir = "../results"
 
 [mesh]
 dimension = 2
 format = "SU2"
-SU2MeshFile = "square1-2.su2"
+SU2MeshFile = "square1-2Fine.su2"
 SU2BC = [["OuterBoundary","dirichlet"]]
 outputFile = "pnTestKerstin"
 
@@ -14,14 +14,14 @@ outputFile = "pnTestKerstin"
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.0]]
-CFL = 1.0 # 0.1
+CFL = 0.9 # 0.1
 tEnd = 0.5
 residual = -1.0
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
 closure = "StochasticGalerkin"
-moments = [["totalDegree"],[1]]
+moments = [["totalDegree"],[0]]
 quadPoints = [["tensorizedGrid"],[1]]
 maxIterations = 1000
 epsilon = 1e-7

@@ -4,6 +4,8 @@ UniformSparseGrid::UniformSparseGrid( Settings* settings ) : SparseGrid( setting
 
 UniformSparseGrid::UniformSparseGrid( Settings* settings, unsigned level ) : SparseGrid( settings->GetNDimXi(), level ) { createGrid(); }
 
+UniformSparseGrid::UniformSparseGrid( unsigned level, unsigned dim ) : SparseGrid( dim, level ) { createGrid(); }
+
 UniformSparseGrid::~UniformSparseGrid() {}
 
 ///////////////////////////////////////////////////////////////////////////////////////

@@ -39,14 +39,6 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             log->error( "[inputfile] [mesh] 'dimension' not set!" );
             validConfig = false;
         }
-        auto outputFile = mesh->get_as<std::string>( "outputFile" );
-        if( outputFile ) {
-            _outputFile = _inputDir.string() + "/" + _outputDir.string() + "/" + *outputFile;
-        }
-        else {
-            log->error( "[inputfile] [mesh] 'outputFile' not set!" );
-            validConfig = false;
-        }
 
         // section general
         auto general           = file->get_table( "general" );
@@ -68,8 +60,17 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( problemTypeString->compare( "ShallowWater2D" ) == 0 ) {
                 _problemType = ProblemType::P_SHALLOWWATER_2D;
             }
-            else if( problemTypeString->compare( "PNEquations2D" ) == 0 ) {
-                _problemType = ProblemType::P_PNEQUATIONS_2D;
+            else if( problemTypeString->compare( "PNEquations" ) == 0 ) {
+                if( _meshDimension == 1 )
+                    _problemType = ProblemType::P_PNEQUATIONS_1D;
+                else if( _meshDimension == 2 )
+                    _problemType = ProblemType::P_PNEQUATIONS_2D;
+            }
+            else if( problemTypeString->compare( "M1Equations" ) == 0 ) {
+                if( _meshDimension == 1 )
+                    _problemType = ProblemType::P_M1EQUATIONS_1D;
+                else
+                    std::cerr << "M1 for 2D not implemented" << std::endl;
             }
             else if( problemTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
                 if( _meshDimension == 1 )
@@ -77,9 +78,15 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 else if( _meshDimension == 2 )
                     _problemType = ProblemType::P_RADIATIONHYDRO_2D;
             }
+            else if( problemTypeString->compare( "ThermalRadiativeTransfer" ) == 0 ) {
+                _problemType = ProblemType::P_THERMALRAD_1D;
+            }
+            else if( problemTypeString->compare( "NavierStokes" ) == 0 ) {
+                _problemType = ProblemType::P_NAVIERSTOKES_1D;
+            }
             else {
                 log->error( "[inputfile] [general] 'problem' is invalid!\nPlease set one of the following types: Burgers1D, Euler1D, "
-                            "Euler2D,ShallowWater1D,ShallowWater2D,PNEquations2D,RadiationHydrodynamics" );
+                            "Euler2D,ShallowWater1D,ShallowWater2D,PNEquations2D,RadiationHydrodynamics,M1Equations,NavierStokes" );
                 validConfig = false;
             }
         }
@@ -95,17 +102,21 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             log->error( "[inputfile] [general] 'outputDir' not set!" );
             validConfig = false;
         }
+        auto outputFile = mesh->get_as<std::string>( "outputFile" );
+        if( outputFile ) {
+            _outputFile = _inputDir.string() + "/" + _outputDir.string() + "/" + *outputFile;
+        }
+        else {
+            log->error( "[inputfile] [mesh] 'outputFile' not set!" );
+            validConfig = false;
+        }
 
         auto restartFile = general->get_as<std::string>( "restartFile" );
         if( restartFile ) {
             _restartFile = _inputDir.string() + "/" + *restartFile;
             if( restart ) _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
         }
-        if( !restart )
-            _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
-        else {
-            _loadLambda = false;
-        }
+        if( !restart ) _loadLambda = general->get_as<bool>( "importDualState" ).value_or( false );
 
         auto icFile = general->get_as<std::string>( "icFile" );
         if( icFile ) {
@@ -114,7 +125,11 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
 
         if( !restart ) {
             auto refFile    = general->get_as<std::string>( "referenceSolution" );
-            _writeFrequency = general->get_as<unsigned>( "writeFrequency" ).value_or( 1000 );
+            _writeFrequency = general->get_as<int>( "writeFrequency" ).value_or( -1 );
+            if( _writeFrequency == -1 )
+                _writeInTime = false;
+            else
+                _writeInTime = true;
             if( refFile ) {
                 _referenceFile = _inputDir.string() + "/" + *refFile;
             }
@@ -210,9 +225,18 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( closureTypeString->compare( "LassoFilter" ) == 0 ) {
                 _closureType = ClosureType::C_LASSOFILTER;
             }
+            else if( closureTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
+                _closureType = ClosureType::C_RADHYDRO;
+            }
+            else if( closureTypeString->compare( "M1" ) == 0 ) {
+                _closureType = ClosureType::C_M1_1D;
+            }
+            else if( closureTypeString->compare( "HyperbolicityLimiter" ) == 0 ) {
+                _closureType = ClosureType::C_HYPLIM;
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogSin, "
-                            "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
+                            "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter,RadiationHydrodynamics,M1,HyperbolicityLimiter" );
                 validConfig = false;
             }
         }
@@ -295,6 +319,13 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 _gridType = G_TENSORIZEDGRID;
                 _nQTotal  = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
             }
+            else if( quadratureType->at( 0 ).compare( "tensorizedCCGrid" ) == 0 ) {    // tensorizedCC
+                _gridType = G_TENSORIZEDCC;
+                if( _nQuadPoints == 0 )
+                    _nQTotal = 1;
+                else
+                    _nQTotal = unsigned( std::pow( static_cast<unsigned>( std::pow( 2, _nQuadPoints ) + 1 ), _numDimXi ) );
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'quadType' not defined!" );
                 validConfig = false;
@@ -333,10 +364,14 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             _refinementThreshold = ( *refinementThresholds )[0];
             _coarsenThreshold    = ( *refinementThresholds )[1];
         }
-        else {
-            _refinementThreshold = std::numeric_limits<double>::infinity();
-            _coarsenThreshold    = 0.0;
-        }
+
+        _regularizationStrength = moment_system->get_as<double>( "regularizationStrength" ).value_or( -1.0 );
+        if( _regularizationStrength < 0 )
+            _regularization = false;
+        else
+            _regularization = true;
+
+        _filterStrength = moment_system->get_as<double>( "filterStrength" ).value_or( -1.0 );
 
         _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
         _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
@@ -359,7 +394,7 @@ void Settings::SetNStates( unsigned n ) { _nStates = n; }
 std::string Settings::GetInputFile() const { return _inputFile; }
 std::string Settings::GetInputDir() const { return _inputDir; }
 std::string Settings::GetOutputDir() const { return _outputDir; }
-unsigned Settings::GetWriteFrequency() const { return _writeFrequency; }
+int Settings::GetWriteFrequency() const { return _writeFrequency; }
 
 // mesh
 unsigned Settings::GetMeshDimension() const { return _meshDimension; }
@@ -443,6 +478,7 @@ unsigned Settings::GetPolyDegreeforRefLevel( unsigned level ) const { return _re
 GridType Settings::GetGridType() const { return _gridType; }
 VectorU Settings::GetQuadLevel() const { return _quadLevel; }
 std::vector<unsigned> Settings::GetIndicesQforRef( unsigned level ) const { return _kIndicesAtRef[level]; }
+bool Settings::HasRegularization() const { return _regularization; }
 
 // Set Total number of Quadrature points at each refinement level
 void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
@@ -459,6 +495,10 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
         if( unsigned( std::ceil( ( double( _mype ) + 1.0 ) * ( double( numberNewPoints ) / double( _npes ) ) ) ) == kEnd ) kEnd = kEnd - 1;
         kEnd += nQTotalForRefOld;
         kStart += nQTotalForRefOld;
+
+        // clear vector
+        _kIndicesAtRef[l].clear();
+        _kIndicesAtRef[l].resize( 0 );
 
         // save old indices on current refinement level
         if( l > 0 )
@@ -478,6 +518,12 @@ void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {
 unsigned Settings::GetNQTotalForRef( unsigned level ) const { return _nQTotalForRef[level]; }
 VectorU Settings::GetNQTotalForRef() const { return _nQTotalForRef; }
 unsigned Settings::GetNqPEAtRef( unsigned level ) const { return _nQPEAtRef[level]; }
+double Settings::GetFilterStrength() const { return _filterStrength; }
+double Settings::GetRegularizationStrength() const { return _regularizationStrength; }
+
+// plot
+unsigned Settings::GetPlotStepInterval() const { return _plotStepInterval; }
+double Settings::GetPlotTimeInterval() const { return _plotTimeInterval; }
 
 // MPI
 int Settings::GetMyPE() const { return _mype; }

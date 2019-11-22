@@ -7,12 +7,15 @@
 
 class RadiationHydrodynamics1D : public PNEquations
 {
-    double _c;    // radiation velocity
-    double _P;
-    double _R;
-    double _gamma;
-    unsigned _nMoments;
-    double Delta( int l, int k ) const;
+    double _c;             // relativistic effects
+    double _P;             // measures how radiation affects material dynamics
+    double _cLight;        // speed of light
+    double _h;             // Planck's constant
+    double _R;             // specific gas constant
+    double _aR;            // radiation constant
+    double _gamma;         // adiabatic constant
+    unsigned _nMoments;    // number of angular moments
+    unsigned _testCase;
 
     // reference values
     double _rhoRef;
@@ -28,6 +31,7 @@ class RadiationHydrodynamics1D : public PNEquations
     Matrix FRadiation( const Vector& u ) const;
     Matrix FEuler( const Vector& u ) const;
     virtual int GlobalIndex( int l, int k ) const;
+    double Delta( int l, int k ) const;
 
   public:
     RadiationHydrodynamics1D( Settings* settings );

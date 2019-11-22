@@ -4,14 +4,14 @@
 MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
     _log         = spdlog::get( "event" );
     _nCells      = _settings->GetNumCells();
-    _nMoments    = _settings->GetNMoments();
     _tStart      = 0.0;
     _tEnd        = _settings->GetTEnd();
     _nStates     = _settings->GetNStates();
     _nQuadPoints = _settings->GetNQuadPoints();
 
-    _nTotal       = _settings->GetNTotal();
-    _nTotalForRef = _settings->GetNTotalRefinementLevel();
+    _nTotal        = _settings->GetNTotal();
+    _nTotalForRef  = _settings->GetNTotalRefinementLevel();
+    _nQTotalForRef = _settings->GetNQTotalForRef();
 
     _cellIndexPE = _settings->GetCellIndexPE();
 
@@ -34,12 +34,20 @@ MomentSolver::~MomentSolver() {
 }
 
 void MomentSolver::Solve() {
-    bool writeSolutionInTime = false;
-    unsigned retCounter      = 0;    // counter for retardation level
+    unsigned retCounter = 0;    // counter for retardation level
     // unsigned retLevel        = _settings->GetResidualRetardation( 0 );
     VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );       // vector carries refinement level for each cell
     VectorU refinementLevelOld( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );    // vector carries old refinement level for each cell
     VectorU refinementLevelTransition( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );
+
+    // set Dirichlet Cells to finest refinement level
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) {
+            refinementLevel[j]           = _settings->GetNRefinementLevels() - 1;
+            refinementLevelOld[j]        = _settings->GetNRefinementLevels() - 1;
+            refinementLevelTransition[j] = _settings->GetNRefinementLevels() - 1;
+        }
+    }
 
     auto log                                  = spdlog::get( "event" );
     std::chrono::steady_clock::time_point tic = std::chrono::steady_clock::now();
@@ -51,6 +59,9 @@ void MomentSolver::Solve() {
     MatVec u = DetermineMoments( prevSettings->GetNTotal() );
     SetDuals( prevSettings, prevClosure, u );
     MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
+    // slopes for slope limiter
+    MatVec duQx( _nCells, Matrix( _nStates, _settings->GetNqPE(), 0.0 ) );
+    MatVec duQy( _nCells, Matrix( _nStates, _settings->GetNqPE(), 0.0 ) );
 
     std::vector<int> PEforCell = _settings->GetPEforCell();
 
@@ -69,17 +80,21 @@ void MomentSolver::Solve() {
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
 
+    // perform initial step for regularization
+    if( _settings->HasRegularization() ) PerformInitialStep( refinementLevel, uNew );
+
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
+
         double residual = 0;
 
         // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            // std::cout << "Cell " << _cellIndexPE[j] << ": Solving Closure with lambda = " << _lambda[_cellIndexPE[j]]
-            //          << ", u = " << u[_cellIndexPE[j]] << std::endl;
-            _closure->SolveClosure( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
+            _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+            // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
         }
 
         // MPI Broadcast lambdas to all PEs
@@ -94,18 +109,22 @@ void MomentSolver::Solve() {
         // determine refinement level of cells on current PE
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            double indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
-
+            double indicator;
+            if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D )
+                indicator = 0.0;
+            else
+                indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
             if( indicator > _settings->GetRefinementThreshold() &&
-                refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels( retCounter ) - 1 )
+                refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels( retCounter ) - 1 &&
+                _mesh->GetBoundaryType( _cellIndexPE[j] ) != BoundaryType::DIRICHLET )
                 refinementLevel[_cellIndexPE[j]] += 1;
-            else if( indicator < _settings->GetCoarsenThreshold() && refinementLevel[_cellIndexPE[j]] > 0 )
+            else if( indicator < _settings->GetCoarsenThreshold() && refinementLevel[_cellIndexPE[j]] > 0 &&
+                     _mesh->GetBoundaryType( _cellIndexPE[j] ) != BoundaryType::DIRICHLET )
                 refinementLevel[_cellIndexPE[j]] -= 1;
         }
 
         // broadcast refinemt level to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
-            // refinementLevel[j] = 0;    // TODO: rausnehmen
             MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
         }
 
@@ -133,8 +152,11 @@ void MomentSolver::Solve() {
 
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
+            // recompute moments with inexact dual variables
             u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
+
+        // compute derivative on quadrature points of certain PE
 
         // determine time step size
         double dtMinOnPE = 1e10;
@@ -144,6 +166,7 @@ void MomentSolver::Solve() {
             if( dtCurrent < dtMinOnPE ) dtMinOnPE = dtCurrent;
         }
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
+        _settings->SetDT( dt );
         t += dt;
         ++timeIndex;
 
@@ -157,6 +180,14 @@ void MomentSolver::Solve() {
             MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
         }
 
+        if( _settings->HasRegularization() ) {
+            // add eta*lambda to obtain old moments
+            for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+                u[_cellIndexPE[j]] = u[_cellIndexPE[j]].Add(
+                    _settings->GetRegularizationStrength() * _lambda[_cellIndexPE[j]], _nStates, _nTotalForRef[refinementLevelOld[_cellIndexPE[j]]] );
+            }
+        }
+
         // compute residual
         for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
             residual += std::abs( u[_cellIndexPE[j]]( 0, 0 ) - uOld[_cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( _cellIndexPE[j] );
@@ -166,7 +197,7 @@ void MomentSolver::Solve() {
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
             if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
-            if( writeSolutionInTime && timeIndex % _settings->GetWriteFrequency() == 1 ) {
+            if( _settings->WriteInTime() && timeIndex % _settings->GetWriteFrequency() == 1 ) {
                 Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, false );
                 _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
                 if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
@@ -209,7 +240,6 @@ void MomentSolver::Solve() {
             }
         }
     }
-    std::cout << "Writing mean and var DONE." << std::endl;
 
     if( _settings->HasReferenceFile() || _settings->HasExactSolution() ) {
         Vector a( 2 );
@@ -234,6 +264,9 @@ void MomentSolver::Solve() {
 
         // export error plot
         _mesh->Export( meanAndVarErrors, "_errors" );
+
+        // export 2nd derivative error
+        if( _settings->HasReferenceFile() ) Write2ndDerMeanAndVar( meanAndVar );
     }
 
     // export mean and variance
@@ -242,6 +275,8 @@ void MomentSolver::Solve() {
     else {
         _mesh->Export( meanAndVar, "" );
     }
+
+    // WriteGradientsScalarField( meanAndVar );
 
     // export solution fields
     this->Export( uNew, _lambda );
@@ -289,8 +324,9 @@ void MomentSolver::Solve() {
 
 void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const VectorU& refLevel ) const {
     Matrix out( _nStates, _nTotal );    // could also be allocated before and then stored in class, be careful with openmp!!!
-#pragma omp parallel for
+                                        //#pragma omp parallel for
     for( unsigned j = 0; j < _nCells; ++j ) {
+        if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
         out     = _problem->Source( uQ[j] ) * _closure->GetPhiTildeWfAtRef( refLevel[j] );
         uNew[j] = uNew[j] + dt * out;    // TODO: check dt*dx correct?  vorher * _mesh->GetArea( j )
     }
@@ -322,7 +358,7 @@ void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, co
     // loop over all cells and check refinement indicator
     Matrix refinementIndicatorPlot( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
-        double indicator                = ComputeRefIndicator( refinementLevel, u[j], refinementLevel[j] );
+        double indicator                = 1.0;
         refinementIndicatorPlot( 0, j ) = indicator;    // modify for multiD
         refinementIndicatorPlot( 1, j ) = double( refinementLevel[j] );
     }
@@ -450,6 +486,106 @@ MatVec MomentSolver::DetermineMoments( unsigned nTotal ) const {
     return u;
 }
 
+// TODO: refLevel is stored for all x <-> MPI ?
+void MomentSolver::DetermineGradients( MatVec& duQx, MatVec& duQy, const MatVec& uQ, const VectorU& refLevel ) const {
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        duQx[j].reset();
+        duQy[j].reset();
+        auto cell        = _mesh->GetCell( j );
+        auto neighborIDs = cell->GetNeighborIDs();
+        // compute derivative for every quadrature point on PE
+        for( unsigned s = 0; s < _nStates; ++s ) {
+            for( unsigned k = 0; k < _nQTotalForRef[refLevel[j]]; ++k ) {
+                // use all neighboring cells for stencil
+                for( unsigned l = 0; l < neighborIDs.size(); ++l ) {
+                    duQx[j]( s, k ) =
+                        duQx[j]( s, k ) + 0.5 * ( uQ[j]( s, k ) + uQ[neighborIDs[l]]( s, k ) ) * cell->GetNormal( l )[0] / cell->GetArea();
+                    duQy[j]( s, k ) =
+                        duQy[j]( s, k ) + 0.5 * ( uQ[j]( s, k ) + uQ[neighborIDs[l]]( s, k ) ) * cell->GetNormal( l )[1] / cell->GetArea();
+                }
+            }
+        }
+    }
+}
+
+void MomentSolver::DetermineGradientsScalarField( Matrix& dux, Matrix& duy, const Matrix& u ) const {
+    dux.reset();
+    duy.reset();
+    unsigned nStates  = u.rows();
+//    unsigned numCells = _mesh->GetNumCells();
+
+    for( unsigned s = 0; s < nStates; ++s ) {
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            auto cell = _mesh->GetCell( j );
+            if( cell->IsBoundaryCell() ) continue;
+            auto neighborIDs = cell->GetNeighborIDs();
+            // use all neighboring cells for stencil
+            for( unsigned l = 0; l < neighborIDs.size(); ++l ) {
+                dux( s, j ) = dux( s, j ) + 0.5 * ( u( s, j ) + u( s, neighborIDs[l] ) ) * cell->GetNormal( l )[0] / cell->GetArea();
+                duy( s, j ) = duy( s, j ) + 0.5 * ( u( s, j ) + u( s, neighborIDs[l] ) ) * cell->GetNormal( l )[1] / cell->GetArea();
+            }
+        }
+    }
+}
+
+void MomentSolver::WriteGradientsScalarField( const Matrix& u ) const {
+    unsigned nStates = u.rows();
+    Matrix dux( nStates, _nCells, 0.0 );
+    Matrix duy( nStates, _nCells, 0.0 );
+    DetermineGradientsScalarField( dux, duy, u );
+    _mesh->Export( dux, "_xDer" );
+    _mesh->Export( duy, "_yDer" );
+}
+
+void MomentSolver::Write2ndDerMeanAndVar( const Matrix& meanAndVar ) const {
+    Matrix MeanVar( 2 * _nStates, _nCells );
+    Matrix MeanVarExact( 2 * _nStates, _nCells );
+    std::cout << "meanAndVar rows " << meanAndVar.rows() << std::endl;
+    for( unsigned s = 0; s < _nStates; ++s ) {
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            MeanVar( s, j )                 = meanAndVar( 0 * _nStates + s, j );
+            MeanVar( _nStates + s, j )      = meanAndVar( 1 * _nStates + s, j );
+            MeanVarExact( s, j )            = _referenceSolution[j][s];
+            MeanVarExact( _nStates + s, j ) = _referenceSolution[j][s + _nStates];
+        }
+    }
+
+    Matrix dux( 2 * _nStates, _nCells, 0.0 );
+    Matrix duy( 2 * _nStates, _nCells, 0.0 );
+    DetermineGradientsScalarField( dux, duy, MeanVarExact - MeanVar );
+    _mesh->Export( dux, "_ErrorXDer" );
+    _mesh->Export( duy, "_ErrorYDer" );
+    Matrix duxx( 2 * _nStates, _nCells, 0.0 );
+    Matrix duyy( 2 * _nStates, _nCells, 0.0 );
+    DetermineGradientsScalarField( duxx, duyy, dux );
+    _mesh->Export( duxx, "_ErrorXXDer" );
+    _mesh->Export( duyy, "_ErrorXYDer" );
+    DetermineGradientsScalarField( duxx, duyy, duy );
+    _mesh->Export( duxx, "_ErrorYXDer" );
+    _mesh->Export( duyy, "_ErrorYYDer" );
+
+    Vector l1Error( 2 * _nStates, 0.0 );
+    Vector l2Error( 2 * _nStates, 0.0 );
+    for( unsigned s = 0; s < 2 * _nStates; ++s ) {
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            l1Error[s] += ( std::fabs( duxx( s, j ) ) + std::fabs( duyy( s, j ) ) ) * _mesh->GetArea( j );
+            l2Error[s] += ( std::pow( duxx( s, j ), 2 ) + std::pow( duyy( s, j ), 2 ) ) * _mesh->GetArea( j );
+        }
+        l2Error[s] = sqrt( l2Error[s] );
+    }
+
+    _log->info( "\nExpectation 2nd Der error w.r.t reference solution:" );
+    _log->info( "State   L1-error      L2-error" );
+    for( unsigned i = 0; i < _nStates; ++i ) {
+        _log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
+    }
+    _log->info( "\nVariance 2nd Der error w.r.t reference solution:" );
+    _log->info( "State   L1-error      L2-error" );
+    for( unsigned i = _nStates; i < 2 * _nStates; ++i ) {
+        _log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
+    }
+}
+
 Settings* MomentSolver::DeterminePreviousSettings() const {
     Settings* prevSettings;
     if( _settings->HasRestartFile() ) {
@@ -563,7 +699,6 @@ MatVec MomentSolver::SetupIC() const {
                 column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );
             }
         }
-
         u[j] = uIC * phiTildeWf;
     }
     return u;
@@ -814,4 +949,22 @@ void MomentSolver::WriteErrors( const VectorU& refinementLevel ) {
     l1ErrorVarLog->info( osL1ErrorVar.str() );
     l2ErrorVarLog->info( osL2ErrorVar.str() );
     lInfErrorVarLog->info( osLInfErrorVar.str() );
+}
+void MomentSolver::PerformInitialStep( const VectorU& refinementLevel, MatVec& u ) {
+// initial dual solve
+#pragma omp parallel for schedule( dynamic, 10 )
+    for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+        _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+    }
+
+    MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
+    // compute solution at quad points
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevel[j], refinementLevel[j] ) );
+    }
+
+    // compute partial moment vectors on each PE (for inexact dual variables)
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
+    }
 }

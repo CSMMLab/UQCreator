@@ -1,28 +1,29 @@
 [general]
 problem = "Euler1D"
 outputDir = "../results"
-writeFrequency = 10
 
 [mesh]
 dimension = 1
-numberOfCells = 5000
+numberOfCells = 1000
 a = 0
-b = 1
-outputFile = "euler_shock"
+b = 0.6
+outputFile = "euler_shock_N14"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.05]]
-CFL = 0.5
-tEnd = 0.23
+distribution = [["Legendre"],[0.075]]
+CFL = 0.8
+tEnd = 0.14
 
 [moment_system]
-# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
+# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter
 closure = "Euler"
-moments = [["totalDegree"],[2,3,4,5,6,7,8,9,10,11,12,13]]
-quadPoints = [["sparseGrid"],[2,2,3,3,3,4,4,4,4,4,5,5]]
-# quadPoints = [["tensorizedGrid"],[ 7 ]]
-maxIterations = 200
-epsilon = 5e-5
+moments = [["totalDegree"],[14]]
+quadPoints = [["tensorizedGrid"],[20]]
+#refinementThresholds = [0.0001, 0.00001]
+regularizationStrength = 1e-7
+filterStrength = 5e-7#7.5e-7
+maxIterations = 10000
+epsilon = 1e-5

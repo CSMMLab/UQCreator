@@ -1,0 +1,28 @@
+[general]
+problem = "PNEquations"
+outputDir = "../results"
+writeFrequency = 10
+
+[mesh]
+dimension = 1
+numberOfCells = 3000
+a = -1.5
+b = 1.5
+outputFile = "PNEquations1D"
+
+[problem]
+# available timesteppings: explicitEuler
+timestepping = "explicitEuler"
+# available distributions: Legendre, Hermite
+distribution = [["Legendre"],[0.0]]
+CFL = 0.99 # 0.1
+tEnd = 1.0
+#tEnd = 0.01
+
+[moment_system]
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler
+closure = "StochasticGalerkin"
+moments = [["totalDegree"],[0]]
+quadPoints = [["tensorizedGrid"],[1]]
+maxIterations = 1000
+epsilon = 1e-7

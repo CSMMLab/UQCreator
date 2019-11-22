@@ -16,6 +16,14 @@ TensorizedQuadrature::TensorizedQuadrature( Settings* settings, unsigned nQuadPo
     CreateGrid();
 }
 
+TensorizedQuadrature::TensorizedQuadrature( Settings* settings, unsigned nQuadPoints, unsigned dim )
+    : _settings( settings ), _nQuadPoints( nQuadPoints ) {
+    // compute total number of quad points
+    _numDimXi = dim;
+    _nQTotal  = unsigned( std::pow( nQuadPoints, _numDimXi ) );
+    CreateGrid();
+}
+
 TensorizedQuadrature::~TensorizedQuadrature() {
     for( unsigned i = 0; i < _numDimXi; i++ ) delete[] _nodes[i];
     delete[] _nodes;

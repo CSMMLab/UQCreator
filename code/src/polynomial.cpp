@@ -21,7 +21,7 @@ Polynomial* Polynomial::Create( Settings* settings, unsigned order, Distribution
         return new Legendre( order );
     }
     else if( distributionType == DistributionType::D_HERMITE ) {
-        return new Hermite( settings->GetNQuadPoints() );
+        return new Hermite( order );
     }
     else {
         log->error( "[distribution] Invalid distribution type" );

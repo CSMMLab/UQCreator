@@ -16,9 +16,13 @@ enum ProblemType {
     P_EULER_2D,
     P_SHALLOWWATER_1D,
     P_SHALLOWWATER_2D,
+    P_PNEQUATIONS_1D,
+    P_M1EQUATIONS_1D,
     P_PNEQUATIONS_2D,
     P_RADIATIONHYDRO_1D,
-    P_RADIATIONHYDRO_2D
+    P_RADIATIONHYDRO_2D,
+    P_THERMALRAD_1D,
+    P_NAVIERSTOKES_1D
 };
 enum ClosureType {
     C_BOUNDEDBARRIER,
@@ -29,11 +33,14 @@ enum ClosureType {
     C_SHALLOWWATER_1D,
     C_SHALLOWWATER_2D,
     C_L2FILTER,
-    C_LASSOFILTER
+    C_LASSOFILTER,
+    C_RADHYDRO,
+    C_M1_1D,
+    C_HYPLIM
 };
 enum TimesteppingType { T_EXPLICITEULER };
 enum DistributionType { D_LEGENDRE, D_HERMITE };
-enum GridType { G_SPARSEGRID, G_TENSORIZEDGRID };
+enum GridType { G_SPARSEGRID, G_TENSORIZEDGRID, G_TENSORIZEDCC };
 
 class Settings
 {
@@ -48,8 +55,11 @@ class Settings
     std::filesystem::path _restartFile;
     std::filesystem::path _referenceFile;
     bool _loadLambda;
+    bool _regularization;
+    bool _writeInTime;
+    double _regularizationStrength;
 
-    unsigned _writeFrequency;    // number of time steps until error to reference solution is computed
+    int _writeFrequency;    // number of time steps until error to reference solution is computed
 
     // requied settings
     unsigned _meshDimension;
@@ -89,10 +99,13 @@ class Settings
 
     unsigned _numDimXi;
     double _epsilon;
+    double _filterStrength;    // strength for filter methods
     double _CFL;
     double _tEnd;
     double _minResidual;    // residual at which iteration is stopped for steady problems
     double _dt;             // timestepsize only required if no function ComputeDt provided in problem
+    unsigned _plotStepInterval;
+    double _plotTimeInterval;
 
     ClosureType _closureType;
     ProblemType _problemType;
@@ -121,7 +134,7 @@ class Settings
     std::string GetInputFile() const;
     std::string GetInputDir() const;
     std::string GetOutputDir() const;
-    unsigned GetWriteFrequency() const;
+    int GetWriteFrequency() const;
 
     // mesh
     unsigned GetMeshDimension() const;
@@ -152,6 +165,7 @@ class Settings
     void SetExactSolution( bool hasExactSolution );
     bool HasExactSolution() const;
     bool HasSource() const;
+    bool WriteInTime() const { return _writeInTime; }
     void SetSource( bool hasSource );
 
     // moment_system
@@ -183,6 +197,14 @@ class Settings
     void SetMaxIterations( unsigned maxIterations );
     double GetEpsilon() const;
     GridType GetGridType() const;
+    bool HasRegularization() const;
+    double GetFilterStrength() const;
+    double GetRegularizationStrength() const;
+
+    // plot
+    bool GetPlotEnabled() const;
+    unsigned GetPlotStepInterval() const;
+    double GetPlotTimeInterval() const;
 
     // MPI
     int GetMyPE() const;

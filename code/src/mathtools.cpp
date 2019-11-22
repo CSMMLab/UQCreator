@@ -110,3 +110,31 @@ int MathTools::Factorial( int i ) {
     }
     return fact;
 }
+
+double MathTools::max( double a, double b ) {
+    if( a > b )
+        return a;
+    else
+        return b;
+}
+
+double MathTools::min( double a, double b ) {
+    if( b < a )
+        return b;
+    else
+        return a;
+}
+
+double MathTools::sign( double a ) {
+    if( a > 0 )
+        return 1;
+    else
+        return -1;
+}
+
+double MathTools::csch( const double x ) {
+    // return 1.0 / sinh( x );
+    return fabs( x ) / ( x * fabs( sinh( x ) ) );
+}
+
+double MathTools::coth( const double x ) { return sinh( 2.0 * x ) / ( cosh( 2.0 * x ) - 1.0 ); }

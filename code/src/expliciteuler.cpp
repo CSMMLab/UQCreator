@@ -34,6 +34,8 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                 fluxFunc( rhs, _problem->G( uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ), refLevel[j] ), refLevel[j] );
             }
         }
+        // std::cout << "A = " << cell->GetArea() << std::endl;
+        // std::cout << dt / cell->GetArea() << std::endl;
         uNew[j] = u[j] - ( dt / cell->GetArea() ) * rhs;
     }
 }

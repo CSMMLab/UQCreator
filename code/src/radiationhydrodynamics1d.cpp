@@ -3,33 +3,57 @@
 RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEquations( settings, true ) {
     _N = 1;    // set moment order
 
+    // specify test case
+    _testCase = 2;
+
     // constants
-    _gamma        = 5.0 / 3.0;              // adiabatic constant
-    _R            = 287.87;                 // specific gas constant
-    double cLight = 299792458.0 * 100.0;    // speed of light in [cm/s]
-    double aR     = 7.5657 * 1e-15;         // radiation constant
+    double k = 1.38064852e-16;         // Boltzmann's constant [cm^2 g / (s^2 K)]
+    _gamma   = 5.0 / 3.0;              // adiabatic constant
+    _R       = 8.3144621 * 1e7;        // specific gas constant [erg / (K mol)]
+    _cLight  = 299792458.0 * 100.0;    // speed of light in [cm/s]
+    _aR      = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
+    _h       = 6.62607004 * 1e-27;     // Planck's constant [cm^2 g/s]
 
     // initial chock states
-    double rhoL = 5.45887 * 1e-13;
-    double uL   = 2.3545 * 1e5;
-    double TL   = 100.0;
-    // double rhoR = 1.2479 * 1e-12;
-    // double uR   = 1.03 * 1e5;
-    // double TR   = 207.757;
+    double rhoL, uL, TL, rhoR, uR, TR, lRef;
+    if( _testCase == 1 ) {
+        rhoL = 5.45887 * 1e-13;    // [g/cm^3]
+        uL   = 2.3545 * 1e5;       // [cm/s]
+        TL   = 100.0;              // [K]
+        rhoR = 1.2479 * 1e-12;
+        uR   = 1.03 * 1e5;
+        TR   = 207.757;
+        lRef = 1000;
+    }
+    else {
+        uL   = 5.88588 * 1e5;      // [cm/s]   from Zhang paper
+        rhoL = 5.45887 * 1e-13;    // [g/cm^3]
+        TL   = 100.0;              // [K]
+        rhoR = 1.964050 * 1e-12;
+        uR   = 1.63 * 1e5;
+        TR   = 855.72;
+        lRef = 4000;
+    }
 
     // reference values
-    double lRef = 1000;
-    _rhoRef     = rhoL;
-    _TRef       = TL;
-    _aRef       = sqrt( _gamma * _R * _TRef );
-    _pRef       = _rhoRef * pow( _aRef, 2 );    // update pRef with speed of sound
+    _rhoRef = rhoR;                           // reference density [g/cm^3]
+    _TRef   = TR;                             // reference temperature [K]
+    _aRef   = sqrt( _gamma * _R * _TRef );    // reference speed of sound [cm/s]
+    _pRef   = _rhoRef * pow( _aRef, 2 );      // update pRef with speed of sound
 
     std::cout << "vL = " << uL << ", aRef = " << _aRef << std::endl;
 
-    _c = cLight / _aRef;
-    _P = aR * pow( _TRef, 4 ) / ( _rhoRef * pow( _aRef, 2 ) );
+    _c = _cLight / _aRef;
+    _P = _aR * pow( _TRef, 4 ) / ( _rhoRef * pow( _aRef, 2 ) );    // * 100;
+
+    // set cross sections
+    _sigmaA = 3.93 * 1e-5 * lRef;    // absorption coefficient
+    _sigmaT = 0.848902 * lRef;       // 7.5657 * 1e-15;
+    _sigmaS = _sigmaT - _sigmaA;     // scattering coefficient
 
     std::cout << "C = " << _c << " , P = " << _P << std::endl;
+
+    _settings->SetGamma( _gamma );
 
     if( _N == 1 )    // GlobalIndex has different ordering here
         _nMoments = 4;
@@ -38,9 +62,6 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     _nStates = _nMoments + 3;    // total number of states in equations in P_N + Euler
     _settings->SetNStates( _nStates );
     _settings->SetSource( true );    // TODO:DEBUGGING
-    _sigmaA = 3.93 * 1e-5 * lRef;    // absorption coefficient
-    _sigmaT = 0.848902 * lRef;       // 7.5657 * 1e-15;
-    _sigmaS = _sigmaT - _sigmaA;     // scattering coefficient
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
         auto problem = file->get_table( "problem" );
@@ -49,23 +70,6 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
         _log->error( "[pnequations] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
-}
-
-Matrix RadiationHydrodynamics1D::Source( const Matrix& uQ ) const {
-    unsigned nStates = static_cast<unsigned>( uQ.rows() );
-    unsigned Nq      = static_cast<unsigned>( uQ.columns() );
-    Matrix y( nStates, Nq, 0.0 );
-    for( unsigned k = 0; k < Nq; ++k ) {
-        double se             = SE( column( uQ, k ) );
-        Vector sFVec          = SF( column( uQ, k ) );
-        y( 0, k )             = _c * se;
-        y( 1, k )             = _c * sFVec[0];
-        y( 2, k )             = _c * sFVec[1];
-        y( 3, k )             = _c * sFVec[2];
-        y( _nMoments + 1, k ) = -_P * sFVec[0];
-        y( _nMoments + 2, k ) = -_P * _c * se;
-    }
-    return y;
 }
 
 double RadiationHydrodynamics1D::Delta( int l, int k ) const {
@@ -171,6 +175,47 @@ int RadiationHydrodynamics1D::GlobalIndex( int l, int k ) const {
     }
 }
 
+Matrix RadiationHydrodynamics1D::Source( const Matrix& uQ ) const {
+    unsigned nStates = static_cast<unsigned>( uQ.rows() );
+    unsigned Nq      = static_cast<unsigned>( uQ.columns() );
+    Matrix y( nStates, Nq, 0.0 );
+    for( unsigned k = 0; k < Nq; ++k ) {
+        double se             = SE( column( uQ, k ) );
+        Vector sFVec          = SF( column( uQ, k ) );
+        y( 0, k )             = _c * se;
+        y( 1, k )             = _c * sFVec[0];
+        y( 2, k )             = _c * sFVec[1];
+        y( 3, k )             = _c * sFVec[2];
+        y( _nMoments + 1, k ) = -_P * sFVec[0];
+        y( _nMoments + 2, k ) = -_P * _c * se;
+    }
+    return y;
+}
+
+double RadiationHydrodynamics1D::SE( const Vector& u ) const {
+    double Er  = u[0];
+    double rho = u[_nMoments + 0];
+    Vector v( 3, false );
+    v[0]     = u[_nMoments + 1] / rho;
+    v[1]     = 0.0;
+    v[2]     = 0.0;
+    double T = _gamma * ( _gamma - 1.0 ) * ( u[_nMoments + 2] / rho - 0.5 * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
+    return _sigmaA * ( std::pow( T, 4 ) - Er ) + ( _sigmaA - _sigmaS ) * v.inner( Fr0( u ) ) / _c;
+}
+
+Vector RadiationHydrodynamics1D::SF( const Vector& u ) const {
+    double Er  = u[0];
+    double rho = u[_nMoments + 0];
+    Vector v( 3, false );
+    v[0] = u[_nMoments + 1] / rho;
+    v[1] = 0.0;
+    v[2] = 0.0;
+    // double p = _gamma * ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * rho * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
+    double T = _gamma * ( _gamma - 1.0 ) * ( u[_nMoments + 2] / rho - 0.5 * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
+
+    return Fr0( u ) * ( -_sigmaT ) + v * _sigmaA * ( std::pow( T, 4 ) - Er ) / _c;
+}
+
 double RadiationHydrodynamics1D::Er0( const Vector& u ) const {
     double Er     = u[0];
     double rhoInv = 1.0 / u[_nMoments + 0];
@@ -203,78 +248,71 @@ Vector RadiationHydrodynamics1D::Fr0( const Vector& u ) const {
     return Fr - ( v * Er + vPr ) / _c;
 }
 
-double RadiationHydrodynamics1D::SE( const Vector& u ) const {
-    double Er  = u[0];
-    double rho = u[_nMoments + 0];
-    Vector v( 3, false );
-    v[0]     = u[_nMoments + 1] / rho;
-    v[1]     = 0.0;
-    v[2]     = 0.0;
-    double p = ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * rho * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
-    double T = p / ( _R * rho );
-    return _sigmaA * ( std::pow( T, 4 ) - Er ) + ( _sigmaA - _sigmaS ) * v.inner( Fr0( u ) ) / _c;
-}
-
-Vector RadiationHydrodynamics1D::SF( const Vector& u ) const {
-    double Er  = u[0];
-    double rho = u[_nMoments + 0];
-    Vector v( 3, false );
-    v[0]     = u[_nMoments + 1] / rho;
-    v[1]     = 0.0;
-    v[2]     = 0.0;
-    double p = ( _gamma - 1.0 ) * ( u[_nMoments + 2] - 0.5 * rho * ( pow( v[0], 2 ) + pow( v[1], 2 ) + pow( v[2], 2 ) ) );
-    double T = p / ( _R * rho );
-
-    return Fr0( u ) * ( -_sigmaT ) + v * _sigmaA * ( std::pow( T, 4 ) - Er ) / _c;
-}
-
 Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
+    double k = 1.38064852e-16;    // Boltzmann's constant [cm^2 g / (s^2 K)]
+
     // initial chock states
-    double rhoL = 5.45887 * 1e-13;
-    double uL   = 2.3545 * 1e5;
-    double TL   = 100.0;
-    double rhoR = 1.2479 * 1e-12;
-    double uR   = 1.03 * 1e5;
-    double TR   = 207.757;
-    if( x[0] < 0.0 ) {
-        y[0]                  = 1e-5;
-        y[_nMoments + 0]      = rhoL / _rhoRef;
-        y[_nMoments + 1]      = rhoL * uL / ( _rhoRef * _aRef );
-        double pL             = TL * ( _R * rhoL ) / _pRef;
-        double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
-        double innerEnergyL   = ( pL / ( _gamma - 1.0 ) );
-        y[_nMoments + 2]      = kineticEnergyL + innerEnergyL;
+    double rhoL, uL, TL, rhoR, uR, TR;
+    rhoL = 5.45887 * 1e-13;    // [g/cm^3]
+    TL   = 100.0;              // [K]
+    if( _testCase == 1 ) {
+        uL   = 2.3545 * 1e5;    // [cm/s]
+        rhoR = 1.2479 * 1e-12;
+        uR   = 1.03 * 1e5;
+        TR   = 207.757;
     }
     else {
-        y[0]                  = 1e-5;
+        // double Ma = 5;
+        uL   = 5.88588 * 1e5;    // [cm/s] Zhang values
+        rhoR = 1.964050 * 1e-12;
+        uR   = 1.63592 * 1e5 + _settings->GetSigma()[0] * xi[0];
+        TR   = 855.72;
+        // double a  = sqrt( _gamma * _R * TR );
+        // uR        = Ma * a;
+        //_R = pow( uR / Ma, 2 ) / ( _gamma * TR );
+        // std::cout << "R Ma 5 = " << _R << std::endl;
+
+        // Ma   = 2;
+        // rhoR = 1.2479 * 1e-12;
+        // uR   = 1.03 * 1e5;
+        // TR   = 207.757;
+
+        //_R = pow( uR / Ma, 2 ) / ( _gamma * TR );
+
+        // std::cout << "R Ma 2 = " << _R << std::endl;
+        // exit( EXIT_FAILURE );
+    }
+
+    double shockPosition = 0.0;
+    // shockPosition += _settings->GetSigma()[0] * xi[0];
+
+    if( x[0] < shockPosition ) {
+        y[_nMoments + 0]      = rhoL / _rhoRef;
+        y[_nMoments + 1]      = rhoL * uL / ( _rhoRef * _aRef );
+        double pL             = TL * ( _R * rhoL );
+        double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 );
+        double innerEnergyL   = ( pL / ( _gamma - 1.0 ) );
+        y[_nMoments + 2]      = ( kineticEnergyL + innerEnergyL ) / ( _rhoRef * pow( _aRef, 2 ) );
+
+        double rho = y[_nMoments + 0];
+        double v   = y[_nMoments + 1] / rho;
+        y[0]       = pow( _gamma * ( _gamma - 1.0 ) * ( y[_nMoments + 2] / rho - 0.5 * ( pow( v, 2 ) ) ), 4 );
+    }
+    else {
         y[_nMoments + 0]      = rhoR / _rhoRef;
         y[_nMoments + 1]      = rhoR * uR / ( _rhoRef * _aRef );
-        double pR             = TR * ( _R * rhoR ) / _pRef;
-        double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 ) / ( _rhoRef * pow( _aRef, 2 ) );
+        double pR             = TR * ( _R * rhoR );
+        double kineticEnergyR = 0.5 * rhoR * pow( uR, 2 );
         double innerEnergyR   = ( pR / ( _gamma - 1.0 ) );
-        y[_nMoments + 2]      = kineticEnergyR + innerEnergyR;
+        y[_nMoments + 2]      = ( kineticEnergyR + innerEnergyR ) / ( _rhoRef * pow( _aRef, 2 ) );
+
+        double rho = y[_nMoments + 0];
+        double v   = y[_nMoments + 1] / rho;
+        y[0]       = pow( _gamma * ( _gamma - 1.0 ) * ( y[_nMoments + 2] / rho - 0.5 * ( pow( v, 2 ) ) ), 4 );
     }
     return y;
 }
-/*
-void RadiationHydrodynamics1D::DS( Vector& ds, const Vector& u ) const {
-    double gamma      = _gamma;
-    double rho        = u[_nMoments + 0];
-    double rhoU       = u[_nMoments + 1];
-    double rhoV       = u[_nMoments + 2];
-    double rhoV2      = pow( rhoV, 2 );
-    double rhoU2      = pow( rhoU, 2 );
-    double rhoE       = u[_nMoments+2];
-    ds[_nMoments + 0] = ( rhoU2 + rhoV2 + gamma * ( 2 * rho * rhoE - rhoU2 - rhoV2 ) ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) -
-                        std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
-    ds[_nMoments + 1] = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-    ds[_nMoments + 2] = -( ( 2 * rho * rhoV ) / ( -2 * rho * rhoE + rhoU2 + rhoV2 ) );
-    ds[_nMoments+2] = -( rho / ( rhoE - ( rhoU2 + rhoV2 ) / ( 2 * rho ) ) );
-
-    // safety factor on ds3
-    // ds[3] -= 1e-7;
-}*/
 
 Matrix RadiationHydrodynamics1D::FRadiation( const Vector& u ) const {
     Matrix flux( u.size(), 1 );
@@ -299,6 +337,7 @@ Matrix RadiationHydrodynamics1D::FEuler( const Vector& u ) const {
 }
 
 Vector RadiationHydrodynamics1D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+    double dx = norm( n );
     Vector out( _nStates, 0.0 );
     Vector outEuler( 3, false );
     Vector uRadiation( _nStates, false );
@@ -330,19 +369,21 @@ Vector RadiationHydrodynamics1D::G( const Vector& u, const Vector& v, const Vect
     double lambdaMax = uVProjected + aV;
 
     if( lambdaMin >= 0 )
-        outEuler = FEuler( uEuler ) * n;
+        outEuler = FEuler( uEuler ) * nUnit;
     else if( lambdaMax <= 0 )
-        outEuler = FEuler( vEuler ) * n;
+        outEuler = FEuler( vEuler ) * nUnit;
     else {
-        outEuler = ( 1.0 / ( lambdaMax - lambdaMin ) ) *
-                   ( lambdaMax * FEuler( uEuler ) * n - lambdaMin * FEuler( vEuler ) * n + lambdaMax * lambdaMin * ( vEuler - uEuler ) * norm( n ) );
+        outEuler = ( 1.0 / ( lambdaMax - lambdaMin ) ) * ( lambdaMax * FEuler( uEuler ) * nUnit - lambdaMin * FEuler( vEuler ) * nUnit +
+                                                           lambdaMax * lambdaMin * ( vEuler - uEuler ) * norm( nUnit ) );
     }
 
     // write radiation part on _nMoments entries
-    out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * n - _c * 0.5 * ( vRadiation - uRadiation ) * norm( n );
+    // std::cout << "c = " << _c << ", LF = " << 1 / ( dx / _settings->GetDT() ) << std::endl;
+    // out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * nUnit - 0.5 * ( vRadiation - uRadiation ) * dx / _settings->GetDT();
+    out = FRadiation( 0.5 * ( uRadiation + vRadiation ) ) * nUnit - 0.5 * _c * ( vRadiation - uRadiation ) * norm( nUnit );
 
     // save Euler part on return vector
-    for( unsigned s = 0; s < 3; ++s ) out[_nMoments + s] = outEuler[s];    // TODO: DEBUG
+    for( unsigned s = 0; s < 3; ++s ) out[_nMoments + s] = outEuler[s];
 
     return out;
 }
@@ -364,6 +405,8 @@ double RadiationHydrodynamics1D::ComputeDt( const Matrix& u, double dx, unsigned
     unsigned kEnd = _settings->GetNqPEAtRef( level );
 
     cfl = _settings->GetCFL();
+
+    // std::cout << "dx = " << dx << std::endl;
 
     for( unsigned k = 0; k < kEnd; ++k ) {
         rhoInv = 1.0 / u( _nMoments + 0, k );

@@ -1,6 +1,6 @@
 #include "pnequations.h"
 
-PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 2 ) {
+PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 7 ) {
     _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
     _settings->SetNStates( _nStates );
     _settings->SetSource( true );
@@ -152,9 +152,9 @@ void PNEquations::SetupSystemMatrices() {
 }
 
 Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-
-    return F( 0.5 * ( u + v ) ) * n -
-           0.5 * ( v - u ) * norm( n );    // - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
+    return F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
+    // F( 0.5 * ( u + v ) ) * n - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
+    // return F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT(); // LF does not work since norm(n) != Area(j)
 }
 
 Matrix PNEquations::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
@@ -191,7 +191,8 @@ Matrix PNEquations::Source( const Matrix& uQ ) const {
     Matrix y( nStates, Nq, 0.0 );
     for( unsigned k = 0; k < Nq; ++k ) {
         for( unsigned s = 0; s < nStates; ++s ) {
-            y( s, k ) = _sigmaT * uQ( s, k ) - _sigmaS * g[s] * uQ( s, k );
+            y( s, k ) = -_sigmaA * uQ( s, k ) - _sigmaS * ( 1.0 - g[s] ) * uQ( s, k );
+            // y( s, k ) = _sigmaT * uQ( s, k ) - _sigmaS * g[s] * uQ( s, k );
         }
     }
     return y;

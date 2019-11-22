@@ -60,6 +60,7 @@ class Mesh
     virtual VectorU GetNeighborIDs( unsigned i ) const;
     virtual Vector GetNormals( unsigned i, unsigned l ) const;
     virtual Vector GetUnitNormals( unsigned i, unsigned l ) const;
+    virtual Cell* GetCell( unsigned i ) const { return _cells[i]; }
 
     BoundaryType GetBoundaryType( unsigned i ) const;
 
