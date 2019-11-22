@@ -54,7 +54,7 @@ The strategy now is to perform the dual update for a set of moment vectors $\bm{
 \caption{Adaptive IPM implementation}
 \label{alg:ad-IPM}
 \end{algorithm}
-Adaptivity can be used for intrusive methods in general as well as for steady and unsteady problems. In the case of steady problems, we can make use of a strategy, which we call \textit{refinement retardation}. Recall that the convergence to an admissible steady state solution is expensive and a high accuracy and desirable solution properties are only required at the end of this iteration process. Hence, we propose to iteratively increase the maximal refinement level whenever the residual \eqref{eq:residualSteady} lies below a certain tolerance level. For a given set of maximal refinement levels $\ell_l^*$ and a set of tolerance levels $\varepsilon_l^*$ at which the refinement level must be increased we can now perform a large amount of the required iterations on a lower but cheaper refinement level.
+Adaptivity can be used for intrusive methods in general as well as for steady and unsteady problems. In the case of steady problems, we can make use of a strategy, which we call \textit{refinement retardation}. Recall that the convergence to an admissible steady state solution is expensive and a high accuracy and desirable solution properties are only required at the end of this iteration process. Hence, we propose to iteratively increase the maximal refinement level whenever the residual \eqref{eq:residualSteady} lies below a certain tolerance $\varepsilon$. For a given set of maximal refinement levels $\ell_l^*$ and a set of tolerances $\varepsilon_l^*$ at which the refinement level must be increased we can now perform a large amount of the required iterations on a lower but cheaper refinement level.
 The same strategy can be applied for One-Shot IPM. In this case, the algorithm is given by Algorithm~\ref{alg:adosIPM}.
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
@@ -69,7 +69,7 @@ The same strategy can be applied for One-Shot IPM. In this case, the algorithm i
 \State $\bm{\hat u}_j^{n+1} \leftarrow \bm{c}_{\ell_j^{n+1}}^{\bm\ell'}(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_j^{n+1},\bm{\lambda}_{j+1}^{n+1})$
 \EndFor
 \State $n \leftarrow n+1$
-\If{\eqref{eq:residualSteady} fulfills the stopping criterion $\varepsilon_l^*$}
+\If{the residual \eqref{eq:residualSteady} lies below $\varepsilon_l^*$}
 \State $l \leftarrow l+1$
 \EndIf
 \EndWhile
