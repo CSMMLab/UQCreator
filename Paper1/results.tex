@@ -60,29 +60,17 @@ The quantities of interests are now computed with the different methods. All met
 \centering
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.544]{figs/StudyQuadrature/L2_error_E[rho]_ipm.pdf}
+				\includegraphics[scale=0.544]{figs/StudyQuadrature/L2_error_E[rho]_new.pdf}
 		\caption{}
-		\label{fig:ErrorDifferentQuadMeanIPM}
+		\label{fig:ErrorDifferentQuadA}
 	\end{subfigure}%
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.544]{figs/StudyQuadrature/L2_error_Var[rho]_ipm.pdf}
+				\includegraphics[scale=0.544]{figs/StudyQuadrature/L2_error_Var[rho]_new.pdf}
 		\caption{}
-		\label{fig:ErrorDifferentQuadVarIPM}
+		\label{fig:ErrorDifferentQuadB}
 	\end{subfigure}
-	\begin{subfigure}{0.5\linewidth}
-		\centering
-		\includegraphics[scale=0.544]{figs/StudyQuadrature/L2_error_E[rho]_mixed.pdf}
-		\caption{}
-		\label{fig:ErrorDifferentQuadMeanMixed}
-	\end{subfigure}%
-	\begin{subfigure}{0.5\linewidth}
-		\centering
-		\includegraphics[scale=0.544]{figs/StudyQuadrature/L2_error_Var[rho]_mixed.pdf}
-		\caption{}
-		\label{fig:ErrorDifferentQuadVarMixed}
-	\end{subfigure}
-	\caption{Relative L$^2$-error with different quadrature levels for solely IPM (Figure \ref{fig:ErrorDifferentQuadMeanIPM} and \ref{fig:ErrorDifferentQuadVarIPM}) and in comparison with SC (Figure \ref{fig:ErrorDifferentQuadMeanMixed} and \ref{fig:ErrorDifferentQuadVarMixed}). The subscript denotes the moment order, the superscript denotes the number of Clenshaw-Curtis quadrature points.}
+	\caption{Relative L$^2$-error with different quadrature levels for IPM in comparison with SC. The subscript denotes the moment order, the superscript denotes the number of Clenshaw-Curtis quadrature points.}
 	\label{fig:ErrorDifferentQuad}
 \end{figure}
 \begin{figure}[h!]
@@ -90,25 +78,29 @@ The quantities of interests are now computed with the different methods. All met
 	\begin{subfigure}{0.5\linewidth}
 		\centering
 				\includegraphics[scale=0.55]{figs/errorEuler/L2_error_E[rho].pdf}
-		\label{fig:sub1}
+		\label{fig:sub31}
+		\caption{}
 	\end{subfigure}%
 	\begin{subfigure}{0.5\linewidth}
 		\centering
 				\includegraphics[scale=0.55]{figs/errorEuler/L2_error_Var[rho].pdf}
-		\label{fig:sub2}
+		\label{fig:sub32}
+		\caption{}
 	\end{subfigure}
 	
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.55]{figs/errorEuler/L2_error_E[rhoE].pdf}
-		\label{fig:sub1}
+				\includegraphics[scale=0.55]{figs/errorEuler/L2_error_E[rho]_sc.pdf}
+		\label{fig:sub33}
+		\caption{}
 	\end{subfigure}%
 	\begin{subfigure}{0.5\linewidth}
 		\centering
-				\includegraphics[scale=0.55]{figs/errorEuler/L2_error_Var[rhoE].pdf}
-		\label{fig:sub2}
+				\includegraphics[scale=0.55]{figs/errorEuler/L2_error_Var[rho]_sc.pdf}
+		\label{fig:sub34}
+		\caption{}
 	\end{subfigure}
-	\caption{Relative L$^2$-error with 5 MPI threads for density and energy.\frama{Eventuell diese Plots aufteilen? Oder sind die Ergebnisse verst\"andlich?}}
+	\caption{Comparison of the relative L$^2$-error for the density for IPM related methods (first row) and of the best performing IPM method in comparison with SC (second row). Computed with 5 MPI threads.}
 	\label{fig:L2ErrorSolution}
 \end{figure}
 \begin{figure}[h!]
