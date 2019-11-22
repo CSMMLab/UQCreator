@@ -57,7 +57,7 @@ The function $\bm d$ will in the following be called dual iteration function. No
 \begin{align}\label{eq:dualIteration1}
 \bm{\lambda}^{(l+1)}_j = \bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}_j}).
 \end{align}
-The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{m\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}_j^n})$.
+The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{l\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}_j^n})$.
 To obtain a finite number of iterations for the iteration in cell $j$, a stopping criterion 
 \begin{align}\label{eq:tauCrit}
 \sum_{i=0}^m\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(l)};\bm{\hat{u}}_j^n) \right\Vert < \tau
