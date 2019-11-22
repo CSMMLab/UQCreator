@@ -21,7 +21,7 @@ The effectiveness of these acceleration ideas are tested by comparing results wi
 \begin{itemize}
 \item In our test cases, the need to solve an optimization problem when using the IPM method leads to a significantly higher run time than SC and SG. However when using the discussed acceleration techniques, IPM requires the shortest time to reach a given accuracy.
 \item Comparing SG with IPM, one observes that for the same number of unknowns, SG yields more accurate expectation values, whereas IPM shows improved variance approximations.
-\item By studying aliasing effects, we show that SC requires a higher number of unknowns than intrusive methods (even for one spatial dimension) to reach the same accuracy level.
+\item By studying aliasing effects, we show that SC requires a higher number of unknowns than intrusive methods (even for a one-dimension uncertainty) to reach the same accuracy level.
 \item Using sparse grids for the IPM discretization when the space of uncertainty is multi-dimensional, the number of quadrature points needed to guarantee sufficient regularity of the Hessian matrix is significantly increased.
 \end{itemize}
 The IPM and SG calculations use a semi-intrusive numerical method, meaning that the discretization allows recycling a given deterministic code to generate the IPM solver. While facilitating the task of implementing general intrusive methods, this framework allows a fair comparison of intrusive and non-intrusive methods, since the intrusive method can be based on the same deterministic code as the code used in a black-box fashion for stochastic-Collocation.
