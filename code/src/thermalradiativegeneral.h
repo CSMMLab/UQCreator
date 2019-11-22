@@ -1,25 +1,29 @@
-#ifndef THERMALRADIATIVE_H
-#define THERMALRADIATIVE_H
+#ifndef THERMALRADIATIVEGENERAL_H
+#define THERMALRADIATIVEGENERAL_H
 
 #include "problem.h"
 
-class ThermalRadiative : public Problem
+class ThermalRadiativeGeneral : public Problem
 {
   private:
     double _epsilon;
     double _c;
+    double _cV;
     double _a;
     double _TRef;
     double _sigma;
     double _alpha;
     bool _suOlson;
+    unsigned _constitutiveLaw;
     Matrix _AbsA;
     std::vector<Vector> _xiQuad;
     std::vector<double> _variances;
+    double ScaledInternalEnergy( double TTilde ) const;
+    double ScaledTemperature( double eTilde ) const;
 
   public:
-    ThermalRadiative( Settings* settings );
-    virtual ~ThermalRadiative();
+    ThermalRadiativeGeneral( Settings* settings );
+    virtual ~ThermalRadiativeGeneral();
     inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level );
     Matrix F( const Vector& u );
@@ -30,4 +34,4 @@ class ThermalRadiative : public Problem
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
 };
 
-#endif    // THERMALRADIATIVE_H
+#endif    // THERMALRADIATIVEGENERAL_H

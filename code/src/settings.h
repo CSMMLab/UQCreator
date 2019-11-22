@@ -35,9 +35,11 @@ enum ClosureType {
     C_L2FILTER,
     C_LASSOFILTER,
     C_RADHYDRO,
+	C_THERMALRAD_1D,
     C_M1_1D,
     C_HYPLIM
 };
+enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };
 enum DistributionType { D_LEGENDRE, D_HERMITE };
 enum GridType { G_SPARSEGRID, G_TENSORIZEDGRID, G_TENSORIZEDCC };
@@ -70,7 +72,9 @@ class Settings
     unsigned _nQTotal;               // number of quadrature points in all dimensions
     unsigned _nQPE;                  // number of total quadrature points on PE
     VectorU _nQPEAtRef;              // number of total quadrature points on PE for all refinement levels
+    unsigned _kStart;                // start point in quadrature point array for PE
     MatrixU _kIndicesAtRef;          // quadrature indices for PE at different refinement levels
+    unsigned _kEnd;                  // end point in quadrature point array for PE
     VectorU _quadLevel;              // quadrature level array
     VectorU _nQTotalForRef;          // number of quadrature points on different refinement levels
     Vector _residualRetardation;     // stores residual at different refinement levels
@@ -106,7 +110,7 @@ class Settings
     double _dt;             // timestepsize only required if no function ComputeDt provided in problem
     unsigned _plotStepInterval;
     double _plotTimeInterval;
-
+    LimiterType _limiterType;
     ClosureType _closureType;
     ProblemType _problemType;
     TimesteppingType _timesteppingType;
@@ -193,6 +197,7 @@ class Settings
     void SetNQuadPoints( unsigned nqNew );
     unsigned GetNQTotal() const;
     bool UsesMaxDegree() const;
+    LimiterType GetLimiterType() const;
     unsigned GetMaxIterations() const;
     void SetMaxIterations( unsigned maxIterations );
     double GetEpsilon() const;

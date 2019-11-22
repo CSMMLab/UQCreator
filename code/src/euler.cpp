@@ -141,19 +141,19 @@ Vector Euler::LoadIC( const Vector& x, const Vector& xi ) {
 }
 
 Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
-    bool sodShockTube = false;
-    double x0         = 0.3 + _sigma[0] * xi[0];    // initial shock position
-    double rho_l      = 1.0;
-    double P_l        = 1.0;
-    double u_l        = 0.0;
-    double rho_r      = 0.1;
-    double P_r        = 0.125;
-    double u_r        = 0.0;
-
-    if( !sodShockTube ) {
-        P_r   = 0.125;    // 0.3
-        rho_r = 0.8;
-    }
+	bool sodShockTube = false;    
+	double x0    = 0.3 + _sigma[0] * xi[0];    // initial shock position
+	double rho_l = 1.0;
+    double P_l   = 1.0;
+    double u_l   = 0.0;
+	double rho_r = 0.1;
+	double P_r   = 0.125;
+	double u_r   = 0.0;
+	
+	if( !sodShockTube ) {
+		P_r   = 0.125;    // 0.3
+		rho_r = 0.8;
+	}
 
     if( xi.size() > 1 ) {
         rho_r += _sigma[1] * xi[1];

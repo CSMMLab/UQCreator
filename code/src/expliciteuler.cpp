@@ -34,6 +34,14 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                 fluxFunc( rhs, _problem->G( uQ[j], uQ[neighbors[l]], cell->GetUnitNormal( l ), cell->GetNormal( l ), refLevel[j] ), refLevel[j] );
             }
         }
+        /*
+                if( j == 499 ) {
+                    std::cout << "rhs is " << rhs << std::endl;
+                    std::cout << "Ngh left: " << uQ[neighbors[0]] << std::endl;
+                    std::cout << "ich so: " << uQ[j] << std::endl;
+                    std::cout << "Ngh right: " << uQ[neighbors[1]] << std::endl;
+                }*/
+
         // std::cout << "A = " << cell->GetArea() << std::endl;
         // std::cout << dt / cell->GetArea() << std::endl;
         uNew[j] = u[j] - ( dt / cell->GetArea() ) * rhs;

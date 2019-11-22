@@ -7,18 +7,18 @@ dimension = 1
 numberOfCells = 1000
 a = 0
 b = 0.6
-outputFile = "euler_shock_N14"
+outputFile = "euler_shock"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.075]]
-CFL = 0.8
+distribution = [["Legendre"],[0.05]]
+CFL = 0.75
 tEnd = 0.14
 
 [moment_system]
-# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter
+# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter
 closure = "Euler"
 moments = [["totalDegree"],[14]]
 quadPoints = [["tensorizedGrid"],[20]]

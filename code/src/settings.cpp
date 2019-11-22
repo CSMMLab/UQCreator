@@ -228,6 +228,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( closureTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
                 _closureType = ClosureType::C_RADHYDRO;
             }
+            else if( closureTypeString->compare( "ThermalRadiation" ) == 0 ) {
+                _closureType = ClosureType::C_THERMALRAD_1D;
+            }
             else if( closureTypeString->compare( "M1" ) == 0 ) {
                 _closureType = ClosureType::C_M1_1D;
             }

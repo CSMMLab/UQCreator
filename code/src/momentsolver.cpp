@@ -110,7 +110,7 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             double indicator;
-            if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D )
+            if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D || _settings->GetProblemType() == P_THERMALRAD_1D )
                 indicator = 0.0;
             else
                 indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
@@ -170,9 +170,12 @@ void MomentSolver::Solve() {
         t += dt;
         ++timeIndex;
 
+        // perform time update flux
         _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
+
+        // perform time update source
         if( _settings->HasSource() ) {
-            this->Source( uNew, uQ, dt, refinementLevel );
+            this->Source( uNew, uQ, dt, t, refinementLevel );
         }
 
         // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
@@ -322,12 +325,12 @@ void MomentSolver::Solve() {
     }
 }
 
-void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, const VectorU& refLevel ) const {
+void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, double t, const VectorU& refLevel ) const {
     Matrix out( _nStates, _nTotal );    // could also be allocated before and then stored in class, be careful with openmp!!!
                                         //#pragma omp parallel for
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
-        out     = _problem->Source( uQ[j] ) * _closure->GetPhiTildeWfAtRef( refLevel[j] );
+        out     = _problem->Source( uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] ) * _closure->GetPhiTildeWfAtRef( refLevel[j] );
         uNew[j] = uNew[j] + dt * out;    // TODO: check dt*dx correct?  vorher * _mesh->GetArea( j )
     }
 }
