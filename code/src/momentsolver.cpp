@@ -82,7 +82,8 @@ void MomentSolver::Solve() {
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
 
-        double residual = 0;
+        Vector residualVec( _settings->GetNQTotal(), 0.0 );
+        double residual;
 
         // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
@@ -184,7 +185,14 @@ void MomentSolver::Solve() {
 
         // compute residual
         for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
-            residual += std::abs( u[_cellIndexPE[j]]( 0, 0 ) - uOld[_cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( _cellIndexPE[j] );
+            for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
+                residualVec[k] += std::abs( u[_cellIndexPE[j]]( 0, k ) - uOld[_cellIndexPE[j]]( 0, k ) ) * _mesh->GetArea( _cellIndexPE[j] );
+            }
+        }
+        // determine maximum of residual
+        residual = -1.0;
+        for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
+            if( residual < residualVec[k] ) residual = residualVec[k];
         }
 
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
