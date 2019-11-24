@@ -308,15 +308,15 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         if( xi.size() > 1 ) {
             p = p + xi[1] * _sigma[1];
         }
-        if( xi.size() > 2 ) {
-            Ma = Ma - _sigma[2];
-            Ma = Ma + xi[2] * _sigma[2];
+        if( xi.size() > 0 ) {
+            Ma = Ma - _sigma[0];
+            Ma = Ma + xi[0] * _sigma[0];
         }
 
         double a = sqrt( gamma * R * T );
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
+        double angle = ( 1.25 + 0.0 * _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 
