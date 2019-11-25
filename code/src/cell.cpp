@@ -69,6 +69,16 @@ void Cell::UpdateBoundaryNormal() {
 
 Vector Cell::GetUnitNormal( unsigned i ) { return _edges[i]->unitNormal; }
 
+Vector Cell::GetNormalForNgh( unsigned i ) const {
+    for( unsigned l = 0; l < _neighborIDs.size(); ++l ) {
+        if( _neighborIDs[l] == i ) {
+            return _edges[l]->scaledNormal;
+        }
+    }
+    std::cerr << "[cell]: Neighbor not found" << std::endl;
+    exit( EXIT_FAILURE );
+}
+
 Vector Cell::GetNormal( unsigned i ) { return _edges[i]->scaledNormal; }
 
 void Cell::SetDefaultCellId( unsigned id ) {

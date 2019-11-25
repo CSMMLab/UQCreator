@@ -23,6 +23,7 @@ class TimeSolver
     double _dx;
     double _tEnd;
     unsigned _nTimeSteps;
+    MatVec _flux;    // flux over cell edges
 
     TimeSolver() = delete;
 
