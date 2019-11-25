@@ -332,8 +332,8 @@ void Mesh2D::DetermineNeighbors() {
                             indexJ1 = nj;
                             this->AddNeighbor( ci, cj, indexI0, indexI1 );
                             this->AddNeighbor( cj, ci, indexJ0, indexJ1 );
-                            _edges.push_back( std::make_pair( ci->GetID(), cj->GetID() ) );
-                            _boundaryTypeEdge.push_back( _cells[i]->GetBoundaryType() );
+                            //_edges.push_back( std::make_pair( ci->GetID(), cj->GetID() ) );
+                            //_boundaryTypeEdge.push_back( _cells[i]->GetBoundaryType() );
                             goto cnt;
                         }
                     }
@@ -342,11 +342,12 @@ void Mesh2D::DetermineNeighbors() {
         cnt:;
         }
         if( _cells[i]->IsBoundaryCell() ) {
-            _edges.push_back( std::make_pair( _cells[i]->GetID(), _numCells ) );
-            _boundaryTypeEdge.push_back( _cells[i]->GetBoundaryType() );
+            //_edges.push_back( std::make_pair( _cells[i]->GetID(), _numCells ) );
+            //_boundaryTypeEdge.push_back( _cells[i]->GetBoundaryType() );
             _cells[i]->UpdateBoundaryNormal();
         }
     }
+    /*
     _edgesAtCell.resize( _numCells );
     _normals.resize( _edges.size() );
     for( unsigned j = 0; j < _numCells; ++j ) {
@@ -375,7 +376,7 @@ void Mesh2D::DetermineNeighbors() {
                 break;
             }
         }
-    }
+    }*/
 }
 
 std::vector<Vector> Mesh2D::ImportSU2Solution() const {
