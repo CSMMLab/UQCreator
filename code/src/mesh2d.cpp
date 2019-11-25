@@ -332,6 +332,7 @@ void Mesh2D::DetermineNeighbors() {
                             indexJ1 = nj;
                             this->AddNeighbor( ci, cj, indexI0, indexI1 );
                             this->AddNeighbor( cj, ci, indexJ0, indexJ1 );
+                            _edges.push_back( std::make_pair( ci->GetID(), cj->GetID() ) );
                             goto cnt;
                         }
                     }
@@ -340,7 +341,37 @@ void Mesh2D::DetermineNeighbors() {
         cnt:;
         }
         if( _cells[i]->IsBoundaryCell() ) {
+            _edges.push_back( std::make_pair( _cells[i]->GetID(), _numCells ) );
             _cells[i]->UpdateBoundaryNormal();
+        }
+    }
+    _edgesAtCell.resize( _numCells );
+    _normals.resize( _edges.size() );
+    for( unsigned j = 0; j < _numCells; ++j ) {
+        _edgesAtCell[j] = VectorU( 3, _numCells + 1 );
+    }
+    for( unsigned j = 0; j < _normals.size(); ++j ) {
+        _normals[j] = Vector( _dimension, 0.0 );
+    }
+
+    std::cout << "Setting Normals" << std::endl;
+    for( unsigned j = 0; j < _edges.size(); ++j ) {
+        std::cout << "First " << _edges[j].first << std::endl;
+        _normals[j] = _cells[_edges[j].first]->GetUnitNormalForNgh( _edges[j].second );
+        if( _edges[j].first == _numCells ) continue;
+        for( unsigned l = 0; l < 3; ++l ) {
+            if( _edgesAtCell[_edges[j].first][l] != _numCells + 1 ) {
+                _edgesAtCell[_edges[j].first][l] = j;
+                break;
+            }
+        }
+        std::cout << "Second " << _edges[j].second << std::endl;
+        if( _edges[j].second == _numCells ) continue;
+        for( unsigned l = 0; l < 3; ++l ) {
+            if( _edgesAtCell[_edges[j].second][l] != _numCells + 1 ) {
+                _edgesAtCell[_edges[j].second][l] = j;
+                break;
+            }
         }
     }
 }

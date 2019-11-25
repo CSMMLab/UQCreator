@@ -118,6 +118,13 @@ double MathTools::max( double a, double b ) {
         return b;
 }
 
+unsigned MathTools::max( unsigned a, unsigned b ) {
+    if( a > b )
+        return a;
+    else
+        return b;
+}
+
 double MathTools::min( double a, double b ) {
     if( b < a )
         return b;

@@ -94,7 +94,6 @@ void MomentSolver::Solve() {
             if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
             _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
-            // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
         }
 
         // MPI Broadcast lambdas to all PEs
@@ -335,7 +334,7 @@ void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, double t, 
     }
 }
 
-void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned level ) { out += g * _closure->GetPhiTildeWfAtRef( level ); }
+void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned level ) { out = g * _closure->GetPhiTildeWfAtRef( level ); }
 
 double MomentSolver::ComputeRefIndicator( const VectorU& refinementLevel, const Matrix& u, unsigned refLevel ) const {
     double indicator = 0;
@@ -514,8 +513,8 @@ void MomentSolver::DetermineGradients( MatVec& duQx, MatVec& duQy, const MatVec&
 void MomentSolver::DetermineGradientsScalarField( Matrix& dux, Matrix& duy, const Matrix& u ) const {
     dux.reset();
     duy.reset();
-    unsigned nStates  = u.rows();
-//    unsigned numCells = _mesh->GetNumCells();
+    unsigned nStates = u.rows();
+    //    unsigned numCells = _mesh->GetNumCells();
 
     for( unsigned s = 0; s < nStates; ++s ) {
         for( unsigned j = 0; j < _nCells; ++j ) {

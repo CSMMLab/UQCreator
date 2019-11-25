@@ -40,11 +40,17 @@ class Mesh
 
     std::vector<VectorU> _neighborIDs;
     std::vector<BoundaryType> _boundaryType;
+    std::vector<BoundaryType> _boundaryTypeEdge;    // saves boundary types at all edges
+
+    std::vector<std::pair<unsigned, unsigned>> _edges;
+    std::vector<Vector> _normals;         // normals at edge
+    std::vector<VectorU> _edgesAtCell;    // edges of each cell
 
   public:
     static Mesh* Create( Settings* settings );
 
     unsigned GetNumCells() const;
+    unsigned GetNEdges() const;
     unsigned GetDimension() const;
     std::vector<Cell*>& GetGrid();
     std::vector<Cell*> GetGrid() const;
@@ -53,6 +59,10 @@ class Mesh
     double GetMinEdge( unsigned i ) const;
     double GetMaxEdge( unsigned i ) const;
     Vector GetCenterPos( unsigned i ) const;
+    Vector GetNormalsAtEdge( const unsigned j ) const;
+    VectorU GetEdgesOfCell( const unsigned j ) const;
+
+    std::pair<unsigned, unsigned> CellsAtEdge( unsigned j ) const;
 
     unsigned GetNBoundaries() const;
 
@@ -63,6 +73,7 @@ class Mesh
     virtual Cell* GetCell( unsigned i ) const { return _cells[i]; }
 
     BoundaryType GetBoundaryType( unsigned i ) const;
+    BoundaryType BoundaryAtEdge( unsigned i ) const;
 
     virtual Vector GetNodePositionsX() const = 0;
 

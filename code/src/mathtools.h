@@ -22,6 +22,7 @@ class MathTools
     static double coth( const double x );
     static double max( double a, double b );
     static double min( double a, double b );
+    unsigned max( unsigned a, unsigned b );
     static double sign( double a );
 };
 
