@@ -53,6 +53,10 @@ where $\bm H\in\mathbb{R}^{m \cdot  N\times m\cdot N}$ is the Hessian of \eqref{
 \begin{align*}
 \bm{H}(\bm{\lambda}) := \langle \nabla \bm{u}_{s} (\bm{\lambda}^T\bm{\varphi})\otimes\bm{\varphi}\bm{\varphi}^T\rangle_Q^{T}.
 \end{align*}
+%Inside the Newton update \eqref{eq:dualIterationFunction}, we abuse notation for better readability by making use of
+%\begin{align*}
+%\left(\bm{H}^{-1}\cdot\nabla_{\bm{\lambda}}L\right)_{ij} := \sum_{i' = 1}^N\sum_{j' = 1}^m \left(\bm{H}^{-1}\right)_{m(j-1) + i,m(j'-1) + i'}\cdot\nabla_{\bm{\lambda}}L_{i'j'}.
+%\end{align*}
 The function $\bm d$ will in the following be called dual iteration function. Now, the Newton iteration for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
 \bm{\lambda}^{(l+1)}_j = \bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}_j}).
