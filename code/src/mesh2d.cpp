@@ -359,7 +359,7 @@ void Mesh2D::DetermineNeighbors() {
     // std::cout << "Setting Normals" << std::endl;
     for( unsigned j = 0; j < _edges.size(); ++j ) {
         // std::cout << "First " << _edges[j].first << std::endl;
-        _normals[j] = _cells[_edges[j].first]->GetUnitNormalForNgh( _edges[j].second );
+        _normals[j] = _cells[_edges[j].first]->GetNormalForNgh( _edges[j].second );
         if( _edges[j].first == _numCells ) continue;
         for( unsigned l = 0; l < 3; ++l ) {
             if( _edgesAtCell[_edges[j].first][l] != _numCells + 1 ) {

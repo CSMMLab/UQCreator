@@ -18,15 +18,22 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
 // compute flux at edges
 #pragma omp parallel for
     for( unsigned j = 0; j < _mesh->GetNEdges(); ++j ) {
+        _flux[j].reset();    // is this needed? should be fine
+        Matrix tmp      = _flux[j];
         std::pair cells = _mesh->CellsAtEdge( j );
         unsigned I      = cells.first;
         unsigned J      = cells.second;
-        std::cout << "edge " << j << ": " << I << " " << J << std::endl;
+        // std::cout << "edge " << j << ": " << I << " " << J << std::endl;
         unsigned level = refLevel[I];    // take max ref level of cells I and J
         if( level < refLevel[J] ) level = refLevel[J];
         double area = norm( _mesh->GetNormalsAtEdge( j ) );
         if( _mesh->BoundaryAtEdge( j ) != NOSLIP && _mesh->BoundaryAtEdge( j ) != DIRICHLET ) {
             fluxFunc( _flux[j], _problem->G( uQ[I], uQ[J], _mesh->GetNormalsAtEdge( j ) / area, _mesh->GetNormalsAtEdge( j ), level ), level );
+            /*
+                        fluxFunc( tmp, _problem->G( uQ[J], uQ[I], -_mesh->GetNormalsAtEdge( j ) / area, -_mesh->GetNormalsAtEdge( j ), level ), level
+               ); std::cout << _flux[j] + tmp << std::endl; if( !std::isfinite( ( _flux[j] + tmp )( 0, 0 ) ) ) { std::cout << "flux = " << _flux[j] <<
+               std::endl; std::cout << "uQI " << uQ[I] << std::endl; std::cout << "uQJ " << uQ[J] << std::endl; exit( EXIT_FAILURE );
+                        }*/
             // std::cout << "flux = " << _flux[j] << std::endl;
             // std::cout << "uQI " << uQ[I] << std::endl;
             // std::cout << "uQJ " << uQ[J] << std::endl;
@@ -40,11 +47,8 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
 
 #pragma omp parallel for
     for( unsigned j = 0; j < numCells; ++j ) {
-        Cell* cell      = _cells[j];
-        std::pair cells = _mesh->CellsAtEdge( j );
-        unsigned I      = cells.first;
+        Cell* cell = _cells[j];
 
-        auto neighbors = cell->GetNeighborIDs();
         if( cell->IsBoundaryCell() ) {
             if( cell->GetBoundaryType() == BoundaryType::DIRICHLET ) {
                 uNew[j] = u[j];
@@ -58,13 +62,13 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
         for( unsigned l = 0; l < edges.size(); ++l ) {
             // std::cout << "Edge " << edges[l] << " with flux " << _flux[edges[l]] << std::endl;
             // std::cout << _mesh->CellsAtEdge( edges[l] ).first << " " << j << std::endl;
-            if( _mesh->CellsAtEdge( edges[l] ).first == j ) {
+            if( _mesh->CellsAtEdge( edges[l] ).first == cell->GetID() ) {
                 // std::cout << "+" << std::endl;
-                rhs = rhs - _flux[edges[l]];
+                rhs = rhs + _flux[edges[l]];
             }
             else {
                 // std::cout << "-" << std::endl;1
-                rhs = rhs + _flux[edges[l]];
+                rhs = rhs - _flux[edges[l]];
             }
         }
         // std::cout << std::endl;

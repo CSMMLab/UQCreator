@@ -57,7 +57,7 @@ class Cell
     virtual unsigned GetNodeNum() = 0;
     void AddNeighbor( const Cell* n, unsigned k );
     void AddNeighborId( unsigned n, unsigned k );
-    Vector GetUnitNormalForNgh( unsigned i ) const;
+    Vector GetNormalForNgh( unsigned i ) const;
     std::vector<Cell*> GetNeighbors();
     VectorU GetNeighborIDs();
     bool IsBoundaryCell();

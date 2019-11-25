@@ -69,8 +69,8 @@ void Cell::UpdateBoundaryNormal() {
 
 Vector Cell::GetUnitNormal( unsigned i ) { return _edges[i]->unitNormal; }
 
-Vector Cell::GetUnitNormalForNgh( unsigned i ) const {
-    for( unsigned l = 0; l < _neighbors.size(); ++l ) {
+Vector Cell::GetNormalForNgh( unsigned i ) const {
+    for( unsigned l = 0; l < _neighborIDs.size(); ++l ) {
         if( _neighborIDs[l] == i ) {
             return _edges[l]->scaledNormal;
         }
