@@ -33,7 +33,7 @@ Mesh* Mesh::Create( Settings* settings ) {
 
 std::pair<unsigned, unsigned> Mesh::CellsAtEdge( unsigned j ) const { return _edges[j]; }
 
-Vector Mesh::GetNormalsAtEdge( const unsigned j ) const { return _normals[j]; }
+Vector Mesh::GetNormalAtEdge( const unsigned j ) const { return _normals[j]; }
 
 unsigned Mesh::GetNumCells() const { return _numCells; }
 

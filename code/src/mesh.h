@@ -59,7 +59,7 @@ class Mesh
     double GetMinEdge( unsigned i ) const;
     double GetMaxEdge( unsigned i ) const;
     Vector GetCenterPos( unsigned i ) const;
-    Vector GetNormalsAtEdge( const unsigned j ) const;
+    Vector GetNormalAtEdge( const unsigned j ) const;
     VectorU GetEdgesOfCell( const unsigned j ) const;
 
     std::pair<unsigned, unsigned> CellsAtEdge( unsigned j ) const;
