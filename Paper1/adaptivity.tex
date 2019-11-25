@@ -28,7 +28,11 @@ An adaptive version of the moment iteration \eqref{eq:momentIterationFunction} i
 \end{align}
 Hence, the index vector $\bm\ell'\in\mathbb{N}^{3}$ denotes the refinement levels of the stencil cells, which are used to compute the time updated moment vector at level $\ell$.
 
-The strategy now is to perform the dual update for a set of moment vectors $\bm{\hat u}_j^n$ at refinement levels $\ell_j^n$ for $j = 1,\cdots,N_x$. Hence, the dual iteration makes use of the iteration function \eqref{eq:dualIterationFunctionAd} at refinement level $\ell_j^n$. After that, the refinement level at the next time step $\ell_j^{n+1}$ is determined by making use of the smoothness indicator \eqref{eq:errorIndicator}. The moment update then computes the moments at the time updated refinement level $\ell_j^{n+1}$ making use of the dual states at the old refinement levels $\bm{\ell}' = (\ell_{j-1}^n,\ell_{j}^n,\ell_{j+1}^n)^T$. The IPM algorithm with adaptivity results in Algorithm \ref{alg:ad-IPM}.
+The strategy now is to perform the dual update for a set of moment vectors $\bm{\hat u}_j^n$ at refinement levels $\ell_j^n$ for $j = 1,\cdots,N_x$. Hence, the dual iteration makes use of the iteration function \eqref{eq:dualIterationFunctionAd} at refinement level $\ell_j^n$. After that, the refinement level at the next time step $\ell_j^{n+1}$ is determined by making use of the smoothness indicator \eqref{eq:errorIndicator}. The moment update then computes the moments at the time updated refinement level $\ell_j^{n+1}$ making use of the dual states at the old refinement levels $\bm{\ell}' = (\ell_{j-1}^n,\ell_{j}^n,\ell_{j+1}^n)^T$. 
+
+Note that we use nested quadrature rules, which facilitate the task of evaluating the quadrature in the moment update \eqref{eq:adaptiveFVUpdate}. Assume that we want to compute the moment update in cell $j$ with refinement level $\ell_j$ where a neighboring cell $j-1$ has refinement level $\ell_{j-1}$. Now if $\ell_{j-1}\geq\ell_j$, the solution of cell $j-1$ is known at all $Q_{\ell}$ quadrature points, hence the integral inside the moment update can be computed. Vice versa, if $\ell_{j-1}\leq\ell_j$, we need to evaluate the neighboring cell at the finer quadrature level $\ell_j$. Except from this, increasing or decreasing the refinement level does not lead to additional costs.
+
+The IPM algorithm with adaptivity results in Algorithm \ref{alg:ad-IPM}.
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
 \For{$j=0$ to $N_x+1$}
