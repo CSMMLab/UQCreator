@@ -29,17 +29,24 @@ The computational domain is a circle with a diameter of $40$ meters. In the cent
 
 \begin{figure}[h!]
 \centering
-	\begin{subfigure}{0.5\linewidth}
+	\begin{subfigure}{0.3\linewidth}
 		\centering
 				\includegraphics[scale=0.2]{figs/Euler1DPlots5/sc100_ERho.png}
 		\label{fig:referenceSolutionsub1}
-	\end{subfigure}%
-	\begin{subfigure}{0.5\linewidth}
+	\end{subfigure}%	
+	\hfill
+	\begin{subfigure}{0.3\linewidth}
 		\centering
 				\includegraphics[scale=0.2]{figs/Euler1DPlots5/sc100_VarRho.png}
 		\label{fig:referenceSolutionsub2}
 	\end{subfigure}
-	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
+	\hfill
+	\begin{subfigure}{0.3\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/Euler1DPlots5/naca_mesh.png}
+		\label{fig:referenceSolutionsMesh}
+	\end{subfigure}
+	\caption{Reference solution E$[\rho]$ and Var$[\rho]$ and mesh used in the computation of all presented methods.}
 	\label{fig:referenceSolution}
 \end{figure}
 
@@ -269,33 +276,38 @@ In the following, we assume a fixed angle of attack with $\phi = 1.25$ degrees a
 The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolution2D}. To determine the error, we used Stochastic-Collocation with a $50$ by $50$ Gauss-Legendre quadrature rule. As in the one-dimensional NACA testcase, the acceleration techniques lead to a heavily reduced runtime of the IPM method. Furthermore, the error obtained with the intrusive methods requires a total degree of $M = 9$, i.e. $N = 55$ moments to reach the error level of SC with 17 quadrature points per dimension i.e. $17^2 = 289$ collocation points. Note that this effect has also been observed in the one-dimensional case, however now for multi-dimensional problems, the reduced number of unknowns needed for intrusive methods to obtain a certain error weighs in more heavily. This shows one promising characteristic of intrusive techniques and points to their applicability for higher dimensional problems. In contrast to before, the SG error level is smaller than the IPM error for both, the expectation value and variance. Furthermore, when comparing IPM with and without One-Shot, one can observe that the effect of this acceleration strategy weighs in more heavily than it did for the one-dimensional case. This behavior is expected, since every iterate of the optimization problem becomes more expensive when the dimension is increased. This means, using a method with less iterations for every computation of the dual variables heavily reduces computational costs, which is why we consider the One-Shot strategy an effective approach, especially for problems with high uncertain dimension.
 \begin{figure}[h!]
 \centering
-	\begin{subfigure}{0.5\linewidth}
+	\begin{subfigure}{0.3\linewidth}
 		\centering
-				\includegraphics[scale=0.2]{figs/Euler2D/sc50UncertainMaSigma0-025PSigma1000-0Dim2_ERho.png}
-		\label{fig:referenceSolutionsub1}
+		\includegraphics[scale=0.2]{figs/Euler2D/sc50UncertainMaSigma0-025PSigma1000-0Dim2_ERho.png}
+		\caption{}
+		\label{fig:referenceSolutionsub2DE}
 	\end{subfigure}%
-	\begin{subfigure}{0.5\linewidth}
+	\hfill
+	\begin{subfigure}{0.3\linewidth}
 		\centering
-				\includegraphics[scale=0.2]{figs/Euler2D/sc50UncertainMaSigma0-025PSigma1000-0Dim2_VarRho.png}
-		\label{fig:referenceSolutionsub2}
+		\includegraphics[scale=0.2]{figs/Euler2D/sc50UncertainMaSigma0-025PSigma1000-0Dim2_VarRho.png}
+		\caption{}
+		\label{fig:referenceSolutionsub2DVar}
 	\end{subfigure}
-	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
-	\label{fig:referenceSolution2D}
-\end{figure}
-\begin{figure}[h!]
-\centering
+	\hfill
+	\begin{subfigure}{0.3\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/Euler2D/sc50UncertainMaSigma0-025PSigma1000-0Dim2_VarRho_log.png}
+		\caption{}
+		\label{fig:referenceSolutionsub2DVarLog}
+	\end{subfigure}\\
 	\begin{subfigure}{0.3\linewidth}
 		\centering
 		\includegraphics[scale=0.2]{figs/Euler2D/retadosIPM9-4MaP_4_ERho.png}
 		\caption{}
-		\label{fig:sub1}
+		\label{fig:reados2DE}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
 		\includegraphics[scale=0.2]{figs/Euler2D/retadosIPM9-4MaP_4_VarRho.png}
 		\caption{}
-		\label{fig:sub2}
+		\label{fig:reados2DVar}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
@@ -304,25 +316,32 @@ The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolut
 		\caption{}
 		\label{fig:readosIPMEVar2DRefinement}
 	\end{subfigure}
-	\caption{(a) E$[\rho]$, (b) Var$[\rho]$ and (c) refinement level for readosIPM$_{1-9}$}
-	\label{fig:readosIPMEVar2D}
+	\caption{Reference solution (\subref{fig:referenceSolutionsub2DE}) E$[\rho]$ and (\subref{fig:referenceSolutionsub2DVar}) Var$[\rho]$ and with logarithmic scaled (\subref{fig:referenceSolutionsub2DVarLog}) Var$[\rho]$. readosIPM$_{1-9}$ solution for (\subref{fig:reados2DE}) E$[\rho]$ and (\subref{fig:reados2DVar}) Var$[\rho]$, with the resulting (\subref{fig:readosIPMEVar2DRefinement}) refinement levels.}
+	\label{fig:refAndreadosIPMEVar2D}
 \end{figure}
-When looking at the computed IPM expectation value and variance in Figure~\ref{fig:readosIPMEVar2D} and compare the results against the reference solution in Figure~\ref{fig:referenceSolution2D}, one can observe that since the uncertainty effects the result more heavily than in the one-dimensional case, the IPM solution still shows a step-like profile. However, we are able to capture the main features of the reference solution. The increased effect of the uncertainty can again be seen in Figure~\ref{fig:readosIPMEVar2DRefinement}, where a refinement level of $8$, i.e. a truncation order of $9$ is chosen on a larger portion than for the one-dimensional case.
+When looking at the computed IPM expectation value and variance (see Figure~\ref{fig:reados2DE} and \ref{fig:reados2DVar}) and comparing the results against the reference solution in Figure~\ref{fig:referenceSolutionsub2DE} and \ref{fig:referenceSolutionsub2DVar}, one can observe that since the uncertainty effects the result more heavily than in the one-dimensional case, the IPM solution still shows a step-like profile. However, we are able to capture the main features of the reference solution. The increased effect of the uncertainty can again be seen in Figure~\ref{fig:readosIPMEVar2DRefinement}, where a refinement level of $8$, i.e. a truncation order of $9$ is chosen on a larger portion than for the one-dimensional case.
 
 \subsection{Pipe Testcase}
 \begin{figure}[H]
 	\centering
-	\begin{subfigure}{0.5\linewidth}
+	\begin{subfigure}{0.3\linewidth}
 		\centering
 		\includegraphics[scale=0.2]{figs/pipe/pipe_sc_ref_n50_E(rho).png}
 		\label{fig:referenceSolutionsPipe1}
 	\end{subfigure}%
-	\begin{subfigure}{0.5\linewidth}
+	\hfill
+	\begin{subfigure}{0.3\linewidth}
 		\centering
 		\includegraphics[scale=0.2]{figs/pipe/pipe_sc_ref_n50_Var(rho).png}
 		\label{fig:referenceSolutionsPipe2}
 	\end{subfigure}
-	\caption{Reference solution E$[\rho]$ and Var$[\rho]$.}
+	\hfill
+	\begin{subfigure}{0.3\linewidth}
+		\centering
+		\includegraphics[scale=0.2]{figs/pipe/pipe_mesh.png}
+		\label{fig:referenceSolutionsPipe2}
+	\end{subfigure}
+	\caption{Reference solution E$[\rho]$ and Var$[\rho]$ and used computational mesh.}
 	\label{fig:referenceSolution3D}
 \end{figure}
 \comment{TODO: Pipe testcase}
