@@ -21,13 +21,16 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
         std::pair cells = _mesh->CellsAtEdge( j );
         unsigned I      = cells.first;
         unsigned J      = cells.second;
-        // std::cout << "edge " << j << ": " << I << " " << J << std::endl;
+        std::cout << "edge " << j << ": " << I << " " << J << std::endl;
         unsigned level = refLevel[I];    // take max ref level of cells I and J
         if( level < refLevel[J] ) level = refLevel[J];
         double area = norm( _mesh->GetNormalsAtEdge( j ) );
-        if( _mesh->BoundaryAtEdge( j ) != NOSLIP ) {
+        if( _mesh->BoundaryAtEdge( j ) != NOSLIP && _mesh->BoundaryAtEdge( j ) != DIRICHLET ) {
             fluxFunc( _flux[j], _problem->G( uQ[I], uQ[J], _mesh->GetNormalsAtEdge( j ) / area, _mesh->GetNormalsAtEdge( j ), level ), level );
-            // std::cout << _flux[j] << std::endl;
+            // std::cout << "flux = " << _flux[j] << std::endl;
+            // std::cout << "uQI " << uQ[I] << std::endl;
+            // std::cout << "uQJ " << uQ[J] << std::endl;
+            // std::cout << "numCells " << numCells << std::endl;
         }
         else if( _mesh->BoundaryAtEdge( j ) == NOSLIP ) {
             fluxFunc( _flux[j], _problem->BoundaryFlux( uQ[I], _mesh->GetNormalsAtEdge( j ) / area, _mesh->GetNormalsAtEdge( j ), level ), level );
@@ -57,11 +60,11 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
             // std::cout << _mesh->CellsAtEdge( edges[l] ).first << " " << j << std::endl;
             if( _mesh->CellsAtEdge( edges[l] ).first == j ) {
                 // std::cout << "+" << std::endl;
-                rhs = rhs + _flux[edges[l]];
+                rhs = rhs - _flux[edges[l]];
             }
             else {
                 // std::cout << "-" << std::endl;1
-                rhs = rhs - _flux[edges[l]];
+                rhs = rhs + _flux[edges[l]];
             }
         }
         // std::cout << std::endl;

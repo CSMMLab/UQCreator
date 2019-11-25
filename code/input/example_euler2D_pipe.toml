@@ -1,12 +1,12 @@
 [general]
 problem = "Euler2D"
 outputDir = "../results/nozzle"
-writeFrequency = 10
+writeFrequency = 1
 
 [mesh]
 dimension = 2
 format = "SU2"
-SU2MeshFile = "nozzleFine.su2"
+SU2MeshFile = "nozzleCoarse.su2"
 SU2BC = [["outlet","dirichlet"], ["walls", "noslip"]]
 outputFile = "nozzleIPM_L2FilterLam2e-6"
 
@@ -14,16 +14,16 @@ outputFile = "nozzleIPM_L2FilterLam2e-6"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.5]]
+distribution = [["Legendre"],[0.0]]
 CFL = 0.9
-tEnd = 4.0 #0.0035
+tEnd = 0.14 #0.0035
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
-closure = "Euler2D"
-moments = [["totalDegree"],[5]]
-quadPoints = [["tensorizedGrid"],[10]]
-filterStrength = 0.000002
+closure = "StochasticGalerkin"
+moments = [["totalDegree"],[1]]
+quadPoints = [["tensorizedGrid"],[3]]
+#filterStrength = 0.000002
 #regularizationStrength = 1e-4
 maxIterations = 1000
 epsilon = 1e-7
