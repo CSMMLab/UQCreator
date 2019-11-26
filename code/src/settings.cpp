@@ -363,7 +363,11 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
         }
         if( _nRefinementLevels > 1 ) {
             auto refinementThresholds = moment_system->get_array_of<double>( "refinementThresholds" );
-            assert( refinementThresholds->size() == 2 );
+            // assert( refinementThresholds->size() == 2 );
+            if( refinementThresholds->size() != 2 ) {
+                std::cerr << "[settings]: No Refinement Barrier Specified." << std::endl;
+                exit( EXIT_FAILURE );
+            }
             _refinementThreshold = ( *refinementThresholds )[0];
             _coarsenThreshold    = ( *refinementThresholds )[1];
         }
