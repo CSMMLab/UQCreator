@@ -362,7 +362,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             _nRetardationLevels  = 1;
         }
         if( _nRefinementLevels > 1 ) {
-            auto refinementThresholds = moment_system->get_array_of<double>( "refinementThresholds" );
+            auto refinementThresholds = moment_system->get_array_of<double_t>( "refinementThresholds" );
             // assert( refinementThresholds->size() == 2 );
             if( refinementThresholds->size() != 2 ) {
                 std::cerr << "[settings]: No Refinement Barrier Specified." << std::endl;
@@ -477,7 +477,9 @@ std::vector<std::vector<unsigned>> Settings::GetPolyIndices() const { return _po
 unsigned Settings::GetNRefinementLevels() const { return _nRefinementLevels; }
 unsigned Settings::GetNRefinementLevels( unsigned retardation ) const { return _retardationSteps[retardation]; }
 double Settings::GetRefinementThreshold() const { return _refinementThreshold; }
+void Settings::SetRefinementThreshold( double ref ) { _refinementThreshold = ref; }
 double Settings::GetCoarsenThreshold() const { return _coarsenThreshold; }
+void Settings::SetCoarsenThreshold( double coa ) { _coarsenThreshold = coa; }
 double Settings::GetResidualRetardation( unsigned retardation ) const { return _residualRetardation[retardation]; }
 unsigned Settings::GetNRetardationLevels() const { return _nRetardationLevels; }
 unsigned Settings::GetNTotalforRefLevel( unsigned level ) const { return _nTotalRefinementLevel[level]; }

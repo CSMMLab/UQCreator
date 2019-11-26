@@ -35,7 +35,7 @@ enum ClosureType {
     C_L2FILTER,
     C_LASSOFILTER,
     C_RADHYDRO,
-	C_THERMALRAD_1D,
+    C_THERMALRAD_1D,
     C_M1_1D,
     C_HYPLIM
 };
@@ -188,7 +188,9 @@ class Settings
     unsigned GetNRefinementLevels( unsigned retardation ) const;
     unsigned GetNRetardationLevels() const;
     double GetRefinementThreshold() const;
+    void SetRefinementThreshold( double ref );
     double GetCoarsenThreshold() const;
+    void SetCoarsenThreshold( double coa );
     double GetResidualRetardation( unsigned retardation ) const;
     unsigned GetNTotalforRefLevel( unsigned level ) const;
     unsigned GetPolyDegreeforRefLevel( unsigned level ) const;

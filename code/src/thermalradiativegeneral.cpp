@@ -28,7 +28,7 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _variances = _settings->GetSigma();
 
     // get quadrature grid
-    auto grid = QuadratureGrid::Create( _settings, _settings->GetNQTotal() );
+    auto grid = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
     _xiQuad   = grid->GetNodes();
 
     // compute Roe flux components
@@ -47,6 +47,10 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _AbsA( 0, 1 )     = AbsAPart( 0, 1 );
     _AbsA( 1, 0 )     = AbsAPart( 1, 0 );
     _AbsA( 1, 1 )     = AbsAPart( 1, 1 );
+
+    // scale refinement threshholds
+    _settings->SetRefinementThreshold( 1e-15 * _settings->GetRefinementThreshold() / ( _a * pow( _TRef, 4 ) ) );
+    _settings->SetCoarsenThreshold( 1e-15 * _settings->GetCoarsenThreshold() / ( _a * pow( _TRef, 4 ) ) );
 
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -85,16 +89,21 @@ Matrix ThermalRadiativeGeneral::F( const Vector& u ) {
 }
 
 Matrix ThermalRadiativeGeneral::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
-    unsigned nStates = static_cast<unsigned>( uQ.rows() );
-    unsigned Nq      = _settings->GetNqPEAtRef( level );
+    unsigned nStates             = static_cast<unsigned>( uQ.rows() );
+    unsigned Nq                  = _settings->GetNqPEAtRef( level );
+    std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
+    if( Nq != qIndex.size() ) {
+        std::cerr << "quadrature mismatch" << std::endl;
+    }
+    // std::cout << "uQ size " << uQ.rows() << " " << uQ.columns() << " vs " << qIndex.size() << std::endl;
     Matrix y( nStates, Nq, 0.0 );
     double S           = 0.0;    // source, needs to be defined
     double varianceVal = 0;
 
     // std::cout << "level " << level << ", Nq = " << Nq << std::endl;
 
-    for( unsigned k = 0; k < Nq; ++k ) {
-        if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[k][0] ) {
+    for( unsigned k = 0; k < qIndex.size(); ++k ) {
+        if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
             S           = _a;
             varianceVal = _variances[0];
         }

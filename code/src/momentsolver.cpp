@@ -110,10 +110,13 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             double indicator;
-            if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D || _settings->GetProblemType() == P_THERMALRAD_1D )
+            if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D )
                 indicator = 0.0;
             else
                 indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+
+            // std::cout << "Indicator " << indicator << std::endl;
+            // std::cout << "Threshold: " << _settings->GetRefinementThreshold() << " " << _settings->GetCoarsenThreshold() << std::endl;
             if( indicator > _settings->GetRefinementThreshold() &&
                 refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels( retCounter ) - 1 &&
                 _mesh->GetBoundaryType( _cellIndexPE[j] ) != BoundaryType::DIRICHLET )
@@ -121,6 +124,7 @@ void MomentSolver::Solve() {
             else if( indicator < _settings->GetCoarsenThreshold() && refinementLevel[_cellIndexPE[j]] > 0 &&
                      _mesh->GetBoundaryType( _cellIndexPE[j] ) != BoundaryType::DIRICHLET )
                 refinementLevel[_cellIndexPE[j]] -= 1;
+            // std::cout << "Refinement level is " << refinementLevel[_cellIndexPE[j]] << std::endl;
         }
 
         // broadcast refinemt level to all PEs
