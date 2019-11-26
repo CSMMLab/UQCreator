@@ -49,6 +49,7 @@ Mesh1D::Mesh1D( Settings* settings ) : Mesh( settings, 1 ) {
     }
     _cells[_numCells - 1]->AddNeighbor( _cells[_numCells - 2], 0 );
     _edges.push_back( std::make_pair( _numCells - 2, _numCells - 1 ) );
+    _edges.push_back( std::make_pair( _numCells - 1, _numCells ) );
 
     _normals.push_back( scaledNormal );
 
@@ -57,17 +58,8 @@ Mesh1D::Mesh1D( Settings* settings ) : Mesh( settings, 1 ) {
     _edgesAtCell[_numCells - 1][0] = edgeCounter;
     _edgesAtCell[_numCells - 1][1] = edgeCounter + 1;
 
-    // debug
-    for( unsigned i = 0; i < _numCells; ++i ) {
-        std::cout << "Edge " << i << ": " << _edges[i].first << " " << _edges[i].second << std::endl;
-    }
-
-    for( unsigned i = 0; i < _numCells; ++i ) {
-        std::cout << "Cell " << i << " has edges " << _edgesAtCell[i][0] << " " << _edgesAtCell[i][1] << std::endl;
-    }
-
     _boundaryTypeEdge.resize( _edges.size() );
-    for( unsigned j = 1; j < _edges.size() - 1; ++j ) {
+    for( unsigned j = 1; j < _edges.size(); ++j ) {
         _boundaryTypeEdge[j] = NONE;
     }
     _boundaryTypeEdge[0]                 = DIRICHLET;
