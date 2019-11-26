@@ -6,8 +6,8 @@ outputDir = "../results/thermal"
 
 [mesh]
 dimension = 1
-numberOfCells = 500
-a = -2
+numberOfCells = 1000
+a = -2.1
 b = 3.5
 outputFile = "ThermalRadiativeTransferRadiatingShock"
 

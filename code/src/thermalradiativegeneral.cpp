@@ -208,7 +208,7 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
     if( !_suOlson ) y[0] = std::pow( T / _TRef, 4 );
     y[1] = F / _a / pow( _TRef, 4 );
     y[2] = internalEnergy / ( _a * pow( _TRef, 4 ) );
-    std::cout << y[2] << std::endl;
+    // std::cout << y[2] << std::endl;
     return y;
 }
 
