@@ -92,15 +92,10 @@ Matrix ThermalRadiativeGeneral::Source( const Matrix& uQ, const Vector& x, doubl
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
-    if( Nq != qIndex.size() ) {
-        std::cerr << "quadrature mismatch" << std::endl;
-    }
-    // std::cout << "uQ size " << uQ.rows() << " " << uQ.columns() << " vs " << qIndex.size() << std::endl;
+
     Matrix y( nStates, Nq, 0.0 );
     double S           = 0.0;    // source, needs to be defined
     double varianceVal = 0;
-
-    // std::cout << "level " << level << ", Nq = " << Nq << std::endl;
 
     for( unsigned k = 0; k < qIndex.size(); ++k ) {
         if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
