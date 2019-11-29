@@ -76,14 +76,14 @@ void MomentSolver::Solve() {
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
 
+    Vector residualVec( _settings->GetNQTotal(), 0.0 );
+    double residual;
+
     // perform initial step for regularization
     if( _settings->HasRegularization() ) PerformInitialStep( refinementLevel, uNew );
 
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
-
-        Vector residualVec( _settings->GetNQTotal(), 0.0 );
-        double residual;
 
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -115,31 +115,45 @@ void MomentSolver::Solve() {
             this->Source( uNew, uQ, dt, refinementLevel );
         }
 
-        // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
         for( unsigned j = 0; j < _nCells; ++j ) {
-            MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
+            u[j] = uNew[j];
         }
 
-        // compute residual
-        for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
+        if( timeIndex % _settings->GetWriteFrequency() == 1 || false ) {
+            // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
+                _lambda[j] = u[j];
+            }
+
+            // compute residual
+            residualVec.reset();
+            for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
+                for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
+                    residualVec[k] += std::abs( u[_cellIndexPE[j]]( 0, k ) - uOld[_cellIndexPE[j]]( 0, k ) ) * _mesh->GetArea( _cellIndexPE[j] );
+                }
+            }
+            // determine maximum of residual
+            residual = -1.0;
             for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
-                residualVec[k] += std::abs( u[_cellIndexPE[j]]( 0, k ) - uOld[_cellIndexPE[j]]( 0, k ) ) * _mesh->GetArea( _cellIndexPE[j] );
+                if( residual < residualVec[k] ) residual = residualVec[k];
+            }
+
+            MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
+            if( _settings->GetMyPE() == 0 ) {
+                log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
+                if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
+                if( _settings->WriteInTime() && timeIndex % _settings->GetWriteFrequency() == 1 && false ) {
+                    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, false );
+                    _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
+                    if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
+                }
             }
         }
-        // determine maximum of residual
-        residual = -1.0;
-        for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
-            if( residual < residualVec[k] ) residual = residualVec[k];
-        }
-
-        MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
-        if( _settings->GetMyPE() == 0 ) {
-            log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
-            if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
-            if( _settings->WriteInTime() && timeIndex % _settings->GetWriteFrequency() == 1 && false ) {
-                Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, false );
-                _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
-                if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
+        else {
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
+                _lambda[j] = u[j];
             }
         }
     }
