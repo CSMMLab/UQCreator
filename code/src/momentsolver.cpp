@@ -89,9 +89,7 @@ void MomentSolver::Solve() {
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
-            _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
-            // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
+            _lambda[_cellIndexPE[j]] = u[_cellIndexPE[j]];
         }
 
         // MPI Broadcast lambdas to all PEs
@@ -100,51 +98,9 @@ void MomentSolver::Solve() {
             MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
 
-        // save old refinement levels
-        refinementLevelOld = refinementLevel;
-
-        // determine refinement level of cells on current PE
-        for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            double indicator;
-            if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D )
-                indicator = 0.0;
-            else
-                indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
-            if( indicator > _settings->GetRefinementThreshold() &&
-                refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels( retCounter ) - 1 &&
-                _mesh->GetBoundaryType( _cellIndexPE[j] ) != BoundaryType::DIRICHLET )
-                refinementLevel[_cellIndexPE[j]] += 1;
-            else if( indicator < _settings->GetCoarsenThreshold() && refinementLevel[_cellIndexPE[j]] > 0 &&
-                     _mesh->GetBoundaryType( _cellIndexPE[j] ) != BoundaryType::DIRICHLET )
-                refinementLevel[_cellIndexPE[j]] -= 1;
-        }
-
-        // broadcast refinemt level to all PEs
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
-        }
-
-        // determine transition refinement level to ensure that neighboring cells of high refinement level have fine uQ reconstruction
-        // important for FV stencil in Advance function
-        for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            refinementLevelTransition[_cellIndexPE[j]] = refinementLevel[_cellIndexPE[j]];
-            auto neighbors                             = _mesh->GetNeighborIDs( _cellIndexPE[j] );
-            unsigned maxRefLevelNghs                   = refinementLevel[_cellIndexPE[j]];
-            for( unsigned l = 0; l < neighbors.size(); ++l ) {
-                if( maxRefLevelNghs < refinementLevel[neighbors[l]] && neighbors[l] != _nCells ) {
-                    maxRefLevelNghs                            = refinementLevel[neighbors[l]];
-                    refinementLevelTransition[_cellIndexPE[j]] = maxRefLevelNghs;
-                }
-            }
-        }
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            MPI_Bcast( &refinementLevelTransition[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
-        }
-
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
-            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
+            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( u[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
         }
 
         // compute partial moment vectors on each PE (for inexact dual variables)
@@ -154,6 +110,7 @@ void MomentSolver::Solve() {
         }
 
         // determine time step size
+        // if( timeIndex % _settings->GetWriteFrequency() == 1 || timeIndex == 0 ) {
         double dtMinOnPE = 1e10;
         double dtCurrent;
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -162,6 +119,7 @@ void MomentSolver::Solve() {
         }
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
         _settings->SetDT( dt );
+        //}
         t += dt;
         ++timeIndex;
 
@@ -173,14 +131,6 @@ void MomentSolver::Solve() {
         // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
-        }
-
-        if( _settings->HasRegularization() ) {
-            // add eta*lambda to obtain old moments
-            for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-                u[_cellIndexPE[j]] = u[_cellIndexPE[j]].Add(
-                    _settings->GetRegularizationStrength() * _lambda[_cellIndexPE[j]], _nStates, _nTotalForRef[refinementLevelOld[_cellIndexPE[j]]] );
-            }
         }
 
         // compute residual
@@ -205,9 +155,6 @@ void MomentSolver::Solve() {
                 if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
             }
         }
-
-        // if current retardation level fulfills residual condition, then increase retardation level
-        if( residualFull < _settings->GetResidualRetardation( retCounter ) && retCounter < _settings->GetNRetardationLevels() - 1 ) retCounter += 1;
     }
 
     // write final error
