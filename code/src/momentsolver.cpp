@@ -85,19 +85,6 @@ void MomentSolver::Solve() {
         Vector residualVec( _settings->GetNQTotal(), 0.0 );
         double residual;
 
-        // Solve dual problem
-#pragma omp parallel for schedule( dynamic, 10 )
-        for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            _lambda[_cellIndexPE[j]] = u[_cellIndexPE[j]];
-        }
-
-        // MPI Broadcast lambdas to all PEs
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            uOld[j] = u[j];    // save old Moments for residual computation
-            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
-        }
-
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( u[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
@@ -168,7 +155,8 @@ void MomentSolver::Solve() {
     if( _settings->GetMyPE() != 0 ) return;
 
     // save final moments on uNew
-    uNew = u;
+    uNew    = u;
+    _lambda = uNew;
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     log->info( "" );

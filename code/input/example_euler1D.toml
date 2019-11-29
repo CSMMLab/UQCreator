@@ -1,6 +1,7 @@
 [general]
 problem = "Euler1D"
 outputDir = "../results"
+writeFrequency = 50
 
 [mesh]
 dimension = 1
