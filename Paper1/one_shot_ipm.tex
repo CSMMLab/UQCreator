@@ -1,7 +1,7 @@
 \section{One-Shot IPM}
 \label{sec:OneShotIPM}
 
-In the following section we only consider steady state problems, i.e. we have
+In the following section we only consider steady state problems, i.e. equation \ref{eq:fulleq} reduces to
 \begin{align}\label{eq:hyperbolicProblemSteady}
 \nabla\cdot\bm{f}(\bm{u}(\bm{x},\bm{\xi})) = \bm{0} \enskip \text{ in } D
 \end{align}
@@ -43,7 +43,7 @@ This yields Algotihm \ref{alg:osIPM}.
 \end{algorithm}
 We call this method One-Shot IPM, since it is inspired by One-Shot optimization, see for example \cite{hazra2005aerodynamic}, which uses only a single iteration of the primal and dual step in order to update the design variables. Note that the dual variables from the One-Shot iteration are written without a hat to indicate that they are not the exact solution of the dual problem.
 
-In the following, we will show that this iteration converges, if the chosen initial condition is sufficiently close to the steady state solution. For this we take an approach commonly chosen to prove local convergence properties of Newton's method: In Theorem \ref{th:Contractive}, we show that the iteration function is contractive at its fixed point and conclude in Theorem \ref{th:localConvergence} that this yields local convergence. Hence, we preserve the convergence results of the original IPM method, which uses Newton's method, i.e. converges locally as well.
+In the following, we will show that this iteration converges, if the chosen initial condition is sufficiently close to the steady state solution. For this we take an approach commonly chosen to prove local convergence properties of Newton's method: In Theorem \ref{th:Contractive}, we show that the iteration function is contractive at its fixed point and conclude in Theorem \ref{th:localConvergence} that this yields local convergence. Hence, we preserve the convergence property of the original IPM method, which uses Newton's method and therefore only converges locally as well \remja{Quelle?}.
 \begin{theorem}\label{th:Contractive}
 Assume that the classical IPM iteration is contractive at its fixed point $\bm{\hat u}^*$. Then the Jacobi matrix $\bm{J}$ of the One-Shot IPM iteration \eqref{eq:oneshotIPM} has a spectral radius $\rho(\bm{J})<1$ at the fixed point $(\bm{\lambda}^*,\bm{\hat u}^*)$.
 \end{theorem}

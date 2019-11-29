@@ -1,9 +1,9 @@
 \section{Adaptivity}
 \label{sec:adaptivity}
 
-The following section presents the adaptivity strategy used in this work. Since stochastic hyperbolic problems generally experience shocks in a small portion of the space-time domain, the idea is to perform arising computations on a high accuracy level in this small area, while keeping a low level of accuracy in the remainder. The hope is to automatically select the lowest order moment capable of approximating the solution with given accuracy, i.e. the same error is obtained while using a significantly reduced number of unknowns in most parts of the computational domain.
+The following section presents the adaptivity strategy used in this work. Since stochastic hyperbolic problems generally experience shocks in a small portion of the space-time domain, the idea is to perform arising computations on a high accuracy level in this small area, while keeping a low level of accuracy in the remainder. The idea is to automatically select the lowest order moment capable of approximating the solution with given accuracy, i.e. the same error is obtained while using a significantly reduced number of unknowns in most parts of the computational domain and thus boost the performance of intrusive methods.
 
-In the following, we discuss the building blocks of the IPM method for refinement levels $\ell = 1,\cdots,N_{\text{ad}}$, where level $1$ uses the coarsest discretization and level $N_{\text{ad}}$ uses the finest discretization of the uncertain domain. At a given refinement level $\ell$, the total degree of the basis function is given by $M_{\ell}$ with a corresponding number of moments $N_{\ell}$. The number of quadrature points at level $\ell$ is denoted by $Q_{\ell}$. To determine the refinement level of a given moment vector $\bm{\hat u}$ we choose techniques used in discontinuous Galerkin (DG) methods. Adaptivity is a common strategy to accelerate this class of methods and several indicators to determine the smoothness of the solution exist. We make use of a strategy from \cite{persson2006sub}, which uses the highest degree moments as indicator. Translating the idea of the discontinuity sensor used in \cite{persson2006sub} to uncertainty quantification, we define the polynomial approximation at refinement level $\ell$ as
+In the following, we discuss the building blocks of the IPM method for refinement levels $\ell = 1,\cdots,N_{\text{ad}}$, where level $1$ uses the coarsest discretization and level $N_{\text{ad}}$ uses the finest discretization of the uncertain domain. At a given refinement level $\ell$, the total degree of the basis function is given by $M_{\ell}$ with a corresponding number of moments $N_{\ell}$. The number of quadrature points at level $\ell$ is denoted by $Q_{\ell}$. To determine the refinement level of a given moment vector $\bm{\hat u}$ we choose techniques used in discontinuous Galerkin (DG) methods. Adaptivity is a common strategy to accelerate this class of methods and several indicators to determine the smoothness of the solution exist. We make use of a strategy from \cite{persson2006sub}, which uses the two highest degree moments as an indicator. Translating the idea of the discontinuity sensor used in \cite{persson2006sub} to uncertainty quantification, we define the polynomial approximation at refinement level $\ell$ as
 \begin{align*}
 \bm{\tilde u}_{\ell} := \sum_{|i|\leq M_{\ell}} \bm{\hat{u}}_i \varphi_i.
 \end{align*}
@@ -11,7 +11,7 @@ Now the indicator for a moment vector at level $\ell$ is defined as
 \begin{align}\label{eq:errorIndicator}
 \bm S_{\ell} := \frac{\langle \left(\bm{\tilde u}_{\ell} - \bm{\tilde u}_{\ell-1}\right)^2\rangle}{\langle \bm{\tilde u}_{\ell}^2\rangle},
 \end{align}
-where divisions and multiplications are performed element-wise. Note that a similar indicator has been used in \cite{kroker2012finite} for intrusive methods in uncertainty quantification. In this work, we use the first entry in $\bm S_{\ell}$ to determine the refinement level, i.e. in the case of gas dynamics, the regularity of the density is chosen to indicate an adequate refinement level. If the moment vector in a given cell at a certain timestep is initially at refinement level $\ell$, this level is kept if the error indicator \eqref{eq:errorIndicator} lies in the interval $I_{\delta}:=[\delta_{-},\delta_{+}]$. Here $\delta_{\pm}$ are user determined parameters. If the indicator is smaller than $\delta_-$, the refinement level is decreased by a value of one, if it lies above $\delta_+$, it is increased by one.
+where divisions and multiplications are performed element-wise. Note that a similar indicator has been used in \cite{kroker2012finite} for intrusive methods in uncertainty quantification. In this work, we use the first entry in $\bm S_{\ell}$ to determine the refinement level, i.e. in the case of gas dynamics, the regularity of the density is chosen to indicate an adequate refinement level. If the moment vector in a given cell and at a certain timestep is initially at refinement level $\ell$, this level is kept if the error indicator \eqref{eq:errorIndicator} lies in the interval $I_{\delta}:=[\delta_{-},\delta_{+}]$. Here $\delta_{\pm}$ are user determined parameters. If the indicator is smaller than $\delta_-$, the refinement level is decreased to the next lower level, if it lies above $\delta_+$, it is increased to the next higher level.
 
 Now we need to specify how the different building blocks of IPM can be modified to work with varying truncation orders in different cells. Let us first add dimensions to the notation of the dual iteration function $\bm d$, which has been defined in \eqref{eq:dualIterationFunction}. Now, we have 
 $\bm{d}_{\ell}:\mathbb{R}^{N_{\ell}\times m}\times\mathbb{R}^{N_{\ell}\times m}\to\mathbb{R}^{N_{\ell}\times m}$, given by
@@ -28,7 +28,7 @@ An adaptive version of the moment iteration \eqref{eq:momentIterationFunction} i
 \end{align}
 Hence, the index vector $\bm\ell'\in\mathbb{N}^{3}$ denotes the refinement levels of the stencil cells, which are used to compute the time updated moment vector at level $\ell$.
 
-The strategy now is to perform the dual update for a set of moment vectors $\bm{\hat u}_j^n$ at refinement levels $\ell_j^n$ for $j = 1,\cdots,N_x$. Hence, the dual iteration makes use of the iteration function \eqref{eq:dualIterationFunctionAd} at refinement level $\ell_j^n$. After that, the refinement level at the next time step $\ell_j^{n+1}$ is determined by making use of the smoothness indicator \eqref{eq:errorIndicator}. The moment update then computes the moments at the time updated refinement level $\ell_j^{n+1}$ making use of the dual states at the old refinement levels $\bm{\ell}' = (\ell_{j-1}^n,\ell_{j}^n,\ell_{j+1}^n)^T$. 
+The strategy now is to perform the dual update for a set of moment vectors $\bm{\hat u}_j^n$ at refinement levels $\ell_j^n$ for $j = 1,\cdots,N_x$. Thus, the dual iteration makes use of the iteration function \eqref{eq:dualIterationFunctionAd} at refinement level $\ell_j^n$. After that, the refinement level at the next time step $\ell_j^{n+1}$ is determined by making use of the smoothness indicator \eqref{eq:errorIndicator}. The moment update then computes the moments at the time updated refinement level $\ell_j^{n+1}$, utilizing the the dual states at the old refinement levels $\bm{\ell}' = (\ell_{j-1}^n,\ell_{j}^n,\ell_{j+1}^n)^T$. 
 
 Note that we use nested quadrature rules, which facilitate the task of evaluating the quadrature in the moment update \eqref{eq:adaptiveFVUpdate}. Assume that we want to compute the moment update in cell $j$ with refinement level $\ell_j$ where a neighboring cell $j-1$ has refinement level $\ell_{j-1}$. Now if $\ell_{j-1}\geq\ell_j$, the solution of cell $j-1$ is known at all $Q_{\ell}$ quadrature points, hence the integral inside the moment update can be computed. Vice versa, if $\ell_{j-1}\leq\ell_j$, we need to evaluate the neighboring cell at the finer quadrature level $\ell_j$. Except from this, increasing or decreasing the refinement level does not lead to additional costs.
 
@@ -43,10 +43,10 @@ The IPM algorithm with adaptivity results in Algorithm \ref{alg:ad-IPM}.
 \For{$j=0$ to $N_x+1$}
 \State $\bm{\lambda}_j^{(0)} \leftarrow \bm{\hat \lambda}_j^{n}$
 \While{\eqref{eq:tauCrit} is violated}
-\State $\bm{\lambda}_j^{(l+1)} \leftarrow \bm{d}_{\ell_j^n}(\bm{\lambda}_{j}^{(l)};\bm{\hat u}_j^{n})$
-\State $l \leftarrow l+1$
+\State $\bm{\lambda}_j^{(\zeta+1)} \leftarrow \bm{d}_{\ell_j^n}(\bm{\lambda}_{j}^{(\zeta)};\bm{\hat u}_j^{n})$
+\State $\zeta \leftarrow \zeta+1$
 \EndWhile
-\State $\bm{\hat \lambda}_j^{n+1} \leftarrow \bm{\lambda}_j^{(l)}$
+\State $\bm{\hat \lambda}_j^{n+1} \leftarrow \bm{\lambda}_j^{(\zeta)}$
 \State $\ell_j^{n+1}\leftarrow \text{DetermineRefinementLevel}\left(\bm{\hat \lambda}_j^{n+1}\right)$
 \EndFor
 \For{$j=1$ to $N_x$}
@@ -58,7 +58,7 @@ The IPM algorithm with adaptivity results in Algorithm \ref{alg:ad-IPM}.
 \caption{Adaptive IPM implementation}
 \label{alg:ad-IPM}
 \end{algorithm}
-Adaptivity can be used for intrusive methods in general as well as for steady and unsteady problems. In the case of steady problems, we can make use of a strategy, which we call \textit{refinement retardation}. Recall that the convergence to an admissible steady state solution is expensive and a high accuracy and desirable solution properties are only required at the end of this iteration process. Hence, we propose to iteratively increase the maximal refinement level whenever the residual \eqref{eq:residualSteady} lies below a certain tolerance $\varepsilon$. For a given set of maximal refinement levels $\ell_l^*$ and a set of tolerances $\varepsilon_l^*$ at which the refinement level must be increased we can now perform a large amount of the required iterations on a lower but cheaper refinement level.
+Adaptivity can be used for intrusive methods in general as well as for steady and unsteady problems. In the case of steady problems, we can make use of a strategy, which we call \textit{refinement retardation}. Recall that the convergence to an admissible steady state solution is expensive and a high accuracy and desirable solution properties are only required at the end of this iteration process. Hence, we propose to iteratively increase the maximal refinement level whenever the residual \eqref{eq:residualSteady} lies below a certain tolerance $\varepsilon$. For a given set of maximal refinement levels $\ell_l^*$ and a set of tolerances $\varepsilon_l^*$ at which the refinement level must be increased, we can now perform a large amount of the required iterations on a lower, but cheaper refinement level.
 The same strategy can be applied for One-Shot IPM. In this case, the algorithm is given by Algorithm~\ref{alg:adosIPM}.
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
@@ -74,7 +74,7 @@ The same strategy can be applied for One-Shot IPM. In this case, the algorithm i
 \EndFor
 \State $n \leftarrow n+1$
 \If{the residual \eqref{eq:residualSteady} lies below $\varepsilon_l^*$}
-\State $l \leftarrow l+1$
+\State $\zeta \leftarrow \zeta+1$
 \EndIf
 \EndWhile
 \end{algorithmic}
