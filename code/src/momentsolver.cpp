@@ -79,9 +79,6 @@ void MomentSolver::Solve() {
     Vector residualVec( _settings->GetNQTotal(), 0.0 );
     double residual;
 
-    // perform initial step for regularization
-    if( _settings->HasRegularization() ) PerformInitialStep( refinementLevel, uNew );
-
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
 
@@ -119,7 +116,7 @@ void MomentSolver::Solve() {
             u[j] = uNew[j];
         }
 
-        if( timeIndex % _settings->GetWriteFrequency() == 1 || false ) {
+        if( timeIndex % _settings->GetWriteFrequency() == 1 || true ) {
             // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
             for( unsigned j = 0; j < _nCells; ++j ) {
                 MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
@@ -143,11 +140,6 @@ void MomentSolver::Solve() {
             if( _settings->GetMyPE() == 0 ) {
                 log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
                 if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
-                if( _settings->WriteInTime() && timeIndex % _settings->GetWriteFrequency() == 1 && false ) {
-                    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, false );
-                    _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
-                    if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
-                }
             }
         }
         else {
