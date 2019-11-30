@@ -76,15 +76,31 @@ void MomentSolver::Solve() {
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
 
-    Vector residualVec( _settings->GetNQTotal(), 0.0 );
-    double residual;
+    // perform initial step for regularization
+    if( _settings->HasRegularization() ) PerformInitialStep( refinementLevel, uNew );
 
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
 
+        Vector residualVec( _settings->GetNQTotal(), 0.0 );
+        double residual;
+
+        // Solve dual problem
+#pragma omp parallel for schedule( dynamic, 10 )
+        for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
+            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            _lambda[_cellIndexPE[j]] = u[_cellIndexPE[j]];
+        }
+
+        // MPI Broadcast lambdas to all PEs
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uOld[j] = u[j];    // save old Moments for residual computation
+            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
+        }
+
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
-            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( u[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
+            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
         }
 
         // compute partial moment vectors on each PE (for inexact dual variables)
@@ -94,7 +110,6 @@ void MomentSolver::Solve() {
         }
 
         // determine time step size
-        // if( timeIndex % _settings->GetWriteFrequency() == 1 || timeIndex == 0 ) {
         double dtMinOnPE = 1e10;
         double dtCurrent;
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -103,7 +118,6 @@ void MomentSolver::Solve() {
         }
         MPI_Allreduce( &dtMinOnPE, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
         _settings->SetDT( dt );
-        //}
         t += dt;
         ++timeIndex;
 
@@ -112,42 +126,31 @@ void MomentSolver::Solve() {
             this->Source( uNew, uQ, dt, refinementLevel );
         }
 
+        // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
         for( unsigned j = 0; j < _nCells; ++j ) {
-            u[j] = uNew[j];
+            MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
         }
 
-        if( timeIndex % _settings->GetWriteFrequency() == 1 || true ) {
-            // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
-            for( unsigned j = 0; j < _nCells; ++j ) {
-                MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
-                _lambda[j] = u[j];
-            }
-
-            // compute residual
-            residualVec.reset();
-            for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
-                for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
-                    residualVec[k] += std::abs( u[_cellIndexPE[j]]( 0, k ) - uOld[_cellIndexPE[j]]( 0, k ) ) * _mesh->GetArea( _cellIndexPE[j] );
-                }
-            }
-            // determine maximum of residual
-            residual = -1.0;
+        // compute residual
+        for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
             for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
-                if( residual < residualVec[k] ) residual = residualVec[k];
+                residualVec[k] += std::abs( u[_cellIndexPE[j]]( 0, k ) - uOld[_cellIndexPE[j]]( 0, k ) ) * _mesh->GetArea( _cellIndexPE[j] );
             }
+        }
+        // determine maximum of residual
+        residual = -1.0;
+        for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
+            if( residual < residualVec[k] ) residual = residualVec[k];
+        }
 
-            MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
-            if( _settings->GetMyPE() == 0 ) {
-                log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
-                if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
-            }
+        MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
+        if( _settings->GetMyPE() == 0 ) {
+            log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
+            if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
         }
-        else {
-            for( unsigned j = 0; j < _nCells; ++j ) {
-                MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
-                _lambda[j] = u[j];
-            }
-        }
+
+        // if current retardation level fulfills residual condition, then increase retardation level
+        if( residualFull < _settings->GetResidualRetardation( retCounter ) && retCounter < _settings->GetNRetardationLevels() - 1 ) retCounter += 1;
     }
 
     // write final error
@@ -161,8 +164,7 @@ void MomentSolver::Solve() {
     if( _settings->GetMyPE() != 0 ) return;
 
     // save final moments on uNew
-    uNew    = u;
-    _lambda = uNew;
+    uNew = u;
 
     std::chrono::steady_clock::time_point toc = std::chrono::steady_clock::now();
     log->info( "" );

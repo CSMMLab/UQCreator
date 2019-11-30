@@ -312,6 +312,7 @@ void Mesh2D::AddNeighbor( Cell* c, Cell* neighbor, unsigned index0, unsigned ind
 }
 
 void Mesh2D::DetermineNeighbors() {
+    _edgesAtCell.resize( _numCells );
     for( unsigned i = 0; i < _numCells; ++i ) {
         Cell* ci = _cells[i];
         for( unsigned j = i + 1; j < _numCells; ++j ) {
@@ -332,6 +333,16 @@ void Mesh2D::DetermineNeighbors() {
                             indexJ1 = nj;
                             this->AddNeighbor( ci, cj, indexI0, indexI1 );
                             this->AddNeighbor( cj, ci, indexJ0, indexJ1 );
+                            _edges.push_back( std::make_pair( ci->GetID(), cj->GetID() ) );
+                            // std::cout << "cells at edge " << _edges.size() - 1 << " are: " << _edges[_edges.size() - 1].first << " "
+                            //          << _edges[_edges.size() - 1].second << std::endl;
+                            if( ci->GetID() == _numCells )
+                                _boundaryTypeEdge.push_back( _cells[i]->GetBoundaryType() );
+                            else if( cj->GetID() == _numCells )
+                                _boundaryTypeEdge.push_back( _cells[i]->GetBoundaryType() );
+                            else {
+                                _boundaryTypeEdge.push_back( NONE );
+                            }
                             goto cnt;
                         }
                     }
@@ -340,9 +351,48 @@ void Mesh2D::DetermineNeighbors() {
         cnt:;
         }
         if( _cells[i]->IsBoundaryCell() ) {
+            _edges.push_back( std::make_pair( _cells[i]->GetID(), _numCells ) );
+            _boundaryTypeEdge.push_back( _cells[i]->GetBoundaryType() );
             _cells[i]->UpdateBoundaryNormal();
         }
     }
+    // exit( EXIT_FAILURE );
+
+    _normals.resize( _edges.size() );
+    for( unsigned j = 0; j < _numCells; ++j ) {
+        _edgesAtCell[j] = VectorU( 3, _numCells + 1 );
+    }
+    for( unsigned j = 0; j < _normals.size(); ++j ) {
+        _normals[j] = Vector( _dimension, 0.0 );
+    }
+
+    // std::cout << "Setting Normals" << std::endl;
+    for( unsigned j = 0; j < _edges.size(); ++j ) {
+        // std::cout << "First " << _edges[j].first << std::endl;
+        _normals[j] = _cells[_edges[j].first]->GetNormalForNgh( _edges[j].second );
+
+        // std::cout << "Normal at edge " << j << " is " << _normals[j] << std::endl;
+        if( _edges[j].first == _numCells ) continue;
+        for( unsigned l = 0; l < 3; ++l ) {
+            if( _edgesAtCell[_edges[j].first][l] == _numCells + 1 ) {
+                _edgesAtCell[_edges[j].first][l] = j;
+                break;
+            }
+        }
+        // std::cout << "Second " << _edges[j].second << std::endl;
+        if( _edges[j].second == _numCells ) continue;
+        for( unsigned l = 0; l < 3; ++l ) {
+            if( _edgesAtCell[_edges[j].second][l] == _numCells + 1 ) {
+                _edgesAtCell[_edges[j].second][l] = j;
+                break;
+            }
+        }
+    }
+
+    for( unsigned j = 0; j < _numCells; ++j ) {
+        // std::cout << "Cell " << j << " has edges " << _edgesAtCell[j] << std::endl;
+    }
+    // exit( EXIT_FAILURE );
 }
 
 std::vector<Vector> Mesh2D::ImportSU2Solution() const {

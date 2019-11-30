@@ -74,6 +74,7 @@ class Cell
     Vector GetUnitNormal( unsigned i );
     Vector GetNormal( unsigned i );
     void SetDefaultCellId( unsigned id );
+    Vector GetNormalForNgh( unsigned i ) const;
 };
 
 #endif    // ELEMENT_H

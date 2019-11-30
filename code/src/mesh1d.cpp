@@ -21,11 +21,49 @@ Mesh1D::Mesh1D( Settings* settings ) : Mesh( settings, 1 ) {
         this->CreateGrid( a, b );
     }
     _cells[0]->AddNeighbor( _cells[1], 1 );
+    _edgesAtCell.resize( _numCells );
+    unsigned edgeCounter = 1;
+    // cell 0 has edges edgeCounter,edgeCounter+1
+    _edgesAtCell[0]    = VectorU( 2 );
+    _edgesAtCell[0][0] = 0;
+    _edgesAtCell[0][1] = 1;
+
+    Vector unitNormal{1};
+    Vector scaledNormal = _cells[0]->GetArea() * unitNormal;
+    _normals.push_back( scaledNormal );
+    _edges.push_back( std::make_pair( _numCells, 0 ) );
+
     for( unsigned i = 1; i < _numCells - 1; ++i ) {
         _cells[i]->AddNeighbor( _cells[i - 1], 0 );
         _cells[i]->AddNeighbor( _cells[i + 1], 1 );
+        _edges.push_back( std::make_pair( i - 1, i ) );
+
+        // cell i has edges edgeCounter,edgeCounter+1
+        _edgesAtCell[i]    = VectorU( 2 );
+        _edgesAtCell[i][0] = edgeCounter;
+        _edgesAtCell[i][1] = edgeCounter + 1;
+
+        Vector scaledNormal = _cells[i]->GetArea() * unitNormal;
+        _normals.push_back( scaledNormal );
+        edgeCounter += 1;
     }
     _cells[_numCells - 1]->AddNeighbor( _cells[_numCells - 2], 0 );
+    _edges.push_back( std::make_pair( _numCells - 2, _numCells - 1 ) );
+    _edges.push_back( std::make_pair( _numCells - 1, _numCells ) );
+
+    _normals.push_back( scaledNormal );
+
+    // cell _numCells - 1 has edges edgeCounter,edgeCounter+1
+    _edgesAtCell[_numCells - 1]    = VectorU( 2 );
+    _edgesAtCell[_numCells - 1][0] = edgeCounter;
+    _edgesAtCell[_numCells - 1][1] = edgeCounter + 1;
+
+    _boundaryTypeEdge.resize( _edges.size() );
+    for( unsigned j = 1; j < _edges.size(); ++j ) {
+        _boundaryTypeEdge[j] = NONE;
+    }
+    _boundaryTypeEdge[0]                 = DIRICHLET;
+    _boundaryTypeEdge[_edges.size() - 1] = DIRICHLET;
 
     _neighborIDs.resize( _numCells );
     _boundaryType.resize( _numCells );
@@ -208,8 +246,8 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
             double rho    = results( 4, j );
             double v      = results( 5, j ) / rho;
             double rhoE   = results( 6, j );
-            double _gamma = 5.0 / 3.0;          // adiabatic constant
-            double _R     = 8.3144621 * 1e7;    // specific gas constant [erg / (K mol)]
+            double _gamma = 5.0 / 3.0;    // adiabatic constant
+                                          //            double _R     = 8.3144621 * 1e7;    // specific gas constant [erg / (K mol)]
             // std::cout << "results size = " << results.rows() << " " << results.columns() << std::endl;
             // std::cout << "p = " << rhoE << " - " << 0.5 * rho * ( pow( v, 2 ) ) << std::endl;
             double T = _gamma * ( _gamma - 1.0 ) * ( rhoE / rho - 0.5 * ( pow( v, 2 ) ) );

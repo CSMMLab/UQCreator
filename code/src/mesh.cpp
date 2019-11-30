@@ -31,7 +31,13 @@ Mesh* Mesh::Create( Settings* settings ) {
     return nullptr;
 }
 
+std::pair<unsigned, unsigned> Mesh::CellsAtEdge( unsigned j ) const { return _edges[j]; }
+
+Vector Mesh::GetNormalAtEdge( const unsigned j ) const { return _normals[j]; }
+
 unsigned Mesh::GetNumCells() const { return _numCells; }
+
+unsigned Mesh::GetNEdges() const { return unsigned( _edges.size() ); }
 
 unsigned Mesh::GetDimension() const { return _dimension; }
 
@@ -59,6 +65,8 @@ VectorU Mesh::GetNeighborIDs( unsigned i ) const { return _neighborIDs[i]; }
 
 BoundaryType Mesh::GetBoundaryType( unsigned i ) const { return _boundaryType[i]; }
 
+BoundaryType Mesh::BoundaryAtEdge( unsigned i ) const { return _boundaryTypeEdge[i]; }
+
 void Mesh::PlotInXi( const Matrix& u, unsigned state ) const {
     std::ofstream out( "../results/plotInXi" );
     unsigned nQ   = u.columns();
@@ -79,3 +87,5 @@ double Mesh::GetDomainArea() const {
     }
     return area;
 }
+
+VectorU Mesh::GetEdgesOfCell( const unsigned j ) const { return _edgesAtCell[j]; }
