@@ -21,8 +21,16 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
         std::pair cells = _mesh->CellsAtEdge( j );
         unsigned I      = cells.first;
         unsigned J      = cells.second;
-        unsigned level  = refLevel[I];    // take max ref level of cells I and J
-        if( level < refLevel[J] ) level = refLevel[J];
+        unsigned level;
+
+        if( I == numCells )    // ref level at numCells does not exist
+            level = refLevel[J];
+        else if( J == numCells )
+            level = refLevel[I];
+        else {
+            level = refLevel[I];    // take max ref level of cells I and J
+            if( level < refLevel[J] ) level = refLevel[J];
+        }
         double area = norm( _mesh->GetNormalAtEdge( j ) );
         if( _mesh->BoundaryAtEdge( j ) != NOSLIP && _mesh->BoundaryAtEdge( j ) != DIRICHLET ) {
             fluxFunc( _flux[j], _problem->G( uQ[I], uQ[J], _mesh->GetNormalAtEdge( j ) / area, _mesh->GetNormalAtEdge( j ), level ), level );
