@@ -15,7 +15,7 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _TRef          = 1.0;                    // reference temperature
     _sigma         = 1.0;                    // opacity
     _alpha         = 4.0 * _a;               // closure relation
-    _cV            = 0.718 * 1e7;            // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
+    _cV            = 0.718 * 1e-13;          // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
     double sigmaSB = 5.6704 * 1e-5;          // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
 
@@ -49,8 +49,14 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _AbsA( 1, 1 )     = AbsAPart( 1, 1 );
 
     // scale refinement threshholds
+    //_settings->SetRefinementThreshold( 1e-27 * _settings->GetRefinementThreshold() / ( _a * pow( _TRef, 4 ) ) );
+    //_settings->SetCoarsenThreshold( 1e-27 * _settings->GetCoarsenThreshold() / ( _a * pow( _TRef, 4 ) ) );
+
     _settings->SetRefinementThreshold( 1e-15 * _settings->GetRefinementThreshold() / ( _a * pow( _TRef, 4 ) ) );
     _settings->SetCoarsenThreshold( 1e-15 * _settings->GetCoarsenThreshold() / ( _a * pow( _TRef, 4 ) ) );
+
+    // std::cout << "Threshold " << _settings->GetRefinementThreshold() << " " << _settings->GetCoarsenThreshold() << std::endl;
+    // exit( EXIT_FAILURE );
 
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -183,7 +189,7 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
     else {
         double a = 0.275;
         double b = 0.1;
-        if( xi.size() > 1 ) {
+        if( xi.size() > 1 && false ) {
             a = a + sigma[1] * xi[1];
         }
         if( xi.size() > 2 ) {
@@ -195,8 +201,12 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
 
         if( x[0] < 0.0 )
             T = alpha;
-        else if( x[0] < tau0 )
+        else if( x[0] < tau0 ) {
             T = 1;
+            if( xi.size() > 1 ) {
+                T = T + sigma[1] * xi[1];
+            }
+        }
         else
             T = beta;
         F              = 0.0;

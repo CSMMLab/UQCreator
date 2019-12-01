@@ -1,27 +1,27 @@
 [general]
 problem = "ThermalRadiativeTransfer"
-outputDir = "../results/thermal"
-#writeFrequency = 10
+outputDir = "../results/thermal/gif"
+writeFrequency = 50
 #restartFile = "../input/restart_rad_hydro_Ma4"
 
 [mesh]
 dimension = 1
 numberOfCells = 1000
-a = -2.1
-b = 3.5
+a = -4.0
+b = 4.0
 outputFile = "ThermalRadiativeTransferRadiatingShock"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.1]]
+distribution = [["Legendre","Legendre"],[0.1,0.5]]
 CFL = 0.9# 0.1
-tEnd = 20.0
+tEnd = 5.0
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics, M1, ThermalRadiation
-closure = "ThermalRadiation"
+closure = "StochasticGalerkin"
 moments = [["totalDegree"],[2,3,4,5,6,7,8,9,10]]
 quadPoints = [["tensorizedCCGrid"],[2,2,3,3,3,4,4,4,4]]
 refinementThresholds = [0.1,0.001]

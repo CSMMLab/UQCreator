@@ -115,7 +115,7 @@ void MomentSolver::Solve() {
             else
                 indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
 
-            // std::cout << "Indicator " << indicator << std::endl;
+            // std::cout << "Indicator " << indicator << ", level = " << refinementLevel[_cellIndexPE[j]] << std::endl;
             // std::cout << "Threshold: " << _settings->GetRefinementThreshold() << " " << _settings->GetCoarsenThreshold() << std::endl;
             if( indicator > _settings->GetRefinementThreshold() &&
                 refinementLevel[_cellIndexPE[j]] < _settings->GetNRefinementLevels( retCounter ) - 1 &&
@@ -224,6 +224,8 @@ void MomentSolver::Solve() {
     }
 
     if( _settings->GetMyPE() != 0 ) return;
+
+    // for( unsigned j = 0; j < _nCells; ++j ) std::cout << "level = " << refinementLevel[_cellIndexPE[j]] << std::endl;
 
     // save final moments on uNew
     uNew = u;
@@ -518,8 +520,8 @@ void MomentSolver::DetermineGradients( MatVec& duQx, MatVec& duQy, const MatVec&
 void MomentSolver::DetermineGradientsScalarField( Matrix& dux, Matrix& duy, const Matrix& u ) const {
     dux.reset();
     duy.reset();
-    unsigned nStates  = u.rows();
-//    unsigned numCells = _mesh->GetNumCells();
+    unsigned nStates = u.rows();
+    //    unsigned numCells = _mesh->GetNumCells();
 
     for( unsigned s = 0; s < nStates; ++s ) {
         for( unsigned j = 0; j < _nCells; ++j ) {
