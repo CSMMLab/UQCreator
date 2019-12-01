@@ -10,6 +10,7 @@ class ExplicitEuler : public TimeSolver
     ExplicitEuler() = delete;
     std::vector<Cell*> _cells;
     Matrix _ghostCell;
+    Matrix _rhs;
 
   public:
     ExplicitEuler( Settings* settings, Mesh* mesh, Problem* problem );

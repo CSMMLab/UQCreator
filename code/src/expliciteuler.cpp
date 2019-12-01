@@ -4,6 +4,7 @@
 ExplicitEuler::ExplicitEuler( Settings* settings, Mesh* mesh, Problem* problem ) : TimeSolver( settings, mesh, problem ) {
     _cells = _mesh->GetGrid();
     _ghostCell( _settings->GetNStates(), _settings->GetNQuadPoints() );
+    _rhs = Matrix( _settings->GetNStates(), _settings->GetNTotal(), 0.0 );
 }
 
 void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigned )> const& fluxFunc,
@@ -16,6 +17,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
     Cell* cell;
     VectorU neighbors;
     VectorU edges;
+
 // compute flux at edges
 #pragma omp parallel for
     for( unsigned j = 0; j < _mesh->GetNEdges(); ++j ) {
@@ -64,23 +66,23 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                 continue;
             }
         }
-        Matrix rhs( _settings->GetNStates(), _settings->GetNTotalforRefLevel( refLevel[j] ), 0.0 );
         edges = _mesh->GetEdgesOfCell( j );
 
+        _rhs.reset();
         for( unsigned l = 0; l < edges.size(); ++l ) {
             unsigned I = _mesh->CellsAtEdge( edges[l] ).first;
             unsigned J = _mesh->CellsAtEdge( edges[l] ).second;
             if( I == cell->GetID() ) {
-                rhs = rhs + _flux[edges[l]];
+                _rhs = _rhs + _flux[edges[l]];
             }
             else if( J == cell->GetID() ) {
-                rhs = rhs - _flux[edges[l]];
+                _rhs = _rhs - _flux[edges[l]];
             }
             else {
                 std::cerr << "WRONG" << std::endl;
             }
         }
 
-        uNew[j] = u[j] - ( dt / cell->GetArea() ) * rhs;
+        uNew[j] = u[j] - ( dt / cell->GetArea() ) * _rhs;
     }
 }
