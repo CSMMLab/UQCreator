@@ -13,15 +13,18 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                              double dt,
                              const VectorU& refLevel ) {
     auto numCells = _mesh->GetNumCells();
+    Cell* cell;
+    VectorU neighbors;
+    VectorU edges;
 // compute flux at edges
 #pragma omp parallel for
     for( unsigned j = 0; j < _mesh->GetNEdges(); ++j ) {
         _flux[j].reset();    // is this needed? should be fine
-        Matrix tmp      = _flux[j];
         std::pair cells = _mesh->CellsAtEdge( j );
         unsigned I      = cells.first;
         unsigned J      = cells.second;
         unsigned level;
+
         if( I == numCells )    // ref level at numCells does not exist
             level = refLevel[J];
         else if( J == numCells )
@@ -33,10 +36,8 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
         double area = norm( _mesh->GetNormalAtEdge( j ) );
         if( _mesh->BoundaryAtEdge( j ) != NOSLIP && _mesh->BoundaryAtEdge( j ) != DIRICHLET ) {
             fluxFunc( _flux[j], _problem->G( uQ[I], uQ[J], _mesh->GetNormalAtEdge( j ) / area, _mesh->GetNormalAtEdge( j ), level ), level );
-            fluxFunc( tmp, _problem->G( uQ[J], uQ[I], -_mesh->GetNormalAtEdge( j ) / area, -_mesh->GetNormalAtEdge( j ), level ), level );
         }
         else if( _mesh->BoundaryAtEdge( j ) == NOSLIP ) {
-            // std::cout << "I = " << I << ", J = " << J << std::endl;
             if( I == numCells ) {
                 std::cerr << "ERROR" << std::endl;
                 exit( EXIT_FAILURE );
@@ -54,8 +55,8 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
 
 #pragma omp parallel for
     for( unsigned j = 0; j < numCells; ++j ) {
-        Cell* cell     = _cells[j];
-        auto neighbors = cell->GetNeighborIDs();    // neighbors at cell j
+        cell      = _cells[j];
+        neighbors = cell->GetNeighborIDs();    // neighbors at cell j
 
         if( cell->IsBoundaryCell() ) {
             if( cell->GetBoundaryType() == BoundaryType::DIRICHLET ) {
@@ -64,7 +65,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
             }
         }
         Matrix rhs( _settings->GetNStates(), _settings->GetNTotalforRefLevel( refLevel[j] ), 0.0 );
-        auto edges = _mesh->GetEdgesOfCell( j );
+        edges = _mesh->GetEdgesOfCell( j );
 
         for( unsigned l = 0; l < edges.size(); ++l ) {
             unsigned I = _mesh->CellsAtEdge( edges[l] ).first;
