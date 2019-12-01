@@ -76,31 +76,26 @@ void MomentSolver::Solve() {
     double minResidual  = _settings->GetMinResidual();
     double residualFull = minResidual + 1.0;
 
-    // perform initial step for regularization
-    if( _settings->HasRegularization() ) PerformInitialStep( refinementLevel, uNew );
+    Vector residualVec( _settings->GetNQTotal(), 0.0 );
+    double residual;
+
+    // Solve dual problem
+    for( unsigned j = 0; j < _nCells; ++j ) {
+        if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+        _lambda[j] = u[j];
+    }
 
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
 
-        Vector residualVec( _settings->GetNQTotal(), 0.0 );
-        double residual;
-
-        // Solve dual problem
-#pragma omp parallel for schedule( dynamic, 10 )
-        for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
-            _lambda[_cellIndexPE[j]] = u[_cellIndexPE[j]];
-        }
-
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             uOld[j] = u[j];    // save old Moments for residual computation
-            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
 
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
-            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
+            uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( u[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
         }
 
         // compute partial moment vectors on each PE (for inexact dual variables)
@@ -122,16 +117,14 @@ void MomentSolver::Solve() {
         ++timeIndex;
 
         _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
-        if( _settings->HasSource() ) {
-            this->Source( uNew, uQ, dt, refinementLevel );
-        }
 
         // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
         for( unsigned j = 0; j < _nCells; ++j ) {
-            MPI_Reduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, PEforCell[j], MPI_COMM_WORLD );
+            MPI_Allreduce( uNew[j].GetPointer(), u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         }
 
         // compute residual
+        residualVec.reset();
         for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
             for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
                 residualVec[k] += std::abs( u[_cellIndexPE[j]]( 0, k ) - uOld[_cellIndexPE[j]]( 0, k ) ) * _mesh->GetArea( _cellIndexPE[j] );
@@ -142,15 +135,17 @@ void MomentSolver::Solve() {
         for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
             if( residual < residualVec[k] ) residual = residualVec[k];
         }
-
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
+
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
-            if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
+            if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) {
+                for( unsigned j = 0; j < _nCells; ++j ) {
+                    _lambda[j] = u[j];
+                }
+                this->WriteErrors( refinementLevel );
+            }
         }
-
-        // if current retardation level fulfills residual condition, then increase retardation level
-        if( residualFull < _settings->GetResidualRetardation( retCounter ) && retCounter < _settings->GetNRetardationLevels() - 1 ) retCounter += 1;
     }
 
     // write final error
