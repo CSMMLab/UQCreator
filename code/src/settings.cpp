@@ -81,6 +81,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( problemTypeString->compare( "ThermalRadiativeTransfer" ) == 0 ) {
                 _problemType = ProblemType::P_THERMALRAD_1D;
             }
+            else if( problemTypeString->compare( "ThermalPN" ) == 0 ) {
+                _problemType = ProblemType::P_THERMALPN_1D;
+            }
             else if( problemTypeString->compare( "NavierStokes" ) == 0 ) {
                 _problemType = ProblemType::P_NAVIERSTOKES_1D;
             }

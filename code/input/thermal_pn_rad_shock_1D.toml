@@ -1,5 +1,5 @@
 [general]
-problem = "ThermalRadiativeTransfer"
+problem = "ThermalPN"
 outputDir = "../results/thermal/gif"
 writeFrequency = 50
 #restartFile = "../input/restart_rad_hydro_Ma4"

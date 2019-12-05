@@ -12,6 +12,7 @@
 #include "radiationhydrodynamics1d.h"
 #include "shallowwater.h"
 #include "shallowwater2d.h"
+#include "thermalpn.h"
 #include "thermalradiative.h"
 #include "thermalradiativegeneral.h"
 
@@ -55,6 +56,9 @@ Problem* Problem::Create( Settings* settings ) {
         return new RadiationHydrodynamics1D( settings );
     }
     else if( settings->GetProblemType() == ProblemType::P_THERMALRAD_1D ) {
+        return new ThermalRadiativeGeneral( settings );
+    }
+    else if( settings->GetProblemType() == ProblemType::P_THERMALPN_1D ) {
         return new ThermalRadiativeGeneral( settings );
     }
     else if( settings->GetProblemType() == ProblemType::P_NAVIERSTOKES_1D ) {
