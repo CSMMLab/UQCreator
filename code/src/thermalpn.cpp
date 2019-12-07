@@ -343,9 +343,7 @@ double ThermalPN::AParam( int l, int k ) const {
     return std::sqrt( double( ( l - k + 1 ) * ( l + k + 1 ) ) / double( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) );
 }
 
-double ThermalPN::BParam( int l, int k ) const {
-    return std::sqrt( double( ( l - k ) * ( l + k ) ) / double( ( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ) );
-}
+double ThermalPN::BParam( int l, int k ) const { return std::sqrt( double( ( l - k ) * ( l + k ) ) / double( ( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ) ); }
 
 double ThermalPN::CParam( int l, int k ) const {
     return std::sqrt( double( ( l + k + 1 ) * ( l + k + 2 ) ) / double( ( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) ) );
@@ -359,9 +357,7 @@ double ThermalPN::EParam( int l, int k ) const {
     return std::sqrt( double( ( l - k + 1 ) * ( l - k + 2 ) ) / double( ( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) ) );
 }
 
-double ThermalPN::FParam( int l, int k ) const {
-    return std::sqrt( double( ( l + k ) * ( l + k - 1 ) ) / double( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) );
-}
+double ThermalPN::FParam( int l, int k ) const { return std::sqrt( double( ( l + k ) * ( l + k - 1 ) ) / double( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ); }
 
 double ThermalPN::CTilde( int l, int k ) const {
     if( k < 0 ) return 0.0;

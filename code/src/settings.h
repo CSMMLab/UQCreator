@@ -27,6 +27,7 @@ enum ProblemType {
 };
 enum ClosureType {
     C_BOUNDEDBARRIER,
+    C_LOGBARRIER,
     C_LOGSIN,
     C_STOCHASTICGALERKIN,
     C_EULER_1D,

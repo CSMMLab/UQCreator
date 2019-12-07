@@ -59,7 +59,7 @@ Problem* Problem::Create( Settings* settings ) {
         return new ThermalRadiativeGeneral( settings );
     }
     else if( settings->GetProblemType() == ProblemType::P_THERMALPN_1D ) {
-        return new ThermalRadiativeGeneral( settings );
+        return new ThermalPN( settings );
     }
     else if( settings->GetProblemType() == ProblemType::P_NAVIERSTOKES_1D ) {
         return new NavierStokes( settings );

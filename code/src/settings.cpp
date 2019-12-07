@@ -204,6 +204,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             if( closureTypeString->compare( "BoundedBarrier" ) == 0 ) {
                 _closureType = ClosureType::C_BOUNDEDBARRIER;
             }
+            else if( closureTypeString->compare( "LogBarrier" ) == 0 ) {
+                _closureType = ClosureType::C_LOGBARRIER;
+            }
             else if( closureTypeString->compare( "LogSin" ) == 0 ) {
                 _closureType = ClosureType::C_LOGSIN;
             }
@@ -241,8 +244,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 _closureType = ClosureType::C_HYPLIM;
             }
             else {
-                log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogSin, "
-                            "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter,RadiationHydrodynamics,M1,HyperbolicityLimiter" );
+                log->error(
+                    "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogBarrier, LogSin, "
+                    "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter,RadiationHydrodynamics,M1,HyperbolicityLimiter" );
                 validConfig = false;
             }
         }
