@@ -7,6 +7,7 @@
 #include "hyperbolicitylimiter.h"
 #include "l2filter.h"
 #include "lassofilter.h"
+#include "logbarrierclosure.h"
 #include "logsin.h"
 #include "m1ipmclosure.h"
 #include "mathtools.h"
@@ -113,6 +114,9 @@ Closure* Closure::Create( Settings* settings ) {
     auto closureType = settings->GetClosureType();
     if( closureType == ClosureType::C_BOUNDEDBARRIER ) {
         return new BoundedBarrier( settings );
+    }
+    else if( closureType == ClosureType::C_LOGBARRIER ) {
+        return new LogBarrierClosure( settings );
     }
     else if( closureType == ClosureType::C_LOGSIN ) {
         return new LogSin( settings );
