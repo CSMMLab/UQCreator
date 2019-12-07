@@ -2,16 +2,15 @@
 #include "quadraturegrid.h"
 
 ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
-    _N = 2;
+    _N = 1;
     if( _N == 1 )    // GlobalIndex has different ordering here
         _nMoments = 4;
     else
         _nMoments = unsigned( GlobalIndex( _N, _N ) + 1 );
     _nStates = _nMoments + 1;
-    this->SetupSystemMatrices();
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
-    _settings->SetSource( false );
+    _settings->SetSource( true );
     _suOlson         = false;
     _constitutiveLaw = 2;    // 1 is Su Olson, 2 is constant
 
@@ -62,6 +61,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _settings->SetCoarsenThreshold( 1e-15 * _settings->GetCoarsenThreshold() / ( _a * pow( _TRef, 4 ) ) );
 
     // std::cout << "Threshold " << _settings->GetRefinementThreshold() << " " << _settings->GetCoarsenThreshold() << std::endl;
+    this->SetupSystemMatrices();
     // std::cout << _Az << std::endl;
     // exit( EXIT_FAILURE );
 
@@ -77,8 +77,8 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
 ThermalPN::~ThermalPN() {}
 
 Vector ThermalPN::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
-    // Vector g     = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * _AbsA * ( v - u );
+    // Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
+    Vector g     = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * _AbsA * ( v - u );
     g[_nMoments] = 0.0;    // set temperature flux to zero
     return g;
 }
@@ -95,8 +95,10 @@ Matrix ThermalPN::G( const Matrix& u, const Matrix& v, const Vector& nUnit, cons
 
 Matrix ThermalPN::F( const Vector& u ) {
     Matrix flux( u.size(), 1, 0.0 );
-    Vector outZ = _c / _epsilon * _Az * u;
-    outZ[0]     = 1.0 / _c / _c * outZ[0];
+    // Vector outZ = _c / _epsilon * _Az * u;
+    // outZ[0]     = 1.0 / _c / _c * outZ[0];
+
+    Vector outZ = 1.0 / _epsilon * _Az * u;
 
     for( unsigned i = 0; i < _nMoments; ++i ) flux( i, 0 ) = outZ[i];
     // flux( _nMoments, 0 ) = 0.0;    // set temperature flux to zero
@@ -105,14 +107,15 @@ Matrix ThermalPN::F( const Vector& u ) {
 
 double ThermalPN::Delta( int l, int k ) const {
     if( l == 0 ) {
-        return std::sqrt( 4.0 * M_PI );
+        return std::sqrt( 4.0 * M_PI ) * 2.0 * M_PI / _c;
     }
     else if( l == 1 && k == 0 ) {
-        return std::sqrt( 4.0 * M_PI / 3.0 );
+        return std::sqrt( 4.0 * M_PI / 3.0 ) * 2.0 * M_PI;
     }
     else if( l == 1 && ( k == -1 || k == 1 ) ) {
         return std::sqrt( 4.0 * M_PI * double( MathTools::Factorial( l + std::abs( k ) ) ) /
-                          ( 2.0 * ( 2.0 * l + 1 ) * double( MathTools::Factorial( l - std::abs( k ) ) ) ) );
+                          ( 2.0 * ( 2.0 * l + 1 ) * double( MathTools::Factorial( l - std::abs( k ) ) ) ) ) *
+               2.0 * M_PI;
     }
     else {
         return 1.0;
@@ -281,6 +284,7 @@ double ThermalPN::ComputeDt( const Matrix& u, double dx, unsigned level ) const 
     double cfl = _settings->GetCFL();
 
     double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
+    // double maxVelocity = 1.0 / _epsilon;
 
     return ( cfl * dx ) / maxVelocity;
 }
