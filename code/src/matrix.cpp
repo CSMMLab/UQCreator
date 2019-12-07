@@ -33,6 +33,7 @@ template <class T> class Matrix    // column major
     Matrix<T> operator/( const T& scalar ) const;
     Matrix<T> operator+( const T& scalar ) const;
     Matrix<T> operator-( const T& scalar ) const;
+    Matrix<T> transpose() const;
 
     Vector<T> operator*( const Vector<T>& vector ) const;
 
@@ -44,6 +45,7 @@ template <class T> class Matrix    // column major
     unsigned rows() const;
     unsigned columns() const;
     void reset();
+
     bool isSymmetric() const;
 
     friend Vector<T> column<>( Matrix<T>& mat, unsigned i );
@@ -171,6 +173,16 @@ template <class T> Matrix<T> Matrix<T>::operator-( const T& scalar ) const {
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             res( i, j ) = ( *this )( i, j ) - scalar;
+        }
+    }
+    return res;
+}
+
+template <class T> Matrix<T> Matrix<T>::transpose() const {
+    Matrix<T> res( _rows, _columns, true );
+    for( unsigned j = 0; j < _columns; ++j ) {
+        for( unsigned i = 0; i < _rows; ++i ) {
+            res( i, j ) = ( *this )( j, i );
         }
     }
     return res;

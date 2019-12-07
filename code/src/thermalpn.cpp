@@ -53,6 +53,10 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _AbsA( 3, 0 )     = AbsAPart( 1, 0 );
     _AbsA( 3, 3 )     = AbsAPart( 1, 1 );
 
+    Matrix vl( _nMoments, _nMoments, 0.0 );
+    Matrix vr( _nMoments, _nMoments, 0.0 );
+    Matrix w( _nMoments, _nMoments, 0.0 );
+
     // scale refinement threshholds
     //_settings->SetRefinementThreshold( 1e-27 * _settings->GetRefinementThreshold() / ( _a * pow( _TRef, 4 ) ) );
     //_settings->SetCoarsenThreshold( 1e-27 * _settings->GetCoarsenThreshold() / ( _a * pow( _TRef, 4 ) ) );
@@ -62,8 +66,18 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
 
     // std::cout << "Threshold " << _settings->GetRefinementThreshold() << " " << _settings->GetCoarsenThreshold() << std::endl;
     this->SetupSystemMatrices();
-    // std::cout << _Az << std::endl;
-    // exit( EXIT_FAILURE );
+    std::cout << _AbsA << std::endl;
+
+    // compute Roe matrix
+    cgeev( _Az, vl, vr, w );
+    Matrix absW( _nMoments, _nMoments, 0.0 );
+    for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
+    std::cout << "vl = " << vl << std::endl;
+    std::cout << "vr = " << vr << std::endl;
+    std::cout << "w = " << w << std::endl;
+    std::cout << "vl*w*vr = " << vl.transpose() * vl << std::endl;
+    std::cout << "P = " << P << std::endl;
+    exit( EXIT_FAILURE );
 
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -241,8 +255,9 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
         double TTilde = ScaledTemperature( eTilde );
         // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
 
-        y( 0, k )         = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
-        y( 3, k )         = -F / _epsilon;
+        y( 0, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
+        // y( 3, k ) = -F / _epsilon;
+        for( unsigned i = 1; i < _nMoments; ++i ) y( 3, k ) = -uQ( 3, k ) / _epsilon;
         y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
     }
 

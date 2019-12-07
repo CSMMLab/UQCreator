@@ -1,0 +1,29 @@
+[general]
+problem = "ShallowWater2D"
+outputDir = "../results"
+#writeFrequency = 2
+
+[mesh]
+dimension = 2
+format = "SU2"
+SU2MeshFile = "dam2DFine.su2"
+SU2BC = [["outerwalls","noslip"], ["inout", "noslip"], ["inout", "noslip"]]
+outputFile = "shallow_water"
+
+[problem]
+# available timesteppings: explicitEuler
+timestepping = "explicitEuler"
+# available distributions: Legendre, Hermite
+distribution = [["Legendre"],[0.0]]
+CFL = 0.5
+tEnd = 4.0 #0.0035
+
+[moment_system]
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
+closure = "StochasticGalerkin"
+moments = [["totalDegree"],[1]]
+quadPoints = [["tensorizedGrid"],[3]]
+#filterStrength = 0.000002
+#regularizationStrength = 1e-4
+maxIterations = 1000
+epsilon = 1e-7
