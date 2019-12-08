@@ -196,10 +196,7 @@ template <class T> Matrix<T> Matrix<T>::inv() const {
     for( unsigned i = 0; i < _columns; ++i ) {
         v.reset();
         v[i] = 1.0;
-        std::cout << "v before " << v << std::endl;
-        Matrix ASave = *this;
-        gesv( ASave, v, ipiv );
-        std::cout << "v after " << v << std::endl;
+        gesv( *this, v, ipiv );
         for( unsigned j = 0; j < _columns; ++j ) res( j, i ) = v[j];
     }
     return res;

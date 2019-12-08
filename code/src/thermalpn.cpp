@@ -2,7 +2,15 @@
 #include "quadraturegrid.h"
 
 ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
-    _N = 1;
+    // read PN specific settings
+    try {
+        auto file    = cpptoml::parse_file( _settings->GetInputFile() );
+        auto problem = file->get_table( "problem" );
+        _N           = unsigned( problem->get_as<int>( "nPNMoments" ).value_or( 1 ) );
+    } catch( const cpptoml::parse_exception& e ) {
+        _log->error( "[ThermalPN] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
+        exit( EXIT_FAILURE );
+    }
     if( _N == 1 )    // GlobalIndex has different ordering here
         _nMoments = 4;
     else
@@ -66,7 +74,9 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
 
     // std::cout << "Threshold " << _settings->GetRefinementThreshold() << " " << _settings->GetCoarsenThreshold() << std::endl;
     this->SetupSystemMatrices();
-    std::cout << _AbsA << std::endl;
+    // std::cout << _AbsA << std::endl;
+
+    // std::cout << "A = " << _Az << std::endl;
 
     // compute Roe matrix
     cgeev( _Az, vl, vr, w );
@@ -75,21 +85,66 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     // std::cout << "vl = " << vl << std::endl;
     // std::cout << "vr = " << vr << std::endl;
     // std::cout << "w = " << w << std::endl;
-    std::cout << "P = " << P << std::endl;
+    // std::cout << "P = " << P << std::endl;
     // Matrix PSave( P.columns(), P.rows() );
-    Matrix PSave   = P;
-    Matrix PInvNum = PSave.inv();
-    std::cout << "P^{-1} = " << PInvNum << std::endl;
-    std::cout << "P after inv = " << P << std::endl;
-    exit( EXIT_FAILURE );
+    Matrix PInvNum = P.inv();
 
-    try {
-        auto file    = cpptoml::parse_file( _settings->GetInputFile() );
-        auto problem = file->get_table( "problem" );
-    } catch( const cpptoml::parse_exception& e ) {
-        _log->error( "[ThermalPN] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
-        exit( EXIT_FAILURE );
+    // std::cout << "vl^{-1}*w*vl = " << vr * absW * vr.inv() << std::endl;
+    // std::cout << "A = " << _Az << std::endl;
+
+    Matrix T( _nMoments, _nMoments, 0.0 );
+
+    for( unsigned i = 0; i < _nMoments; ++i ) {
+        for( unsigned j = 0; j < _nMoments; ++j ) {
+            for( unsigned l = 0; l < _nMoments; ++l ) {
+                T( i, j ) = T( i, j ) + vr( i, l ) * fabs( w( l, l ) ) * vl( j, l );
+            }
+        }
     }
+    // std::cout << "T = " << T << std::endl;
+    Matrix vln( 2, 2, 0.0 );
+    Matrix vrn( 2, 2, 0.0 );
+    Matrix wn( 2, 2, 0.0 );
+    Matrix Pn( 2, 2, 1.0 );
+    Pn( 0, 0 ) = -sqrt( 3 ) / _c;
+    Pn( 0, 1 ) = sqrt( 3 ) / _c;
+    Matrix PInvn( 2, 2, 0.5 );
+    PInvn( 0, 0 ) = -_c / sqrt( 3 ) / 2.0;
+    PInvn( 1, 0 ) = _c / sqrt( 3 ) / 2.0;
+    Matrix LambdaAbsn( 2, 2, 0.0 );
+    Matrix Lambda( 2, 2, 0.0 );
+    LambdaAbsn( 0, 0 ) = fabs( -1.0 / sqrt( 3 ) / _epsilon );
+    LambdaAbsn( 1, 1 ) = fabs( 1.0 / sqrt( 3 ) / _epsilon );
+    Lambda( 0, 0 )     = ( -1.0 / sqrt( 3 ) / _epsilon );
+    Lambda( 1, 1 )     = ( 1.0 / sqrt( 3 ) / _epsilon );
+    Matrix AbsAPartn   = PInvn * LambdaAbsn * Pn;
+
+    Matrix A( 2, 2, 0.0 );
+    A( 0, 1 ) = 1.0 / _c / _epsilon;
+    A( 1, 0 ) = _c / _epsilon / 3.0;
+
+    cgeev( A, vln, vrn, wn );
+
+    Matrix absWn( 2, 2, 0.0 );
+    for( unsigned i = 0; i < 2; ++i ) absWn( i, i ) = fabs( wn( i, i ) );
+
+    std::cout << "vl = " << vln << std::endl;
+    std::cout << "vr = " << vrn << std::endl;
+    std::cout << "w = " << wn << std::endl;
+
+    std::cout << "P = " << Pn << std::endl;
+    std::cout << "PInvn = " << PInvn << std::endl;
+    std::cout << "LambdaAbsn = " << Lambda << std::endl;
+
+    // std::cout << "vrInv*|w|*vr = " << vrn.inv() * absWn * vrn << std::endl;
+    // std::cout << "absA = " << AbsAPartn << std::endl;
+
+    // std::cout << "vr*w*vrInv = " << Pn * Lambda * PInvn << std::endl;
+    std::cout << "vrInv*|w|*vr = " << vrn * absWn * vrn.inv() << std::endl;
+    std::cout << "A = " << A << std::endl;
+    _AbsA = vr * absW * vr.inv();
+
+    // exit( EXIT_FAILURE );
 }
 
 ThermalPN::~ThermalPN() {}
