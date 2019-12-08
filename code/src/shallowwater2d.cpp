@@ -70,8 +70,25 @@ Matrix ShallowWater2D::F( const Matrix& u ) {
 }
 
 double ShallowWater2D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
-    _log->error( "[ShallowWater2D] ComputeDt not implemented" );
-    return 0.0;
+    double dtMinTotal = 1e10;
+    double dtMin;
+    double hInv, uU, vU, p, a, cfl;
+    unsigned kEnd = _settings->GetNqPEAtRef( level );
+
+    cfl = _settings->GetCFL();
+
+    for( unsigned k = 0; k < kEnd; ++k ) {
+        hInv = 1.0 / u( 0, k );
+        uU   = u( 1, k ) * hInv;
+        vU   = u( 2, k ) * hInv;
+        a    = sqrt( _g * u( 0, k ) );
+
+        dtMin      = ( cfl / dx ) * std::min( std::min( std::fabs( 1.0 / ( vU - a ) ), std::fabs( 1.0 / ( vU + a ) ) ),
+                                         std::min( std::fabs( 1.0 / ( uU + a ) ), std::fabs( 1.0 / ( uU - a ) ) ) );
+        dtMinTotal = std::min( dtMin, dtMinTotal );
+    }
+
+    return dtMinTotal;
 }
 
 Vector ShallowWater2D::IC( const Vector& x, const Vector& xi ) {

@@ -48,7 +48,25 @@ Matrix Burgers::F( const Matrix& u ) { return 0.5 * pow( u, 2 ); }
 
 Vector Burgers::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
-    _sigma = _settings->GetSigma();
+    _sigma          = _settings->GetSigma();
+    bool testNumHYP = true;
+
+    if( testNumHYP ) {
+        _x0       = 0.3;
+        _x1       = 2.0;
+        _uL       = 12.0;
+        double uM = 6.0;
+        _uR       = 3.0;
+
+        if( x[0] < _x0 + _sigma[0] * xi[0] )
+            y[0] = _uL;
+        else if( x[0] < _x1 )
+            y[0] = uM;
+        else
+            y[0] = _uR;
+        return y;
+    }
+
     if( xi.size() == 1 ) {
         _x0 = 0.5;
         _x1 = 1.5;

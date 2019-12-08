@@ -149,7 +149,7 @@ template <class T> VectorSpace::Vector<T> operator-( const VectorSpace::Vector<T
 
 // SOLVER //////////////////////////////////////////////////////////////////////////
 
-template <class T> inline void gesv( VectorSpace::Matrix<T>& A, VectorSpace::Vector<T>& b, int* ipiv ) {
+template <class T> inline void gesv( const VectorSpace::Matrix<T>& A, VectorSpace::Vector<T>& b, int* ipiv ) {
     int n( A.rows() );
     int nrhs( 1 );
     int lda( A.columns() );
@@ -160,7 +160,9 @@ template <class T> inline void gesv( VectorSpace::Matrix<T>& A, VectorSpace::Vec
         return;
     }
 
-    dgesv_( &n, &nrhs, A._data, &lda, ipiv, b._data, &ldb, &info );
+    VectorSpace::Matrix<T> ATmp = A;
+
+    dgesv_( &n, &nrhs, ATmp._data, &lda, ipiv, b._data, &ldb, &info );
 
     if( info > 0 ) {
         auto log = spdlog::get( "event" );

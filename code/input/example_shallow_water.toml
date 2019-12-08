@@ -7,7 +7,7 @@ outputDir = "../results"
 dimension = 2
 format = "SU2"
 SU2MeshFile = "dam2DFine.su2"
-SU2BC = [["outerwalls","noslip"], ["inout", "noslip"], ["inout", "noslip"]]
+SU2BC = [["outerwalls","dirichlet"], ["inout", "dirichlet"], ["damwall", "noslip"]]
 outputFile = "shallow_water"
 
 [problem]
@@ -16,7 +16,7 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.0]]
 CFL = 0.5
-tEnd = 4.0 #0.0035
+tEnd = 0.001 #0.0035
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter

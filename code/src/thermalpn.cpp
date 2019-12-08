@@ -72,11 +72,15 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     cgeev( _Az, vl, vr, w );
     Matrix absW( _nMoments, _nMoments, 0.0 );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
-    std::cout << "vl = " << vl << std::endl;
-    std::cout << "vr = " << vr << std::endl;
-    std::cout << "w = " << w << std::endl;
-    std::cout << "vl*w*vr = " << vl.transpose() * vl << std::endl;
+    // std::cout << "vl = " << vl << std::endl;
+    // std::cout << "vr = " << vr << std::endl;
+    // std::cout << "w = " << w << std::endl;
     std::cout << "P = " << P << std::endl;
+    // Matrix PSave( P.columns(), P.rows() );
+    Matrix PSave   = P;
+    Matrix PInvNum = PSave.inv();
+    std::cout << "P^{-1} = " << PInvNum << std::endl;
+    std::cout << "P after inv = " << P << std::endl;
     exit( EXIT_FAILURE );
 
     try {

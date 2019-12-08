@@ -34,6 +34,7 @@ template <class T> class Matrix    // column major
     Matrix<T> operator+( const T& scalar ) const;
     Matrix<T> operator-( const T& scalar ) const;
     Matrix<T> transpose() const;
+    Matrix<T> inv() const;
 
     Vector<T> operator*( const Vector<T>& vector ) const;
 
@@ -50,7 +51,7 @@ template <class T> class Matrix    // column major
 
     friend Vector<T> column<>( Matrix<T>& mat, unsigned i );
     friend Vector<T> column<>( const Matrix<T>& mat, unsigned i );
-    friend void gesv<>( Matrix<T>& A, Vector<T>& b, int* ipiv );
+    friend void gesv<>( const Matrix<T>& A, Vector<T>& b, int* ipiv );
     friend void posv<>( Matrix<T>& A, Vector<T>& b );
 };
 
@@ -184,6 +185,22 @@ template <class T> Matrix<T> Matrix<T>::transpose() const {
         for( unsigned i = 0; i < _rows; ++i ) {
             res( i, j ) = ( *this )( j, i );
         }
+    }
+    return res;
+}
+
+template <class T> Matrix<T> Matrix<T>::inv() const {
+    Matrix<T> res( _rows, _columns, true );
+    Vector<T> v( _rows );
+    int ipiv[_rows];
+    for( unsigned i = 0; i < _columns; ++i ) {
+        v.reset();
+        v[i] = 1.0;
+        std::cout << "v before " << v << std::endl;
+        Matrix ASave = *this;
+        gesv( ASave, v, ipiv );
+        std::cout << "v after " << v << std::endl;
+        for( unsigned j = 0; j < _columns; ++j ) res( j, i ) = v[j];
     }
     return res;
 }
