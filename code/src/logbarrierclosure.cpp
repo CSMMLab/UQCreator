@@ -9,7 +9,7 @@ LogBarrierClosure::LogBarrierClosure( Settings* settings ) : Closure( settings )
         _uPlus  = 12.0 + du + 0.2;
     }
     else {
-        _uMinus = 3.0 - du;
+        _uMinus = 1.0 - du;
         _uPlus  = 12.0 + du;
     }
 }
@@ -18,6 +18,8 @@ LogBarrierClosure::~LogBarrierClosure() {}
 
 void LogBarrierClosure::U( Vector& out, const Vector& Lambda ) {
     for( unsigned l = 0; l < _nStates; ++l ) {
+        // double v = Lambda[l];
+        // out[l]   = -1.0 / v + 0.5 * ( _uMinus + _uPlus ) + sqrt( pow( ( _uMinus - _uPlus ) * v, 2 ) + 4.0 ) / ( 2.0 * v );
         out[l] = 0.5 * ( _uMinus + _uPlus +
                          pow( _uMinus - _uPlus, 2 ) * Lambda[l] / ( sqrt( pow( _uMinus - _uPlus, 2 ) * pow( Lambda[l], 2 ) + 4.0 ) + 2.0 ) );
     }
@@ -26,6 +28,8 @@ void LogBarrierClosure::U( Vector& out, const Vector& Lambda ) {
 void LogBarrierClosure::U( Matrix& out, const Matrix& Lambda ) {
     for( unsigned l = 0; l < _nStates; ++l ) {
         for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
+            // double v    = Lambda( l, k );
+            // out( l, k ) = -1.0 / v + 0.5 * ( _uMinus + _uPlus ) + sqrt( pow( ( _uMinus - _uPlus ) * v, 2 ) + 4.0 ) / ( 2.0 * v );
             out( l, k ) =
                 0.5 * ( _uMinus + _uPlus +
                         pow( _uMinus - _uPlus, 2 ) * Lambda( l, k ) / ( sqrt( pow( _uMinus - _uPlus, 2 ) * pow( Lambda( l, k ), 2 ) + 4.0 ) + 2.0 ) );
@@ -37,6 +41,8 @@ Matrix LogBarrierClosure::U( const Matrix& Lambda ) {
     Matrix y( _nStates, Lambda.columns(), 0.0 );
     for( unsigned l = 0; l < _nStates; ++l ) {
         for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
+            // double v  = Lambda( l, k );
+            // y( l, k ) = -1.0 / v + 0.5 * ( _uMinus + _uPlus ) + sqrt( pow( ( _uMinus - _uPlus ) * v, 2 ) + 4.0 ) / ( 2.0 * v );
             y( l, k ) =
                 0.5 * ( _uMinus + _uPlus +
                         pow( _uMinus - _uPlus, 2 ) * Lambda( l, k ) / ( sqrt( pow( _uMinus - _uPlus, 2 ) * pow( Lambda( l, k ), 2 ) + 4.0 ) + 2.0 ) );
@@ -46,6 +52,8 @@ Matrix LogBarrierClosure::U( const Matrix& Lambda ) {
 }
 
 double LogBarrierClosure::U( const double Lambda ) {
+    // double v = Lambda;
+    // return -1.0 / v + 0.5 * ( _uMinus + _uPlus ) + sqrt( pow( ( _uMinus - _uPlus ) * v, 2 ) + 4.0 ) / ( 2.0 * v );
     return 0.5 * ( _uMinus + _uPlus + pow( _uMinus - _uPlus, 2 ) * Lambda / ( sqrt( pow( _uMinus - _uPlus, 2 ) * pow( Lambda, 2 ) + 4.0 ) + 2.0 ) );
 }
 

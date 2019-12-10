@@ -6,7 +6,7 @@ outputDir = "../results"
 [mesh]
 dimension = 2
 format = "SU2"
-SU2MeshFile = "dam2DFine.su2"
+SU2MeshFile = "dam2D.su2"
 SU2BC = [["outerwalls","dirichlet"], ["inout", "dirichlet"], ["damwall", "noslip"]]
 outputFile = "shallow_water"
 

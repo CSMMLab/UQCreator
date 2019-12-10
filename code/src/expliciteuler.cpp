@@ -78,6 +78,9 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
             }
             else {
                 std::cerr << "WRONG" << std::endl;
+                std::cout << "Edges of Cell " << j << std::endl;
+                std::cout << "Cell index is " << cell->GetID() << std::endl;
+                std::cout << I << " " << J << std::endl;
             }
         }
 

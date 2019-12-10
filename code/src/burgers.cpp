@@ -49,7 +49,7 @@ Matrix Burgers::F( const Matrix& u ) { return 0.5 * pow( u, 2 ); }
 Vector Burgers::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
     _sigma          = _settings->GetSigma();
-    bool testNumHYP = true;
+    bool testNumHYP = false;
 
     if( testNumHYP ) {
         _x0       = 0.3;
@@ -71,7 +71,7 @@ Vector Burgers::IC( const Vector& x, const Vector& xi ) {
         _x0 = 0.5;
         _x1 = 1.5;
         _uL = 12.0;
-        _uR = 3.0;
+        _uR = 1.0;
         if( x[0] < _x0 + _sigma[0] * xi[0] ) {
             y[0] = _uL;
             return y;
@@ -106,6 +106,9 @@ Vector Burgers::IC( const Vector& x, const Vector& xi ) {
 
 Matrix Burgers::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
     double x0, x1;
+
+    bool testNumHYP = false;
+
     Matrix y( _settings->GetNumCells(), _nStates );
     if( t >= ( _x1 - _x0 ) / ( _uL - _uR ) ) {
         double tS            = ( _x1 - _x0 ) / ( _uL - _uR );

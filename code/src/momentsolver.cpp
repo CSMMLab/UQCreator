@@ -295,7 +295,7 @@ void MomentSolver::Solve() {
         ExportRefinementIndicator( refinementLevel, u, 1000 );
     }
 
-    unsigned evalCell = 2404;
+    unsigned evalCell = 333;
     if( _settings->GetNumCells() > evalCell ) {
         std::ofstream outXi( "../results/xiGrid" );
 
@@ -303,7 +303,7 @@ void MomentSolver::Solve() {
         unsigned n;
 
         unsigned plotState  = 0;
-        unsigned nQFine     = 100;
+        unsigned nQFine     = 1000;
         unsigned nQOriginal = _settings->GetNQuadPoints();
         _settings->SetNQuadPoints( nQFine );
         Closure* closurePlot = Closure::Create( _settings );

@@ -1,7 +1,7 @@
 [general]
 problem = "ThermalPN"
 outputDir = "../results/thermal/gif"
-writeFrequency = 25
+writeFrequency = 10000
 #restartFile = "../input/restart_rad_hydro_Ma4"
 
 [mesh]
@@ -17,7 +17,7 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.0]]
 CFL = 0.6# 0.1
-tEnd = 3.0
+tEnd = 10000.0
 nPNMoments = 5
 
 [moment_system]
