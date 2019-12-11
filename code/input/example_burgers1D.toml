@@ -7,7 +7,7 @@ dimension = 1
 numberOfCells = 2000
 a = 0
 b = 3
-outputFile = "burgers_shock_tStar_LB"
+outputFile = "burgers_shock_tEnd_BB"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -15,12 +15,12 @@ timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.2]]
 CFL = 0.95
-tEnd = 0.0909
+tEnd = 0.14
 
 [moment_system]
 # available closures: BoundedBarrier,LogBarrier, LogSin, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
-closure = "LogBarrier"
+closure = "BoundedBarrier"
 moments = [["totalDegree"],[5]]
-quadPoints = [["tensorizedGrid"],[10]]
+quadPoints = [["tensorizedGrid"],[100]]
 maxIterations = 2000
-epsilon = 1e-7
+epsilon = 5e-5
