@@ -24,7 +24,7 @@ By successively performing one update of the moment iteration and one update of 
 &\bm{u}_j^{n+1} =  \bm{c}\left(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_{j}^{n+1},\bm{\lambda}_{j+1}^{n+1}\right)\label{eq:oneshotIPMmoment}.
 \end{align}
 \end{subequations}
-This yields Algotihm \ref{alg:osIPM}.
+This yields Algorithm \ref{alg:osIPM}.
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
 \For{$j=0$ to $N_x+1$}
@@ -121,7 +121,7 @@ since we already showed that by the choice of $\bm{H}(\bm\lambda)^{-1}$ the term
 \begin{align*}
 \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{\hat u}_{j-1}^{n})}{\partial \bm{\hat u}} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \bm{H}(\bm\lambda)^{-1} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \langle \nabla\bm{u}_s(\bm{\varphi}^T\bm{\lambda}_{j-1}^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-T} = \partial_{\bm{\hat u}_{\ell}}\bm{\tilde c}_j
 \end{align*}
-by the choice of $\bm{H}(\bm\lambda)^{-1}$ as well as \eqref{eq:cTildeDer} and \eqref{eq:dudlambdaex}. We obtain an analogous result for the second and third input. Hence, we have that $\partial_{\bm{\hat u}} \bm{c} = \nabla_{\bm{\hat u}}\bm{\tilde c}$, which only has eigenvalues between $-1$ and $1$ by the assumption that the classical IPM iteration is contractive. Since $\bm{J}$ is an upper triangluar block matrix, the eigenvalues are given by $\lambda\left(\partial_{\bm{\lambda}} \bm{d}\right) = 0$ and $\lambda\left(\partial_{\bm{\hat u}} \bm{c}\right)\in(-1,1)$, hence the One-Shot IPM is contractive around its fixed point.
+by the choice of $\bm{H}(\bm\lambda)^{-1}$ as well as \eqref{eq:cTildeDer} and \eqref{eq:dudlambdaex}. We obtain an analogous result for the second and third input. Hence, we have that $\partial_{\bm{\hat u}} \bm{c} = \nabla_{\bm{\hat u}}\bm{\tilde c}$, which only has eigenvalues between $-1$ and $1$ by the assumption that the classical IPM iteration is contractive. Since $\bm{J}$ is an upper triangular block matrix, the eigenvalues are given by $\lambda\left(\partial_{\bm{\lambda}} \bm{d}\right) = 0$ and $\lambda\left(\partial_{\bm{\hat u}} \bm{c}\right)\in(-1,1)$, hence the One-Shot IPM is contractive around its fixed point.
 \end{proof}
 \begin{theorem}\label{th:localConvergence}
 With the assumptions from Theorem \ref{th:Contractive}, the One-Shot IPM converges locally, i.e. there exists a $\delta>0$ s.t. for all starting points $(\bm{\lambda}^0,\bm{\hat u}^0)\in B_{\delta}(\bm{\lambda}^*,\bm{\hat u}^*)$ we have
