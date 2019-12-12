@@ -141,7 +141,7 @@ Vector Euler::LoadIC( const Vector& x, const Vector& xi ) {
 }
 
 Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
-    bool sodShockTube = false;
+    bool sodShockTube = true;
     double x0         = 0.5 + _sigma[0] * xi[0];    // initial shock position
     double rho_l      = 1.0;
     double P_l        = 1.0;
