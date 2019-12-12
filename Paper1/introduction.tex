@@ -62,7 +62,7 @@ The core idea of the stochastic-Collocation method is to compute the moments in 
 \begin{align*}
 \bm{\hat u}_i = \langle \bm{u}\varphi_i \rangle \approx \sum_{k = 1}^{Q}w_k \bm{u}({t,\bm{x},\bm{\xi}_k})\varphi_i(\bm{\xi}_k)f_{\Xi}(\bm{\xi}_k).
 \end{align*} 
-Hence, the moments can be computed by running a given deterministic solver for the original problem at each quadrature point. To reduce numerical costs in multi-dimensional settings, SC commonly uses sparse grids as quadrature rule: While tensorized quadrature sets require $O(M^p)$ quadrature points to integrate polynomials of maximal degree $M$ exactly, sparse grids are designed to integrate polynomials of total degree $M$, for which they only require $O(M(\log_2(M)^{p-1}))$ quadrature points. \remja{Brauchen wir hier noch ne Quelle?}
+Hence, the moments can be computed by running a given deterministic solver for the original problem at each quadrature point. To reduce numerical costs in multi-dimensional settings, SC commonly uses sparse grids as quadrature rule: While tensorized quadrature sets require $O(M^p)$ quadrature points to integrate polynomials of maximal degree $M$ exactly, sparse grids are designed to integrate polynomials of total degree $M$, for which they only require $O(M(\log_2(M)^{p-1}))$ quadrature points, see e.g. \cite{trefethen2017cubature}.
 
 Intrusive methods derive a system which directly describes the time evolution of the moments: Plugging the solution ansatz \eqref{eq:SGClosure} into the set of equations \eqref{eq:hyperbolicProblem} and projecting the resulting residual to zero yields the stochastic-Galerkin moment system
 \begin{subequations}\label{eq:SGMomentSystem}
@@ -85,6 +85,3 @@ where $s_*:\mathbb{R}^m\to\mathbb{R}$ is the Legendre transformation of $s$, and
  \mathcal{U}(\bm{\hat u}) = \left( \nabla_{\bm{u}} s \right)^{-1}(\bm{\hat{\lambda}}(\bm{\hat u})^T \bm{\varphi}).
 \end{align}
 When plugging this ansatz into the original equations \eqref{eq:hyperbolicProblem} and projecting the resulting residual to zero again yields the moment system \eqref{eq:SGMomentSystem}, but with the ansatz \eqref{eq:ansatz} instead of \eqref{eq:SGClosure}.
-
-
-

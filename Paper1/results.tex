@@ -25,7 +25,7 @@ p = (\gamma-1)\rho\left(e-\frac12(v_1^2+v_2^2)\right).
 \end{align*}
 Here, the heat capacity ratio $\gamma$ is chosen to be $1.4$. The spatial mesh discretizes the flow domain around the airfoil. At the airfoil boundary, we use the Euler slip condition $\bm v^T\bm n = 0$, where $\bm n$ denotes the surface normal. At a sufficiently large distance away from the airfoil, we assume a far field flow with a given Mach number $Ma = 0.8$, pressure $p = 101\;325$ Pa and a temperature of $273.15$ K. Now the angle of attack $\phi$ is uniformly distributed in the interval of $[0.75,1.75]$ degrees, i.e. we choose $\phi(\xi) = 1.25 + 0.5\xi$ where $\xi\sim U(-1,1)$. As commonly done, the initial condition is equal to the far field boundary values. Consequently, the wall condition at the airfoil is violated initially and will correct the flow solution. 
 
-The computational domain is a circle with a diameter of $40$ meters. In the center, the NACA0012 airfoil with a length of one meter is located. The spatial mesh is composed of a coarsely discretized far field and a finely resolved region around the airfoil, since we are interested in the flow solution at the airfoil. Altogether, the mesh consists of 22361 triangular elements. \remja{Note, that the cell density of the mesh was adjusted in order to capture areas of high variance and therefore the mesh is significantly different to a mesh classically applied in computational fluid dynamics.}
+The computational domain is a circle with a diameter of $40$ meters. In the center, the NACA0012 airfoil with a length of one meter is located. The spatial mesh is composed of a coarsely discretized far field and a finely resolved region around the airfoil, since we are interested in the flow solution at the airfoil. Altogether, the mesh consists of 22361 triangular elements.
 
 \begin{figure}[h!]
 \centering
@@ -54,7 +54,7 @@ The aim is to quantify the effects arising from the one-dimensional uncertainty 
 \begin{align*}
 \Vert \bm e_{\Delta} \Vert_{\Delta} := \sqrt{\sum_{j=1}^{N_x} \Delta x_j \bm e_j^2}\;.
 \end{align*}
-Hence, when denoting the reference solution by $\bm u_{\Delta}$ and the moments obtained with the numerical method by $\hat{\bm u}_{\Delta}$, we investigate the relative error
+Hence, when denoting the reference solution by $\bm u_{\Delta}$ and the moments obtained with the numerical method by $\bm{\hat u}_{\Delta}$, we investigate the relative error
 \begin{align*}
 \frac{\Vert \text{E}[\bm u_{\Delta}] - \text{E}[\mathcal{U}(\bm{\hat u}_{\Delta})] \Vert_{\Delta}}{\Vert \text{E}[\bm u_{\Delta}] \Vert_{\Delta}} \qquad \text{ and }\qquad \frac{\Vert \text{Var}[\bm u_{\Delta}] - \text{Var}[\mathcal{U}(\bm{\hat u}_{\Delta})] \Vert_{\Delta}}{\Vert \text{Var}[\bm u_{\Delta}] \Vert_{\Delta}}.
 \end{align*}

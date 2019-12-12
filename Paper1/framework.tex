@@ -37,7 +37,7 @@ meaning that the IPM ansatz \eqref{eq:ansatz} at cell $j$ in timestep $n$ can be
 \begin{align*}
 \mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{s}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
 \end{align*}
-The computation of the dual variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. Hence, to determine the dual variables for a given moment vector $\bm{\hat{u}}$, the cost function
+The computation of the dual variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. Therefore, to determine the dual variables for a given moment vector $\bm{\hat{u}}$, the cost function
 \begin{align}\label{eq:L}
 L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle_Q - \sum_{i\leq M}\bm{\lambda}_i^T \bm{\hat u}_i
 \end{align}
@@ -61,7 +61,7 @@ The function $\bm d$ will in the following be called dual iteration function. No
 \begin{align}\label{eq:dualIteration1}
 \bm{\lambda}^{(l+1)}_j = \bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}_j}).
 \end{align}
-The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u_j^n})=\lim_{l\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}_j^n})$.
+The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)=\lim_{l\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}}_j^n)$.
 To obtain a finite number of iterations for the iteration in cell $j$, the stopping criterion 
 \begin{align}\label{eq:tauCrit}
 \sum_{i=0}^m\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(l)};\bm{\hat{u}}_j^n) \right\Vert < \tau
@@ -108,6 +108,6 @@ until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:I
 \subsection{Properties of the kinetic flux}
 \label{sec:costNumFlux}
 
-A straight-forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}. This choice of the numerical flux is common in the field of transport theory, where it is called the \textit{kinetic flux}. By simply taking moments of a given numerical flux for the deterministic problem, the method can easily be applied to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. Therefore, we call the proposed numerical method \textit{semi-intrusive}.
+A straight-forward implementation is ensured by the choice of the numerical flux \eqref{eq:numericalFluxIPM}. This choice of the numerical flux is common in the field of transport theory, where it is called the \textit{kinetic flux} or \textit{kinetic scheme}, see e.g. \cite{deshpande1986kinetic,harten1983upstream,perthame1990boltzmann,perthame1992second}. By simply taking moments of a given numerical flux for the deterministic problem, the method can easily be applied to various physical problems whenever an implementation of $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available. Therefore, we call the proposed numerical method \textit{semi-intrusive}.
 
 Intrusive numerical methods which compute arising integrals analytically and therefore directly depend on the moments (i.e. they do not necessitate the evaluation of the gPC expansion on quadrature points) can be constructed by performing a gPC expansion on the system flux directly \cite{debusschere2004numerical}. Examples can be found in \cite{hu2015stochastic,hu2016stochastic,tryoen2010instrusive,durrwachterahigh} for the computation of numerical fluxes and sources. While the analytic computation of arising integrals is not always more efficient \cite[Section 6]{ghanem1998stochastic}, it can also complicate recycling a deterministic solver. See \ref{app:costNumFlux} for a comparison of numerical costs when using Burgers' equation. However, when not using a quadratic entropy in the IPM method or when the physical flux of the deterministic problem is not a polynomial, it is not clear how many quadrature points the numerical quadrature rule requires to guarantee a sufficiently small quadrature error. We will study the approximation properties of IPM with different quadrature orders in Section~\ref{sec:resultsNACA1D}.
