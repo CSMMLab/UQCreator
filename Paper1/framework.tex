@@ -10,7 +10,7 @@ with the flux $\bm{F}:\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$, $\bm{F}(
 \begin{align*}
 \bm{\hat u}_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}\bm{\hat u}_i(t_n,x) dx.
 \end{align*}
-If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{0j}^n,\cdots,\bm{\hat u}_{Nj}^n)^T\in\mathbb{R}^{N\times m}$ \remja{0...N -> N+1}, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$ as
+If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{ij}^n)_{\vert i\vert\leq M}\in\mathbb{R}^{N\times m}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$ as
 \begin{align}\label{eq:IPMDiscretization}
 \bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}  - \frac{\Delta t}{\Delta x}\left( \bm{G}(\bm{\hat u}_{j}^{n},\bm{\hat u}_{j+1}^{n})- \bm{G}(\bm{\hat u}_{j-1}^{n},\bm{\hat u}_{j}^{n})\right)
 \end{align}
@@ -57,7 +57,7 @@ where $\bm H\in\mathbb{R}^{N \cdot n\times N\cdot m}$ is the Hessian of \eqref{e
 %\begin{align*}
 %\left(\bm{H}^{-1}\cdot\nabla_{\bm{\lambda}}L\right)_{ij} := \sum_{i' = 1}^N\sum_{j' = 1}^m \left(\bm{H}^{-1}\right)_{m(j-1) + i,m(j'-1) + i'}\cdot\nabla_{\bm{\lambda}}L_{i'j'}.
 %\end{align*}
-The function $\bm d$ will in the following be called dual iteration function. Now, the Newton iteration $l$ \remja{l ist später auch level für adIPM und left flux - habs erstmal überall auf zeta geändert} for spatial cell $j$ is given by
+The function $\bm d$ will in the following be called dual iteration function. Now, the Newton iteration $l$ for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
 \bm{\lambda}^{(l+1)}_j = \bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}_j}).
 \end{align}
