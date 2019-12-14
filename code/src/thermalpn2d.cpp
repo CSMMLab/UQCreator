@@ -56,6 +56,20 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     cgeev( _Ax, vl, vr, w );
     Matrix absW( _nMoments, _nMoments, 0.0 );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
+    /*
+        _AbsAx = Matrix( _nMoments, _nMoments, 0.0 );
+        for( unsigned i = 0; i < _nMoments; ++i ) {
+            Vector r( _nMoments );
+            Vector l( _nMoments );
+            for( unsigned j = 0; j < _nMoments; ++j ) {
+                r[j] = vr( i, j );
+                l[j] = vl( i, j );
+            }
+            _AbsAx = _AbsAx + outer( l, r ) * absW( i, i );
+        }*/
+
+    // std::cout << _Ax << std::endl;
+    // std::cout << _Ax - vr * w * vr.inv();
 
     _AbsAx = vr * absW * vr.inv();
 
@@ -64,8 +78,21 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     w.reset();
     cgeev( _Az, vl, vr, w );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
-
+    /*
+        _AbsAz = Matrix( _nMoments, _nMoments, 0.0 );
+        for( unsigned i = 0; i < _nMoments; ++i ) {
+            Vector r( _nMoments );
+            Vector l( _nMoments );
+            for( unsigned j = 0; j < _nMoments; ++j ) {
+                r[j] = vr( i, j );
+                l[j] = vl( i, j );
+            }
+            _AbsAz = _AbsAz + outer( l, r ) * absW( i, i );
+        }*/
+    // std::cout << _Az << std::endl;
+    // std::cout << _Az - vr * w * vr.inv();
     _AbsAz = vr * absW * vr.inv();
+    std::cout << _AbsAz << std::endl;
 }
 
 ThermalPN2D::~ThermalPN2D() {}
@@ -74,7 +101,6 @@ Vector ThermalPN2D::G( const Vector& u, const Vector& v, const Vector& nUnit, co
 
     Vector g = F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
 
-    // Vector g = 0.5 * ( F( u ) + F( v ) ) * n - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
     // Vector g     = 0.5 * ( F( u ) + F( v ) ) * n - 0.5 * _AbsAx * ( v - u ) * n[0] - 0.5 * _AbsAz * ( v - u ) * n[1];
     g[_nMoments] = 0.0;    // set temperature flux to zero
     return g;
@@ -93,8 +119,8 @@ Matrix ThermalPN2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, co
 Matrix ThermalPN2D::F( const Vector& u ) {
     Matrix flux( u.size(), 2, 0.0 );
 
-    Vector outX = 1.0 / _epsilon * _Ax * u;
-    Vector outZ = 1.0 / _epsilon * _Az * u;
+    Vector outX = _Ax * u;
+    Vector outZ = _Az * u;
 
     for( unsigned i = 0; i < _nMoments; ++i ) {
         flux( i, 0 ) = outX[i];
@@ -105,15 +131,14 @@ Matrix ThermalPN2D::F( const Vector& u ) {
 
 double ThermalPN2D::Delta( int l, int k ) const {
     if( l == 0 ) {
-        return std::sqrt( 4.0 * M_PI ) * 2.0 * M_PI / _c;
+        return std::sqrt( 4.0 * M_PI );
     }
     else if( l == 1 && k == 0 ) {
-        return std::sqrt( 4.0 * M_PI / 3.0 ) * 2.0 * M_PI;
+        return std::sqrt( 4.0 * M_PI / 3.0 );
     }
     else if( l == 1 && ( k == -1 || k == 1 ) ) {
         return std::sqrt( 4.0 * M_PI * double( MathTools::Factorial( l + std::abs( k ) ) ) /
-                          ( 2.0 * ( 2.0 * l + 1 ) * double( MathTools::Factorial( l - std::abs( k ) ) ) ) ) *
-               2.0 * M_PI;
+                          ( 2.0 * ( 2.0 * l + 1 ) * double( MathTools::Factorial( l - std::abs( k ) ) ) ) );
     }
     else {
         return 1.0;
@@ -189,7 +214,7 @@ void ThermalPN2D::SetupSystemMatrices() {
 }
 
 int ThermalPN2D::GlobalIndex( int l, int k ) const {
-    if( l != 1 ) {
+    if( l != 1 || true ) {
         int numIndicesPrevLevel  = l * l;    // number of previous indices untill level l-1
         int prevIndicesThisLevel = k + l;    // number of previous indices in current level
         return numIndicesPrevLevel + prevIndicesThisLevel;
@@ -228,19 +253,16 @@ Matrix ThermalPN2D::Source( const Matrix& uQ, const Vector& x, double t, unsigne
         double Q = S / _sigma / _a / std::pow( _TRef, 4 );
 
         double E      = uQ( 0, k );
-        double F      = uQ( 3, k );
         double eTilde = uQ( _nMoments, k );    // scaled internal energy
         if( eTilde < 0 ) {
             std::cout << "eTilde < 0 !!!!" << std::endl;
             std::cout << "eTilde = " << eTilde << std::endl;
             std::cout << "E = " << E << std::endl;
-            std::cout << "F = " << F << std::endl;
         }
         double TTilde = ScaledTemperature( eTilde );
         // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
 
         y( 0, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
-        // y( 3, k ) = -F / _epsilon;
         for( unsigned i = 1; i < _nMoments; ++i ) y( 3, k ) = -uQ( 3, k ) / _epsilon;
         y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
     }
@@ -277,10 +299,9 @@ double ThermalPN2D::ScaledTemperature( double eTilde ) const {
 double ThermalPN2D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     double cfl = _settings->GetCFL();
 
-    double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
-    // double maxVelocity = 1.0 / _epsilon;
+    double maxVelocity = 1.0;
 
-    return ( cfl * dx ) / maxVelocity;
+    return ( cfl / dx ) / maxVelocity;
 }
 
 Vector ThermalPN2D::IC( const Vector& x, const Vector& xi ) {
