@@ -1,22 +1,35 @@
-#ifndef PNEQUATIONS_H
-#define PNEQUATIONS_H
+#ifndef THERMALPN2D_H
+#define THERMALPN2D_H
 
+#include "mathtools.h"
 #include "problem.h"
-#include <cmath>
 
-class PNEquations : public Problem
+class ThermalPN2D : public Problem
 {
-  protected:
-    // moment orders for P_N
-    int _N;
-    double _sigmaA;    // absorption coefficient
-    double _sigmaS;    // scattering coefficient
-    double _sigmaT;    // total crossection
-
-    // System Matrix for x, y and z flux
-    Matrix _Ax;
+  private:
+    double _epsilon;
+    double _c;
+    double _cV;
+    double _a;
+    double _TRef;
+    double _sigma;
+    double _alpha;
+    bool _suOlson;
+    unsigned _constitutiveLaw;
+    Matrix _AbsAx;
+    Matrix _AbsAz;
+    std::vector<Vector> _xiQuad;
+    std::vector<double> _variances;
+    double ScaledInternalEnergy( double TTilde ) const;
+    double ScaledTemperature( double eTilde ) const;
+    double Delta( int l, int k ) const;
+    void SetupSystemMatrices();
+    int GlobalIndex( int l, int k ) const;
+    Matrix _Ax;    // flux matrices
     Matrix _Ay;
     Matrix _Az;
+    unsigned _nMoments;    // number of radiative moments
+    unsigned _N;
 
     // parameter functions for setting up system matrix
     double AParam( int l, int k ) const;
@@ -31,24 +44,13 @@ class PNEquations : public Problem
     double ETilde( int l, int k ) const;
     double FTilde( int l, int k ) const;
 
-    // mathematical + index functions
     int Sgn( int k ) const;
     int kPlus( int k ) const;
     int kMinus( int k ) const;
-    virtual int GlobalIndex( int l, int k ) const;
-
-    // function for setting up system matrices
-    void SetupSystemMatrices();
 
   public:
-    PNEquations( Settings* settings );
-    /**
-     * @brief PNEquations constructur without setting up system matrices used for radiation hydrodynamics
-     * @param settings Settings pointer
-     * @param noSystemMatrix dummy bool
-     */
-    PNEquations( Settings* settings, bool noSystemMatrix );
-    virtual ~PNEquations();
+    ThermalPN2D( Settings* settings );
+    virtual ~ThermalPN2D();
     inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level );
     Matrix F( const Vector& u );
@@ -59,4 +61,4 @@ class PNEquations : public Problem
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
 };
 
-#endif    // PNEQUATIONS_H
+#endif // THERMALPN2D_H

@@ -13,6 +13,7 @@
 #include "shallowwater.h"
 #include "shallowwater2d.h"
 #include "thermalpn.h"
+#include "thermalpn2d.h"
 #include "thermalradiative.h"
 #include "thermalradiativegeneral.h"
 
@@ -60,6 +61,9 @@ Problem* Problem::Create( Settings* settings ) {
     }
     else if( settings->GetProblemType() == ProblemType::P_THERMALPN_1D ) {
         return new ThermalPN( settings );
+    }
+    else if( settings->GetProblemType() == ProblemType::P_THERMALPN_2D ) {
+        return new ThermalPN2D( settings );
     }
     else if( settings->GetProblemType() == ProblemType::P_NAVIERSTOKES_1D ) {
         return new NavierStokes( settings );

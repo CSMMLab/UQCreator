@@ -183,7 +183,7 @@ Matrix PNEquations::F( const Matrix& u ) {
     return 0.5 * pow( u, 2 );
 }
 
-Matrix PNEquations::Source( const Matrix& uQ ) const {
+Matrix PNEquations::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = static_cast<unsigned>( uQ.columns() );
     Vector g( nStates, 0.0 );
