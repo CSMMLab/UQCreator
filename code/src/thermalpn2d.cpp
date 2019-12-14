@@ -18,7 +18,7 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     _nStates = _nMoments + 1;
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
-    _settings->SetSource( false );
+    _settings->SetSource( true );
     _suOlson         = false;
     _constitutiveLaw = 2;    // 1 is Su Olson, 2 is constant
 
@@ -28,7 +28,7 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     _TRef          = 1.0;                    // reference temperature
     _sigma         = 1.0;                    // opacity
     _alpha         = 4.0 * _a;               // closure relation
-    _cV            = 0.718 * 1e7;            // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
+    _cV            = 0.718 * 1e-13;          // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
     double sigmaSB = 5.6704 * 1e-5;          // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
 
@@ -92,7 +92,6 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     // std::cout << _Az << std::endl;
     // std::cout << _Az - vr * w * vr.inv();
     _AbsAz = vr * absW * vr.inv();
-    std::cout << _AbsAz << std::endl;
 }
 
 ThermalPN2D::~ThermalPN2D() {}
@@ -119,8 +118,8 @@ Matrix ThermalPN2D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, co
 Matrix ThermalPN2D::F( const Vector& u ) {
     Matrix flux( u.size(), 2, 0.0 );
 
-    Vector outX = _Ax * u;
-    Vector outZ = _Az * u;
+    Vector outX = 1.0 / _epsilon * _Ax * u;
+    Vector outZ = 1.0 / _epsilon * _Az * u;
 
     for( unsigned i = 0; i < _nMoments; ++i ) {
         flux( i, 0 ) = outX[i];
@@ -131,14 +130,15 @@ Matrix ThermalPN2D::F( const Vector& u ) {
 
 double ThermalPN2D::Delta( int l, int k ) const {
     if( l == 0 ) {
-        return std::sqrt( 4.0 * M_PI );
+        return std::sqrt( 4.0 * M_PI ) * 2.0 * M_PI / _c;
     }
     else if( l == 1 && k == 0 ) {
-        return std::sqrt( 4.0 * M_PI / 3.0 );
+        return std::sqrt( 4.0 * M_PI / 3.0 ) * 2.0 * M_PI;
     }
     else if( l == 1 && ( k == -1 || k == 1 ) ) {
         return std::sqrt( 4.0 * M_PI * double( MathTools::Factorial( l + std::abs( k ) ) ) /
-                          ( 2.0 * ( 2.0 * l + 1 ) * double( MathTools::Factorial( l - std::abs( k ) ) ) ) );
+                          ( 2.0 * ( 2.0 * l + 1 ) * double( MathTools::Factorial( l - std::abs( k ) ) ) ) ) *
+               2.0 * M_PI;
     }
     else {
         return 1.0;
@@ -263,7 +263,7 @@ Matrix ThermalPN2D::Source( const Matrix& uQ, const Vector& x, double t, unsigne
         // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
 
         y( 0, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
-        for( unsigned i = 1; i < _nMoments; ++i ) y( 3, k ) = -uQ( 3, k ) / _epsilon;
+        for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = -uQ( i, k ) / _epsilon;
         y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
     }
 
@@ -299,7 +299,7 @@ double ThermalPN2D::ScaledTemperature( double eTilde ) const {
 double ThermalPN2D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     double cfl = _settings->GetCFL();
 
-    double maxVelocity = 1.0;
+    double maxVelocity = 1.0 / _epsilon;
 
     return ( cfl / dx ) / maxVelocity;
 }
@@ -313,6 +313,7 @@ Vector ThermalPN2D::IC( const Vector& x, const Vector& xi ) {
     auto sigma   = _settings->GetSigma();
 
     y[0] = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2 ) );
+    y[_nStates - 1] = pow( y[0], 1.0 / 4.0 ) * _cV / ( _a * pow( _TRef, 3 ) );
 
     return y;
 }
