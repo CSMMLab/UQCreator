@@ -1,8 +1,6 @@
 #include "pnequations.h"
 
-PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 7 ) {
-    _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
-    _settings->SetNStates( _nStates );
+PNEquations::PNEquations( Settings* settings ) : Problem( settings ) {
     _settings->SetSource( true );
     _sigmaA = 0.0;    // absorption coefficient
     _sigmaS = 1.0;    // scattering coefficient
@@ -10,11 +8,35 @@ PNEquations::PNEquations( Settings* settings ) : Problem( settings ), _N( 7 ) {
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
         auto problem = file->get_table( "problem" );
-        SetupSystemMatrices();
+        _N           = unsigned( problem->get_as<int>( "nPNMoments" ).value_or( 1 ) );
     } catch( const cpptoml::parse_exception& e ) {
         _log->error( "[pnequations] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
+    _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
+    _settings->SetNStates( _nStates );
+
+    // compute Roe flux components
+    this->SetupSystemMatrices();
+    Matrix vl( _nStates, _nStates, 0.0 );
+    Matrix vr( _nStates, _nStates, 0.0 );
+    Matrix w( _nStates, _nStates, 0.0 );
+
+    cgeev( _Ax, vl, vr, w );
+    Matrix absW( _nStates, _nStates, 0.0 );
+    for( unsigned i = 0; i < _nStates; ++i ) absW( i, i ) = fabs( w( i, i ) );
+
+    _AbsAx = vr * absW * vr.inv();
+
+    vl.reset();
+    vr.reset();
+    w.reset();
+    cgeev( _Az, vl, vr, w );
+    for( unsigned i = 0; i < _nStates; ++i ) absW( i, i ) = fabs( w( i, i ) );
+
+    _AbsAz = vr * absW * vr.inv();
+
+    std::cout << "DONE" << std::endl;
 }
 
 PNEquations::PNEquations( Settings* settings, bool noSystemMatrix ) : Problem( settings ) {}
@@ -152,7 +174,8 @@ void PNEquations::SetupSystemMatrices() {
 }
 
 Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    return F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
+    // return F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
+    return 0.5 * ( F( u ) + F( v ) ) * n - 0.5 * _AbsAx * ( v - u ) * fabs( n[0] ) - 0.5 * _AbsAz * ( v - u ) * fabs( n[1] );
     // F( 0.5 * ( u + v ) ) * n - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
     // return F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT(); // LF does not work since norm(n) != Area(j)
 }
@@ -171,8 +194,8 @@ Matrix PNEquations::F( const Vector& u ) {
     Matrix flux( u.size(), 2 );
 
     column( flux, 0 ) = _Ax * u;
-    column( flux, 1 ) = _Ay * u;
-    // column( flux, 1 ) = _Az * u;
+    // column( flux, 1 ) = _Ay * u;
+    column( flux, 1 ) = _Az * u;
 
     return flux;
 }

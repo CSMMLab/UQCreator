@@ -18,6 +18,10 @@ class PNEquations : public Problem
     Matrix _Ay;
     Matrix _Az;
 
+    // Roe Matrices
+    Matrix _AbsAx;
+    Matrix _AbsAz;
+
     // parameter functions for setting up system matrix
     double AParam( int l, int k ) const;
     double BParam( int l, int k ) const;

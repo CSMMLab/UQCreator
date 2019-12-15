@@ -56,20 +56,6 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     cgeev( _Ax, vl, vr, w );
     Matrix absW( _nMoments, _nMoments, 0.0 );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
-    /*
-        _AbsAx = Matrix( _nMoments, _nMoments, 0.0 );
-        for( unsigned i = 0; i < _nMoments; ++i ) {
-            Vector r( _nMoments );
-            Vector l( _nMoments );
-            for( unsigned j = 0; j < _nMoments; ++j ) {
-                r[j] = vr( i, j );
-                l[j] = vl( i, j );
-            }
-            _AbsAx = _AbsAx + outer( l, r ) * absW( i, i );
-        }*/
-
-    // std::cout << _Ax << std::endl;
-    // std::cout << _Ax - vr * w * vr.inv();
 
     _AbsAx = vr * absW * vr.inv();
 
@@ -78,19 +64,7 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     w.reset();
     cgeev( _Az, vl, vr, w );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
-    /*
-        _AbsAz = Matrix( _nMoments, _nMoments, 0.0 );
-        for( unsigned i = 0; i < _nMoments; ++i ) {
-            Vector r( _nMoments );
-            Vector l( _nMoments );
-            for( unsigned j = 0; j < _nMoments; ++j ) {
-                r[j] = vr( i, j );
-                l[j] = vl( i, j );
-            }
-            _AbsAz = _AbsAz + outer( l, r ) * absW( i, i );
-        }*/
-    // std::cout << _Az << std::endl;
-    // std::cout << _Az - vr * w * vr.inv();
+
     _AbsAz = vr * absW * vr.inv();
 }
 
@@ -98,9 +72,9 @@ ThermalPN2D::~ThermalPN2D() {}
 
 Vector ThermalPN2D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
 
-    Vector g = F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
+    // Vector g = F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
 
-    // Vector g     = 0.5 * ( F( u ) + F( v ) ) * n - 0.5 * _AbsAx * ( v - u ) * n[0] - 0.5 * _AbsAz * ( v - u ) * n[1];
+    Vector g     = 0.5 * ( F( u ) + F( v ) ) * n - 0.5 * _AbsAx * ( v - u ) * fabs( n[0] ) - 0.5 * _AbsAz * ( v - u ) * fabs( n[1] );
     g[_nMoments] = 0.0;    // set temperature flux to zero
     return g;
 }
@@ -255,9 +229,9 @@ Matrix ThermalPN2D::Source( const Matrix& uQ, const Vector& x, double t, unsigne
         double E      = uQ( 0, k );
         double eTilde = uQ( _nMoments, k );    // scaled internal energy
         if( eTilde < 0 ) {
-            std::cout << "eTilde < 0 !!!!" << std::endl;
-            std::cout << "eTilde = " << eTilde << std::endl;
-            std::cout << "E = " << E << std::endl;
+            // std::cout << "eTilde < 0 !!!!" << std::endl;
+            // std::cout << "eTilde = " << eTilde << std::endl;
+            // std::cout << "E = " << E << std::endl;
         }
         double TTilde = ScaledTemperature( eTilde );
         // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
@@ -309,7 +283,7 @@ Vector ThermalPN2D::IC( const Vector& x, const Vector& xi ) {
     double x0    = 0.0;
     double y0    = 0.0;
     double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
-    double floor = 0.0;
+    double floor = 0.1;
     auto sigma   = _settings->GetSigma();
 
     y[0] = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2 ) );
