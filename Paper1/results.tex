@@ -324,9 +324,8 @@ For this testcase we want to compare the results for sparse grids with respect t
 \end{table}
 The following properties emerge:
 \begin{itemize}
-	\item It was not possible to obtain a result for sparse grids with moments of order 3 or higher. Any level up to level 11 ($72\;705$ quadrature nodes) of the used Clenshaw-Curtis sparse grids, resulted in a failure of the method during the computation of the mapping from the dual variables to the moment vector.
+	\item It was not possible to obtain a result for sparse grids with moments of order 3 or higher. Any level up to level 11 ($72\;705$ quadrature nodes) of the used Clenshaw-Curtis sparse grids, resulted in an ill conditioned Hessian matrix of the dual problem and thereby to a failure of the method.
 	\item Sparse grids required a significantly higher number of quadrature points for the same order of moments in comparison to tensorized grids.
-	\item When using sparse grids with adaptivity the computational cost per quadrature node was observed to be smaller, showing that the nestedness property can potentially increase the methods performance.
 \end{itemize}
 Even though the solutions in Figure \ref{fig:solution3D} show the same characteristics and sparse grids are generally well suited and often used in combination with the SC method, our tests reveal that, at least for the Clenshaw-Curtis based sparse grids, these quadrature rules are not well suited to be used in combination with IPM as they require significantly more quadrature points and are only able to generate results for low orders of moments. Tensorized quadrature on the other hand performs similarly well as in the previous testcases and manages to yield a closer solution for the expectation as well as the variance due to the usage of higher moments. Tensorized quadrature rules should thus be preferred for lower stochastical dimensions. 
 \begin{figure}[H]
