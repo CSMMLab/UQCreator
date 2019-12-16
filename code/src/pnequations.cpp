@@ -176,8 +176,6 @@ void PNEquations::SetupSystemMatrices() {
 Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     // return F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
     return 0.5 * ( F( u ) + F( v ) ) * n - 0.5 * _AbsAx * ( v - u ) * fabs( n[0] ) - 0.5 * _AbsAz * ( v - u ) * fabs( n[1] );
-    // F( 0.5 * ( u + v ) ) * n - 0.5 * ( ( v - u ) * norm( n ) * nUnit[0] + ( v - u ) * norm( n ) * nUnit[1] );
-    // return F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT(); // LF does not work since norm(n) != Area(j)
 }
 
 Matrix PNEquations::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
