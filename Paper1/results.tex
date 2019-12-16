@@ -307,8 +307,8 @@ The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolut
 When looking at the computed IPM expectation value and variance (see Figure~\ref{fig:reados2DE} and \ref{fig:reados2DVar}) and comparing the results against the reference solution in Figure~\ref{fig:referenceSolutionsub2DE} and \ref{fig:referenceSolutionsub2DVar}, one can observe that since the uncertainties have a bigger effect on the result than in the one-dimensional case, the IPM solution still shows a step-like profile. However, we are able to capture the main features of the reference solution. The increased effect of the uncertainty can again be seen in Figure~\ref{fig:readosIPMEVar2DRefinement}, where a refinement level of $8$, i.e. a truncation order of $9$ is chosen on a larger portion than for the one-dimensional case. Visualizing the variance on a logarithmic scale in Figure~\ref{fig:referenceSolutionsub2DVarLog} further shows that the applied refinement indicators work well and enforce the usage of higher order moments in areas of high variance.
 
 \subsection{2D Euler equations with a three dimensional uncertainty}
-For the last numerical study we again use the Euler equations, but this time not in the context of the NACA airfoil, but rather with a bend Sod shock tube experiment. The prescribed initial condition for this testcase describes a gas at rest, but with a discontinuity, in density as well as energy in the upper part of the tube. The density $\rho_u = p/(R \cdot T)$ in the upper part is set to $\rho_u = 1.289$ with $p = 101\;325$ Pa, a temperature of $273.15$ K and the specific gas constant for dry air $R=287.87$. The energy $\rho e_u$ is set to exactly $1.0$. For the initial conditions in the lower part we set $\rho_l = 0.5 \cdot \rho_u$ and $\rho e_l = 0.3$. The heat capacity ratio $\gamma$ is set to $1.4$ as in the previous studies. We again augment the deterministic case by inflicting uncertainties and again increase the number uncertainties to three. The applied boundary conditions are Euler slip conditions $\bm{v}^T\bm{n}=0$ for the walls and Dirichlet type boundary conditions at the ends of the tube which set to the deterministic initial conditions. The first two uncertainties are the density and energy of the lower part of the shock tube. Here we set $\rho_l \sim U(1.189,1389)$ and $\rho e_l \sim U(0.2,0.4)$. The third uncertainty enters through the position of the shock itself and thus $y_\text{shock} \sim U(1.0, 1.2)$. Note, that in contrast to the upper testcases, here we are not interested in the steady state of the system, but rather the of time evolution of the expectancy and variance. The computational mesh (see Figure \ref{fig:referenceSolutionsPipeMesh}) is an unstructured mesh of $25\;458$ triangular cells, where the cells are all similar in size, i.e. there are not refined regions as in the NACA testcase. The simulations were run until a time of $0.2$s. The corresponding results can be seen in Figure \ref{fig:solution3D}. The reference solution in Figure \ref{fig:referenceSolutionsPipe1} and \ref{fig:referenceSolutionsPipe2} was computed using SC with 50 quadrature points in each stochastic dimension, yielding a total of $50^3=125\;000$ quadrature points.\\
-For this testcase we want to compare the results for sparse grids w.r.t. tensorized grids in higher stochastical dimensions. As we made used of adaptivity, the corresponding moment orders and used quadrature points can be seen in Table \ref{tab:orders3D}.
+For the last numerical study we again use the Euler equations, but this time not in the context of the NACA airfoil, but rather with a bend Sod shock tube experiment. The prescribed initial condition for this testcase describes a gas at rest, but with a discontinuity, in density as well as energy in the upper part of the tube. The density $\rho_u = p/(R \cdot T)$ in the upper part is set to $\rho_u = 1.289$ with $p = 101\;325$ Pa, a temperature of $273.15$ K and the specific gas constant for dry air $R=287.87$. The energy $\rho e_u$ is set to exactly $1.0$. For the initial conditions in the lower part we set $\rho_l = 0.5 \cdot \rho_u$ and $\rho e_l = 0.3$. The heat capacity ratio $\gamma$ is set to $1.4$ as in the previous studies. We again augment the deterministic case by inflicting uncertainties and again increase the number uncertainties to three. The applied boundary conditions are Euler slip conditions $\bm{v}^T\bm{n}=0$ for the walls and Dirichlet type boundary conditions at the ends of the tube which set to the deterministic initial conditions. The first two uncertainties are the density and energy of the lower part of the shock tube. Here we set $\rho_l \sim U(1.189,1389)$ and $\rho e_l \sim U(0.2,0.4)$. The third uncertainty enters through the position of the shock itself and thus $y_\text{shock} \sim U(1.0, 1.2)$. Note, that in contrast to the upper testcases, here we are not interested in the steady state of the system, but rather the of time evolution of the expectancy and variance. The computational mesh (see Figure \ref{fig:referenceSolutionsPipeMesh}) is an unstructured mesh of $25\;458$ triangular cells, where the cells are all similar in size, i.e. there are not refined regions as in the NACA testcase. The simulations were run until a time of $2.0$s. The corresponding results can be seen in Figure \ref{fig:solution3D}. The reference solution in Figure \ref{fig:referenceSolutionsPipe1} and \ref{fig:referenceSolutionsPipe2} was computed using SC with 50 quadrature points in each stochastic dimension, yielding a total of $50^3=125\;000$ quadrature points.\\
+For this testcase we want to compare the results for sparse grids with respect to tensorized grids for higher stochastical dimensions, where both quadrature sets are based on Clenshaw-Curtis nodes. As we made used of adaptivity, the corresponding moment orders and used quadrature points can be seen in Table \ref{tab:orders3D}.
 \begin{table}
 	\centering
 	\begin{tabular}{l|cccc}
@@ -317,7 +317,7 @@ For this testcase we want to compare the results for sparse grids w.r.t. tensori
 		\quad Number of quadrature points&25&441&-&-\\
 		Tensorized grids & & & & \\\hline
 		\quad Moment order&1&2&3&4\\
-		\quad Number of quadrature points&8&27&64&125\\
+		\quad Number of quadrature points&27&125&125&729\\
 	\end{tabular}
 	\caption{Order of moments and corresponding number of quadrature nodes used.}
 	\label{tab:orders3D}
@@ -328,7 +328,7 @@ The following properties emerge:
 	\item Sparse grids required a significantly higher number of quadrature points for the same order of moments in comparison to tensorized grids.
 	\item When using sparse grids with adaptivity the computational cost per quadrature node was observed to be smaller, showing that the nestedness property can potentially increase the methods performance.
 \end{itemize}
-Even though the solutions in Figure \ref{fig:solution3D} show the same characteristics and sparse grids are generally well suited and often used in combination with the SC method, our tests reveal that, at least for the Clenshaw-Curtis based sparse grids, these quadrature rules are not well suited to be used in combination with IPM as they require significantly more quadrature points and are only able to generate results for low orders of moments. Tensorized quadrature on the other hand performs similarly well as in the previous testcases and should thus be preferred for lower dimensions. 
+Even though the solutions in Figure \ref{fig:solution3D} show the same characteristics and sparse grids are generally well suited and often used in combination with the SC method, our tests reveal that, at least for the Clenshaw-Curtis based sparse grids, these quadrature rules are not well suited to be used in combination with IPM as they require significantly more quadrature points and are only able to generate results for low orders of moments. Tensorized quadrature on the other hand performs similarly well as in the previous testcases and manages to yield a closer solution for the expectation as well as the variance due to the usage of higher moments. Tensorized quadrature rules should thus be preferred for lower stochastical dimensions. 
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}{0.3\linewidth}
@@ -373,21 +373,21 @@ Even though the solutions in Figure \ref{fig:solution3D} show the same character
 	\end{subfigure}\\
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.18]{figs/pipe/euler2D_pipe_n1-4_sg4-6_ERho.png}
+		\includegraphics[scale=0.18]{figs/pipe/euler2D_pipe_n1-4_tg1-3_ERho.png}
 		\caption{}
 		\label{fig:adIPMSolutionsPipeTGE}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.18]{figs/pipe/euler2D_pipe_n1-4_sg4-6_VarRho.png}
+		\includegraphics[scale=0.18]{figs/pipe/euler2D_pipe_n1-4_tg1-3_VarRho.png}
 		\caption{}
 		\label{fig:adIPMSolutionsPipeTGVar}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{0.3\linewidth}
 		\centering
-		\includegraphics[scale=0.18]{figs/pipe/euler2D_pipe_n1-4_sg4-6_refinementLevel.png}
+		\includegraphics[scale=0.18]{figs/pipe/euler2D_pipe_n1-4_tg1-3_refinementLevel.png}
 		\caption{}
 		\label{fig:adIPMSolutionsPipeTGRI}
 	\end{subfigure}
