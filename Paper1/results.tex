@@ -107,7 +107,7 @@ The quantities of interests are now computed with the different methods. All met
 		\caption{}
 		\label{fig:sub34}
 	\end{subfigure}
-	\caption{Comparison of the relative L$^2$-error for the density for IPM related methods (first row) and of the best performing IPM method in comparison with SC (second row). All intrusive methods converge to a residual $\varepsilon=6\cdot 10^{-6}$, whereas all non-intrusive methods converge to a residual $\varepsilon=1\cdot 10^{-7}$. All computations are performed with with 5 MPI threads.}
+	\caption{Comparison of the relative L$^2$-error for the density for IPM related methods (first row) and of the best performing IPM method in comparison with SC (second row). All intrusive methods converge to a residual $\varepsilon=6\cdot 10^{-6}$, whereas all non-intrusive methods converge to a residual $\varepsilon=1\cdot 10^{-7}$. All computations are performed with 5 MPI threads.}
 	\label{fig:L2ErrorSolution}
 \end{figure}
 \begin{figure}[h!]
@@ -203,7 +203,7 @@ The readosIPM results as well as the corresponding refinement levels are depicte
 		\includegraphics[width=\linewidth]{figs/Euler1DPlots10/euler2D_nacaCoarse_refadosipm_n2-9_sg2-4_s05_aoa_oneRet_refinementLevel.png}
 		\label{fig:sub1}
 	\end{subfigure}
-	\caption{E$[\rho]$, Var$[\rho]$ and refinement level for readosIPM$_{2-9}$}
+	\caption{E$[\rho]$, Var$[\rho]$ and refinement level for readosIPM$_{2-9}$.}
 	\label{fig:readosIPMEVar}
 \end{figure}
 
@@ -255,7 +255,7 @@ In the following, we assume a fixed angle of attack with $\phi = 1.25$ degrees a
 				\includegraphics[width=\linewidth]{figs/Euler2D/L2_error_Var[rhoE].pdf}
 		\label{fig:sub2}
 	\end{subfigure}
-	\caption{Relative L$^2$-error with 16 MPI threads for density and energy.}
+	\caption{Relative L$^2$-error with 16 MPI threads for density and energy. All intrusive methods are converged to a residual $\varepsilon=6\cdot 10^{-6}$ and all non-intrusive methods are converged to a residual of $\varepsilon=1\cdot 10^{-6}$.}
 	\label{fig:L2ErrorSolution2D}
 \end{figure}
 The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolution2D}. To determine the error, we used stochastic-Collocation with a $50$ by $50$ Gauss-Legendre quadrature rule. As in the one-dimensional NACA testcase, the acceleration techniques lead to a heavily reduced runtime of the IPM method. Furthermore, the error obtained with the intrusive methods requires a total degree of $M = 9$, i.e. $N = 55$ moments to reach the error level of SC with 17 quadrature points per dimension i.e. $17^2 = 289$ collocation points. Note that this effect has also been observed in the one-dimensional case, however now for multi-dimensional problems, the reduced number of unknowns required for intrusive methods to obtain a certain error becomes more apparent. This shows one promising characteristic of intrusive techniques and points to their applicability for higher dimensional problems. In contrast to before, the SG error level is smaller than the IPM error for both, the expectation value and variance. Furthermore, when comparing IPM with and without One-Shot, one can observe that the effect of this acceleration strategy weighs in more heavily than it did for the one-dimensional case. This behavior is expected, since every iterate of the optimization problem becomes more expensive when the dimension is increased. This means, using a method with less iterations for every computation of the dual variables heavily reduces computational costs, which is why we consider the One-Shot strategy to be an effective approach, especially for problems with high uncertain dimension.

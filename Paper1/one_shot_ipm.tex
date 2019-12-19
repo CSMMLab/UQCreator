@@ -14,7 +14,7 @@ which is again needed for the construction of intrusive methods. By introducing 
 \begin{align}\label{eq:residualSteady}
 \sum_{j = 1}^{N_x} \Delta x_j \Vert \bm{\hat{u}}_j^n - \bm{\hat{u}}_j^{n-1} \Vert \leq \varepsilon
 \end{align}
-is fulfilled. Since one is generally interested in low order moments such as the expectation value, this residual can be modified by only accounting for the zero order moments.
+is fulfilled. Condition \eqref{eq:residualSteady}, which is for example being used in the SU2 code framework \cite{economon2015su2}, measures the change of the solution by a single time iteration. Note that to obtain an estimate of the distance to the steady state solution, one has to include the Lipschitz constant of the corresponding fixed point problem. Since one is generally interested in low order moments such as the expectation value, the residual \eqref{eq:residualSteady} can be modified by only accounting for the zero order moments.
 
 In this section we aim at breaking up the inner loop in the IPM Algorithm \ref{alg:IPM}, i.e. to just perform one iteration of the dual problem in each time step. Consequently, the IPM reconstruction given by \eqref{eq:primalProblem} is not done exactly, meaning that the reconstructed solution does not minimize the entropy while not fulfilling the moment constraint. However, the fact that the moment vectors are not yet converged to the steady solution seems to permit such an inexact reconstruction. Hence, we aim at iterating the moments to steady state and the dual variables to the exact solution of the IPM optimization problem \eqref{eq:primalProblem} simultaneously.
 By successively performing one update of the moment iteration and one update of the dual iteration, we obtain 
