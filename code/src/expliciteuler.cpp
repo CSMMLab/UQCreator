@@ -64,7 +64,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                 continue;
             }
         }
-        Matrix rhs( _settings->GetNStates(), _settings->GetNTotalforRefLevel( refLevel[j] ), 0.0 );
+        Matrix rhs( _settings->GetNStates(), _settings->GetNqPEAtRef( refLevel[j] ), 0.0 );
         edges = _mesh->GetEdgesOfCell( j );
 
         for( unsigned l = 0; l < edges.size(); ++l ) {
@@ -84,6 +84,6 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
             }
         }
 
-        uNew[j] = u[j] - ( dt / cell->GetArea() ) * rhs;
+        uNew[j] = uQ[j] - ( dt / cell->GetArea() ) * rhs;
     }
 }

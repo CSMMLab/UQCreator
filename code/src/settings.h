@@ -126,6 +126,7 @@ class Settings
     // problem specific settings
     double _gamma;
     bool _hasSource;
+    bool _hasImplicitSource;    // source for implicit discretization
 
     Settings() = delete;
     void Init( std::shared_ptr<cpptoml::table> file, bool restart );
@@ -172,8 +173,10 @@ class Settings
     void SetExactSolution( bool hasExactSolution );
     bool HasExactSolution() const;
     bool HasSource() const;
+    bool HasImplicitSource() const;
     bool WriteInTime() const { return _writeInTime; }
     void SetSource( bool hasSource );
+    void SetImplicitSource( bool hasSource );
 
     // moment_system
     ClosureType GetClosureType() const;

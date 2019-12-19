@@ -390,9 +390,10 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
 
         _filterStrength = moment_system->get_as<double>( "filterStrength" ).value_or( -1.0 );
 
-        _maxIterations = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
-        _epsilon       = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
-        _hasSource     = false;
+        _maxIterations     = moment_system->get_as<unsigned>( "maxIterations" ).value_or( 1000 );
+        _epsilon           = moment_system->get_as<double>( "epsilon" ).value_or( 5e-5 );
+        _hasSource         = false;
+        _hasImplicitSource = false;
     } catch( const cpptoml::parse_exception& e ) {
         log->error( "Failed to parse {0}: {1}", _inputFile.c_str(), e.what() );
         exit( EXIT_FAILURE );
@@ -468,7 +469,9 @@ double Settings::GetSigma( unsigned l ) const { return _sigma[l]; }
 void Settings::SetExactSolution( bool hasExactSolution ) { _hasExactSolution = hasExactSolution; }
 bool Settings::HasExactSolution() const { return _hasExactSolution; }
 bool Settings::HasSource() const { return _hasSource; }
+bool Settings::HasImplicitSource() const { return _hasImplicitSource; }
 void Settings::SetSource( bool hasSource ) { _hasSource = hasSource; }
+void Settings::SetImplicitSource( bool hasSource ) { _hasImplicitSource = hasSource; }
 
 // moment_system
 ClosureType Settings::GetClosureType() const { return _closureType; }

@@ -200,8 +200,9 @@ int main( int argc, char* argv[] ) {
     }
     if( settings->HasReferenceFile() ) initErrorLogger( configFile, logfilename );
     MPI_Barrier( MPI_COMM_WORLD );
-    Mesh* mesh           = Mesh::Create( settings );
-    Problem* problem     = Problem::Create( settings );
+    Mesh* mesh       = Mesh::Create( settings );
+    Problem* problem = Problem::Create( settings );
+    problem->SetMesh( mesh );
     MomentSolver* solver = new MomentSolver( settings, mesh, problem );
 
     solver->Solve();

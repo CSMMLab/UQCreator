@@ -6,7 +6,7 @@ TimeSolver::TimeSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _se
     _dx         = _mesh->GetArea( 0 );
     _dt         = _dx * _settings->GetCFL() / 12.0;
     _nTimeSteps = static_cast<unsigned>( _settings->GetTEnd() / _dt );
-    _flux       = MatVec( _mesh->GetNEdges(), Matrix( _settings->GetNStates(), _settings->GetNTotal(), 0.0 ) );
+    _flux       = MatVec( _mesh->GetNEdges(), Matrix( _settings->GetNStates(), _settings->GetNQTotal(), 0.0 ) );
 }
 
 TimeSolver::~TimeSolver() {}

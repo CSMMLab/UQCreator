@@ -58,7 +58,8 @@ void MomentSolver::Solve() {
     if( _settings->HasRestartFile() ) _tStart = prevSettings->GetTEnd();
     MatVec u = DetermineMoments( prevSettings->GetNTotal() );
     SetDuals( prevSettings, prevClosure, u );
-    MatVec uQ = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
+    MatVec uQ    = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
+    MatVec uQNew = MatVec( _nCells + 1, Matrix( _nStates, _settings->GetNqPE() ) );
     // slopes for slope limiter
     MatVec duQx( _nCells, Matrix( _nStates, _settings->GetNqPE(), 0.0 ) );
     MatVec duQy( _nCells, Matrix( _nStates, _settings->GetNqPE(), 0.0 ) );
@@ -175,11 +176,16 @@ void MomentSolver::Solve() {
         ++timeIndex;
 
         // perform time update flux
-        _time->Advance( numFluxPtr, uNew, u, uQ, dt, refinementLevel );
+        _time->Advance( numFluxPtr, uQNew, u, uQ, dt, refinementLevel );
 
         // perform time update source
         if( _settings->HasSource() ) {
-            this->Source( uNew, uQ, dt, t, refinementLevel );
+            this->Source( uQNew, uQ, dt, t, refinementLevel );
+        }
+
+        // compute partial moments from time updated solution at quad points on each PE
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            uNew[j] = uQNew[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
 
         // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
@@ -331,17 +337,19 @@ void MomentSolver::Solve() {
     }
 }
 
-void MomentSolver::Source( MatVec& uNew, const MatVec& uQ, double dt, double t, const VectorU& refLevel ) const {
+void MomentSolver::Source( MatVec& uQNew, const MatVec& uQ, double dt, double t, const VectorU& refLevel ) const {
     Matrix out( _nStates, _nTotal );    // could also be allocated before and then stored in class, be careful with openmp!!!
                                         //#pragma omp parallel for
+    auto uQTilde = uQNew;
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
-        out     = _problem->Source( uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] ) * _closure->GetPhiTildeWfAtRef( refLevel[j] );
-        uNew[j] = uNew[j] + dt * out;    // TODO: check dt*dx correct?  vorher * _mesh->GetArea( j )
+        out        = _problem->Source( uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );    //  use uQ or uQNew?
+        uQTilde[j] = uQNew[j] + dt * out;
+        if( _settings->HasImplicitSource() ) _problem->SourceImplicit( uQNew[j], uQTilde[j], uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );
     }
 }
 
-void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned level ) { out += g * _closure->GetPhiTildeWfAtRef( level ); }
+void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned level ) { out += g; }
 
 double MomentSolver::ComputeRefIndicator( const VectorU& refinementLevel, const Matrix& u, unsigned refLevel ) const {
     double indicator = 0;

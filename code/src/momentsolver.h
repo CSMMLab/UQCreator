@@ -50,7 +50,7 @@ class MomentSolver
      * @param current time
      * @param refinement level
      */
-    void Source( MatVec& uNew, const MatVec& uQ, double dt, double t, const VectorU& refLevel ) const;
+    void Source( MatVec& uQNew, const MatVec& uQ, double dt, double t, const VectorU& refLevel ) const;
     /**
      * sets up moments for specified initial condition
      * @return output moment matrix

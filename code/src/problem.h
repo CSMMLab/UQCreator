@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <string>
 
+#include "mesh.h"
 #include "settings.h"
 #include "typedefs.h"
 
@@ -15,6 +16,7 @@ class Problem
     Settings* _settings;
     unsigned _nStates;
     std::shared_ptr<spdlog::logger> _log;
+    Mesh* _mesh;
 
     // variance vector
     Vector _sigma;
@@ -33,7 +35,9 @@ class Problem
     virtual Matrix ExactSolution( double t, const Matrix& x, const Vector& xi ) const;
     virtual Matrix Source( const Matrix& uQ ) const;
     virtual Matrix Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const;
+    virtual void SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const;
     virtual Matrix BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const;
+    virtual void SetMesh( Mesh* mesh ) { _mesh = mesh; }
 };
 
 #endif    // PROBLEM_H

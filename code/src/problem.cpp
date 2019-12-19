@@ -93,6 +93,11 @@ Matrix Problem::Source( const Matrix& uQ, const Vector& x, double t, unsigned le
     return uQ;
 }
 
+void Problem::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+    std::cerr << "[Problem]: Source not defined" << std::endl;
+    exit( EXIT_FAILURE );
+}
+
 Matrix Problem::BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const {
     std::cerr << "[Problem]: Boundary Flux not defined" << std::endl;
     exit( EXIT_FAILURE );

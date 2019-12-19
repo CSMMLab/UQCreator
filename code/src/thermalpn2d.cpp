@@ -22,14 +22,18 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     _suOlson         = false;
     _constitutiveLaw = 2;    // 1 is Su Olson, 2 is constant
 
+    // J = kg*m^2 / s^2 = 1e7 * g *  cm / s^2
+    // _cV in [1e7 * cm / s^2 / K]
+
     // physical constants
     _c             = 299792458.0 * 100.0;    // speed of light in [cm/s]
     _a             = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
     _TRef          = 1.0;                    // reference temperature
     _sigma         = 1.0;                    // opacity
     _alpha         = 4.0 * _a;               // closure relation
-    _cV            = 0.718 * 1e-13;          // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
-    double sigmaSB = 5.6704 * 1e-5;          // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
+    double density = 2.7;
+    _cV            = density * 0.831 * 1e-7;    // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
+    double sigmaSB = 5.6704 * 1e-5;             // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
 
     if( !_suOlson ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
@@ -53,7 +57,7 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     Matrix vr( _nMoments, _nMoments, 0.0 );
     Matrix w( _nMoments, _nMoments, 0.0 );
 
-    cgeev( _Ax, vl, vr, w );
+    cgeev( ( 1.0 / _epsilon ) * _Ax, vl, vr, w );
     Matrix absW( _nMoments, _nMoments, 0.0 );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
 
@@ -62,7 +66,7 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     vl.reset();
     vr.reset();
     w.reset();
-    cgeev( _Az, vl, vr, w );
+    cgeev( ( 1.0 / _epsilon ) * _Az, vl, vr, w );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
 
     _AbsAz = vr * absW * vr.inv();

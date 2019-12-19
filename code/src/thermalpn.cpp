@@ -19,22 +19,25 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
     _settings->SetSource( true );
+    _settings->SetImplicitSource( true );
     _suOlson         = false;
     _constitutiveLaw = 2;    // 1 is Su Olson, 2 is constant
 
     // physical constants
-    _c             = 299792458.0 * 100.0;    // speed of light in [cm/s]
-    _a             = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
-    _TRef          = 1.0;                    // reference temperature
-    _sigma         = 1.0;                    // opacity
-    _alpha         = 4.0 * _a;               // closure relation
-    _cV            = 0.718 * 1e7;            // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
-    double sigmaSB = 5.6704 * 1e-5;          // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
+    _c             = 299792458.0 * 100.0;          // speed of light in [cm/s]
+    _a             = 7.5657 * 1e-15;               // radiation constant [erg/(cm^3 K^4)]
+    _TRef          = 1.0;                          // reference temperature
+    _sigma         = 1.0 / 92.6 / 1e-6 / 100.0;    // opacity
+    _alpha         = 4.0 * _a;                     // closure relation
+    double density = 2.7;
+    _cV            = 0.718 *
+          1e7;    // density * 0.831 * 1e-7;    // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]   density * 0.831 * 1e-7
+    double sigmaSB = 5.6704 * 1e-5;    // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
 
     if( !_suOlson ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
 
-    _epsilon = 4.0 * _a / _alpha;
+    _epsilon = 1.0 / _sigma;
 
     // compute xi Quadrature points
     Vector xiEta( _settings->GetNDimXi() );
@@ -79,69 +82,10 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     // std::cout << "A = " << _Az << std::endl;
 
     // compute Roe matrix
-    cgeev( _Az, vl, vr, w );
+    cgeev( ( 1.0 / _epsilon ) * _Az, vl, vr, w );
     Matrix absW( _nMoments, _nMoments, 0.0 );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
-    // std::cout << "vl = " << vl << std::endl;
-    // std::cout << "vr = " << vr << std::endl;
-    // std::cout << "w = " << w << std::endl;
-    // std::cout << "P = " << P << std::endl;
-    // Matrix PSave( P.columns(), P.rows() );
-    Matrix PInvNum = P.inv();
 
-    // std::cout << "vl^{-1}*w*vl = " << vr * absW * vr.inv() << std::endl;
-    // std::cout << "A = " << _Az << std::endl;
-
-    Matrix T( _nMoments, _nMoments, 0.0 );
-
-    for( unsigned i = 0; i < _nMoments; ++i ) {
-        for( unsigned j = 0; j < _nMoments; ++j ) {
-            for( unsigned l = 0; l < _nMoments; ++l ) {
-                T( i, j ) = T( i, j ) + vr( i, l ) * fabs( w( l, l ) ) * vl( j, l );
-            }
-        }
-    }
-    // std::cout << "T = " << T << std::endl;
-    Matrix vln( 2, 2, 0.0 );
-    Matrix vrn( 2, 2, 0.0 );
-    Matrix wn( 2, 2, 0.0 );
-    Matrix Pn( 2, 2, 1.0 );
-    Pn( 0, 0 ) = -sqrt( 3 ) / _c;
-    Pn( 0, 1 ) = sqrt( 3 ) / _c;
-    Matrix PInvn( 2, 2, 0.5 );
-    PInvn( 0, 0 ) = -_c / sqrt( 3 ) / 2.0;
-    PInvn( 1, 0 ) = _c / sqrt( 3 ) / 2.0;
-    Matrix LambdaAbsn( 2, 2, 0.0 );
-    Matrix Lambda( 2, 2, 0.0 );
-    LambdaAbsn( 0, 0 ) = fabs( -1.0 / sqrt( 3 ) / _epsilon );
-    LambdaAbsn( 1, 1 ) = fabs( 1.0 / sqrt( 3 ) / _epsilon );
-    Lambda( 0, 0 )     = ( -1.0 / sqrt( 3 ) / _epsilon );
-    Lambda( 1, 1 )     = ( 1.0 / sqrt( 3 ) / _epsilon );
-    Matrix AbsAPartn   = PInvn * LambdaAbsn * Pn;
-
-    Matrix A( 2, 2, 0.0 );
-    A( 0, 1 ) = 1.0 / _c / _epsilon;
-    A( 1, 0 ) = _c / _epsilon / 3.0;
-
-    cgeev( A, vln, vrn, wn );
-
-    Matrix absWn( 2, 2, 0.0 );
-    for( unsigned i = 0; i < 2; ++i ) absWn( i, i ) = fabs( wn( i, i ) );
-
-    std::cout << "vl = " << vln << std::endl;
-    std::cout << "vr = " << vrn << std::endl;
-    std::cout << "w = " << wn << std::endl;
-
-    std::cout << "P = " << Pn << std::endl;
-    std::cout << "PInvn = " << PInvn << std::endl;
-    std::cout << "LambdaAbsn = " << Lambda << std::endl;
-
-    // std::cout << "vrInv*|w|*vr = " << vrn.inv() * absWn * vrn << std::endl;
-    // std::cout << "absA = " << AbsAPartn << std::endl;
-
-    // std::cout << "vr*w*vrInv = " << Pn * Lambda * PInvn << std::endl;
-    std::cout << "vrInv*|w|*vr = " << vrn * absWn * vrn.inv() << std::endl;
-    std::cout << "A = " << A << std::endl;
     _AbsA = vr * absW * vr.inv();
 
     // exit( EXIT_FAILURE );
@@ -286,6 +230,8 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
+    double dt                    = _settings->GetDT();
+    double gamma                 = pow( _a * pow( _TRef, 3 ) / _cV, 4 );
 
     Matrix y( nStates, Nq, 0.0 );
     double S           = 0.0;    // source, needs to be defined
@@ -316,11 +262,34 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
 
         y( 0, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
         // y( 3, k ) = -F / _epsilon;
-        for( unsigned i = 1; i < _nMoments; ++i ) y( 3, k ) = -uQ( 3, k ) / _epsilon;
-        y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
+        for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = -uQ( i, k ) / _epsilon;
+        y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) + 4.0 * dt * gamma * pow( uQ( _nMoments, k ), 4 ) ) / _epsilon;
+        // y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
     }
-
     return y;
+}
+
+void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+    unsigned nStates             = static_cast<unsigned>( uQ.rows() );
+    unsigned Nq                  = _settings->GetNqPEAtRef( level );
+    std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
+
+    Matrix y( nStates, Nq, 0.0 );
+
+    for( unsigned k = 0; k < qIndex.size(); ++k ) {
+        double E      = uQ( 0, k );
+        double eTilde = uQ( _nMoments, k );    // scaled internal energy
+        if( eTilde < 0 ) {
+            std::cout << "eTilde < 0 !!!!" << std::endl;
+            std::cout << "eTilde = " << eTilde << std::endl;
+            std::cout << "E = " << E << std::endl;
+        }
+        double dt    = _settings->GetDT();
+        double gamma = pow( _a * pow( _TRef, 3 ) / _cV, 4 );
+        for( unsigned i = 0; i < _nMoments; ++i ) uQNew( i, k ) = uQTilde( i, k );
+
+        uQNew( _nMoments, k ) = uQTilde( _nMoments, k ) / ( 1.0 + dt * dt * 4.0 * gamma * pow( uQ( _nMoments, k ), 3 ) );
+    }
 }
 
 double ThermalPN::ScaledInternalEnergy( double TTilde ) const {
@@ -357,8 +326,8 @@ Matrix ThermalPN::F( const Matrix& u ) {
 double ThermalPN::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     double cfl = _settings->GetCFL();
 
-    double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
-    // double maxVelocity = 1.0 / _epsilon;
+    // double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
+    double maxVelocity = 1.0 / _epsilon;
 
     return ( cfl * dx ) / maxVelocity;
 }
@@ -366,8 +335,13 @@ double ThermalPN::ComputeDt( const Matrix& u, double dx, unsigned level ) const 
 Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
     auto sigma = _settings->GetSigma();
-    double E, F, internalEnergy;
-    double T = 0;
+
+    double E = 1e-5 * _a * pow( _TRef, 4 );
+    double F = 0;
+    double T = 0.02 * 11604.0;
+    double internalEnergy;
+    bool radShock = false;
+    bool test2    = true;
 
     if( _suOlson ) {
         E = 0.0;    // std::fmax( 1e-4 * _a,
@@ -376,7 +350,7 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
         F              = 0;
         internalEnergy = 1e-7 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy - use 1e-3 without IPM
     }
-    else {
+    else if( radShock ) {
         double a = 0.275;
         double b = 0.1;
         if( xi.size() > 1 && false ) {
@@ -408,7 +382,21 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     if( !_suOlson ) y[0] = std::pow( T / _TRef, 4 );
     y[3]         = F / _a / pow( _TRef, 4 );
     y[_nMoments] = internalEnergy / ( _a * pow( _TRef, 4 ) );
-    // std::cout << y[2] << std::endl;
+
+    if( test2 ) {
+        y[3]         = F / _a / pow( _TRef, 4 );
+        y[_nMoments] = ScaledInternalEnergy( T / _TRef ) + ScaledInternalEnergy( 80.0 * 11604.0 / _TRef ) * exp( -pow( x[0] - 0.0, 2 ) / 1e-8 );
+        y[0]         = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
+    }
+
+    // std::cout << "Energy domain " << y[_nMoments] << std::endl;
+    /*
+        double dx = 0.025 / _settings->GetNumCells();
+        if( fabs( x[0] - _mesh->GetCell( _mesh->GetNumCells() - 1 )->GetCenter()[0] ) < 1e-5 ) {
+            std::cout << "Energy boundary " << ScaledInternalEnergy( 80.0 * 11604.0 / _TRef ) << std::endl;
+            y[_nMoments] = ScaledInternalEnergy( 80.0 * 11604.0 / _TRef );
+            std::cout << "-----------------------" << x[0] << std::endl;
+        }*/
     return y;
 }
 

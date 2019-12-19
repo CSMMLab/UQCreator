@@ -55,9 +55,10 @@ class ThermalPN : public Problem
     Matrix F( const Vector& u );
     Matrix F( const Matrix& u );
     virtual Matrix Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const;
+    virtual void SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const;
     virtual double ComputeDt( const Matrix& u, double dx, unsigned level ) const;
     virtual Vector IC( const Vector& x, const Vector& xi );
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
 };
 
-#endif // THERMALPN_H
+#endif    // THERMALPN_H
