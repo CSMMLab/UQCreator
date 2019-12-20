@@ -345,7 +345,10 @@ void MomentSolver::Source( MatVec& uQNew, const MatVec& uQ, double dt, double t,
         if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
         out        = _problem->Source( uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );    //  use uQ or uQNew?
         uQTilde[j] = uQNew[j] + dt * out;
-        if( _settings->HasImplicitSource() ) _problem->SourceImplicit( uQNew[j], uQTilde[j], uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );
+        if( _settings->HasImplicitSource() )
+            _problem->SourceImplicit( uQNew[j], uQTilde[j], uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );
+        else
+            uQNew[j] = uQTilde[j];
     }
 }
 

@@ -19,7 +19,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
     _settings->SetSource( true );
-    _settings->SetImplicitSource( true );
+    _settings->SetImplicitSource( false );
     _suOlson         = false;
     _constitutiveLaw = 2;    // 1 is Su Olson, 2 is constant
 
@@ -30,12 +30,13 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _sigma         = 1.0 / 92.6 / 1e-6 / 100.0;    // opacity
     _alpha         = 4.0 * _a;                     // closure relation
     double density = 2.7;
-    _cV            = 0.718 *
-          1e7;    // density * 0.831 * 1e-7;    // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]   density * 0.831 * 1e-7
+    _cV            = density * 0.831 * 1e-7;
+    //_cV            = 0.718 * 1e7;      // heat capacity. Air has cV = 0.718*1e7 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]   density * 0.831 * 1e-7
     double sigmaSB = 5.6704 * 1e-5;    // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
 
     if( !_suOlson ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
+    _TRef = 11604.0;
 
     _epsilon = 1.0 / _sigma;
 
@@ -75,11 +76,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _settings->SetRefinementThreshold( 1e-15 * _settings->GetRefinementThreshold() / ( _a * pow( _TRef, 4 ) ) );
     _settings->SetCoarsenThreshold( 1e-15 * _settings->GetCoarsenThreshold() / ( _a * pow( _TRef, 4 ) ) );
 
-    // std::cout << "Threshold " << _settings->GetRefinementThreshold() << " " << _settings->GetCoarsenThreshold() << std::endl;
     this->SetupSystemMatrices();
-    // std::cout << _AbsA << std::endl;
-
-    // std::cout << "A = " << _Az << std::endl;
 
     // compute Roe matrix
     cgeev( ( 1.0 / _epsilon ) * _Az, vl, vr, w );
@@ -87,8 +84,6 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
 
     _AbsA = vr * absW * vr.inv();
-
-    // exit( EXIT_FAILURE );
 }
 
 ThermalPN::~ThermalPN() {}
@@ -231,7 +226,6 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
     double dt                    = _settings->GetDT();
-    double gamma                 = pow( _a * pow( _TRef, 3 ) / _cV, 4 );
 
     Matrix y( nStates, Nq, 0.0 );
     double S           = 0.0;    // source, needs to be defined
@@ -248,26 +242,50 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
 
         double Q = S / _sigma / _a / std::pow( _TRef, 4 );
 
+        // compute conserved/primitive variables
         double E      = uQ( 0, k );
-        double F      = uQ( 3, k );
+        double eTilde = uQ( _nMoments, k );    // scaled internal energy
+        double TTilde = ScaledTemperature( eTilde );
+
+        // compute Fleck constant
+        double f  = 1.0 / ( 1.0 + 4.0 / _epsilon * pow( TTilde, 3 ) * dt / _cV );
+        double fE = 1.0 / ( 1.0 + dt * f / _epsilon );
+
+        // update radiation energy
+        y( 0, k )   = fE * ( E + ( std::pow( TTilde, 4 ) + Q ) * dt * f / _epsilon );
+        double ENew = y( 0, k );
+
+        // update moments
+        for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
+
+        // update energy
+        y( _nMoments, k ) = eTilde + dt * ( ENew - std::pow( TTilde, 4 ) ) * f / _epsilon;
+    }
+    return y;
+}
+/*
+void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+    unsigned nStates             = static_cast<unsigned>( uQ.rows() );
+    unsigned Nq                  = _settings->GetNqPEAtRef( level );
+    std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
+
+    Matrix y( nStates, Nq, 0.0 );
+
+    for( unsigned k = 0; k < qIndex.size(); ++k ) {
+        double E      = uQ( 0, k );
         double eTilde = uQ( _nMoments, k );    // scaled internal energy
         if( eTilde < 0 ) {
             std::cout << "eTilde < 0 !!!!" << std::endl;
             std::cout << "eTilde = " << eTilde << std::endl;
             std::cout << "E = " << E << std::endl;
-            std::cout << "F = " << F << std::endl;
         }
-        double TTilde = ScaledTemperature( eTilde );
-        // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
+        double dt    = _settings->GetDT();
+        double gamma = pow( _a * pow( _TRef, 3 ) / _cV, 4 );
+        for( unsigned i = 0; i < _nMoments; ++i ) uQNew( i, k ) = uQTilde( i, k );
 
-        y( 0, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
-        // y( 3, k ) = -F / _epsilon;
-        for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = -uQ( i, k ) / _epsilon;
-        y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) + 4.0 * dt * gamma * pow( uQ( _nMoments, k ), 4 ) ) / _epsilon;
-        // y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
+        uQNew( _nMoments, k ) = uQTilde( _nMoments, k ) / ( 1.0 + dt * dt * 4.0 * gamma * pow( uQ( _nMoments, k ), 3 ) );
     }
-    return y;
-}
+}*/
 
 void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );

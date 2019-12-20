@@ -214,6 +214,7 @@ Matrix ThermalPN2D::Source( const Matrix& uQ, const Vector& x, double t, unsigne
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
+    double dt                    = _settings->GetDT();
 
     Matrix y( nStates, Nq, 0.0 );
     double S           = 0.0;    // source, needs to be defined
@@ -230,19 +231,24 @@ Matrix ThermalPN2D::Source( const Matrix& uQ, const Vector& x, double t, unsigne
 
         double Q = S / _sigma / _a / std::pow( _TRef, 4 );
 
+        // compute conserved/primitive variables
         double E      = uQ( 0, k );
         double eTilde = uQ( _nMoments, k );    // scaled internal energy
-        if( eTilde < 0 ) {
-            // std::cout << "eTilde < 0 !!!!" << std::endl;
-            // std::cout << "eTilde = " << eTilde << std::endl;
-            // std::cout << "E = " << E << std::endl;
-        }
         double TTilde = ScaledTemperature( eTilde );
-        // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
 
-        y( 0, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
-        for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = -uQ( i, k ) / _epsilon;
-        y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
+        // compute Fleck constant
+        double f  = 1.0 / ( 1.0 + 4.0 / _epsilon * pow( TTilde, 3 ) * dt / _cV );
+        double fE = 1.0 / ( 1.0 + dt * f / _epsilon );
+
+        // update radiation energy
+        y( 0, k )   = fE * ( E + ( std::pow( TTilde, 4 ) + Q ) * dt * f / _epsilon );
+        double ENew = y( 0, k );
+
+        // update moments
+        for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = uQ( i, k ) * ( 1.0 + dt / _epsilon );
+
+        // update energy
+        y( _nMoments, k ) = eTilde + dt * ( ENew - std::pow( TTilde, 4 ) ) * f / _epsilon;
     }
 
     return y;
