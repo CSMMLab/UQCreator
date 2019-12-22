@@ -342,8 +342,8 @@ void MomentSolver::Source( MatVec& uQNew, const MatVec& uQ, double dt, double t,
                                         //#pragma omp parallel for
     auto uQTilde = uQNew;
     for( unsigned j = 0; j < _nCells; ++j ) {
-        if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
-        out        = _problem->Source( uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );    //  use uQ or uQNew?
+        // if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
+        out        = _problem->Source( uQNew[j], _mesh->GetCenterPos( j ), t, refLevel[j] );    //  use uQ or uQNew?
         uQTilde[j] = uQNew[j] + dt * out;
         if( _settings->HasImplicitSource() )
             _problem->SourceImplicit( uQNew[j], uQTilde[j], uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );

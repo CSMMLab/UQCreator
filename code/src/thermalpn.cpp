@@ -28,17 +28,18 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _a             = 7.5657 * 1e-15;               // radiation constant [erg/(cm^3 K^4)]
     _TRef          = 1.0;                          // reference temperature
     _sigma         = 1.0 / 92.6 / 1e-6 / 100.0;    // opacity
-    _alpha         = 4.0 * _a;                     // closure relation
+    _alpha         = 4.0 * _a;                     // closure relation, can be changed
     double density = 2.7;
     _cV            = density * 0.831 * 1e-7;
     //_cV            = 0.718 * 1e7;      // heat capacity. Air has cV = 0.718*1e7 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]   density * 0.831 * 1e-7
     double sigmaSB = 5.6704 * 1e-5;    // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
+    //_epsilon       = 4.0 * _a / _alpha;
+    _epsilon = 1.0 / _sigma;
 
     if( !_suOlson ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
     _TRef = 11604.0;
-
-    _epsilon = 1.0 / _sigma;
+    //_TRef = pow( _a, 1.0 / 4.0 );
 
     // compute xi Quadrature points
     Vector xiEta( _settings->GetNDimXi() );
@@ -227,6 +228,7 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
     double dt                    = _settings->GetDT();
     bool fullImplicit            = true;
+    bool expl                    = false;
 
     Matrix y( nStates, Nq, 0.0 );
     double S           = 0.0;    // source, needs to be defined
@@ -247,7 +249,13 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
         double E      = uQ( 0, k );
         double eTilde = uQ( _nMoments, k );    // scaled internal energy
 
-        if( fullImplicit ) {
+        if( expl ) {
+            double TTilde = ScaledTemperature( eTilde );
+            y( 0, k )     = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
+            for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = -uQ( i, k ) / _epsilon;
+            y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
+        }
+        else if( fullImplicit ) {
             Vector u( 2 );
             u[0]        = E;
             u[1]        = eTilde;
@@ -255,13 +263,20 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
             Vector out  = Newton( u, uOld );
 
             // update radiation energy
-            y( 0, k ) = out[0];
+            y( 0, k ) = ( out[0] - E ) / dt;
 
             // update moments
-            for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
+            for( unsigned i = 1; i < _nMoments; ++i ) {
+                y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
+                y( i, k ) = ( y( i, k ) - uQ( i, k ) ) / dt;
+            }
 
             // update energy
-            y( _nMoments, k ) = out[1];
+            y( _nMoments, k ) = ( out[1] - eTilde ) / dt;
+            if( fabs( x[0] - _mesh->GetCell( 1 )->GetCenter()[0] ) < 1e-7 && k == 0 ) {
+                // std::cout << "Source E = " << y( 0, k ) - E << std::endl;
+                // std::cout << "Source eTilde = " << y( _nMoments, k ) - eTilde << std::endl;
+            }
         }
         else {
             // compute conserved/primitive variables
@@ -274,12 +289,17 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
             // update radiation energy
             y( 0, k )   = fE * ( E + ( std::pow( TTilde, 4 ) + Q ) * dt * f / _epsilon );
             double ENew = y( 0, k );
+            y( 0, k )   = ( y( 0, k ) - E ) / dt;    // explicit source correction
 
             // update moments
-            for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
+            for( unsigned i = 1; i < _nMoments; ++i ) {
+                y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
+                y( i, k ) = ( y( i, k ) - uQ( i, k ) ) / dt;    // explicit source correction
+            }
 
             // update energy
             y( _nMoments, k ) = eTilde + dt * ( ENew - std::pow( TTilde, 4 ) ) * f / _epsilon;
+            y( _nMoments, k ) = ( y( _nMoments, k ) - eTilde ) / dt;    // explicit source correction
         }
     }
     return y;
@@ -423,19 +443,20 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     y[_nMoments] = internalEnergy / ( _a * pow( _TRef, 4 ) );
 
     if( test2 ) {
-        y[3]         = F / _a / pow( _TRef, 4 );
-        y[_nMoments] = ScaledInternalEnergy( T / _TRef ) + ScaledInternalEnergy( 80.0 * 11604.0 / _TRef ) * exp( -pow( x[0] - 0.0, 2 ) / 1e-8 );
-        y[0]         = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
+        y[3] = F / _a / pow( _TRef, 4 );
+        if( fabs( x[0] - _mesh->GetCenterPos( 0 )[0] ) < 1e-7 ) {
+            y[_nMoments] = ScaledInternalEnergy( 80.0 * 11604.0 / _TRef );
+            // std::cout << "Energy domain " << y[_nMoments] << std::endl;
+            // exit( EXIT_FAILURE );
+        }
+        else {
+            y[_nMoments] = ScaledInternalEnergy( 0.02 * 80.0 * 11604.0 / _TRef );
+        }
+        y[0] = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
     }
 
     // std::cout << "Energy domain " << y[_nMoments] << std::endl;
-    /*
-        double dx = 0.025 / _settings->GetNumCells();
-        if( fabs( x[0] - _mesh->GetCell( _mesh->GetNumCells() - 1 )->GetCenter()[0] ) < 1e-5 ) {
-            std::cout << "Energy boundary " << ScaledInternalEnergy( 80.0 * 11604.0 / _TRef ) << std::endl;
-            y[_nMoments] = ScaledInternalEnergy( 80.0 * 11604.0 / _TRef );
-            std::cout << "-----------------------" << x[0] << std::endl;
-        }*/
+
     return y;
 }
 
@@ -534,10 +555,10 @@ Matrix ThermalPN::DSF( const Vector& u ) const {
 
 Vector ThermalPN::Newton( Vector& u, const Vector& uOld ) const {
     // std::cout << "============" << std::endl;
-    int maxRefinements     = 100;
-    unsigned maxIterations = 100;
+    int maxRefinements     = 10000;
+    unsigned maxIterations = 10000;
     int ipiv[2];
-    double epsilon = 1e-5;
+    double epsilon = 1e-7;
 
     Matrix H( 2, 2 );
     Vector g( 2 );
