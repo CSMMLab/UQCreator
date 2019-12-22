@@ -226,6 +226,7 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
     double dt                    = _settings->GetDT();
+    bool fullImplicit            = true;
 
     Matrix y( nStates, Nq, 0.0 );
     double S           = 0.0;    // source, needs to be defined
@@ -245,21 +246,41 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
         // compute conserved/primitive variables
         double E      = uQ( 0, k );
         double eTilde = uQ( _nMoments, k );    // scaled internal energy
-        double TTilde = ScaledTemperature( eTilde );
 
-        // compute Fleck constant
-        double f  = 1.0 / ( 1.0 + 4.0 / _epsilon * pow( TTilde, 3 ) * dt / _cV );
-        double fE = 1.0 / ( 1.0 + dt * f / _epsilon );
+        if( fullImplicit ) {
+            Vector u( 2 );
+            u[0]        = E;
+            u[1]        = eTilde;
+            Vector uOld = u;
+            Vector out  = Newton( u, uOld );
 
-        // update radiation energy
-        y( 0, k )   = fE * ( E + ( std::pow( TTilde, 4 ) + Q ) * dt * f / _epsilon );
-        double ENew = y( 0, k );
+            // update radiation energy
+            y( 0, k ) = out[0];
 
-        // update moments
-        for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
+            // update moments
+            for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
 
-        // update energy
-        y( _nMoments, k ) = eTilde + dt * ( ENew - std::pow( TTilde, 4 ) ) * f / _epsilon;
+            // update energy
+            y( _nMoments, k ) = out[1];
+        }
+        else {
+            // compute conserved/primitive variables
+            double TTilde = ScaledTemperature( eTilde );
+
+            // compute Fleck constant
+            double f  = 1.0 / ( 1.0 + 4.0 / _epsilon * pow( TTilde, 3 ) * dt / _cV );
+            double fE = 1.0 / ( 1.0 + dt * f / _epsilon );
+
+            // update radiation energy
+            y( 0, k )   = fE * ( E + ( std::pow( TTilde, 4 ) + Q ) * dt * f / _epsilon );
+            double ENew = y( 0, k );
+
+            // update moments
+            for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
+
+            // update energy
+            y( _nMoments, k ) = eTilde + dt * ( ENew - std::pow( TTilde, 4 ) ) * f / _epsilon;
+        }
     }
     return y;
 }
@@ -484,3 +505,78 @@ int ThermalPN::Sgn( int k ) const {
 int ThermalPN::kPlus( int k ) const { return k + Sgn( k ); }
 
 int ThermalPN::kMinus( int k ) const { return k - Sgn( k ); }
+
+Vector ThermalPN::SF( const Vector& u, const Vector& uOld ) const {
+    Vector y( 2 );
+    double E     = u[0];
+    double e     = u[1];
+    double EOld  = uOld[0];
+    double eOld  = uOld[1];
+    double dt    = _settings->GetDT();
+    double alpha = pow( _a * pow( _TRef, 3 ) / _cV, 4 );
+    y[0]         = E - dt / _epsilon * ( alpha * pow( e, 4 ) - E ) - EOld;
+    y[1]         = e - dt / _epsilon * ( E - alpha * pow( e, 4 ) ) - eOld;
+    return y;
+}
+
+Matrix ThermalPN::DSF( const Vector& u ) const {
+    Matrix y( 2, 2 );
+    double E     = u[0];
+    double e     = u[1];
+    double dt    = _settings->GetDT();
+    double alpha = pow( _a * pow( _TRef, 3 ) / _cV, 4 );
+    y( 0, 0 )    = 1.0 + dt / _epsilon;
+    y( 0, 1 )    = -dt / _epsilon * alpha * 4.0 * pow( e, 3 );
+    y( 1, 0 )    = -dt / _epsilon;
+    y( 1, 1 )    = 1.0 + dt / _epsilon * alpha * 4.0 * pow( e, 3 );
+    return y;
+}
+
+Vector ThermalPN::Newton( Vector& u, const Vector& uOld ) const {
+    // std::cout << "============" << std::endl;
+    int maxRefinements     = 100;
+    unsigned maxIterations = 100;
+    int ipiv[2];
+    double epsilon = 1e-5;
+
+    Matrix H( 2, 2 );
+    Vector g( 2 );
+    Vector gNew( 2 );
+    Vector uNew( 2 );
+    Vector gSave( 2 );
+
+    Vector dlambda = -g;
+
+    // perform Newton iterations
+    for( unsigned l = 0; l < maxIterations; ++l ) {
+        double stepSize = 1.0;
+        g               = SF( u, uOld );
+        gSave           = g;
+        H               = DSF( u );
+        gesv( H, g, ipiv );
+        uNew                  = u - stepSize * g;
+        gNew                  = SF( uNew, uOld );
+        int refinementCounter = 0;
+        // std::cout << "Res " << norm( g ) << std::endl;
+        // std::cout << "ResNew " << norm( gNew ) << std::endl;
+        while( norm( gSave ) < norm( gNew ) || !std::isfinite( norm( gNew ) ) ) {
+            stepSize *= 0.5;
+            uNew = u - stepSize * g;
+            gNew = SF( uNew, uOld );
+            // std::cout << "-> ResNew " << norm( gNew ) << std::endl;
+            if( norm( gNew ) < epsilon ) {
+                return uNew;
+            }
+            else if( ++refinementCounter > maxRefinements ) {
+                _log->error( "[ThermalPN] Newton needed too many refinement steps!" );
+                exit( EXIT_FAILURE );
+            }
+        }
+        if( norm( gNew ) < epsilon ) {
+            return uNew;
+        }
+        u = uNew;
+    }
+    _log->error( "[closure] Newton did not converge!" );
+    exit( EXIT_FAILURE );
+}

@@ -47,6 +47,11 @@ class ThermalPN : public Problem
     int kPlus( int k ) const;
     int kMinus( int k ) const;
 
+    // implicit source terms
+    Vector SF( const Vector& u, const Vector& uOld ) const;
+    Matrix DSF( const Vector& u ) const;
+    Vector Newton( Vector& u, const Vector& uOld ) const;
+
   public:
     ThermalPN( Settings* settings );
     virtual ~ThermalPN();
