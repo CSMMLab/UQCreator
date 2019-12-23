@@ -14,7 +14,6 @@ class ThermalPN : public Problem
     double _TRef;
     double _sigma;
     double _alpha;
-    bool _suOlson;
     unsigned _constitutiveLaw;
     Matrix _AbsA;
     std::vector<Vector> _xiQuad;
@@ -29,6 +28,8 @@ class ThermalPN : public Problem
     Matrix _Az;
     unsigned _nMoments;    // number of radiative moments
     unsigned _N;
+
+    unsigned _testCase;
 
     // parameter functions for setting up system matrix
     double AParam( int l, int k ) const;

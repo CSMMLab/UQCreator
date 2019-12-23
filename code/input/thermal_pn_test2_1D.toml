@@ -1,26 +1,26 @@
 [general]
 problem = "ThermalPN"
 outputDir = "../results/thermal/gif"
-writeFrequency = 20
+writeFrequency = 10000
 #restartFile = "../input/restart_rad_hydro_Ma4"
 
 [mesh]
 dimension = 1
-numberOfCells = 500
+numberOfCells = 100000
 a = 0.0
 #b = 0.025
 b = 2.6997840172786187
 # b = 1.0/92.6/1e-6 / 100 * 0.025
-outputFile = "ThermalRadiativeTransferRadiatingShock"
+outputFile = "ThermalRadiativeTransferRadiatingShockFiner"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.0]]
-CFL = 0.00001# 0.1
+CFL = 1.0# 0.1
 #tEnd = 14.4499
-tEnd = 0.05
+tEnd = 0.01
 #tEnd = 156155.50755939528
 nPNMoments = 1
 
@@ -28,7 +28,7 @@ nPNMoments = 1
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics, M1, ThermalRadiation
 closure = "StochasticGalerkin"
 moments = [["totalDegree"],[1]]
-quadPoints = [["tensorizedGrid"],[2]]
+quadPoints = [["tensorizedGrid"],[1]]
 #refinementThresholds = [0.1,0.001]
 maxIterations = 1
 epsilon = 1e-7
