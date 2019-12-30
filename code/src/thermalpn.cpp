@@ -24,6 +24,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _testCase        = 1;    // 0 is Su Olson, 1 is test1, 2 is radShock
 
     // physical constants
+    _kB            = 1.38064852e-16;               // Boltzmann's constant [cm^2 g / (s^2 K)]
     _c             = 299792458.0 * 100.0;          // speed of light in [cm/s]
     _a             = 7.5657 * 1e-15;               // radiation constant [erg/(cm^3 K^4)]
     _TRef          = 1.0;                          // reference temperature
@@ -34,7 +35,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     if( _testCase == 1 ) {
         double density = 2.7;
         _cV            = density * 0.831 * 1e-7;    // heat capacity: [kJ/(kg K)] = [1000 m^2 / s^2 / K] therefore density * 0.831 * 1e-7
-        _cV            = density * 0.831 * 1e3;
+        //_cV            = density * 0.831 * 1e3;
     }
     else if( _testCase == 2 ) {
         //_cV = 0.718 * 1e7;
@@ -49,7 +50,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     }
     if( _testCase == 1 ) {
         _epsilon = 1.0 / _sigma;
-        _TRef    = 11604.0;
+        _TRef    = 80.0 * 11604.0;
     }
     //_TRef = pow( _a, 1.0 / 4.0 );
 
@@ -285,9 +286,13 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
 
             // update energy
             y( _nMoments, k ) = ( out[1] - eTilde ) / dt;
-            if( fabs( x[0] - _mesh->GetCell( 1 )->GetCenter()[0] ) < 1e-7 && k == 0 ) {
+
+            // keep fixed energy at boundary cell
+            if( fabs( x[0] - _mesh->GetCell( 0 )->GetCenter()[0] ) < 1e-7 ) {
+                y( _nMoments, k ) = 0.0;
                 // std::cout << "Source E = " << y( 0, k ) - E << std::endl;
-                // std::cout << "Source eTilde = " << y( _nMoments, k ) - eTilde << std::endl;
+                // std::cout << "Source E = " << y( 0, k ) << std::endl;
+                // std::cout << "E = " << E << std::endl;
             }
         }
         else {
@@ -462,7 +467,7 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
         else {
             y[_nMoments] = ScaledInternalEnergy( 0.02 * 80.0 * 11604.0 / _TRef );
         }
-        y[0] = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
+        y[0] = 0.0;    // std::pow( ScaledTemperature( y[_nMoments] ), 4 );
     }
 
     // std::cout << "Energy domain " << y[_nMoments] << std::endl;

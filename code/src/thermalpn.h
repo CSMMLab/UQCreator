@@ -8,6 +8,7 @@ class ThermalPN : public Problem
 {
   private:
     double _epsilon;
+    double _kB;
     double _c;
     double _cV;
     double _a;

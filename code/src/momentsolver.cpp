@@ -92,7 +92,7 @@ void MomentSolver::Solve() {
         // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
-            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
+            if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 && !_settings->HasSource() ) continue;
             // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
             _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
             // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
@@ -349,6 +349,10 @@ void MomentSolver::Source( MatVec& uQNew, const MatVec& uQ, double dt, double t,
             _problem->SourceImplicit( uQNew[j], uQTilde[j], uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );
         else
             uQNew[j] = uQTilde[j];
+        if( j == 0 ) {
+            // std::cout << "E = " << uQNew[j] << std::endl;
+            // std::cout << "Source = " << dt * out << std::endl;
+        }
     }
 }
 

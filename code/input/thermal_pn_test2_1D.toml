@@ -1,17 +1,17 @@
 [general]
 problem = "ThermalPN"
 outputDir = "../results/thermal/gif"
-writeFrequency = 10000
+writeFrequency = 20000
 #restartFile = "../input/restart_rad_hydro_Ma4"
 
 [mesh]
 dimension = 1
-numberOfCells = 100000
+numberOfCells = 100
 a = 0.0
 #b = 0.025
 b = 2.6997840172786187
 # b = 1.0/92.6/1e-6 / 100 * 0.025
-outputFile = "ThermalRadiativeTransferRadiatingShockFiner"
+outputFile = "ThermalRadiativeTransferRadiatingShock"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -20,7 +20,8 @@ timestepping = "explicitEuler"
 distribution = [["Legendre"],[0.0]]
 CFL = 1.0# 0.1
 #tEnd = 14.4499
-tEnd = 0.01
+#tEnd = 0.01
+tEnd = 100
 #tEnd = 156155.50755939528
 nPNMoments = 1
 
