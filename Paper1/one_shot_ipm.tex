@@ -45,7 +45,7 @@ We call this method One-Shot IPM, since it is inspired by One-Shot optimization,
 
 In the following, we will show that this iteration converges, if the chosen initial condition is sufficiently close to the steady state solution. For this we take an approach commonly chosen to prove local convergence properties of Newton's method: In Theorem \ref{th:Contractive}, we show that the iteration function is contractive at its fixed point and conclude in Theorem \ref{th:localConvergence} that this yields local convergence. Hence, we preserve the convergence property of the original IPM method, which uses Newton's method and therefore only converges locally as well.
 \begin{theorem}\label{th:Contractive}
-Assume that the classical IPM iteration is contractive at its fixed point $\bm{\hat u}^*$. Then the Jacobi matrix $\bm{J}$ of the One-Shot IPM iteration \eqref{eq:oneshotIPM} has a spectral radius $\rho(\bm{J})<1$ at the fixed point $(\bm{\lambda}^*,\bm{\hat u}^*)$.
+Assume that the classical IPM iteration is contractive at its fixed point $\bm{\hat u}^*$. Then the Jacobian $\bm{J}$ of the One-Shot IPM iteration \eqref{eq:oneshotIPM} has a spectral radius $\rho(\bm{J})<1$ at the fixed point $(\bm{\lambda}^*,\bm{\hat u}^*)$.
 \end{theorem}
 \begin{proof}
 First, to understand what contraction of the classical IPM iteration implies, we rewrite the moment iteration \eqref{eq:momentIteration} of the classical IPM scheme: When defining the update function
