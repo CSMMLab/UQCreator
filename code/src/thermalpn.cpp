@@ -25,16 +25,17 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
 
     // physical constants
     _kB            = 1.38064852e-16;               // Boltzmann's constant [cm^2 g / (s^2 K)]
+    _sigmaSB       = 5.6704 * 1e-5;                // Stefan-Boltzmann constant [erg⋅cm−2⋅s−1⋅K−4]
     _c             = 299792458.0 * 100.0;          // speed of light in [cm/s]
     _a             = 7.5657 * 1e-15;               // radiation constant [erg/(cm^3 K^4)]
     _TRef          = 1.0;                          // reference temperature
-    _sigma         = 1.0 / 92.6 / 1e-6 / 100.0;    // opacity
+    _sigma         = 1.0 / 9.26 / 1e-6 / 100.0;    // opacity old: 1.0 / 92.6 / 1e-6 / 100.0
     _alpha         = 4.0 * _a;                     // closure relation, can be changed
     double sigmaSB = 5.6704 * 1e-5;                // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
+    double density = 2.7;
     if( _testCase == 1 ) {
-        double density = 2.7;
-        _cV            = density * 0.831 * 1e-7;    // heat capacity: [kJ/(kg K)] = [1000 m^2 / s^2 / K] therefore density * 0.831 * 1e-7
+        _cV = density * 0.831 * 1e7;    // heat capacity: [kJ/(kg K)] = [1000 m^2 / s^2 / K] therefore density * 0.831 * 1e7
         //_cV            = density * 0.831 * 1e3;
     }
     else if( _testCase == 2 ) {
@@ -49,6 +50,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
         if( _testCase == 2 ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
     }
     if( _testCase == 1 ) {
+        //_sigma   = 4000.0 * density;
         _epsilon = 1.0 / _sigma;
         _TRef    = 80.0 * 11604.0;
     }
@@ -402,8 +404,8 @@ Matrix ThermalPN::F( const Matrix& u ) {
 double ThermalPN::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
     double cfl = _settings->GetCFL();
 
-    // double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
-    double maxVelocity = 1.0 / _epsilon;
+    double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
+    // double maxVelocity = 1.0 / _epsilon;
 
     return ( cfl * dx ) / maxVelocity;
 }
@@ -461,17 +463,18 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
         y[3] = F / _a / pow( _TRef, 4 );
         if( fabs( x[0] - _mesh->GetCenterPos( 0 )[0] ) < 1e-7 ) {
             y[_nMoments] = ScaledInternalEnergy( 80.0 * 11604.0 / _TRef );
-            // std::cout << "Energy domain " << y[_nMoments] << std::endl;
-            // exit( EXIT_FAILURE );
         }
         else {
             y[_nMoments] = ScaledInternalEnergy( 0.02 * 80.0 * 11604.0 / _TRef );
         }
-        y[0] = 0.0;    // std::pow( ScaledTemperature( y[_nMoments] ), 4 );
+        // y[0] = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
+        y[0] = 0.0;
     }
 
-    // std::cout << "Energy domain " << y[_nMoments] << std::endl;
-
+    // double t = 48.2 * 1e-9;
+    // double t = 1e-9 / 8.0;
+    // std::cout << "x(t) = " << sqrt( 4.0 * _sigmaSB * pow( 80.0 * 11604.0, 3 ) * 92.6 * 1e-4 * t / ( 2.28 * _cV ) ) << std::endl;
+    // exit( EXIT_FAILURE );
     return y;
 }
 

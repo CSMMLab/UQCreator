@@ -9,6 +9,7 @@ class ThermalPN : public Problem
   private:
     double _epsilon;
     double _kB;
+    double _sigmaSB;
     double _c;
     double _cV;
     double _a;
