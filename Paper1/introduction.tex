@@ -17,7 +17,7 @@ A steady problem provides different opportunities to take advantage of features 
 \item Perform an inexact map from the moments to the entropic expansion coefficients for IPM: Since the moments during the iteration process are inaccurate, i.e. they are not the correct steady state solution, we propose to not fully converge the dual iteration, which solves the IPM optimization problem. Consequently, the entropic expansion coefficients and the moments are converged simultaneously to their steady state, which is similar to the idea of One-Shot optimization in shape optimization \cite{hazra2005aerodynamic}.
 \end{itemize}
 
-The effectiveness of these acceleration ideas are tested by comparing results with Stochastic Collocation for the uncertain NACA test case as well as a bent shock tube problem. Our numerical studies show the following main results:
+The effectiveness of these acceleration ideas are tested by comparing results with Stochastic Collocation for the NACA test case \cite{jacobs1933characteristics} with uncertainties as well as a bent shock tube problem. Our numerical studies show the following main results:
 \begin{itemize}
 \item In our test cases, the need to solve an optimization problem when using the IPM method leads to a significantly higher run time than SC and SG. However when using the discussed acceleration techniques, IPM requires the shortest time to reach a given accuracy.
 \item Comparing SG with IPM, one observes that for the same number of unknowns, SG yields more accurate expectation values, whereas IPM shows improved variance approximations.
