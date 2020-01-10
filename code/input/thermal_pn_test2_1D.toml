@@ -6,7 +6,7 @@ writeFrequency = 50000
 
 [mesh]
 dimension = 1
-numberOfCells = 1000
+numberOfCells = 200
 a = 0.0
 b = 26.997840172786184
 # b = 1.0/9.26/1e-6 / 100 * 0.025
@@ -14,15 +14,15 @@ b = 26.997840172786184
 # b = 1.0/92.6/1e-6 / 100 * 0.025 original choice
 #b = 10.799136069114475
 # b = 1.0/92.6/1e-6 / 100 * 0.1 corrected choice due to error in paper
-outputFile = "ThermalRadiativeTransferRadiatingShockNx1000"
+outputFile = "ThermalRadiativeTransferRadiatingShock"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.0]]
-CFL = 1.0# 0.1
-tEnd = 40.0
+CFL = 0.1# 0.1
+tEnd = 1.5604747813822897e6 # epsilon = 0
 #tEnd = 1444.99964756299792458
 # tEnd = 48.2 * 1e-9 * 299792458.0 * 100.0 
 #tEnd = 4.796679328
