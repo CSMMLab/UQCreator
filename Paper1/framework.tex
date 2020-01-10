@@ -59,7 +59,7 @@ where $\bm H\in\mathbb{R}^{N \cdot m\times N\cdot m}$ is the Hessian of \eqref{e
 %\end{align*}
 The function $\bm d$ will in the following be called dual iteration function. Now, the Newton iteration $l$ for spatial cell $j$ is given by
 \begin{align}\label{eq:dualIteration1}
-\bm{\lambda}^{(l+1)}_j = \bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}_j}).
+\bm{\lambda}^{(l+1)}_j = \bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}}_j).
 \end{align}
 The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)=\lim_{l\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}}_j^n)$.
 To obtain a finite number of iterations for the iteration in cell $j$, the stopping criterion 
