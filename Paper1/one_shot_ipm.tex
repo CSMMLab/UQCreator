@@ -20,8 +20,8 @@ In this section we aim at breaking up the inner loop in the IPM Algorithm \ref{a
 By successively performing one update of the moment iteration and one update of the dual iteration, we obtain 
 \begin{subequations}\label{eq:oneshotIPM}
 \begin{align}
-&\bm{\lambda}_{j}^{n+1} =  \bm{d}(\bm{\lambda}_j^{n},\bm{u}_j^{n}) \enskip \text{ for all j} \label{eq:oneshotIPMdual}\\
-&\bm{u}_j^{n+1} =  \bm{c}\left(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_{j}^{n+1},\bm{\lambda}_{j+1}^{n+1}\right)\label{eq:oneshotIPMmoment}.
+&\bm{\lambda}_{j}^{n+1} =  \bm{d}(\bm{\lambda}_j^{n},\bm{u}_j^{n}) \enskip \text{ for all }j \label{eq:oneshotIPMdual}\\
+&\bm{u}_j^{n+1} =  \bm{c}\left(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_{j}^{n+1},\bm{\lambda}_{j+1}^{n+1}\right) \enskip \text{ for all }j \label{eq:oneshotIPMmoment}.
 \end{align}
 \end{subequations}
 This yields Algorithm \ref{alg:osIPM}.
@@ -33,6 +33,8 @@ This yields Algorithm \ref{alg:osIPM}.
 \While{\eqref{eq:residualSteady} is violated}
 \For{$j=1$ to $N_x$}
 \State $\bm{\lambda}_j^{n+1} \leftarrow \bm{d}(\bm{\lambda}_{j}^{n};\bm{\hat u}_j^{n})$
+\EndFor
+\For{$j=1$ to $N_x$}
 \State $\bm{\hat u}_j^{n+1} \leftarrow \bm{c}(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_j^{n+1},\bm{\lambda}_{j+1}^{n+1})$
 \EndFor
 \State $n \leftarrow n+1$
