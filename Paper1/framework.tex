@@ -43,7 +43,7 @@ L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle_Q 
 \end{align}
 needs to be minimized. Hence, one needs to find the root of
 \begin{align*}
-\nabla_{\bm{\lambda_i}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}_i = \langle \bm u_s(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}_i,
+\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u} = \langle \bm u_s(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u},
 \end{align*}
 where we used $\nabla s_* \equiv \bm u_s$. The root is usually determined by using Newton's method. For simplicity, let us define the full gradient of the Lagrangian to be $\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}})\in\mathbb{R}^{N\cdot m}$, i.e. we store all entries in a vector. Newton's method uses the iteration function $\bm{d}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$,
 \begin{align}\label{eq:dualIterationFunction}
