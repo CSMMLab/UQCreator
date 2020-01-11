@@ -60,7 +60,7 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
 
         if( cell->IsBoundaryCell() ) {
             if( cell->GetBoundaryType() == BoundaryType::DIRICHLET ) {
-                uNew[j] = u[j];
+                uNew[j] = uQ[j];
                 continue;
             }
         }

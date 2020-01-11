@@ -338,21 +338,18 @@ void MomentSolver::Solve() {
 }
 
 void MomentSolver::Source( MatVec& uQNew, const MatVec& uQ, double dt, double t, const VectorU& refLevel ) const {
-    Matrix out( _nStates, _nTotal );    // could also be allocated before and then stored in class, be careful with openmp!!!
-                                        //#pragma omp parallel for
+    //#pragma omp parallel for
     auto uQTilde = uQNew;
+
     for( unsigned j = 0; j < _nCells; ++j ) {
-        // if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
-        out        = _problem->Source( uQNew[j], _mesh->GetCenterPos( j ), t, refLevel[j] );    //  use uQ or uQNew?
-        uQTilde[j] = uQNew[j] + dt * out;
-        if( _settings->HasImplicitSource() )
-            _problem->SourceImplicit( uQNew[j], uQTilde[j], uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );
-        else
-            uQNew[j] = uQTilde[j];
-        if( j == 0 ) {
-            // std::cout << "E = " << uQNew[j] << std::endl;
-            // std::cout << "Source = " << dt * out << std::endl;
-        }
+        if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
+        Matrix out = _problem->Source( uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );    //  use uQ or uQNew?
+        // std::cout << out << std::endl;
+        // exit( EXIT_FAILURE );
+        // std::cout << uQNew[j] << std::endl;
+        uQNew[j] = uQNew[j] + dt * out;
+        // std::cout << uQNew[j] << std::endl;
+        // std::cout << "----------------------------" << std::endl;
     }
 }
 
