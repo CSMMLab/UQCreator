@@ -1,0 +1,78 @@
+ %% start of file `template.tex'.
+%% Copyright 2006-2013 Xavier Danaux (xdanaux@gmail.com).
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License version 1.3c,
+% available at http://www.latex-project.org/lppl/.
+%Version for spanish users, by dgarhdez
+
+\documentclass[11pt,a4paper,roman]{moderncv}        % possible options include font size ('10pt', '11pt' and '12pt'), paper size ('a4paper', 'letterpaper', 'a5paper', 'legalpaper', 'executivepaper' and 'landscape') and font family ('sans' and 'roman')
+\usepackage[english]{babel}
+
+
+% moderncv themes
+\moderncvstyle{classic}                            % style options are 'casual' (default), 'classic', 'oldstyle' and 'banking'
+\moderncvcolor{blue}                              % color options 'blue' (default), 'orange', 'green', 'red', 'purple', 'grey' and 'black'
+%\renewcommand{\familydefault}{\sfdefault}         % to set the default font; use '\sfdefault' for the default sans serif font, '\rmdefault' for the default roman one, or any tex font name
+%\nopagenumbers{}                                  % uncomment to suppress automatic page numbering for CVs longer than one page
+
+% character encoding
+\usepackage[utf8]{inputenc}                       % if you are not using xelatex ou lualatex, replace by the encoding you are using
+%\usepackage{CJKutf8}                              % if you need to use CJK to typeset your resume in Chinese, Japanese or Korean
+
+% adjust the page margins
+\usepackage[scale=0.75]{geometry}
+%\setlength{\hintscolumnwidth}{3cm}                % if you want to change the width of the column with the dates
+%\setlength{\makecvtitlenamewidth}{10cm}           % for the 'classic' style, if you want to force the width allocated to your name and avoid line breaks. be careful though, the length is normally calculated to avoid any overlap with your personal info; use this at your own typographical risks...
+
+% personal data
+\name{}{Jonas Kusch}
+\title{Cover letter}                               % optional, remove / comment the line if not wanted
+\address{Karlsruhe Institute of Technology}{}{Karlsruhe, Germany}% optional, remove / comment the line if not wanted; the "postcode city" and and "country" arguments can be omitted or provided empty
+%\phone[mobile]{000-000-000-000}                   % optional, remove / comment the line if not wanted
+%\phone[fixed]{+2~(345)~678~901}                    % optional, remove / comment the line if not wanted
+%\phone[fax]{+3~(456)~789~012}                      % optional, remove / comment the line if not wanted
+\email{jonas.kusch@kit.edu}                               % optional, remove / comment the line if not wanted
+%\homepage{www.johndoe.com}                         % optional, remove / comment the line if not wanted
+%\extrainfo{additional information}                 % optional, remove / comment the line if not wanted
+%\photo[64pt][0.4pt]{picture}                       % optional, remove / comment the line if not wanted; '64pt' is the height the picture must be resized to, 0.4pt is the thickness of the frame around it (put it to 0pt for no frame) and 'picture' is the name of the picture file
+%\quote{Some quote}                                 % optional, remove / comment the line if not wanted
+
+% to show numerical labels in the bibliography (default is to show no labels); only useful if you make citations in your resume
+%\makeatletter
+%\renewcommand*{\bibliographyitemlabel}{\@biblabel{\arabic{enumiv}}}
+%\makeatother
+%\renewcommand*{\bibliographyitemlabel}{[\arabic{enumiv}]}% CONSIDER REPLACING THE ABOVE BY THIS
+
+% bibliography with mutiple entries
+%\usepackage{multibib}
+%\newcites{book,misc}{{Books},{Others}}
+%----------------------------------------------------------------------------------
+%            content
+%----------------------------------------------------------------------------------
+\begin{document}
+%-----       letter       ---------------------------------------------------------
+% recipient data
+\recipient{~}{}
+\date{\today}
+\opening{Dear Editors,}
+\closing{Yours sincerely, \\ (on behalf of the authors)}
+\makelettertitle
+
+I am sending you our research article entitled \textit{"Intrusive acceleration strategies for Uncertainty Quantification for hyperbolic systems of conservation laws"}. Uncertainty Quantification for hyperbolic problems becomes a challenging task, especially when the solution shows shocks in the random space. To enable the use of adaptivity, we use intrusive methods, which provide a set of equations describing the time evolution of the polynomial chaos (PC) coefficients. The Intrusive Polynomial Moment (IPM) method possesses a large number of desirable quantities that are violated by standard intrusive methods such as stochastic-Galerkin. However, the IPM system requires solving a convex optimization problem which computes the entropy variables corresponding to a given set of PC coefficients. This optimization problem needs to be solved in every spatial cell in each time step, yielding high computational costs.
+
+In our paper, we propose different methods to accelerate the IPM algorithm. First, we introduce a framework using adaptivity in the random space, which allows refining the solution in spatial cells that show shocks or complex structures in the uncertain domain. Furthermore, to accelerate the IPM optimization problem for steady problems, we propose to not solve the IPM optimization problem exactly. Thereby, we converge the entropy variables and PC coefficients to their steady state simultaneously, which significantly speeds up the calculation. We can show that the proposed method has local convergence, which is the same convergence result as provided by the standard IPM algorithm. The effectiveness of the proposed methods is shown by studying an uncertain NACA0012 as well as a pipe test case for uncertainties up to dimension three. The results are compared with Stochastic Collocation methods, showing that the use of the proposed acceleration techniques enables intrusive methods to compete with non-intrusive methods. 
+
+The presented theoretical findings and numerical methods could have a considerable impact on the uncertainty quantification community. While non-intrusive techniques are gaining popularity, we believe that the proposed adaptive algorithm makes IPM (and intrusive methods in general) an important tool to quantify uncertainties for hyperbolic problems, which often show uncertain shocks in small portions of the spatial domain. A further novelty of this paper is the IPM code, which can be run for two dimensional domains and high-dimensional uncertainties. The code is made publicly available to guarantee reproducibility of the presented results.
+
+We confirm that this manuscript has not been published elsewhere and is not under consideration by another journal. All authors have approved the manuscript and agree with its submission to the "Methods and Algorithms for Scientific Computing" category of the SIAM Journal on Scientific Computing.
+
+\vspace{0.5cm}
+
+
+\makeletterclosing
+
+\end{document}
+
+
+%% end of file `template.tex'.
