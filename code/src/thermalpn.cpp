@@ -29,7 +29,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _c             = 299792458.0 * 100.0;          // speed of light in [cm/s]
     _a             = 7.5657 * 1e-15;               // radiation constant [erg/(cm^3 K^4)]
     _TRef          = 1.0;                          // reference temperature
-    _sigma         = 1.0 / 9.26 / 1e-6 / 100.0;    // opacity old: 1.0 / 92.6 / 1e-6 / 100.0
+    _sigma         = 1.0 / 92.6 / 1e-6 / 100.0;    // opacity old: 1.0 / 92.6 / 1e-6 / 100.0
     _alpha         = 4.0 * _a;                     // closure relation, can be changed
     double sigmaSB = 5.6704 * 1e-5;                // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
@@ -50,7 +50,6 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
         if( _testCase == 2 ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
     }
     if( _testCase == 1 ) {
-        //_sigma   = 4000.0 * density;
         _epsilon = 1.0 / _sigma;
         _TRef    = 80.0 * 11604.0;
     }
@@ -242,8 +241,8 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
     double dt                    = _settings->GetDT();
-    bool fullImplicit            = true;
-    bool expl                    = false;
+    bool fullImplicit            = false;
+    bool expl                    = true;
 
     Matrix y( nStates, Nq, 0.0 );
     double S           = 0.0;    // source, needs to be defined
@@ -412,7 +411,9 @@ double ThermalPN::ComputeDt( const Matrix& u, double dx, unsigned level ) const 
 
 Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
-    auto sigma = _settings->GetSigma();
+    auto sigma     = _settings->GetSigma();
+    double sigmaXi = 0.0;
+    if( sigma.size() > 0 ) sigmaXi = sigma[0] * xi[0];
 
     double E = 1e-5 * _a * pow( _TRef, 4 );
     double F = 0;
@@ -462,13 +463,13 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     if( _testCase == 1 ) {
         y[3] = F / _a / pow( _TRef, 4 );
         if( fabs( x[0] - _mesh->GetCenterPos( 0 )[0] ) < 1e-7 ) {
-            y[_nMoments] = ScaledInternalEnergy( 80.0 * 11604.0 / _TRef );
+            y[_nMoments] = ScaledInternalEnergy( ( 80.0 + sigmaXi ) * 11604.0 / _TRef );
         }
         else {
-            y[_nMoments] = ScaledInternalEnergy( 0.02 * 80.0 * 11604.0 / _TRef );
+            y[_nMoments] = ScaledInternalEnergy( 0.02 * 11604.0 / _TRef );
         }
-        // y[0] = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
-        y[0] = 0.0;
+        y[0] = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
+        // y[0] = 0.0;
     }
 
     // double t = 48.2 * 1e-9;
