@@ -6,7 +6,7 @@ writeFrequency = 10000
 
 [mesh]
 dimension = 1
-numberOfCells = 200
+numberOfCells = 500
 a = 0.0
 #b = 64.79481641468684
 # b = 1.0/9.26/1e-6 / 100 * 0.06 choice Ryan for lambda = 9.26*1e-6
@@ -24,7 +24,7 @@ outputFile = "ThermalRadiativeTransferRadiatingShock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Hermite"],[1.0]]
+distribution = [["Legendre"],[1.0]]
 CFL = 1.0# 0.1
 #tEnd = 1.5604747813822897e6 # epsilon = 0
 tEnd = 1444.99964756299792458
@@ -37,7 +37,7 @@ nPNMoments = 1
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics, M1, ThermalRadiation
 closure = "StochasticGalerkin"
-moments = [["totalDegree"],[4]]
+moments = [["totalDegree"],[5]]
 quadPoints = [["tensorizedGrid"],[10]]
 #refinementThresholds = [0.1,0.001]
 maxIterations = 1

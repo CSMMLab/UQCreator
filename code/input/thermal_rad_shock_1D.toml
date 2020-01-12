@@ -15,7 +15,7 @@ outputFile = "ThermalRadiativeTransferRadiatingShock"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.0]]
+distribution = [["Legendre"],[0.1]]
 CFL = 0.9# 0.1
 tEnd = 1.0
 
@@ -23,7 +23,7 @@ tEnd = 1.0
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics, M1, ThermalRadiation
 closure = "StochasticGalerkin"
 moments = [["totalDegree"],[1]]
-quadPoints = [["tensorizedGrid"],[2]]
+quadPoints = [["tensorizedGrid"],[10]]
 #refinementThresholds = [0.1,0.001]
 maxIterations = 1
 epsilon = 1e-7

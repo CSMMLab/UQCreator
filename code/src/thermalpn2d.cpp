@@ -21,24 +21,38 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     _settings->SetSource( true );
     _suOlson         = false;
     _constitutiveLaw = 2;    // 1 is Su Olson, 2 is constant
-
-    // J = kg*m^2 / s^2 = 1e7 * g *  cm / s^2
-    // _cV in [1e7 * cm / s^2 / K]
+    _testCase        = 1;
 
     // physical constants
-    _c             = 299792458.0 * 100.0;    // speed of light in [cm/s]
-    _a             = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
-    _TRef          = 1.0;                    // reference temperature
-    _sigma         = 1.0;                    // opacity
-    _alpha         = 4.0 * _a;               // closure relation
-    double density = 2.7;
-    _cV            = density * 0.831 * 1e-7;    // heat capacity. Air has cV = 0.718 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
-    double sigmaSB = 5.6704 * 1e-5;             // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
+    _kB      = 1.38064852e-16;         // Boltzmann's constant [cm^2 g / (s^2 K)]
+    _sigmaSB = 5.6704 * 1e-5;          // Stefan-Boltzmann constant [erg⋅cm−2⋅s−1⋅K−4]
+    _c       = 299792458.0 * 100.0;    // speed of light in [cm/s]
+    _a       = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
+    _TRef    = 1.0;                    // reference temperature
+    //_sigma         = 1.0 / 15.53 / 1e-6 / 100.0;    // opacity
+    _sigma         = 1.0 / 92.6 / 1e-6 / 100.0;    // opacity
+    _alpha         = 4.0 * _a;                     // closure relation, can be changed
+    double sigmaSB = 5.6704 * 1e-5;                // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
+    double density = 2.7;
+    if( _testCase == 1 ) {
+        _cV = density * 0.831 * 1e7;    // heat capacity: [kJ/(kg K)] = [1000 m^2 / s^2 / K] therefore density * 0.831 * 1e7
+    }
+    else if( _testCase == 2 ) {
+        _cV = 0.718 * 1e-13;    // heat capacity. Air has cV = 0.718*1e7 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]   density * 0.831 * 1e-7
+    }
 
-    if( !_suOlson ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
+    _epsilon = 1.0 / _sigma;
 
-    _epsilon = 4.0 * _a / _alpha;
+    if( _testCase == 0 || _testCase == 2 ) {
+        _epsilon = 4.0 * _a / _alpha;
+        if( _testCase == 2 ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
+    }
+    if( _testCase == 1 ) {
+        _epsilon = 1.0 / _sigma;
+        _TRef    = 80.0 * 11604.0;
+    }
+    //_TRef = pow( _a, 1.0 / 4.0 );
 
     // compute xi Quadrature points
     Vector xiEta( _settings->GetNDimXi() );
@@ -66,6 +80,14 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     vl.reset();
     vr.reset();
     w.reset();
+    cgeev( ( 1.0 / _epsilon ) * _Ay, vl, vr, w );
+    for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
+
+    _AbsAy = vr * absW * vr.inv();
+
+    vl.reset();
+    vr.reset();
+    w.reset();
     cgeev( ( 1.0 / _epsilon ) * _Az, vl, vr, w );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
 
@@ -78,7 +100,7 @@ Vector ThermalPN2D::G( const Vector& u, const Vector& v, const Vector& nUnit, co
 
     // Vector g = F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
 
-    Vector g     = 0.5 * ( F( u ) + F( v ) ) * n - 0.5 * _AbsAx * ( v - u ) * fabs( n[0] ) - 0.5 * _AbsAz * ( v - u ) * fabs( n[1] );
+    Vector g     = 0.5 * ( F( u ) + F( v ) ) * n - 0.5 * _AbsAx * ( v - u ) * fabs( n[0] ) - 0.5 * _AbsAy * ( v - u ) * fabs( n[1] );
     g[_nMoments] = 0.0;    // set temperature flux to zero
     return g;
 }
@@ -97,11 +119,11 @@ Matrix ThermalPN2D::F( const Vector& u ) {
     Matrix flux( u.size(), 2, 0.0 );
 
     Vector outX = 1.0 / _epsilon * _Ax * u;
-    Vector outZ = 1.0 / _epsilon * _Az * u;
+    Vector outY = 1.0 / _epsilon * _Ay * u;
 
     for( unsigned i = 0; i < _nMoments; ++i ) {
         flux( i, 0 ) = outX[i];
-        flux( i, 1 ) = outZ[i];
+        flux( i, 1 ) = outY[i];
     }
     return flux;
 }
@@ -236,19 +258,14 @@ Matrix ThermalPN2D::Source( const Matrix& uQ, const Vector& x, double t, unsigne
         double eTilde = uQ( _nMoments, k );    // scaled internal energy
         double TTilde = ScaledTemperature( eTilde );
 
-        // compute Fleck constant
-        double f  = 1.0 / ( 1.0 + 4.0 / _epsilon * pow( TTilde, 3 ) * dt / _cV );
-        double fE = 1.0 / ( 1.0 + dt * f / _epsilon );
-
         // update radiation energy
-        y( 0, k )   = fE * ( E + ( std::pow( TTilde, 4 ) + Q ) * dt * f / _epsilon );
-        double ENew = y( 0, k );
+        y( 0, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
 
         // update moments
-        for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = uQ( i, k ) * ( 1.0 + dt / _epsilon );
+        for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = -uQ( i, k ) / _epsilon;
 
         // update energy
-        y( _nMoments, k ) = eTilde + dt * ( ENew - std::pow( TTilde, 4 ) ) * f / _epsilon;
+        y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
     }
 
     return y;
@@ -290,14 +307,19 @@ double ThermalPN2D::ComputeDt( const Matrix& u, double dx, unsigned level ) cons
 
 Vector ThermalPN2D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
-    double x0    = 0.0;
-    double y0    = 0.0;
-    double s2    = 3.2 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
-    double floor = 0.1;
-    auto sigma   = _settings->GetSigma();
+    double xMinus = -2.5e-4 * 0.5;
+    double xPlus  = 2.5e-4 * 0.5;
+    double yMinus = -2.5e-4 * 0.5;
+    double yPlus  = 2.5e-4 * 0.5;
+    auto sigma    = _settings->GetSigma();
 
-    y[0] = std::fmax( floor, 1.0 / ( 4.0 * M_PI * s2 ) * exp( -( ( x[0] - x0 ) * ( x[0] - x0 ) + ( x[1] - y0 ) * ( x[1] - y0 ) ) / 4.0 / s2 ) );
-    y[_nStates - 1] = pow( y[0], 1.0 / 4.0 ) * _cV / ( _a * pow( _TRef, 3 ) );
+    if( x[0] >= xMinus && x[0] <= xPlus && x[1] >= yMinus && x[1] <= yPlus ) {
+        y[_nMoments] = ScaledInternalEnergy( ( 80.0 + sigma[0] * xi[0] ) * 11604.0 / _TRef );
+    }
+    else {
+        y[_nMoments] = ScaledInternalEnergy( 0.08 * 11604.0 / _TRef );
+    }
+    y[0] = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
 
     return y;
 }

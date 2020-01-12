@@ -7,6 +7,8 @@
 class ThermalPN2D : public Problem
 {
   private:
+    double _kB;
+    double _sigmaSB;
     double _epsilon;
     double _c;
     double _cV;
@@ -16,7 +18,9 @@ class ThermalPN2D : public Problem
     double _alpha;
     bool _suOlson;
     unsigned _constitutiveLaw;
+    unsigned _testCase;
     Matrix _AbsAx;
+    Matrix _AbsAy;
     Matrix _AbsAz;
     std::vector<Vector> _xiQuad;
     std::vector<double> _variances;
@@ -61,4 +65,4 @@ class ThermalPN2D : public Problem
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
 };
 
-#endif // THERMALPN2D_H
+#endif    // THERMALPN2D_H

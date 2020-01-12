@@ -343,7 +343,7 @@ void MomentSolver::Source( MatVec& uQNew, const MatVec& uQ, double dt, double t,
 
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
-        Matrix out = _problem->Source( uQ[j], _mesh->GetCenterPos( j ), t, refLevel[j] );    //  use uQ or uQNew?
+        Matrix out = _problem->Source( uQNew[j], _mesh->GetCenterPos( j ), t, refLevel[j] );    //  use uQ or uQNew?
         // std::cout << out << std::endl;
         // exit( EXIT_FAILURE );
         // std::cout << uQNew[j] << std::endl;
