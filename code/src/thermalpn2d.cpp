@@ -24,15 +24,15 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     _testCase        = 1;
 
     // physical constants
-    _kB      = 1.38064852e-16;         // Boltzmann's constant [cm^2 g / (s^2 K)]
-    _sigmaSB = 5.6704 * 1e-5;          // Stefan-Boltzmann constant [erg⋅cm−2⋅s−1⋅K−4]
-    _c       = 299792458.0 * 100.0;    // speed of light in [cm/s]
-    _a       = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
-    _TRef    = 1.0;                    // reference temperature
-    //_sigma         = 1.0 / 15.53 / 1e-6 / 100.0;    // opacity
-    _sigma         = 1.0 / 92.6 / 1e-6 / 100.0;    // opacity
-    _alpha         = 4.0 * _a;                     // closure relation, can be changed
-    double sigmaSB = 5.6704 * 1e-5;                // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
+    _kB      = 1.38064852e-16;                // Boltzmann's constant [cm^2 g / (s^2 K)]
+    _sigmaSB = 5.6704 * 1e-5;                 // Stefan-Boltzmann constant [erg⋅cm−2⋅s−1⋅K−4]
+    _c       = 299792458.0 * 100.0;           // speed of light in [cm/s]
+    _a       = 7.5657 * 1e-15;                // radiation constant [erg/(cm^3 K^4)]
+    _TRef    = 1.0;                           // reference temperature
+    _sigma   = 1.0 / 15.53 / 1e-6 / 100.0;    // opacity
+    //_sigma         = 1.0 / 9.26 / 1e-6 / 100.0;    // opacity
+    _alpha         = 4.0 * _a;         // closure relation, can be changed
+    double sigmaSB = 5.6704 * 1e-5;    // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
     double density = 2.7;
     if( _testCase == 1 ) {
@@ -307,10 +307,10 @@ double ThermalPN2D::ComputeDt( const Matrix& u, double dx, unsigned level ) cons
 
 Vector ThermalPN2D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
-    double xMinus = -2.5e-4 * 0.5;
-    double xPlus  = 2.5e-4 * 0.5;
-    double yMinus = -2.5e-4 * 0.5;
-    double yPlus  = 2.5e-4 * 0.5;
+    double xMinus = -2.5e-4 * 0.5 * _sigma;
+    double xPlus  = 2.5e-4 * 0.5 * _sigma;
+    double yMinus = -2.5e-4 * 0.5 * _sigma;
+    double yPlus  = 2.5e-4 * 0.5 * _sigma;
     auto sigma    = _settings->GetSigma();
 
     if( x[0] >= xMinus && x[0] <= xPlus && x[1] >= yMinus && x[1] <= yPlus ) {

@@ -1,5 +1,7 @@
 // scaling factors. MODIFY LAMBDA for individual problem
-lambda = 92.6*1e-6*100;
+//lambda = 92.6*1e-6*100;
+//lambda = 9.26*1e-6*100;
+lambda = 15.53*1e-6*100;
 sigma = 1.0/lambda;
 
 // resolution
