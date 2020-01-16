@@ -3,16 +3,23 @@
 //lambda = 9.26*1e-6*100;
 lambda = 15.53*1e-6*100;
 sigma = 1.0/lambda;
+scale = 0.001;
 
 // resolution
-lc = 0.001*sigma;
-lcInner = 0.0001*sigma;
+//lc = 0.001*sigma;
+//lcInner = 0.0001*sigma;
+lc = 0.001*sigma*scale;
+lcInner = 0.0001*sigma*scale;
+//lc = 0.01*sigma;
+//lcInner = 0.001*sigma;
 
 // domain bounds
-a = -0.02*sigma;
-b = 0.02*sigma;
-aInner = -2.5e-4 * 0.5*sigma;
-bInner = 2.5e-4 * 0.5*sigma;
+a = -0.02*sigma*scale;
+b = 0.02*sigma*scale;
+//a = -0.2*sigma;
+//b = 0.2*sigma;
+aInner = (-2.5e-4 * 0.5*sigma)*scale;
+bInner = (2.5e-4 * 0.5*sigma)*scale;
 
 //+
 Point(1) = {b, a, 0, lc};
