@@ -1,13 +1,13 @@
 [general]
 problem = "ThermalPN"
 outputDir = "../results"
-writeFrequency = 100000
+writeFrequency = 10000
 #restartFile = "../input/restart_rad_hydro_Ma4"
 
 [mesh]
 dimension = 2
 format = "SU2"
-SU2MeshFile = "squareThermalRadLambda15-53.su2"
+SU2MeshFile = "squareThermalRadLambda92-6Smaller.su2"
 SU2BC = [["OuterBoundary","dirichlet"]]
 outputFile = "ThermalRadiative"
 
@@ -18,7 +18,7 @@ timestepping = "explicitEuler"
 distribution = [["Legendre"],[0.0]]
 CFL = 1.0
 #tEnd = 0.3
-tEnd = 1.7987547480000001
+tEnd = 100.0#1.7987547480000001
 # tEnd = 0.06 * 1e-9 * 299792458.0 * 100.0 
 nPNMoments = 1
 
