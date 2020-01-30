@@ -4,28 +4,28 @@
 The following section presents the adaptivity strategy used in this work. Since stochastic hyperbolic problems generally experience shocks in a small portion of the space-time domain, the idea is to perform arising computations on a high accuracy level in this small area, while keeping a low level of accuracy in the remainder. The idea is to automatically select the lowest order moment capable of approximating the solution with given accuracy, i.e. the same error is obtained while using a significantly reduced number of unknowns in most parts of the computational domain and thus boost the performance of intrusive methods.
 
 In the following, we discuss the building blocks of the IPM method for refinement levels $\ell = 1,\cdots,N_{\text{ad}}$, where level $1$ uses the coarsest discretization and level $N_{\text{ad}}$ uses the finest discretization of the uncertain domain. At a given refinement level $\ell$, the total degree of the basis function is given by $M_{\ell}$ with a corresponding number of moments $N_{\ell}$. The number of quadrature points at level $\ell$ is denoted by $Q_{\ell}$. To determine the refinement level of a given moment vector $\bm{\hat u}$ we choose techniques used in discontinuous Galerkin (DG) methods. Adaptivity is a common strategy to accelerate this class of methods and several indicators to determine the smoothness of the solution exist. Translating the idea of the so-called discontinuity sensor which has been defined in \cite{persson2006sub} to uncertainty quantification, we define the polynomial approximation at refinement level $\ell$ as
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \bm{\tilde u}_{\ell} := \sum_{|i|\leq M_{\ell}} \bm{\hat{u}}_i \varphi_i.
-\end{align*}
+\end{align*}\end{linenomath*}
 Now the indicator for a moment vector at level $\ell$ is defined as
-\begin{align}\label{eq:errorIndicator}
+\begin{linenomath*}\begin{align}\label{eq:errorIndicator}
 \bm S_{\ell} := \frac{\langle \left(\bm{\tilde u}_{\ell} - \bm{\tilde u}_{\ell-1}\right)^2\rangle}{\langle \bm{\tilde u}_{\ell}^2\rangle},
-\end{align}
+\end{align}\end{linenomath*}
 where divisions and multiplications are performed element-wise. Note that a similar indicator has been used in \cite{kroker2012finite} for intrusive methods in uncertainty quantification. In this work, we use the first entry in $\bm S_{\ell}$ to determine the refinement level, i.e. in the case of gas dynamics, the regularity of the density is chosen to indicate an adequate refinement level. If the moment vector in a given cell and at a certain timestep is initially at refinement level $\ell$, this level is kept if the error indicator \eqref{eq:errorIndicator} lies in the interval $I_{\delta}:=[\delta_{-},\delta_{+}]$. Here $\delta_{\pm}$ are user determined parameters. If the indicator is smaller than $\delta_-$, the refinement level is decreased to the next lower level, if it lies above $\delta_+$, it is increased to the next higher level.
 
 Now we need to specify how the different building blocks of IPM can be modified to work with varying truncation orders in different cells. Let us first add dimensions to the notation of the dual iteration function $\bm d$, which has been defined in \eqref{eq:dualIterationFunction}. Now, we have 
 $\bm{d}_{\ell}:\mathbb{R}^{N_{\ell}\times m}\times\mathbb{R}^{N_{\ell}\times m}\to\mathbb{R}^{N_{\ell}\times m}$, given by
-\begin{align}\label{eq:dualIterationFunctionAd}
+\begin{linenomath*}\begin{align}\label{eq:dualIterationFunctionAd}
 \bm{d}_{\ell}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{H}_{\ell}^{-1}(\bm{\lambda})\cdot \left(\langle \bm u_{s}(\bm{\lambda}^T\bm{\varphi}_{\ell})\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T-\bm{\hat{u}}\right),
-\end{align}
+\end{align}\end{linenomath*}
 where $\bm{\varphi}_{\ell}\in\mathbb{R}^{N_{\ell}}$ collects all basis functions with total degree smaller or equal to $M_\ell$. The Hessian $\bm{H}_{\ell}$ is given by 
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \bm{H}_{\ell}(\bm{\lambda}) := \langle \nabla \bm{u}_{s} (\bm{\lambda}^T\bm{\varphi}_{\ell})\otimes\bm{\varphi}_{\ell}\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^{T}.
-\end{align*}
+\end{align*}\end{linenomath*}
 An adaptive version of the moment iteration \eqref{eq:momentIterationFunction} is denoted by $\bm c_{\ell}^{\bm{\ell}'}:\mathbb{R}^{N_{\ell_1'}\times m}\times \mathbb{R}^{N_{\ell_2'}\times m}\times \mathbb{R}^{N_{\ell_3'}\times m}\rightarrow \mathbb{R}^{N_{\ell}\times m}$ and given by
-\begin{align}\label{eq:adaptiveFVUpdate}
+\begin{linenomath*}\begin{align}\label{eq:adaptiveFVUpdate}
 \bm{c}_{\ell}^{\bm{\ell}'}\left(\bm{\lambda}_{1},\bm{\lambda}_2,\bm{\lambda}_3\right):= &\langle \bm u_{s}(\bm{\lambda}_2^T\bm{\varphi}_{\ell_2'})\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T \\&- \frac{\Delta t}{\Delta x}\left(\langle \bm g(\bm u_{s}(\bm{\lambda}_2^T\bm{\varphi}_{\ell_2'}),\bm u_{s}(\bm{\lambda}_3^T\bm{\varphi}_{\ell_3'}))\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T-\langle \bm g(\bm u_{s}(\bm{\lambda}_{1}^T\bm{\varphi}_{\ell_1'}),\bm u_{s}(\bm{\lambda}_2^T\bm{\varphi}_{\ell_2'}))\bm{\varphi}_{\ell}^T\rangle_{Q_{\ell}}^T\right). \nonumber
-\end{align}
+\end{align}\end{linenomath*}
 Hence, the index vector $\bm\ell'\in\mathbb{N}^{3}$ denotes the refinement levels of the stencil cells, which are used to compute the time updated moment vector at level $\ell$.
 
 The strategy now is to perform the dual update for a set of moment vectors $\bm{\hat u}_j^n$ at refinement levels $\ell_j^n$ for $j = 1,\cdots,N_x$. Thus, the dual iteration makes use of the iteration function \eqref{eq:dualIterationFunctionAd} at refinement level $\ell_j^n$. After that, the refinement level at the next time step $\ell_j^{n+1}$ is determined by making use of the smoothness indicator \eqref{eq:errorIndicator}. The moment update then computes the moments at the time updated refinement level $\ell_j^{n+1}$, utilizing the the dual states at the old refinement levels $\bm{\ell}' = (\ell_{j-1}^n,\ell_{j}^n,\ell_{j+1}^n)^T$. 

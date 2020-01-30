@@ -3,83 +3,83 @@
 \subsection{Finite Volume Discretization}
 In the following, we discretize the moment system in space and time according to \cite{kusch2017maximum}. Due to the fact, that stochastic-Galerkin can be interpreted as IPM with a quadratic entropy, it suffices to only derive a discretization of the IPM moment system. Hence, we discretize the system \eqref{eq:SGMomentSystem} with the more general IPM solution ansatz \eqref{eq:ansatz}.  
 Omitting initial conditions and assuming a one-dimensional spatial domain, we can write the IPM system  as
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \partial_t \bm{\hat u}+\partial_x \bm{F}(\bm{\hat u}) = \bm{0}
-\end{align*}
+\end{align*}\end{linenomath*}
 with the flux $\bm{F}:\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$, $\bm{F}(\bm{\hat u})=\langle \bm f(\mathcal{U}(\bm{\hat u}))\bm{\varphi}^T \rangle^T$. Note that the inner transpose represents a dyadic product and therefore the outer transpose is applied to a matrix. Due to hyperbolicity of the IPM moment system, one can use a finite-volume method to approximate the time evolution of the IPM moments. We choose the discrete unknowns which represent the solution to be the spatial averages over each cell at time $t_n$, given by
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \bm{\hat u}_{ij}^n \simeq \frac{1}{\Delta x}\int_{x_{j-1/ 2}}^{x_{j+1/ 2}}\bm{\hat u}_i(t_n,x) dx.
-\end{align*}
+\end{align*}\end{linenomath*}
 If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\bm{\hat u}_{ij}^n)_{\vert i\vert\leq M}\in\mathbb{R}^{N\times m}$, the finite-volume scheme can be written in conservative form with the numerical flux $\bm{G}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$ as
-\begin{align}\label{eq:IPMDiscretization}
+\begin{linenomath*}\begin{align}\label{eq:IPMDiscretization}
 \bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}  - \frac{\Delta t}{\Delta x}\left( \bm{G}(\bm{\hat u}_{j}^{n},\bm{\hat u}_{j+1}^{n})- \bm{G}(\bm{\hat u}_{j-1}^{n},\bm{\hat u}_{j}^{n})\right)
-\end{align}
+\end{align}\end{linenomath*}
 for $j = 1,\cdots,N_x$ and $n = 0,\cdots,N_t$. Here, the number of spatial cells is denoted by $N_x$ and the number of time steps by $N_t$.
 The numerical flux is assumed to be consistent, i.e. $\bm{G}(\bm{\hat{u}},\bm{\hat{u}})=\bm{F}(\bm{\hat{u}})$.
 
 When a consistent numerical flux $\bm g:\mathbb{R}^m\times\mathbb{R}^m\to\mathbb{R}^m$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the original problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take the numerical flux
-\begin{align*}
+\begin{linenomath*}\begin{align*}
  \bm{\tilde G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T
-\end{align*}
+\end{align*}\end{linenomath*}
 in \eqref{eq:IPMDiscretization}. Commonly, this integral cannot be evaluated analytically and therefore needs to be approximated by a quadrature rule
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \langle h \rangle \approx \langle h \rangle_{Q} := \sum_{k=1}^Q w_k h(\bm{\xi}_k)f_{\Xi}(\bm{\xi}_k).
-\end{align*}
+\end{align*}\end{linenomath*}
 The approximated numerical flux then becomes
-\begin{align}\label{eq:numericalFluxIPM}
+\begin{linenomath*}\begin{align}\label{eq:numericalFluxIPM}
  \bm{G}(\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^{n}) = \langle \bm g(\mathcal{U}(\bm{\hat u}_j^n),\mathcal{U}(\bm{\hat u}_{j+1}^n))\bm{\varphi}^T\rangle^T_Q.
-\end{align}
+\end{align}\end{linenomath*}
 Note that the numerical flux requires evaluating the ansatz $\mathcal{U}(\bm{\hat u}_j^n)$. To simplify notation, we define $\bm{u}_{s}:\mathbb{R}^m \to \mathbb{R}^m$,
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \bm{u}_{s}(\bm\Lambda):=\left( \nabla_{\bm{u}} s \right)^{-1}(\bm\Lambda),
-\end{align*}
+\end{align*}\end{linenomath*}
 meaning that the IPM ansatz \eqref{eq:ansatz} at cell $j$ in timestep $n$ can be written as
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \mathcal{U}(\bm{\hat u}_j^n) = \bm{u}_{s}(\bm{\hat{\lambda}}(\bm{\hat u}_j^n)^T \bm{\varphi}).
-\end{align*}
+\end{align*}\end{linenomath*}
 The computation of the dual variables $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)$ requires solving the dual problem \eqref{eq:dualProblem} for the moment vector $\bm{\hat u}_{j}^{n}$. Therefore, to determine the dual variables for a given moment vector $\bm{\hat{u}}$, the cost function
-\begin{align}\label{eq:L}
+\begin{linenomath*}\begin{align}\label{eq:L}
 L(\bm{\lambda};\bm{\hat{u}}) := \langle s_*(\bm{\lambda}^T \bm\varphi)\rangle_Q - \sum_{i\leq M}\bm{\lambda}_i^T \bm{\hat u}_i
-\end{align}
+\end{align}\end{linenomath*}
 needs to be minimized. Hence, one needs to find the root of
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}}) = \langle \nabla s_*(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u} = \langle \bm u_s(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u},
-\end{align*}
+\end{align*}\end{linenomath*}
 where we used $\nabla s_* \equiv \bm u_s$. The root is usually determined by using Newton's method. For simplicity, let us define the full gradient of the Lagrangian to be $\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}})\in\mathbb{R}^{N\cdot m}$, i.e. we store all entries in a vector. Newton's method uses the iteration function $\bm{d}:\mathbb{R}^{N\times m}\times\mathbb{R}^{N\times m}\to\mathbb{R}^{N\times m}$,
-\begin{align}\label{eq:dualIterationFunction}
+\begin{linenomath*}\begin{align}\label{eq:dualIterationFunction}
 \bm{d}(\bm{\lambda},\bm{\hat{u}}):= \bm{\lambda}-\bm{H}(\bm{\lambda})^{-1}\cdot\nabla_{\bm{\lambda}}L(\bm{\lambda};\bm{\hat{u}}),
-\end{align}
+\end{align}\end{linenomath*}
 where $\bm H\in\mathbb{R}^{N \cdot m\times N\cdot m}$ is the Hessian of \eqref{eq:L}, given by
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \bm{H}(\bm{\lambda}) := \langle \nabla \bm{u}_{s} (\bm{\lambda}^T\bm{\varphi})\otimes\bm{\varphi}\bm{\varphi}^T\rangle_Q^{T}.
-\end{align*}
+\end{align*}\end{linenomath*}
 %Inside the Newton update \eqref{eq:dualIterationFunction}, we abuse notation for better readability by making use of
-%\begin{align*}
+%\begin{linenomath*}\begin{align*}
 %\left(\bm{H}^{-1}\cdot\nabla_{\bm{\lambda}}L\right)_{ij} := \sum_{i' = 1}^N\sum_{j' = 1}^m \left(\bm{H}^{-1}\right)_{m(j-1) + i,m(j'-1) + i'}\cdot\nabla_{\bm{\lambda}}L_{i'j'}.
-%\end{align*}
+%\end{align*}\end{linenomath*}
 The function $\bm d$ will in the following be called dual iteration function. Now, the Newton iteration $l$ for spatial cell $j$ is given by
-\begin{align}\label{eq:dualIteration1}
+\begin{linenomath*}\begin{align}\label{eq:dualIteration1}
 \bm{\lambda}^{(l+1)}_j = \bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}}_j).
-\end{align}
+\end{align}\end{linenomath*}
 The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)=\lim_{l\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}}_j^n)$.
 To obtain a finite number of iterations for the iteration in cell $j$, the stopping criterion 
-\begin{align}\label{eq:tauCrit}
+\begin{linenomath*}\begin{align}\label{eq:tauCrit}
 \sum_{i=0}^m\left\Vert \nabla_{\bm{\lambda_i}}L(\bm{\lambda}_j^{(l)};\bm{\hat{u}}_j^n) \right\Vert < \tau
-\end{align}
+\end{align}\end{linenomath*}
 is used.
 
 We now write down the entire scheme: To obtain a more compact notation, we define
-\begin{align}\label{eq:momentIterationFunction}
+\begin{linenomath*}\begin{align}\label{eq:momentIterationFunction}
 \bm{c}\left(\bm{\lambda}_{\ell},\bm{\lambda}_c,\bm{\lambda}_r\right):= \langle \bm u_{s}(\bm{\lambda}_c^T\bm{\varphi})\bm{\varphi}^T\rangle_Q^T - \frac{\Delta t}{\Delta x}\left(\langle \bm g(\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_r^T\bm{\varphi}))\bm{\varphi}^T\rangle_Q^T-\langle \bm g(\bm u_{s}(\bm{\lambda}_{\ell}^T\bm{\varphi}),\bm u_{s}(\bm{\lambda}_c^T\bm{\varphi}))\bm{\varphi}^T\rangle_Q^T\right).
-\end{align}
+\end{align}\end{linenomath*}
 The moment iteration is then given by
-\begin{align}\label{eq:momentIteration}
+\begin{linenomath*}\begin{align}\label{eq:momentIteration}
 \bm{\hat u}_j^{n+1} = \bm{c}\left(\bm{\hat\lambda}(\bm{\hat u}_{j-1}^n),\bm{\hat\lambda}(\bm{\hat u}_{j}^n),\bm{\hat\lambda}(\bm{\hat u}_{j+1}^n)\right),
-\end{align}
+\end{align}\end{linenomath*}
 where the map from the moment vector to the dual variables, i.e. $\bm{\hat\lambda}(\bm{\hat u}_{j}^n)$, is obtained by iterating
-\begin{align}\label{eq:dualIteration}
+\begin{linenomath*}\begin{align}\label{eq:dualIteration}
 \bm{\lambda}_j^{(l+1)} = \bm{d}(\bm{\lambda}_{j}^{(l)};\bm{\hat u}_j^{n}).
-\end{align}
+\end{align}\end{linenomath*}
 until condition \eqref{eq:tauCrit} is fulfilled. This gives Algorithm \ref{alg:IPM}.
 
 \begin{algorithm}[H]

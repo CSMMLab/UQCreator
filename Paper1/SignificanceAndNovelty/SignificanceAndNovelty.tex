@@ -1,0 +1,30 @@
+ %% start of file `template.tex'.
+%% Copyright 2006-2013 Xavier Danaux (xdanaux@gmail.com).
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License version 1.3c,
+% available at http://www.latex-project.org/lppl/.
+%Version for spanish users, by dgarhdez
+
+\documentclass[10pt,a4paper]{article}      % possible options include font size ('10pt', '11pt' and '12pt'), paper size ('a4paper', 'letterpaper', 'a5paper', 'legalpaper', 'executivepaper' and 'landscape') and font family ('sans' and 'roman')
+%\usepackage[english]{babel}
+\pagenumbering{gobble}
+\setlength\parindent{0pt}
+
+%----------------------------------------------------------------------------------
+%            content
+%----------------------------------------------------------------------------------
+\begin{document}
+
+{\centering
+\subsection*{Significance and novelty of this paper}}
+In our paper, we propose different methods to accelerate the Intrusive Polynomial Moment (IPM) method, which is an intrusive technique for uncertainty quantification. First, we introduce a framework using adaptivity in the random space, which allows refining the solution in spatial cells that show shocks or complex structures in the uncertain domain. Furthermore, to accelerate the IPM optimization problem for steady problems, we propose to not solve the IPM optimization problem exactly. Thereby, we converge the entropy variables and PC coefficients to their steady state simultaneously, which significantly speeds up the calculation. We can show that the proposed method has local convergence, which is the same convergence result as provided by the standard IPM algorithm. The effectiveness of the proposed methods is shown by studying an uncertain NACA0012 as well as a pipe test case for uncertainties up to dimension three. The results are compared with stochastic-Galerkin and Stochastic Collocation methods, showing that the use of the proposed acceleration techniques enables intrusive methods to compete with non-intrusive methods. 
+
+While non-intrusive techniques are gaining popularity, we believe that the proposed adaptive algorithm makes IPM (and intrusive methods in general) an important tool to quantify uncertainties for hyperbolic problems, which often show uncertain shocks in small portions of the spatial domain. A further novelty of this paper is the IPM code, which can be run for two-dimensional domains and high-dimensional uncertainties. The code is made publicly available to guarantee reproducibility of the presented results.
+
+
+%Filters have been used in various spectral methods such as discontinuous Galerkin or P$_N$ in kinetic theory. Their main challenge is the need to pick a reasonable filter strength, which mitigates oscillations while maintaining important solution characteristics. To overcome this problem, we propose a new filter, which is based on Lasso regression and allows an automated and local choice of the filter strength. We test the filtered SG method for Burgers' and the Euler equations. Compared to SG, the results are less oscillatory, yielding an improved approximation of expectation value and variance.
+\end{document}
+
+
+%% end of file `template.tex'.

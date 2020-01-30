@@ -40,48 +40,48 @@ In the following, we briefly introduce the notation and methods used in this wor
 where the solution $\bm u\in\mathbb{R}^m$ depends on time $t\in\mathbb{R}^+$, spatial position $\bm{x}\in D\subseteq \mathbb{R}^d$ as well as a vector of independent random variables $\bm{\xi}\in\Theta\subseteq\mathbb{R}^p$ with given probability density functions $f_{\Xi,i}(\xi_i)$ for $i = 1,\cdots,p$. Hence, the probability density function of $\bm{\xi}$ is $f_{\Xi}(\bm\xi):=\prod_{i=1}^p f_{\Xi,i}(\xi_i)$. The physical flux is given by $\bm{f}:\mathbb{R}^m\to\mathbb{R}^{d\times m}$. To simplify notation, we assume that only the initial condition is random, i.e. $\bm{\xi}$ enters through the definition of $\bm{u}_{IC}$. Equations \eqref{eq:hyperbolicProblem} are usually supplemented with boundary conditions, which we will specify later for the individual problems.
 
 Due to the randomness of the solution, one is interested in determining the expectation value or the variance, i.e.
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \text{E}[\bm{u}] = \langle \bm{u} \rangle,\qquad \text{Var}[\bm{u}] = \langle \left( \bm{u}-\text{E}[\bm{u}]\right)^2\rangle,
-\end{align*}
+\end{align*}\end{linenomath*}
 where we use the bracket operator $\langle \cdot \rangle := \int_{\Theta} \cdot f_{\Xi}(\bm\xi)d\xi_1 \cdots d\xi_p$. To approximate quantities of interest (such as expectation value, variance or higher order moments), the solution is spanned with a set of polynomial basis functions $\varphi_{i}:\Theta\to\mathbb{R}$ such that for the multi-index $i = (i_1,\cdots,i_p)$ we have $|i| \leq M$. Note that this yields
-\begin{align}\label{eq:numberBasisFcts}
+\begin{linenomath*}\begin{align}\label{eq:numberBasisFcts}
 N:=\begin{pmatrix}
 M+p \\ p
 \end{pmatrix}
-\end{align}
+\end{align}\end{linenomath*}
 basis functions when defining $|i|:=\sum_{n = 1}^p |i_n|$. Commonly, these functions are chosen to be orthonormal polynomials \cite{wiener1938homogeneous} with respect to the probability density function, i.e. $\langle \varphi_i \varphi_j \rangle =\prod_{n=1}^p\delta_{i_nj_n}$. The generalized polynomial chaos (gPC) expansion \cite{xiu2002wiener} approximates the solution by
-\begin{align}\label{eq:SGClosure}
+\begin{linenomath*}\begin{align}\label{eq:SGClosure}
 \mathcal{U}(\bm{\hat u};\bm\xi):= \sum_{|i|\leq M} \bm{\hat{u}}_i\varphi_i(\bm{\xi}) = \bm{\hat{u}}^T\bm{\varphi}(\bm\xi),
-\end{align}
+\end{align}\end{linenomath*}
 where the deterministic expansion coefficients $\bm{\hat{u}}_i\in\mathbb{R}^m$ are called moments. To allow a more compact notation, we collect the $N$ moments for which $\vert i \vert \leq M$ holds in the moment matrix $\bm{\hat{u}}:=(\bm{\hat{u}}_i)_{|i|\leq M}\in\mathbb{R}^{N\times m}$ and the corresponding basis functions in $\bm{\varphi}:=(\varphi_i)_{|i|\leq M}\in\mathbb{R}^{N}$. In the following, the dependency of $\mathcal{U}$ on $\bm \xi$ will occasionally be omitted for sake of readability. The solution ansatz \eqref{eq:SGClosure} is $L^2$-optimal, if the moments are chosen to be the Fourier coefficients $\bm{\hat u}_i \equiv \langle \bm{u}\varphi_i \rangle\in\mathbb{R}^m$. One can also use the ansatz \eqref{eq:SGClosure} to compute the quantities of interest as
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \text{E}[\mathcal{U}(\bm{\hat u})] = \bm{\hat u}_0,\quad \text{Var}[\mathcal{U}(\bm{\hat u})] = \text{E}[\mathcal{U}(\bm{\hat u})^2] - \text{E}[\mathcal{U}(\bm{\hat u})]^2 = \left(\sum_{i = 1}^N \hat{u}_{\ell i}^2\right)_{\ell = 1,\cdots,m}.
-\end{align*}
+\end{align*}\end{linenomath*}
 
 The core idea of the Stochastic Collocation method is to compute the moments in the gPC expansion with a quadrature rule. Given a set of $Q$ quadrature weights $w_k$ and quadrature points $\bm{\xi}_k$, the moments are approximated by
-\begin{align*}
+\begin{linenomath*}\begin{align*}
 \bm{\hat u}_i = \langle \bm{u}\varphi_i \rangle \approx \sum_{k = 1}^{Q}w_k \bm{u}({t,\bm{x},\bm{\xi}_k})\varphi_i(\bm{\xi}_k)f_{\Xi}(\bm{\xi}_k).
-\end{align*} 
+\end{align*}\end{linenomath*} 
 Hence, the moments can be computed by running a given deterministic solver for the original problem at each quadrature point. To reduce numerical costs in multi-dimensional settings, SC commonly uses sparse grids as quadrature rule: While tensorized quadrature sets require $O(M^p)$ quadrature points to integrate polynomials of maximal degree $M$ exactly, sparse grids are designed to integrate polynomials of total degree $M$, for which they only require $O(M(\log_2(M)^{p-1}))$ quadrature points, see e.g. \cite{trefethen2017cubature}.
 
 Intrusive methods derive a system which directly describes the time evolution of the moments: Plugging the solution ansatz \eqref{eq:SGClosure} into the set of equations \eqref{eq:hyperbolicProblem} and projecting the resulting residual to zero yields the stochastic-Galerkin moment system
 \begin{subequations}\label{eq:SGMomentSystem}
-\begin{align}
+\begin{linenomath*}\begin{align}
 \partial_t \bm{\hat u}_i(t,\bm{x}) + \nabla&\cdot\langle\bm{f}(\mathcal{U}(\bm{\hat u})) \varphi_i\rangle = \bm{0}, \\
 \bm{\hat u}_i(t=0,\bm{x}&) = \langle\bm{u}_{\text{IC}}(\bm{x},\cdot)\varphi_i\rangle,
-\end{align}
+\end{align}\end{linenomath*}
 \end{subequations}
 with $|i|\leq M$. As already mentioned, the SG moment system is not necessarily hyperbolic. To ensure hyperbolicity, the IPM method uses a solution ansatz which minimizes a given entropy under a moment constraint instead of a polynomial expansion \eqref{eq:SGClosure}. For a given convex entropy $s:\mathbb{R}^m\to\mathbb{R}$ for the original problem \eqref{eq:hyperbolicProblem}, the IPM solution ansatz is given by
-\begin{align}\label{eq:primalProblem}
+\begin{linenomath*}\begin{align}\label{eq:primalProblem}
 \mathcal{U}(\bm{\hat u}) = \argmin_{\bm u} \langle s(\bm u) \rangle \enskip \text{ subject to } \bm{\hat u}_i = \langle \bm u \varphi_i \rangle \text{ for } |i| \leq M.
-\end{align}
+\end{align}\end{linenomath*}
 Rewritten in its dual form, \eqref{eq:primalProblem} is transformed into an unconstrained optimization problem. Defining the variables $\bm{\lambda}_i\in\mathbb{R}^m$, where $i$ is again a multi index, gives the unconstrained dual problem
-\begin{align}\label{eq:dualProblem}
+\begin{linenomath*}\begin{align}\label{eq:dualProblem}
  \bm{\hat \lambda}(\bm{\hat u}) := \argmin_{\bm{\lambda} \in \mathbb{R}^{N \times m}}
   \left\{\langle s_*(\bm{\lambda}^T \bm\varphi)\rangle - \sum_{|i|\leq M}\bm{\lambda}_i^T \bm{\hat u}_i\right\},
-\end{align}
+\end{align}\end{linenomath*}
 where $s_*:\mathbb{R}^m\to\mathbb{R}$ is the Legendre transformation of $s$, and $\bm{ \hat\lambda}:=(\bm{\hat{\lambda}}_i)_{|i|\leq M}\in \mathbb{R}^{N \times m}$ are called the dual variables. The solution to \eqref{eq:primalProblem} is then given by
-\begin{align}\label{eq:ansatz}
+\begin{linenomath*}\begin{align}\label{eq:ansatz}
  \mathcal{U}(\bm{\hat u}) = \left( \nabla_{\bm{u}} s \right)^{-1}(\bm{\hat{\lambda}}(\bm{\hat u})^T \bm{\varphi}).
-\end{align}
+\end{align}\end{linenomath*}
 When plugging this ansatz into the original equations \eqref{eq:hyperbolicProblem} and projecting the resulting residual to zero again yields the moment system \eqref{eq:SGMomentSystem}, but with the ansatz \eqref{eq:ansatz} instead of \eqref{eq:SGClosure}.
