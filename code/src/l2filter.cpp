@@ -4,6 +4,8 @@ L2Filter::L2Filter( Settings* settings ) : Closure( settings ), _lambda( _settin
     _alpha            = 1.0;    // unsigned n;
     unsigned nMoments = _settings->GetNMoments();
     _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
+    double eta        = _lambda * pow( 1, 2 ) * pow( 1 + 1, 2 );    // punishes variance dampening
+    // eta               = 0.0;
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
@@ -11,7 +13,10 @@ L2Filter::L2Filter( Settings* settings ) : Closure( settings ), _lambda( _settin
                 // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
                 unsigned index =
                     unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
-                _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
+                if( i == 0 )
+                    _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
+                else
+                    _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) - eta );
             }
         }
     }

@@ -388,6 +388,7 @@ void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, co
 
 Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, bool writeExact ) const {
     Matrix meanAndVar;
+    std::vector<std::vector<unsigned>> indicesQ;
     if( _settings->HasExactSolution() && writeExact ) {
         meanAndVar = Matrix( 4 * _nStates, _mesh->GetNumCells(), 0.0 );
     }
@@ -430,7 +431,6 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
         unsigned n;
 
         // compute indices for quad points
-        std::vector<std::vector<unsigned>> indicesQ;
         unsigned nQTotal = pow( nQuadFine, _settings->GetNDimXi() );
         indicesQ.resize( nQTotal );
         for( unsigned k = 0; k < nQTotal; ++k ) {

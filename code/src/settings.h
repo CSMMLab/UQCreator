@@ -24,6 +24,7 @@ enum ProblemType {
     P_THERMALRAD_1D,
     P_THERMALPN_1D,
     P_THERMALPN_2D,
+    P_KINETIC_1D,
     P_NAVIERSTOKES_1D
 };
 enum ClosureType {
@@ -40,7 +41,9 @@ enum ClosureType {
     C_RADHYDRO,
     C_THERMALRAD_1D,
     C_M1_1D,
-    C_HYPLIM
+    C_KINETIC,
+    C_HYPLIM,
+    C_HYPLIM_2D
 };
 enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };

@@ -5,6 +5,8 @@
 #include "eulerclosure.h"
 #include "eulerclosure2d.h"
 #include "hyperbolicitylimiter.h"
+#include "hyperbolicitylimiter2d.h"
+#include "kineticclosure.h"
 #include "l2filter.h"
 #include "lassofilter.h"
 #include "logbarrierclosure.h"
@@ -167,8 +169,14 @@ Closure* Closure::Create( Settings* settings ) {
     else if( closureType == ClosureType::C_M1_1D ) {
         return new M1IPMClosure( settings );
     }
+    else if( closureType == ClosureType::C_KINETIC ) {
+        return new KineticClosure( settings );
+    }
     else if( closureType == ClosureType::C_HYPLIM ) {
         return new HyperbolicityLimiter( settings );
+    }
+    else if( closureType == ClosureType::C_HYPLIM_2D ) {
+        return new HyperbolicityLimiter2D( settings );
     }
     else {
         log->error( "[closure]: Invalid closure type" );
@@ -347,6 +355,9 @@ std::vector<Polynomial*> Closure::GetQuadrature() { return _quad; }
 void Closure::SetAlpha( double alpha ) { _alpha = alpha; }
 
 void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+
+    // std::cout << "===========" << std::endl;
+    // std::cout << "u = " << u << std::endl;
     int maxRefinements = 1000;
     unsigned nTotal    = _nTotalForRef[refLevel];
 
@@ -363,6 +374,7 @@ void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLev
         Gradient( g, lambda, u, refLevel );
         dlambda = -g;
         Hessian( H, lambda, refLevel );
+        // std::cout << "Hessian " << H << std::endl;
         posv( H, g );
         AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
         Gradient( dlambdaNew, lambdaNew, u, refLevel );

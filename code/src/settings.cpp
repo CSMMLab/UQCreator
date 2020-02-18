@@ -72,6 +72,12 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                 else
                     std::cerr << "M1 for 2D not implemented" << std::endl;
             }
+            else if( problemTypeString->compare( "Kinetic" ) == 0 ) {
+                if( _meshDimension == 1 )
+                    _problemType = ProblemType::P_KINETIC_1D;
+                else
+                    std::cerr << "M1 for 2D not implemented" << std::endl;
+            }
             else if( problemTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
                 if( _meshDimension == 1 )
                     _problemType = ProblemType::P_RADIATIONHYDRO_1D;
@@ -243,8 +249,14 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( closureTypeString->compare( "M1" ) == 0 ) {
                 _closureType = ClosureType::C_M1_1D;
             }
+            else if( closureTypeString->compare( "Kinetic" ) == 0 ) {
+                _closureType = ClosureType::C_KINETIC;
+            }
             else if( closureTypeString->compare( "HyperbolicityLimiter" ) == 0 ) {
-                _closureType = ClosureType::C_HYPLIM;
+                if( _meshDimension == 1 )
+                    _closureType = ClosureType::C_HYPLIM;
+                else if( _meshDimension == 2 )
+                    _closureType = ClosureType::C_HYPLIM_2D;
             }
             else {
                 log->error(

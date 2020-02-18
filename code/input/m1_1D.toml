@@ -1,7 +1,7 @@
 [general]
-problem = "M1Equations"
+problem = "M1Equations"#"PNEquations"#"M1Equations"
 outputDir = "../results"
-writeFrequency = 100
+#writeFrequency = 100
 #restartFile = "../input/restart_rad_hydro_Ma4"
 
 [mesh]
@@ -15,15 +15,16 @@ outputFile = "M1"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.5]]
+distribution = [["Legendre"],[0.0]]
 CFL = 0.75 # 0.1
-tEnd = 0.1
+tEnd = 0.5
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics, M1
-closure = "L2Filter"
-moments = [["totalDegree"],[10]]
-quadPoints = [["tensorizedGrid"],[15]]
-filterStrength = 0.001
+closure = "StochasticGalerkin"
+moments = [["maxDegree"],[1]]
+quadPoints = [["tensorizedGrid"],[2]]
+#filterStrength = 0.001
 maxIterations = 1000
 epsilon = 1e-3
+

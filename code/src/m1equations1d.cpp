@@ -118,7 +118,7 @@ Matrix M1Equations1D::F( const Matrix& u ) {
     return 0.5 * pow( u, 2 );
 }
 
-Matrix M1Equations1D::Source( const Matrix& uQ ) const {
+Matrix M1Equations1D::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = static_cast<unsigned>( uQ.columns() );
     Vector g( nStates, 0.0 );
@@ -144,12 +144,12 @@ double M1Equations1D::ComputeDt( const Matrix& u, double dx, unsigned level ) co
 
 Vector M1Equations1D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
-    bool shockTestCase = true;
+    bool shockTestCase = false;
     double x0          = 0.0;
-//    double s2          = 1.0 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
-    double floor       = 1e-4;
-    _sigma             = _settings->GetSigma();
-    double sigmaXi     = _sigma[0] * xi[0];
+    //    double s2          = 1.0 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
+    double floor   = 1e-4;
+    _sigma         = _settings->GetSigma();
+    double sigmaXi = _sigma[0] * xi[0];
     if( shockTestCase ) {
         if( x[0] < _sigma[0] * xi[0] ) {
             y[0] = 1.0;

@@ -61,7 +61,8 @@ void EulerClosure::DS( Vector& ds, const Vector& u ) const {
     double rhoU  = u[1];
     double rhoU2 = pow( rhoU, 2 );
     double rhoE  = u[2];
-    ds[0]        = ( rhoU2 + gamma * ( 2 * rho * rhoE - rhoU2 ) ) / ( -2 * rho * rhoE + rhoU2 ) -
+
+    ds[0] = ( rhoU2 + gamma * ( 2 * rho * rhoE - rhoU2 ) ) / ( -2 * rho * rhoE + rhoU2 ) -
             std::log( pow( rho, gamma ) * ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );
     ds[1] = -( ( 2 * rho * rhoU ) / ( -2 * rho * rhoE + rhoU2 ) );
     ds[2] = -( rho / ( rhoE - ( rhoU2 ) / ( 2 * rho ) ) );

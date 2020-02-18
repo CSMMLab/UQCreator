@@ -31,12 +31,22 @@ Matrix M1IPMClosure::U( const Matrix& Lambda ) {
 }
 
 void M1IPMClosure::DU( Matrix& y, const Vector& Lambda ) {
+    double v0 = Lambda[0];
+    double v1 = Lambda[1];
+
     y( 0, 0 ) = ( exp( Lambda[0] - Lambda[1] ) * ( -1.0 + exp( 2.0 * Lambda[1] ) ) ) / Lambda[1];
-    y( 0, 1 ) = ( exp( Lambda[0] - Lambda[1] ) * ( 1.0 + exp( 2.0 * Lambda[1] ) * ( -1.0 + Lambda[1] ) + Lambda[1] ) ) / pow( Lambda[1], 2 );
+
+    y( 0, 1 ) = ( exp( v0 - v1 ) * ( 1.0 + exp( 2.0 * v1 ) * ( -1.0 + v1 ) + v1 ) ) / pow( v1, 2 );
+
     y( 1, 0 ) = y( 0, 1 );
-    y( 1, 1 ) = ( exp( Lambda[0] - Lambda[1] ) *
-                  ( -2.0 - 2.0 * Lambda[1] - pow( Lambda[1], 2 ) + exp( 2.0 * Lambda[1] ) * ( 2.0 - 2.0 * Lambda[1] + pow( Lambda[1], 2 ) ) ) ) /
-                pow( Lambda[1], 3 );
+
+    y( 1, 1 ) = ( exp( v0 - v1 ) * ( -2.0 - 2.0 * v1 - pow( v1, 2 ) + exp( 2.0 * v1 ) * ( 2.0 - 2.0 * v1 + pow( v1, 2 ) ) ) ) / pow( Lambda[1], 3 );
+    /*
+        y( 0, 1 ) = ( exp( Lambda[0] - Lambda[1] ) * ( 1.0 + exp( 2.0 * Lambda[1] ) * ( -1.0 + Lambda[1] ) + Lambda[1] ) ) / pow( Lambda[1], 2 );
+        y( 1, 0 ) = y( 0, 1 );
+        y( 1, 1 ) = ( exp( Lambda[0] - Lambda[1] ) *
+                      ( -2.0 - 2.0 * Lambda[1] - pow( Lambda[1], 2 ) + exp( 2.0 * Lambda[1] ) * ( 2.0 - 2.0 * Lambda[1] + pow( Lambda[1], 2 ) ) ) ) /
+                    pow( Lambda[1], 3 ); */
     // std::cout << y << std::endl;
 }
 
@@ -58,7 +68,7 @@ double M1IPMClosure::Bisection( double alphaA, double alphaB, const double u1Du0
     }
 
     double alphaC = alphaA;
-    double e      = 1e-10;
+    double e      = 1e-15;
 
     while( std::fabs( alphaB - alphaA ) >= e ) {
         alphaC = ( alphaA + alphaB ) / 2;

@@ -1,11 +1,11 @@
 #include "pnequations1d.h"
 
-PNEquations1D::PNEquations1D( Settings* settings ) : Problem( settings ), _N( 7 ) {
+PNEquations1D::PNEquations1D( Settings* settings ) : Problem( settings ), _N( 1 ) {
     _nStates = unsigned( GlobalIndex( _N, _N ) + 1 );
     _settings->SetNStates( _nStates );
     _settings->SetSource( true );
     _sigmaA = 0.0;    // absorption coefficient
-    _sigmaS = 1.0;    // scattering coefficient
+    _sigmaS = 0.0;    // scattering coefficient
     _sigmaT = _sigmaA + _sigmaS;
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -182,7 +182,7 @@ Matrix PNEquations1D::F( const Matrix& u ) {
     return 0.5 * pow( u, 2 );
 }
 
-Matrix PNEquations1D::Source( const Matrix& uQ ) const {
+Matrix PNEquations1D::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = static_cast<unsigned>( uQ.columns() );
     Vector g( nStates, 0.0 );

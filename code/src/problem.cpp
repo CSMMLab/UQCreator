@@ -3,6 +3,7 @@
 #include "burgers.h"
 #include "euler.h"
 #include "euler2d.h"
+#include "kineticequation.h"
 #include "m1equations1d.h"
 #include "navierstokes.h"
 #include "pnequations.h"
@@ -64,6 +65,9 @@ Problem* Problem::Create( Settings* settings ) {
     }
     else if( settings->GetProblemType() == ProblemType::P_THERMALPN_2D ) {
         return new ThermalPN2D( settings );
+    }
+    else if( settings->GetProblemType() == ProblemType::P_KINETIC_1D ) {
+        return new KineticEquation( settings );
     }
     else if( settings->GetProblemType() == ProblemType::P_NAVIERSTOKES_1D ) {
         return new NavierStokes( settings );
