@@ -40,8 +40,8 @@ void HyperbolicityLimiter2D::SolveClosure( Matrix& lambda, const Matrix& u, unsi
     unsigned nTotal = _nTotalForRef[refLevel];
     // save zero order moments (realizable solution)
     double rhoTilde = u( 0, 0 );
-    double mTilde1  = u( 1, 0 );
-    double mTilde2  = u( 2, 0 );
+    double m1Tilde  = u( 1, 0 );
+    double m2Tilde  = u( 2, 0 );
     double ETilde   = u( 3, 0 );
 
     // save zero order moment as full moment vector for output
@@ -53,7 +53,7 @@ void HyperbolicityLimiter2D::SolveClosure( Matrix& lambda, const Matrix& u, unsi
 
     double t1Max = -1000;
 
-    double p1 = ( _gamma - 1.0 ) * ( ETilde - 0.5 * pow( mTilde1, 2 ) / rhoTilde - 0.5 * pow( mTilde2, 2 ) / rhoTilde );
+    double p1 = ( _gamma - 1.0 ) * ( ETilde - 0.5 * pow( m1Tilde, 2 ) / rhoTilde - 0.5 * pow( m2Tilde, 2 ) / rhoTilde );
 
     // Question: Is e a scalar in our case?
     double e = MathTools::min( 1e-10, MathTools::min( rhoTilde, p1 ) );
@@ -77,20 +77,21 @@ void HyperbolicityLimiter2D::SolveClosure( Matrix& lambda, const Matrix& u, unsi
 
     // determine t2Max
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
+        // rho[k] = t1Max * rhoTilde + ( 1.0 - t1Max ) * rho[k];    // why do we add this (taken from scalar code)
 
-        double thetaTilde1 = pow( rho[k], 2 ) * pow( ETilde, 2 ) - 2 * rho[k] * rhoTilde * E[k] * ETilde + 2 * rho[k] * E[k] * pow( mTilde1, 2 ) +
-                             2 * rho[k] * E[k] * pow( mTilde2, 2 ) - 2 * rho[k] * ETilde * m1[k] * mTilde1 - 2 * rho[k] * ETilde * m2[k] * mTilde2;
+        double thetaTilde1 = pow( rho[k], 2 ) * pow( ETilde, 2 ) - 2 * rho[k] * rhoTilde * E[k] * ETilde + 2 * rho[k] * E[k] * pow( m1Tilde, 2 ) +
+                             2 * rho[k] * E[k] * pow( m2Tilde, 2 ) - 2 * rho[k] * ETilde * m1[k] * m1Tilde - 2 * rho[k] * ETilde * m2[k] * m2Tilde;
 
-        double thetaTilde2 = pow( rhoTilde, 2 ) * pow( E[k], 2 ) - 2 * rhoTilde * E[k] * m1[k] * mTilde1 - 2 * rhoTilde * E[k] * m2[k] * mTilde2 +
+        double thetaTilde2 = pow( rhoTilde, 2 ) * pow( E[k], 2 ) - 2 * rhoTilde * E[k] * m1[k] * m1Tilde - 2 * rhoTilde * E[k] * m2[k] * m2Tilde +
                              2 * rhoTilde * ETilde * pow( m1[k], 2 ) + 2 * rhoTilde * ETilde * pow( m2[k], 2 ) -
-                             pow( m1[k] * mTilde2 - m2[k] * mTilde1, 2 );
+                             pow( m1[k] * m2Tilde - m2[k] * m1Tilde, 2 );
 
         double thetaTilde = thetaTilde1 + thetaTilde2;
 
-        double denominator = pow( m1[k] - mTilde1, 2 ) + pow( m2[k] - mTilde2, 2 ) - 2 * rho[k] * E[k] + 2 * rho[k] * ETilde + 2 * rhoTilde * E[k] -
+        double denominator = pow( m1[k] - m1Tilde, 2 ) + pow( m2[k] - m2Tilde, 2 ) - 2 * rho[k] * E[k] + 2 * rho[k] * ETilde + 2 * rhoTilde * E[k] -
                              2 * rhoTilde * ETilde;
 
-        double part1Nominator = rho[k] * ETilde - 2 * rho[k] * E[k] + rhoTilde * E[k] - m1[k] * mTilde1 - m2[k] * mTilde2;
+        double part1Nominator = rho[k] * ETilde - 2 * rho[k] * E[k] + rhoTilde * E[k] - m1[k] * m1Tilde - m2[k] * m2Tilde;
 
         double t2a = ( part1Nominator + sqrt( thetaTilde ) ) / denominator;
         double t2b = ( part1Nominator - sqrt( thetaTilde ) ) / denominator;
@@ -102,78 +103,9 @@ void HyperbolicityLimiter2D::SolveClosure( Matrix& lambda, const Matrix& u, unsi
         if( t2MaxTmp > t2Max ) t2Max = t2MaxTmp;
     }
 
-    lambda = t2Max * u2 + ( 1 - t2Max ) * u;
+    double theta = MathTools::max( t2Max, t1Max );
+
+    lambda = t2Max * u2 + ( 1 - theta ) * u;
 }
 
-void HyperbolicityLimiter2D::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    Vector rho( _nQTotalForRef[refLevel], 0.0 );
-    Vector m1( _nQTotalForRef[refLevel], 0.0 );
-    Vector m2( _nQTotalForRef[refLevel], 0.0 );
-    Vector E( _nQTotalForRef[refLevel], 0.0 );
-    Vector p2( _nQTotalForRef[refLevel], 0.0 );
-    Vector t1( _nQTotalForRef[refLevel], 0.0 );
-    unsigned nTotal = _nTotalForRef[refLevel];
-    // save zero order moments (realizable solution)
-    double rhoTilde = u( 0, 0 );
-    double mTilde1  = u( 1, 0 );
-    double mTilde2  = u( 2, 0 );
-    double ETilde   = u( 3, 0 );
-
-    // save zero order moment as full moment vector for output
-    Matrix u2( _nStates, nTotal );
-    u2( 0, 0 ) = u( 0, 0 );
-    u2( 1, 0 ) = u( 1, 0 );
-    u2( 2, 0 ) = u( 2, 0 );
-    u2( 3, 0 ) = u( 3, 0 );
-
-    double t1Max = -1000;
-
-    double p1 = ( _gamma - 1.0 ) * ( ETilde - 0.5 * pow( mTilde1, 2 ) / rhoTilde - 0.5 * pow( mTilde2, 2 ) / rhoTilde );
-
-    // Question: Is e a scalar in our case?
-    double e = MathTools::min( 1e-10, MathTools::min( rhoTilde, p1 ) );
-
-    // determine t1Max
-    for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-        Vector uKinetic = EvaluateLambda( u, k, nTotal );
-
-        rho[k] = uKinetic[0];
-        m1[k]  = uKinetic[1];
-        m2[k]  = uKinetic[2];
-        E[k]   = uKinetic[3];
-
-        t1[k] = ( e - rho[k] ) / ( rhoTilde - rho[k] );
-        if( t1[k] > 1.0 || t1[k] < 0.0 || !std::isfinite( t1[k] ) ) t1[k] = 0.0;
-
-        if( t1[k] > t1Max ) t1Max = t1[k];
-    }
-
-    double t2Max = -1000;
-
-    // determine t2Max
-    for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-        rho[k] = t1Max * rhoTilde + ( 1.0 - t1Max ) * rho[k];
-
-        p2[k] = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m1[k], 2 ) / rho[k] - 0.5 * pow( m2[k], 2 ) / rho[k] );
-
-        // a* t ^ 2 + b* t + c = 0
-        double a = ( E[k] - ETilde ) * ( rho[k] - rhoTilde ) - 0.5 * pow( m1[k] - mTilde1, 2 ) - 0.5 * pow( m2[k] - mTilde2, 2 );
-        double b = m1[k] * ( m1[k] - mTilde1 ) + m2[k] * ( m2[k] - mTilde2 ) - rho[k] * ( E[k] - ETilde ) - E[k] * ( rho[k] - rhoTilde );
-        double c = E[k] * rho[k] - 0.5 * pow( m1[k], 2 ) - 0.5 * pow( m2[k], 2 ) - e;
-
-        double q = -0.5 * ( b + MathTools::sign( b ) * sqrt( pow( b, 2 ) - 4.0 * a * c ) );
-        if( pow( b, 2 ) - 4.0 * a * c < 0 ) std::cerr << "[RealizabilityLimiter]: Imaginary unit detected!" << std::endl;
-        // how can I check this in C++ ?
-        // q        = real( q );
-        double t2a = q / a;
-        double t2b = c / q;
-
-        if( t2a > 1.0 || t2a < 0.0 || !std::isfinite( t2a ) ) t2a = 0.0;
-        if( t2b > 1.0 || t2b < 0.0 || !std::isfinite( t2b ) ) t2b = 0.0;
-
-        double t2MaxTmp = MathTools::max( t2a, t2b );
-        if( t2MaxTmp > t2Max ) t2Max = t2MaxTmp;
-    }
-
-    lambda = t2Max * u2 + ( 1 - t2Max ) * u;
-}
+void HyperbolicityLimiter2D::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) { this->SolveClosure( lambda, u, refLevel ); }
