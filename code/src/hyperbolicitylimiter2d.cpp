@@ -104,8 +104,10 @@ void HyperbolicityLimiter2D::SolveClosure( Matrix& lambda, const Matrix& u, unsi
     }
 
     double theta = MathTools::max( t2Max, t1Max );
+    std::cout << t2Max << std::endl;
+    std::cout << "theta = " << theta << std::endl;
 
-    lambda = t2Max * u2 + ( 1 - theta ) * u;
+    lambda = theta * u2 + ( 1 - theta ) * u;
 }
 
 void HyperbolicityLimiter2D::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) { this->SolveClosure( lambda, u, refLevel ); }

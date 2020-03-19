@@ -166,6 +166,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     bool pipeTestCaseMC  = false;
     bool pipeTestCaseReg = false;
     bool nozzle          = false;
+    bool testCaseRyan    = true;
     if( nozzle ) {
         double gamma = 1.4;
 
@@ -298,11 +299,16 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         return y;
     }
     else {
-        double gamma = 1.4;
-        double R     = 287.87;
-        double T     = 273.15;
-        double p     = 101325.0;
-        double Ma    = 0.8;
+        double gamma       = 1.4;
+        double R           = 287.87;
+        double T           = 273.15;
+        double p           = 101325.0;
+        double Ma          = 0.8;
+        double rhoFarfield = p / ( R * T );
+        if( testCaseRyan ) {
+            Ma          = 6;
+            rhoFarfield = 0.001027;
+        }
         if( xi.size() > 1 ) {
             Ma = Ma - _sigma[1];
             Ma = Ma + xi[1] * _sigma[1];
@@ -313,8 +319,6 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         double angle = ( 1.25 + _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
-
-        double rhoFarfield = p / ( R * T );
 
         y[0]                  = rhoFarfield;
         y[1]                  = rhoFarfield * uF;
