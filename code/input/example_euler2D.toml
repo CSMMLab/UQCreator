@@ -1,39 +1,32 @@
 [general]
 problem = "Euler2D"
 outputDir = "../results"
-#writeFrequency = 5
-#restartFile = "../../result_sync/SC/euler2D_nacaCoarse_sc_n100_s05_aoa_r1e-06/2019-03-11_10:48:48"
-#restartFile = "../../result_sync/SC/euler2D_nacaCoarse_sc_n5_s05_res1e-6/2019-03-10_14:57:35"
-#restartFile = "../../result_sync/SC/euler2D_nacaCoarse_sc_n5_s05_res1e-6_coutPrecise/2019-03-12_20:29:21"
-#restartFile = "../../result_sync/IPM/euler2D_nacaCoarse_ipm_n5_nq10_s05_aoa/2019-02-27_19:17:04"
-#restartFile = "../../result_sync/CAOS-IPM/euler2D_nacaCoarse_caosipm_n10_nq15_s05_aoa_res1e-6_precision/2019-03-13_10:30:57"
-#restartFile = "2019-07-16_16:04:28"
-#importDualState = true
-#referenceSolution = "sc100.vtk"
 
 [mesh]
 dimension = 2
 format = "SU2"
-SU2MeshFile = "nacaCoarse.su2"
+SU2MeshFile = "naca0012.su2"
 SU2BC = [["farfield","dirichlet"], ["airfoil", "noslip"]]
-outputFile = "euler"
+outputFile = "eulerNaca0012pSC"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.5]]
-CFL = 0.9
-tEnd = 100.0
-residual = 1e-9
+distribution = [["Legendre"],[0.0005]]
+#distribution = [["Legendre"],[0.0]]
+CFL = 0.5
+tEnd = 0.1
+residual = 1e-10
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, HyperbolicityLimiter
-closure = "Euler2D"
-moments = [["totalDegree"],[1]]
+closure = "StochasticGalerkin"
+moments = [["totalDegree"],[5]]
 #moments = [["totalDegree"],[9]]
-quadPoints = [["tensorizedGrid"],[5]]
+quadPoints = [["tensorizedGrid"],[6]]
 #quadPoints = [["tensorizedCCGrid"],[4]]
 #refinementThresholds = [0.0002, 0.00002]
-maxIterations = 1000
-epsilon = 1e-7
+#regularizationStrength = 0.01
+maxIterations = 10000
+epsilon = 5e-5

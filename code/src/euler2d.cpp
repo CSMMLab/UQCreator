@@ -299,24 +299,28 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         return y;
     }
     else {
-        double gamma       = 1.4;
-        double R           = 287.87;
-        double T           = 273.15;
-        double p           = 101325.0;
-        double Ma          = 0.8;
-        double rhoFarfield = p / ( R * T );
+        double gamma = 1.4;
+        double R     = 287.87;
+        double T     = 215.0;
+        double Ma    = 0.8;
+        double rhoFarfield;
         if( testCaseRyan ) {
             Ma          = 6;
             rhoFarfield = 0.001027;
         }
-        if( xi.size() > 1 ) {
+        if( xi.size() == 1 ) {
+            rhoFarfield = rhoFarfield + _sigma[0];
+            rhoFarfield = rhoFarfield + xi[0] * _sigma[0];
+        }
+        else if( xi.size() > 1 ) {
             Ma = Ma - _sigma[1];
             Ma = Ma + xi[1] * _sigma[1];
         }
         double a = sqrt( gamma * R * T );
+        double p = rhoFarfield * ( R * T );
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
+        double angle = ( 1.25 + 0.0 * _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 
