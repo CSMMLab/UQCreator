@@ -16,7 +16,7 @@ timestepping = "explicitEuler"
 distribution = [["Legendre"],[0.0005]]
 #distribution = [["Legendre"],[0.0]]
 CFL = 0.5
-tEnd = 0.1
+tEnd = 0.03
 residual = 1e-10
 
 [moment_system]
