@@ -447,7 +447,7 @@ std::vector<Vector> Mesh2D::Import() const {
 }
 
 void Mesh2D::Export( const Matrix& results, std::string append ) const {
-    assert( results.rows() == _settings->GetNStates() * 2 );
+    assert( results.rows() == _settings->GetNStates() * 2 );    // assert somehow not working
     std::string vtkFile = _settings->GetOutputFile() + append;
     auto writer         = vtkUnstructuredGridWriterSP::New();
     if( vtkFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "vtk" ) {
@@ -532,6 +532,20 @@ void Mesh2D::Export( const Matrix& results, std::string append ) const {
     cellData->SetName( "Var(ρE)" );
     for( unsigned i = 0; i < _numCells; i++ ) {
         cellData->InsertNextValue( results( 7, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "E(T)" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 8, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "Var(T)" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 9, i ) );
     }
     grid->GetCellData()->AddArray( cellData );
 

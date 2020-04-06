@@ -93,9 +93,10 @@ void MomentSolver::Solve() {
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 && !_settings->HasSource() ) continue;
+            // if( t > 0.0000338 && ( j == 6205 || j == 10082 || j == 12455 ) )
             // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
             _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
-            // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
+            // if( t > 0.0000338 && ( j == 6205 || j == 10082 || j == 12455 ) ) std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
         }
 
         // MPI Broadcast lambdas to all PEs
@@ -153,6 +154,7 @@ void MomentSolver::Solve() {
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
+            // if( t > 0.0000338 && ( j == 6205 || j == 10082 || j == 12455 ) ) std::cout << "Cell " << j << ", uQ = " << uQ[j] << std::endl;
         }
 
         // compute partial moment vectors on each PE (for inexact dual variables)
@@ -203,6 +205,7 @@ void MomentSolver::Solve() {
 
         // compute residual
         for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
+            if( !std::isfinite( u[_cellIndexPE[j]]( 0, 0 ) ) ) std::cout << "Cell " << _cellIndexPE[j] << std::endl;
             residual += std::abs( u[_cellIndexPE[j]]( 0, 0 ) - uOld[_cellIndexPE[j]]( 0, 0 ) ) * _mesh->GetArea( _cellIndexPE[j] );
         }
 
@@ -392,6 +395,9 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
     if( _settings->HasExactSolution() && writeExact ) {
         meanAndVar = Matrix( 4 * _nStates, _mesh->GetNumCells(), 0.0 );
     }
+    else if( _settings->GetProblemType() == P_EULER_2D ) {    //  include computation of temperature field for Euler 2D
+        meanAndVar = Matrix( 2 * ( _nStates + 1 ), _mesh->GetNumCells(), 0.0 );
+    }
     else {
         meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     }
@@ -404,6 +410,15 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
             }
+            if( _settings->GetProblemType() == P_EULER_2D ) {
+                double rho  = tmp[0];
+                double rhoU = tmp[1];
+                double rhoV = tmp[2];
+                double rhoE = tmp[3];
+                double p    = 0.4 * ( rhoE - 0.5 * ( pow( rhoU, 2 ) + pow( rhoV, 2 ) ) / rho );
+                double T    = p / ( rho * 287.87 );
+                meanAndVar( 2 * _nStates, j ) += T * phiTildeWf( k, 0 );
+            }
         }
 
         // variance
@@ -411,6 +426,15 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
             _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotalForRef[refinementLevel[j]] ) );
             for( unsigned i = 0; i < _nStates; ++i ) {
                 meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
+            }
+            if( _settings->GetProblemType() == P_EULER_2D ) {
+                double rho  = tmp[0];
+                double rhoU = tmp[1];
+                double rhoV = tmp[2];
+                double rhoE = tmp[3];
+                double p    = 0.4 * ( rhoE - 0.5 * ( pow( rhoU, 2 ) + pow( rhoV, 2 ) ) / rho );
+                double T    = p / ( rho * 287.87 );
+                meanAndVar( 2 * _nStates + 1, j ) += pow( T - meanAndVar( 2 * _nStates, j ), 2 ) * phiTildeWf( k, 0 );
             }
         }
     }

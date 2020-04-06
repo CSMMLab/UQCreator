@@ -287,11 +287,21 @@ void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLev
     // exit( EXIT_FAILURE );
 
     posv( H, g );
+    Matrix lambdaNew( _nStates, nTotal );
     if( _maxIterations == 1 ) {
-        AddMatrixVectorToMatrix( lambda, -_alpha * g, lambda, nTotal );
+        double stepSize = 1.0;
+        AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew, nTotal );
+        Gradient( dlambdaNew, lambdaNew, u, refLevel );
+        while( !std::isfinite( CalcNorm( dlambdaNew, nTotal ) ) ) {
+            stepSize *= 0.5;
+            AddMatrixVectorToMatrix( lambda, -stepSize * _alpha * g, lambdaNew, nTotal );
+            Gradient( dlambdaNew, lambdaNew, u, refLevel );
+        }
+
+        lambda = lambdaNew;
         return;
     }
-    Matrix lambdaNew( _nStates, nTotal );
+
     AddMatrixVectorToMatrix( lambda, -_alpha * g, lambdaNew, nTotal );
     Gradient( dlambdaNew, lambdaNew, u, refLevel );
     // perform Newton iterations
