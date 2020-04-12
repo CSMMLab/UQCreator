@@ -1,7 +1,10 @@
 #include "exponentialfilter.h"
+#include <limits>
 
 ExponentialFilter::ExponentialFilter( Settings* settings ) : Closure( settings ), _lambda( 0.0000015 ) {
     _alpha            = 1.0;    // unsigned n;
+    double epsilonM = std::numeric_limits<double>::denorm_min();
+    _c = log(epsilonM);
     unsigned nMoments = _settings->GetNMoments();
     _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
@@ -10,13 +13,17 @@ ExponentialFilter::ExponentialFilter( Settings* settings ) : Closure( settings )
                 // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                 // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
                 unsigned index = unsigned( ( i - i % unsigned( std::pow( nMoments, l ) ) ) / unsigned( std::pow( nMoments, l ) ) ) % nMoments;
-                _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
+                _filterFunction[i] *= pow(FilterFunction(index/nMoments),_settings->GetDT()*_lambda);
             }
         }
     }
 }
 
 ExponentialFilter::~ExponentialFilter() {}
+
+double ExponentialFilter::FilterFunction(double eta)const{
+    return exp(_c*pow(eta,_filterOrder));
+}
 
 void ExponentialFilter::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
 

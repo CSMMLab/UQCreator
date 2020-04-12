@@ -8,8 +8,12 @@ class ExponentialFilter : public Closure
 {
   private:
     ExponentialFilter() = delete;
-    double _lambda;
+    double _lambda; // filter strength
     Vector _filterFunction;
+    double _c; // machine precision constant
+    unsigned _filterOrder;    // order of the filter
+
+    double FilterFunction(double eta)const;
 
   public:
     ExponentialFilter( Settings* settings );
