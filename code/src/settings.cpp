@@ -200,6 +200,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( closureTypeString->compare( "LassoFilter" ) == 0 ) {
                 _closureType = ClosureType::C_LASSOFILTER;
             }
+            else if( closureTypeString->compare( "ExponentialFilter" ) == 0 ) {
+                _closureType = ClosureType::C_EXPFILTER;
+            }
             else {
                 log->error( "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogSin, "
                             "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );

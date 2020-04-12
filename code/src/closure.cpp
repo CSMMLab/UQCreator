@@ -2,6 +2,7 @@
 #include "boundedbarrier.h"
 #include "eulerclosure.h"
 #include "eulerclosure2d.h"
+#include "exponentialfilter.h"
 #include "l2filter.h"
 #include "lassofilter.h"
 #include "logsin.h"
@@ -119,6 +120,9 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_LASSOFILTER ) {
         return new LassoFilter( settings );
+    }
+    else if( closureType == ClosureType::C_EXPFILTER ) {
+        return new ExponentialFilter( settings );
     }
     else {
         log->error( "[closure]: Invalid closure type" );
