@@ -4,6 +4,8 @@
 #include "euler2dfpfilter.h"
 #include "eulerclosure.h"
 #include "eulerclosure2d.h"
+#include "exponentialfilter.h"
+#include "houlifilter.h"
 #include "hyperbolicitylimiter.h"
 #include "hyperbolicitylimiter2d.h"
 #include "kineticclosure.h"
@@ -18,6 +20,7 @@
 #include "regularizedeuler2d.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
+#include "splinefilter.h"
 #include "stochasticgalerkin.h"
 #include "tensorizedquadrature.h"
 #include "thermalradiationclosure.h"
@@ -159,6 +162,15 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_LASSOFILTER ) {
         return new LassoFilter( settings );
+    }
+    else if( closureType == ClosureType::C_EXPFILTER ) {
+        return new ExponentialFilter( settings );
+    }
+    else if( closureType == ClosureType::C_SPLINEFILTER ) {
+        return new SplineFilter( settings );
+    }
+    else if( closureType == ClosureType::C_HOULIFILTER ) {
+        return new HouLiFilter( settings );
     }
     else if( closureType == ClosureType::C_RADHYDRO ) {
         return new RadiHydroClosure1D( settings );

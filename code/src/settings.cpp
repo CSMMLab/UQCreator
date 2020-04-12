@@ -240,6 +240,15 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( closureTypeString->compare( "LassoFilter" ) == 0 ) {
                 _closureType = ClosureType::C_LASSOFILTER;
             }
+            else if( closureTypeString->compare( "ExponentialFilter" ) == 0 ) {
+                _closureType = ClosureType::C_EXPFILTER;
+            }
+            else if( closureTypeString->compare( "SplineFilter" ) == 0 ) {
+                _closureType = ClosureType::C_SPLINEFILTER;
+            }
+            else if( closureTypeString->compare( "HouLiFilter" ) == 0 ) {
+                _closureType = ClosureType::C_HOULIFILTER;
+            }
             else if( closureTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
                 _closureType = ClosureType::C_RADHYDRO;
             }
