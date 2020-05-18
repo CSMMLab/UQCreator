@@ -15,7 +15,7 @@ If a moment vector in cell $j$ at time $t_n$ is denoted as $\bm{\hat u}_j^n = (\
 \bm{\hat u}_{j}^{n+1} = \bm{\hat u}_{j}^{n}  - \frac{\Delta t}{\Delta x}\left( \bm{G}(\bm{\hat u}_{j}^{n},\bm{\hat u}_{j+1}^{n})- \bm{G}(\bm{\hat u}_{j-1}^{n},\bm{\hat u}_{j}^{n})\right)
 \end{align}\end{linenomath*}
 for $j = 1,\cdots,N_x$ and $n = 0,\cdots,N_t$. Here, the number of spatial cells is denoted by $N_x$ and the number of time steps by $N_t$.
-The numerical flux is assumed to be consistent, i.e. $\bm{G}(\bm{\hat{u}},\bm{\hat{u}})=\bm{F}(\bm{\hat{u}})$.
+The numerical flux is assumed to be consistent, i.e. $\bm{G}(\bm{\hat{u}},\bm{\hat{u}})=\bm{F}(\bm{\hat{u}})$. \comment{The moment vector inside a spatial cell, denoted by $\bm{\hat u}_{j}^{n}$ is not to be confused with the moment of order $i$ in \eqref{eq:SGClosure}, which is a continuous function in time and space. Note that whenever the moment vector includes a time index $n$, we are speaking of a discrete quantity. Furthermore, we use the index $j\in\mathbb{N}$ to denote spatial cells and the multi-index $i\in\mathbb{N}_0^p$ to denote the moment order.}
 
 When a consistent numerical flux $\bm g:\mathbb{R}^m\times\mathbb{R}^m\to\mathbb{R}^m$, $\bm g = \bm g(\bm u_\ell, \bm u_r)$ is available for the original problem \eqref{eq:hyperbolicProblem}, then for the IPM system we can simply take the numerical flux
 \begin{linenomath*}\begin{align*}
@@ -59,7 +59,7 @@ where $\bm H\in\mathbb{R}^{N \cdot m\times N\cdot m}$ is the Hessian of \eqref{e
 %\end{align*}\end{linenomath*}
 The function $\bm d$ will in the following be called dual iteration function. Now, the Newton iteration $l$ for spatial cell $j$ is given by
 \begin{linenomath*}\begin{align}\label{eq:dualIteration1}
-\bm{\lambda}^{(l+1)}_j = \bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}}_j).
+\bm{\lambda}^{(l+1)}_j = \bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}}_j^{\comment{n}}).
 \end{align}\end{linenomath*}
 The exact dual state is then obtained by computing the fixed point of $\bm{d}$, meaning that one converges the iteration \eqref{eq:dualIteration1}, i.e. $\bm{\hat\lambda}_j^n:=\bm{\hat\lambda}(\bm{\hat u}_j^n)=\lim_{l\rightarrow\infty}\bm{d}(\bm{\lambda}_j^{(l)},\bm{\hat{u}}_j^n)$.
 To obtain a finite number of iterations for the iteration in cell $j$, the stopping criterion 

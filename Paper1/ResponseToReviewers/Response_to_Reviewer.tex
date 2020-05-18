@@ -1,0 +1,98 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\usepackage{color}
+\newcommand{\comment}[1]{\textcolor{red}{#1}}
+
+
+\newcommand*\xoverline[2][0.75]{%
+    \sbox{\myboxA}{$\m@th#2$}%
+    \setbox\myboxB\null% Phantom box
+    \ht\myboxB=\ht\myboxA%
+    \dp\myboxB=\dp\myboxA%
+    \wd\myboxB=#1\wd\myboxA% Scale phantom
+    \sbox\myboxB{$\m@th\overline{\copy\myboxB}$}%  Overlined phantom
+    \setlength\mylenA{\the\wd\myboxA}%   calc width diff
+    \addtolength\mylenA{-\the\wd\myboxB}%
+    \ifdim\wd\myboxB<\wd\myboxA%
+       \rlap{\hskip 0.5\mylenA\usebox\myboxB}{\usebox\myboxA}%
+    \else
+        \hskip -0.5\mylenA\rlap{\usebox\myboxA}{\hskip 0.5\mylenA\usebox\myboxB}%
+    \fi}
+\makeatother
+\usepackage{bm}
+
+\title{Reply to Reviewers}
+\author{Martin Frank, Jonas Kusch and Jannick Wolters}
+\date{\today}                                           % Activate to display a given date or no date
+
+\setlength{\parindent}{0pt}
+
+\begin{document}
+\maketitle
+
+We would like to thank the referee for taking the time to carefully read the article. The suggestions and corrections have been helpful and increase the quality of this article. The document has been edited under consideration of the remarks made in the review.
+
+\vspace{1em}
+
+The attached documents contain a version of the paper where all changes are highlighted in blue. In the following, we address each of the remarks individually:
+
+\begin{enumerate}
+\item The paper is globally well written, with all the key arguments and algorithms clearly explained. The reference list is comprehensive.
+\item Some notations are non fully rigorous. Typical is line 182 page 5 where $\bm{\hat u}_i$
+is the i-th moment (scalar function of x and t), while $\bm{\hat u}_j$ in line 225 page
+6 is something else (a vector, the index is the cell number). I recommend
+to check all these kinds of formal inaccuracies.
+\\ \textbf{Response:} We added a time index to $\bm{\hat u}_j$ which was missing in the original version. Furthermore, we added a comment when introducing the moments at the spacial cells in line TODO in order to avoid confusion.
+\item Is algorithm 1 (page 7) similar to the one by Poette? Can you explain the differences?
+\\ \textbf{Response:} Algorithm 1 is very similar to the original IPM algorithm by Poette. The only difference is that we are not using the old moments $\bm{\hat u}_j^{n+1}$ in the finite volume update (line 11 in algorithm 1), but we are using the term $\langle \bm u_{s}((\bm{\lambda}_j^n)^T\bm{\varphi})\bm{\varphi}^T\rangle_Q^T$. This step ensures that the error from Newton's method does not yield non-physical moments which can lead to a failure of the method, see Section 4.3 in [8].
+\item The formulation of Th. 1 is incomplete because $\bm\lambda_*$ is not specified. Are
+conditions on $\bm\lambda_*$? It must be explained.
+\\ \textbf{Response:} We added an explanation for $\bm\lambda^*$, see TODO. Furthermore, to underline that $\bm\lambda^*$ collects the dual variables at all spatial cells, we now denote $\bm\lambda^*$ as $\bm{\lambda}_{\Delta}^*=(\bm{\lambda}_{1}^*,\cdots,\bm{\lambda}_{N_x}^*)^T$.
+\item The super-attractive property of the Newton-Raphson method is well
+known, and in my mind, this is exactly what means $\partial_{\lambda}d = 0$. Can you
+confirm?
+\\ \textbf{Response:} Yes, this is correct. At the fixed point $\partial_{\lambda}d = 0$ which comes from choosing the Newton-Raphson method to iterate the dual variables.
+\item Line 357 page 10 is impossible to understand since the right hand side
+seems independent of $j$ and $n$. The same for line 364 same page. Actually
+it is mandatory that the dependence with respect to $j$ and $n$ are the same
+throughout the whole proof.
+\\ \textbf{Response:} You are correct. We forgot to include indices and the manuscript lacked a clear notation at some points. We now added indices and define our notation more clearly. 
+\item And also my own calculations from (11) yield that $\partial_u d = -H(\lambda)^{-1}\lambda$. Can you check?
+\\ \textbf{Response:} We have that
+\begin{align*}
+\bm d(\bm{\lambda},\bm{\hat u}) =& \bm{\lambda} - \bm{H}^{-1}(\bm\lambda)\left(\langle \bm u_s(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T - \bm{\hat u}\right) \\
+=& \bm{\lambda} - \bm{H}^{-1}(\bm\lambda)\langle \bm u_s(\bm{\lambda}^T \bm\varphi)\bm\varphi^T\rangle_Q^T +\bm{H}^{-1}(\bm\lambda) \bm{\hat u}
+\end{align*}
+Since only the last term $\bm{H}^{-1}(\bm\lambda) \bm{\hat u}$ depends on the moment vector $\bm{\hat u}$, we have
+\begin{align*}
+\partial_{\bm{\hat u}} d(\bm{\lambda},\bm{\hat u}) = \bm{H}^{-1}(\bm\lambda).
+\end{align*}
+Note that for the One-Shot method, the moments $\bm{\hat u}$ and dual variables $\bm\lambda$ do not depend on each other.  
+\item page 12 in Algo. 3, it would be better to write ”Determine Refinement
+Level ” instead of ”DetermineRefinementLevel ”. Please check all similar
+notations.
+\\ \textbf{Response:} We have changed this in the manuscript.
+\item Line 496 page 14, I do not understand the need to specify the temperature $T$ since it does not show up in line 487.
+\\ \textbf{Response:} We added a short description on how the defined quantities relate to the conserved variables TODO.
+\item I missed the definition of the reference solution $u_{\Delta}$. It must be explicit
+(or more visible).
+\item Figure 3: the threshold $\varepsilon = 10^{-6}$ is not visible on the plots, as it should
+be. Also the intrusive and non intrusives methods must be more explicit:
+which ones (number of equations, . . . ).
+\item Lines 553/554 page 17 seem weird. What do you call positivity of mass?
+Is it total mass? If yes, there is not problem with a conservative scheme.
+\item Line 691 in the conclusion (Additionally, the ability to adaptively change
+692 the truncation order helps intrusive methods to compete with SC in
+terms of computational runtime) are an interesting asset of the methods
+presented in this work.
+\end{enumerate}
+
+\end{document}  

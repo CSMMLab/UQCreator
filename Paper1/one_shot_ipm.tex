@@ -24,7 +24,7 @@ By successively performing one update of the moment iteration and one update of 
 &\bm{u}_j^{n+1} =  \bm{c}\left(\bm{\lambda}_{j-1}^{n+1},\bm{\lambda}_{j}^{n+1},\bm{\lambda}_{j+1}^{n+1}\right) \enskip \text{ for all }j \label{eq:oneshotIPMmoment}.
 \end{align}\end{linenomath*}
 \end{subequations}
-This yields Algorithm \ref{alg:osIPM}.
+This yields Algorithm~\ref{alg:osIPM}.
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
 \For{$j=0$ to $N_x+1$}
@@ -47,7 +47,20 @@ We call this method One-Shot IPM, since it is inspired by One-Shot optimization,
 
 In the following, we will show that this iteration converges, if the chosen initial condition is sufficiently close to the steady state solution. For this we take an approach commonly chosen to prove local convergence properties of Newton's method: In Theorem \ref{th:Contractive}, we show that the iteration function is contractive at its fixed point and conclude in Theorem \ref{th:localConvergence} that this yields local convergence. Hence, we preserve the convergence property of the original IPM method, which uses Newton's method and therefore only converges locally as well.
 \begin{theorem}\label{th:Contractive}
-Assume that the classical IPM iteration is contractive at its fixed point $\bm{\hat u}^*$. Then the Jacobian $\bm{J}$ of the One-Shot IPM iteration \eqref{eq:oneshotIPM} has a spectral radius $\rho(\bm{J})<1$ at the fixed point $(\bm{\lambda}^*,\bm{\hat u}^*)$.
+\comment{We denote the fixed point of the classical IPM iteration \eqref{eq:momentIteration} by $\bm{\hat u}^*_{\Delta} = (\bm{\hat u}_{1}^*,\cdots,\bm{\hat u}_{N_x}^*)^T$, i.e. we have
+\begin{linenomath*}\begin{align*}
+\bm{\hat u}_j^* = \bm{c}\left(\bm{\hat\lambda}(\bm{\hat u}_{j-1}^*),\bm{\hat\lambda}(\bm{\hat u}_{j}^*),\bm{\hat\lambda}(\bm{\hat u}_{j+1}^*)\right)
+\end{align*}\end{linenomath*}
+for all spatial cells $j$. The fixed point for the One-Shot IPM iteration \eqref{eq:oneshotIPM} is denoted by $(\bm{\lambda}_{\Delta}^*,\bm{\hat u}_{\Delta}^*)$, where $\bm{\lambda}_{\Delta}^*=(\bm{\lambda}_{1}^*,\cdots,\bm{\lambda}_{N_x}^*)^T$. The fixed point of the One-Shot iteration fulfills
+\begin{subequations}
+\begin{linenomath*}\begin{align*}
+&\bm{\lambda}_{j}^{*} =  \bm{d}(\bm{\lambda}_j^{*},\bm{u}_j^{*}),\\
+&\bm{u}_j^{*} =  \bm{c}\left(\bm{\lambda}_{j-1}^{*},\bm{\lambda}_{j}^{*},\bm{\lambda}_{j+1}^{*}\right),
+\end{align*}\end{linenomath*}
+\end{subequations}
+for all spatial cells $j$.
+}
+Assume that the classical IPM iteration is contractive at its fixed point. Then the Jacobian $\bm{J}$ of the One-Shot IPM iteration \eqref{eq:oneshotIPM} has a spectral radius $\rho(\bm{J})<1$ at the fixed point $(\bm{\lambda}_{\Delta}^*,\bm{\hat u}_{\Delta}^*)$
 \end{theorem}
 \begin{proof}
 First, to understand what contraction of the classical IPM iteration implies, we rewrite the moment iteration \eqref{eq:momentIteration} of the classical IPM scheme: When defining the update function
@@ -58,7 +71,7 @@ we can rewrite the classical moment iteration as
 \begin{linenomath*}\begin{align}\label{eq:shortIPMIt}
 \bm{\hat u}_j^{n+1} = \bm{\tilde c}\left(\bm{\hat u}_{j-1}^n,\bm{\hat u}_{j}^n,\bm{\hat u}_{j+1}^n\right).
 \end{align}\end{linenomath*}
-Since we assume that the classical IPM scheme is contractive at its fixed point, we have $\rho (\nabla_{\bm{\hat u}}\bm{\tilde c}(\bm{\hat u}^*))<1$ with $\nabla_{\bm{\hat u}}\bm{\tilde c}\in\mathbb{R}^{N\cdot N_x\times N\cdot N_x}$ defined by
+Since we assume that the classical IPM scheme is contractive at its fixed point, we have $\rho (\nabla_{\bm{\hat u}}\bm{\tilde c}(\bm{\hat u}_{\comment{\Delta}}^*))<1$ with $\nabla_{\bm{\hat u}}\bm{\tilde c}\in\mathbb{R}^{N\cdot N_x\times N\cdot N_x}$ defined by
 \begin{linenomath*}\begin{align*}
 \nabla_{\bm{\hat u}}\bm{\tilde c} = 
 \begin{pmatrix} 
@@ -108,27 +121,31 @@ The Jacobian $\bm{J}\in\mathbb{R}^{2N\cdot N_x \times 2N\cdot N_x}$ has the form
 \end{align}\end{linenomath*}
 where each block has entries for all spatial cells. We start by looking at $\partial_{\bm{\lambda}} \bm{d}$. For the columns belonging to cell $j$, we have
 \begin{linenomath*}\begin{align*}
-\partial_{\bm{\lambda}} \bm{d}(\bm{\lambda}_j^n,\bm{\hat u}_j^n) &= \bm{I}_d - \bm{H}(\bm\lambda)^{-1} \cdot \langle \nabla\bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle^T - \partial_{\bm{\lambda}}\bm{H}(\bm\lambda)^{-1} \cdot \left( \langle \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}^T \rangle^T - \bm{\hat u}\right) \\
-&=- \partial_{\bm{\lambda}}\bm{H}(\bm\lambda)^{-1} \cdot \left( \langle \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}^T \rangle^T - \bm{\hat u}\right).
+\partial_{\bm{\lambda}} \bm{d}(\bm{\lambda}_j^n,\bm{\hat u}_j^n) &= \bm{I}_d - \bm{H}(\comment{\bm\lambda_j^n})^{-1} \cdot \langle \nabla\bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}\bm{\varphi}^T \rangle^T - \partial_{\bm{\lambda}}\bm{H}(\comment{\bm\lambda_j^n})^{-1} \cdot \left( \langle \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}^T \rangle^T - \comment{\bm{\hat u}_j^n}\right) \\
+&=- \partial_{\bm{\lambda}}\bm{H}(\comment{\bm\lambda_j^n})^{-1} \cdot \left( \langle \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}^T \rangle^T - \comment{\bm{\hat u}_j^n}\right).
 \end{align*}\end{linenomath*}
-Recall that at the fixed point $(\bm{\lambda}^*,\bm{\hat u}^*)$, we have $\langle \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}^T \rangle^T = \bm{\hat u}$, hence one obtains $\partial_{\bm{\lambda}} \bm{d}=\bm{0}$. For the block $\partial_{\bm{\hat u}} \bm{d}$, we get 
+\comment{Recall that if $\bm{\hat u}_j^n$ and $\bm{\lambda}_j^n$ belong to the fixed point $(\bm{\lambda}_{\comment{\Delta}}^*,\bm{\hat u}_{\comment{\Delta}}^*)$,} we have $\langle \bm{u}_s(\bm{\varphi}^T\bm{\lambda}_j^n)\bm{\varphi}^T \rangle^T = \comment{\bm{\hat u}_j^n}$, hence one obtains $\partial_{\bm{\lambda}} \bm{d}=\bm{0}$. For the block $\partial_{\bm{\hat u}} \bm{d}$, we get 
 \begin{linenomath*}\begin{align*}
-\partial_{\bm{\hat u}} \bm{d}(\bm{\lambda}_j^n,\bm{\hat u}_j^n) = \bm{H}(\bm\lambda)^{-1},
+\partial_{\bm{\hat u}} \bm{d}(\bm{\lambda}_j^n,\bm{\hat u}_j^n) = \bm{H}(\comment{\bm\lambda_j^n})^{-1},
 \end{align*}\end{linenomath*}
-hence $\partial_{\bm{\hat u}} \bm{d}$ is a block diagonal matrix. Let us now look at $\partial_{\bm{\lambda}} \bm{c}$ at a fixed spatial cell $j$:
+hence $\partial_{\bm{\hat u}} \bm{d}$ is a block diagonal matrix. Let us now look at $\partial_{\bm{\lambda}} \bm{c}$ at a fixed spatial cell $j$. \comment{To shorten notation, let us define
 \begin{linenomath*}\begin{align*}
-\frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{\hat u}_{j-1}^{n})}{\partial \bm{\lambda}} = \bm{0},
+\bm{c}_j := \bm{c}\left(\bm{d}(\bm{\lambda}_{j-1}^{n},\bm{\hat u}_{j-1}^{n}),\bm{d}(\bm{\lambda}_{j}^{n},\bm{\hat u}_{j}^{n}),\bm{d}(\bm{\lambda}_{j+1}^{n},\bm{\hat u}_{j+1}^{n})\right).
 \end{align*}\end{linenomath*}
-since we already showed that by the choice of $\bm{H}(\bm\lambda)^{-1}$ the term $\partial_{\bm{\lambda}} \bm{d}$ is zero. We can show the same result for all spatial cells and all inputs of $\bm{c}$ analogously, hence $\partial_{\bm{\lambda}} \bm{c} = \bm{0}$. For the last block, we have that 
+Then we have}
 \begin{linenomath*}\begin{align*}
-\frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{\hat u}_{j-1}^{n})}{\partial \bm{\hat u}} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \bm{H}(\bm\lambda)^{-1} = \frac{\partial \bm{c}}{\partial \bm{\lambda}_{\ell}} \langle \nabla\bm{u}_s(\bm{\varphi}^T\bm{\lambda}_{j-1}^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-T} = \partial_{\bm{\hat u}_{\ell}}\bm{\tilde c}_j
+\frac{\partial \bm{c}_j}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{\hat u}_{j-1}^{n})}{\partial \bm{\lambda}} = \bm{0},
+\end{align*}\end{linenomath*}
+since we already showed that the term $\partial_{\bm{\lambda}} \bm{d}$ is zero. We can show the same result for all spatial cells and all inputs of $\bm{c}$ analogously, hence $\partial_{\bm{\lambda}} \bm{c} = \bm{0}$. For the last block, we have that 
+\begin{linenomath*}\begin{align*}
+\frac{\partial \bm{c}\comment{_j}}{\partial \bm{\lambda}_{\ell}}\frac{\partial \bm{d}(\bm{\lambda}_{j-1}^{n},\bm{\hat u}_{j-1}^{n})}{\partial \bm{\hat u}} = \frac{\partial \bm{c}\comment{_j}}{\partial \bm{\lambda}_{\ell}} \bm{H}(\bm\lambda)^{-1} = \frac{\partial \bm{c}\comment{_j}}{\partial \bm{\lambda}_{\ell}} \langle \nabla\bm{u}_s(\bm{\varphi}^T\bm{\lambda}_{j-1}^n)\bm{\varphi}\bm{\varphi}^T \rangle^{-T} = \partial_{\bm{\hat u}_{\ell}}\bm{\tilde c}_j
 \end{align*}\end{linenomath*}
 by the choice of $\bm{H}(\bm\lambda)^{-1}$ as well as \eqref{eq:cTildeDer} and \eqref{eq:dudlambdaex}. We obtain an analogous result for the second and third input. Hence, we have that $\partial_{\bm{\hat u}} \bm{c} = \nabla_{\bm{\hat u}}\bm{\tilde c}$, which only has eigenvalues between $-1$ and $1$ by the assumption that the classical IPM iteration is contractive. Since $\bm{J}$ is an upper triangular block matrix, the eigenvalues are given by $\lambda\left(\partial_{\bm{\lambda}} \bm{d}\right) = 0$ and $\lambda\left(\partial_{\bm{\hat u}} \bm{c}\right)\in(-1,1)$, hence the One-Shot IPM is contractive around its fixed point.
 \end{proof}
 \begin{theorem}\label{th:localConvergence}
-With the assumptions from Theorem \ref{th:Contractive}, the One-Shot IPM converges locally, i.e. there exists a $\delta>0$ s.t. for all starting points $(\bm{\lambda}^0,\bm{\hat u}^0)\in B_{\delta}(\bm{\lambda}^*,\bm{\hat u}^*)$ we have
+With the assumptions from Theorem \ref{th:Contractive}, the One-Shot IPM converges locally. I.e. \comment{if we denote the solution at iteration $n$ as $(\bm{\lambda}_{\Delta}^{(n)},\bm{\hat u}_{\Delta}^{(n)})$}, there exists a $\delta>0$ s.t. for all starting points $(\bm{\lambda}_{\comment{\Delta}}^{(0)},\bm{\hat u}_{\comment{\Delta}}^{(0)})\in B_{\delta}(\bm{\lambda}_{\comment{\Delta}}^*,\bm{\hat u}_{\comment{\Delta}}^*)$ we have
 \begin{linenomath*}\begin{align*}
-\Vert (\bm{\lambda}^n,\bm{\hat u}^n) - (\bm{\lambda}^*,\bm{\hat u}^*)\Vert \rightarrow 0 \qquad \text{ for } n \rightarrow \infty.
+\left\Vert (\bm{\lambda}\comment{_{\Delta}^{(n)}},\bm{\hat u}\comment{_{\Delta}^{(n)}}) - (\bm{\lambda}_{\comment{\Delta}}^*,\bm{\hat u}_{\comment{\Delta}}^*)\right\Vert \rightarrow 0 \qquad \text{ for } n \rightarrow \infty.
 \end{align*}\end{linenomath*}
 \end{theorem}
 \begin{proof}
@@ -136,7 +153,7 @@ By Theorem \ref{th:Contractive}, the One-Shot scheme is contractive at its fixed
 \begin{linenomath*}\begin{align*}
 \text{det}(\bm{\tilde J}) = \sum_{\sigma} \text{sgn}(\sigma)\prod_{i = 1}^{2 N_x N} \tilde J_{\sigma(i),i}.
 \end{align*}\end{linenomath*}
-Since the roots of a polynomial vary continuously with its coefficients, the eigenvalues of $\bm{J}$ are continuous w.r.t $(\bm{\lambda},\bm{\hat u})$. Hence there exists an open ball with radius $\delta$ around the fixed point in which the eigenvalues remain in the interval $(-1,1)$.
+Since the roots of a polynomial vary continuously with its coefficients, the eigenvalues of $\bm{J}$ are continuous w.r.t $(\bm{\lambda}_{\comment{\Delta}},\bm{\hat u}_{\comment{\Delta}})$. Hence there exists an open ball with radius $\delta$ around the fixed point in which the eigenvalues remain in the interval $(-1,1)$.
 \end{proof}
 %\begin{remark}
 %Since the preconditioning step of the Collocation-accelerated IPM method generates initial conditions which are close to the steady state solution, using One-Shot IPM instead of classical IPM is well suited. However, our numerical calculations show that One-Shot IPM converges even if the solution is far away from its steady state. 

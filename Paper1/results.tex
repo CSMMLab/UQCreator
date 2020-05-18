@@ -23,7 +23,14 @@ These equations determine the time evolution of the conserved variables $(\rho,\
 \begin{linenomath*}\begin{align*}
 p = (\gamma-1)\rho\left(e-\frac12(v_1^2+v_2^2)\right).
 \end{align*}\end{linenomath*}
-Here, the heat capacity ratio $\gamma$ is chosen to be $1.4$. The spatial mesh discretizes the flow domain around the airfoil. At the airfoil boundary, we use the Euler slip condition $\bm v^T\bm n = 0$, where $\bm n$ denotes the surface normal. At a sufficiently large distance away from the airfoil, we assume a far field flow with a given Mach number $Ma = 0.8$, pressure $p = 101\;325$ Pa and a temperature of $273.15$ K. Now the angle of attack $\phi$ is uniformly distributed in the interval of $[0.75,1.75]$ degrees, i.e. we choose $\phi(\xi) = 1.25 + 0.5\xi$ where $\xi\sim U(-1,1)$. As commonly done, the initial condition is equal to the far field boundary values. Consequently, the wall condition at the airfoil is violated initially and will correct the flow solution. 
+Here, the heat capacity ratio $\gamma$ is chosen to be $1.4$. The spatial mesh discretizes the flow domain around the airfoil. At the airfoil boundary, we use the Euler slip condition $\bm v^T\bm n = 0$, where $\bm n$ denotes the surface normal. At a sufficiently large distance away from the airfoil, we assume a far field flow with a given Mach number $Ma = 0.8$, pressure $p = 101\;325$ Pa and a temperature of \comment{$T=273.15$ K. Note that with the specific gas constant $R=287.87\frac{J}{kg\cdot K}$ and a given angle of attack $\phi$ this fixes the conserved variables at the far field boundary, since
+\begin{linenomath*}\begin{align*}
+\rho = \frac{p}{R\cdot T}, \quad \rho\bm{v} = \rho\cdot\text{Ma}\cdot \sqrt{\gamma R T} \begin{pmatrix}
+\cos\phi \\ 
+\sin\phi
+\end{pmatrix}, \quad \rho e = \frac{p}{\gamma - 1} + \frac{1}{2}\rho (v_1^2 + v_2^2).
+\end{align*}\end{linenomath*}}
+Now the angle of attack $\phi$ is uniformly distributed in the interval of $[0.75,1.75]$ degrees, i.e. we choose $\phi(\xi) = 1.25 + 0.5\xi$ where $\xi\sim U(-1,1)$. As commonly done, the initial condition is equal to the far field boundary values. Consequently, the wall condition at the airfoil is violated initially and will correct the flow solution. 
 
 The computational domain is a circle with a diameter of $40$ meters. In the center, the NACA0012 airfoil with a length of one meter is located. The spatial mesh is composed of a coarsely discretized far field and a finely resolved region around the airfoil, since we are interested in the flow solution at the airfoil. Altogether, the mesh consists of 22361 triangular elements.
 
