@@ -50,12 +50,12 @@ The attached documents contain a version of the paper where all changes are high
 is the i-th moment (scalar function of x and t), while $\bm{\hat u}_j$ in line 225 page
 6 is something else (a vector, the index is the cell number). I recommend
 to check all these kinds of formal inaccuracies.
-\\ \textbf{Response:} We added a time index to $\bm{\hat u}_j$ which was missing in the original version. Furthermore, we added a comment when introducing the moments at the spacial cells in line TODO in order to avoid confusion.
+\\ \textbf{Response:} We added a time index to $\bm{\hat u}_j$ which was missing in the original version. Furthermore, we added a comment when introducing the moments at the spacial cells in line 189 in order to avoid confusion.
 \item Is algorithm 1 (page 7) similar to the one by Poette? Can you explain the differences?
 \\ \textbf{Response:} Algorithm 1 is very similar to the original IPM algorithm by Poette. The only difference is that we are not using the old moments $\bm{\hat u}_j^{n+1}$ in the finite volume update (line 11 in algorithm 1), but we are using the term $\langle \bm u_{s}((\bm{\lambda}_j^n)^T\bm{\varphi})\bm{\varphi}^T\rangle_Q^T$. This step ensures that the error from Newton's method does not yield non-physical moments which can lead to a failure of the method, see Section 4.3 in [8].
 \item The formulation of Th. 1 is incomplete because $\bm\lambda_*$ is not specified. Are
 conditions on $\bm\lambda_*$? It must be explained.
-\\ \textbf{Response:} We added an explanation for $\bm\lambda^*$, see TODO. Furthermore, to underline that $\bm\lambda^*$ collects the dual variables at all spatial cells, we now denote $\bm\lambda^*$ as $\bm{\lambda}_{\Delta}^*=(\bm{\lambda}_{1}^*,\cdots,\bm{\lambda}_{N_x}^*)^T$.
+\\ \textbf{Response:} We added an explanation for $\bm\lambda^*$, see line 312. Furthermore, to underline that $\bm\lambda^*$ collects the dual variables at all spatial cells, we now denote $\bm\lambda^*$ as $\bm{\lambda}_{\Delta}^*=(\bm{\lambda}_{1}^*,\cdots,\bm{\lambda}_{N_x}^*)^T$.
 \item The super-attractive property of the Newton-Raphson method is well
 known, and in my mind, this is exactly what means $\partial_{\lambda}d = 0$. Can you
 confirm?
@@ -81,7 +81,7 @@ Level ” instead of ”DetermineRefinementLevel ”. Please check all similar
 notations.
 \\ \textbf{Response:} We have changed this in the manuscript.
 \item Line 496 page 14, I do not understand the need to specify the temperature $T$ since it does not show up in line 487.
-\\ \textbf{Response:} We added a short description on how the defined quantities relate to the conserved variables TODO.
+\\ \textbf{Response:} We added a short description on how the defined quantities relate to the conserved variables in line 517.
 \item I missed the definition of the reference solution $u_{\Delta}$. It must be explicit
 (or more visible).
 \\ \textbf{Response:} We compute the reference solution with a finely resolved collocation method. The one-dimensional testcase uses 100 Gauss-Legendre quadrature points (as mentioned in line 506 in the original manuscript), the two-dimensional testcase uses $50^2$ quadrature points (as mentioned in line 620 in the original manuscript) and the three-dimensional testcase uses $50^3$ quadrature points (as mentioned in line 661 in the original manuscript). You are correct that this information gets lost in the text which is why we added a short description whenever we plot reference solutions (which we do in Figures 1, 7 and 8).
