@@ -53,7 +53,7 @@ The computational domain is a circle with a diameter of $40$ meters. In the cent
 				\includegraphics[width=\linewidth]{figs/Euler1DPlots5/naca_mesh.png}
 		\label{fig:referenceSolutionsMesh}
 	\end{subfigure}
-	\caption{Reference solution E$[\rho]$ and Var$[\rho]$ and the mesh close to the airfoil which is used in the computation of all presented methods.}
+	\caption{Reference solution E$[\rho]$ and Var$[\rho]$ and the mesh close to the airfoil which is used in the computation of all presented methods. \comment{The reference solution has been computed with stochastic-Collocation using $100$ Gauss-Legendre quadrature points.}}
 	\label{fig:referenceSolution}
 \end{figure}
 
@@ -62,9 +62,9 @@ The aim is to quantify the effects arising from the one-dimensional uncertainty 
 \Vert \bm e_{\Delta} \Vert_{\Delta} := \sqrt{\sum_{j=1}^{N_x} \Delta x_j \bm e_j^2}\;.
 \end{align*}\end{linenomath*}
 Hence, when denoting the reference solution by $\bm u_{\Delta}$ and the moments obtained with the numerical method by $\bm{\hat u}_{\Delta}$, we investigate the relative error
-\begin{linenomath*}\begin{align*}
+\begin{linenomath*}\begin{align}\label{eq:relErrorEVar}
 \frac{\Vert \text{E}[\bm u_{\Delta}] - \text{E}[\mathcal{U}(\bm{\hat u}_{\Delta})] \Vert_{\Delta}}{\Vert \text{E}[\bm u_{\Delta}] \Vert_{\Delta}} \qquad \text{ and }\qquad \frac{\Vert \text{Var}[\bm u_{\Delta}] - \text{Var}[\mathcal{U}(\bm{\hat u}_{\Delta})] \Vert_{\Delta}}{\Vert \text{Var}[\bm u_{\Delta}] \Vert_{\Delta}}.
-\end{align*}\end{linenomath*}
+\end{align}\end{linenomath*}
 The error is computed inside a box of one meter height and 1.1 meters length around the airfoil to prevent small fluctuations in the coarsely discretized far field from affecting the error.
 
 The quantities of interests are now computed with the different methods. All methods in this section have been computed using five MPI threads. For more information on the chosen entropy and the resulting solution ansatz for IPM, see \ref{app:IPM2DEuler}. 
@@ -114,7 +114,7 @@ The quantities of interests are now computed with the different methods. All met
 		\caption{}
 		\label{fig:sub34}
 	\end{subfigure}
-	\caption{Comparison of the relative L$^2$-error for the density for IPM related methods (first row) and of the best performing IPM method in comparison with SC (second row). All intrusive methods converge to a residual $\varepsilon=6\cdot 10^{-6}$, whereas all non-intrusive methods converge to a residual $\varepsilon=1\cdot 10^{-7}$. All computations are performed with 5 MPI threads.}
+	\caption{Comparison of the relative L$^2$-error \comment{\eqref{eq:relErrorEVar}} for the density for IPM related methods (first row) and of the best performing IPM method in comparison with SC (second row). All intrusive methods \comment{(i.e. SG, IPM, osIPM, adosIPM, readosIPM) are converged} to a residual $\varepsilon=6\cdot 10^{-6}$ \comment{(see equation \eqref{eq:residualSteady})}, whereas all non-intrusive methods \comment{(i.e. SC) are converged} to a residual $\varepsilon=1\cdot 10^{-7}$ \comment{in order to obtain an error which remains constant in time. SG and IPM are computed with Algorithm~\ref{alg:IPM} (where SG uses a quadratic entropy) adapted for steady problems. For osIPM we used Algorithm~\ref{alg:osIPM}, for adosIPM and readosIPM we use Algorithm~\ref{alg:adosIPM} with and without refinement retardation.} All computations are performed with 5 MPI threads.}
 	\label{fig:L2ErrorSolution}
 \end{figure}
 \begin{figure}[h!]
@@ -167,7 +167,7 @@ Recall that the numerical flux \eqref{eq:numericalFluxIPM} uses a quadrature rul
 
 Let us now compare results obtained with stochastic-Galerkin and IPM as well as its proposed acceleration techniques at a fixed moment order $9$. Note, that since IPM generalizes SG, all proposed techniques can be used for stochastic-Galerkin as well. All adaptive methods use gPC polynomials of order 2 to 9 (i.e. 3 to 10 moments). Order $2$ uses $5$ quadrature points, orders $3$ to $6$ use $9$ quadrature points and orders $8$ and $9$ use $17$ quadrature points. When the smoothness indicator \eqref{eq:errorIndicator} lies below $\delta_{-} = 2\cdot 10^{-4}$, the adaptive methods decrease the truncation order, if it lies above $\delta_{+} = 2\cdot 10^{-5}$ the truncation order is increased. The remaining methods have been computed with $17$ quadrature points. The iteration in pseudo-time is performed until the expectation value of the density fulfills the stopping criterion \eqref{eq:residualSteady} with $\varepsilon = 6\cdot 10^{-6}$, however it can be seen that the error saturates already at a bigger residual.
 
-First, let us mention that the adaptive SG method fails, since it yields negative densities during the iteration. The standard SG method however preserves positivity of mass, energy and pressure. The change of the relative L$^2$-error during the iteration to the steady state has been recorded in Figure~\ref{fig:sub31} for the expectation value and in Figure~\ref{fig:sub32} for the variance. When comparing intrusive methods without acceleration techniques as well as SC, the following properties emerge:
+First, let us mention that the adaptive SG method fails, since it yields negative \comment{gas} densities during the iteration. The standard SG method \comment{without adaptivity} however preserves positivity of \comment{density}, energy and pressure \comment{in our numerical experiments. Note that in general, stochastic-Galerkin does not guarantee positivity of these quantities, since the polynomial approximation does not guarantee any solution bounds.} The change of the relative L$^2$-error during the iteration to the steady state has been recorded in Figure~\ref{fig:sub31} for the expectation value and in Figure~\ref{fig:sub32} for the variance. When comparing intrusive methods without acceleration techniques as well as SC, the following properties emerge:
 \begin{itemize}
 \item Compared to IPM, stochastic-Galerkin comes at a significantly reduced runtime, meaning that the IPM optimization problem requires a significant computational effort.
 \item For the expectation value SG$_9$ shows a smaller error compared to IPM$_9$, while for the variance, we see the opposite, i.e. IPM yields a better solution approximation than SG.
@@ -308,7 +308,7 @@ The error during the iteration has been recorded in Figure~\ref{fig:L2ErrorSolut
 		\caption{}
 		\label{fig:readosIPMEVar2DRefinement}
 	\end{subfigure}
-	\caption{Reference solution (\subref{fig:referenceSolutionsub2DE}) E$[\rho]$ and (\subref{fig:referenceSolutionsub2DVar}) Var$[\rho]$ and with logarithmic scaled (\subref{fig:referenceSolutionsub2DVarLog}) Var$[\rho]$. readosIPM$_{1-9}$ solution for (\subref{fig:reados2DE}) E$[\rho]$ and (\subref{fig:reados2DVar}) Var$[\rho]$, with the resulting (\subref{fig:readosIPMEVar2DRefinement}) refinement levels.}
+	\caption{Reference solution (\subref{fig:referenceSolutionsub2DE}) E$[\rho]$ and (\subref{fig:referenceSolutionsub2DVar}) Var$[\rho]$ and with logarithmic scaled (\subref{fig:referenceSolutionsub2DVarLog}) Var$[\rho]$. \comment{The reference solution has been computed with stochastic-Collocation using $50^2$ Gauss-Legendre quadrature points.} readosIPM$_{1-9}$ solution for (\subref{fig:reados2DE}) E$[\rho]$ and (\subref{fig:reados2DVar}) Var$[\rho]$, with the resulting (\subref{fig:readosIPMEVar2DRefinement}) refinement levels.}
 	\label{fig:refAndreadosIPMEVar2D}
 \end{figure}
 When looking at the computed IPM expectation value and variance (see Figure~\ref{fig:reados2DE} and \ref{fig:reados2DVar}) and comparing the results against the reference solution in Figure~\ref{fig:referenceSolutionsub2DE} and \ref{fig:referenceSolutionsub2DVar}, one can observe that since the uncertainties have a bigger effect on the result than in the one-dimensional case, the IPM solution still shows a step-like profile. However, we are able to capture the main features of the reference solution. The increased effect of the uncertainty can again be seen in Figure~\ref{fig:readosIPMEVar2DRefinement}, where a refinement level of $8$, i.e. a truncation order of $9$ is chosen on a larger portion than for the one-dimensional case. Visualizing the variance on a logarithmic scale in Figure~\ref{fig:referenceSolutionsub2DVarLog} further shows that the applied refinement indicators work well and enforce the usage of higher order moments in areas of high variance.
@@ -397,6 +397,6 @@ Even though the solutions in Figure \ref{fig:solution3D} show the same character
 		\caption{}
 		\label{fig:adIPMSolutionsPipeTGRI}
 	\end{subfigure}
-	\caption{Reference solution E$[\rho]$ and Var$[\rho]$ and used computational mesh (top row) and corresponding adaptive IPM solutions for sparse (middle row) and tensorized grids (bottom row) with the used refinement levels at the last time step}
+	\caption{Reference solution E$[\rho]$ and Var$[\rho]$ and used computational mesh (top row) and corresponding adaptive IPM solutions for sparse (middle row) and tensorized grids (bottom row) with the used refinement levels at the last time step. \comment{The reference solution has been computed with stochastic-Collocation using $50^3$ Gauss-Legendre quadrature points.}}
 	\label{fig:solution3D}
 \end{figure}

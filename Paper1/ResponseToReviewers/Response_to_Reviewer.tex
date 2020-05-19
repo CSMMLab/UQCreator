@@ -30,7 +30,7 @@
 \usepackage{bm}
 
 \title{Reply to Reviewers}
-\author{Martin Frank, Jonas Kusch and Jannick Wolters}
+\author{Jonas Kusch, Jannick Wolters and Martin Frank}
 \date{\today}                                           % Activate to display a given date or no date
 
 \setlength{\parindent}{0pt}
@@ -73,7 +73,7 @@ throughout the whole proof.
 \end{align*}
 Since only the last term $\bm{H}^{-1}(\bm\lambda) \bm{\hat u}$ depends on the moment vector $\bm{\hat u}$, we have
 \begin{align*}
-\partial_{\bm{\hat u}} d(\bm{\lambda},\bm{\hat u}) = \bm{H}^{-1}(\bm\lambda).
+\partial_{\bm{\hat u}} \bm d(\bm{\lambda},\bm{\hat u}) = \bm{H}^{-1}(\bm\lambda).
 \end{align*}
 Note that for the One-Shot method, the moments $\bm{\hat u}$ and dual variables $\bm\lambda$ do not depend on each other.  
 \item page 12 in Algo. 3, it would be better to write ”Determine Refinement
@@ -84,11 +84,12 @@ notations.
 \\ \textbf{Response:} We added a short description on how the defined quantities relate to the conserved variables TODO.
 \item I missed the definition of the reference solution $u_{\Delta}$. It must be explicit
 (or more visible).
-\item Figure 3: the threshold $\varepsilon = 10^{-6}$ is not visible on the plots, as it should
-be. Also the intrusive and non intrusives methods must be more explicit:
-which ones (number of equations, . . . ).
+\\ \textbf{Response:} We compute the reference solution with a finely resolved collocation method. The one-dimensional testcase uses 100 Gauss-Legendre quadrature points (as mentioned in line 506 in the original manuscript), the two-dimensional testcase uses $50^2$ quadrature points (as mentioned in line 620 in the original manuscript) and the three-dimensional testcase uses $50^3$ quadrature points (as mentioned in line 661 in the original manuscript). You are correct that this information gets lost in the text which is why we added a short description whenever we plot reference solutions (which we do in Figures 1, 7 and 8).
+\item Figure 3: the threshold $\varepsilon = 10^{-6}$ is not visible on the plots, as it should be. Also the intrusive and non intrusives methods must be more explicit: which ones (number of equations, . . . ).
+\\ \textbf{Response:} We added the names of intrusive and non-intrusive methods and include references to the corresponding algorithms. The residual cannot be depicted in the plot itself, since the y-axis is the relative error, not the residual. We added references to the relative error as well as to the residual equations to avoid confusion.
 \item Lines 553/554 page 17 seem weird. What do you call positivity of mass?
 Is it total mass? If yes, there is not problem with a conservative scheme.
+\\ \textbf{Response:} We meant to say density, which we changed in the manuscript. The total mass (here the expected value of the total mass) is conserved by the scheme, however the solution at individual values for $\xi$ might yield negative densities, since we are using polynomials to span the solution in $\xi$. 
 \item Line 691 in the conclusion (Additionally, the ability to adaptively change
 692 the truncation order helps intrusive methods to compete with SC in
 terms of computational runtime) are an interesting asset of the methods
