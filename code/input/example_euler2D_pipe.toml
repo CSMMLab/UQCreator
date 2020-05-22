@@ -8,21 +8,21 @@ dimension = 2
 format = "SU2"
 SU2MeshFile = "nozzleCoarse.su2"
 SU2BC = [["outlet","dirichlet"], ["walls", "noslip"]]
-outputFile = "nozzle"
+outputFile = "nozzle_hSG_"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.0]]
+distribution = [["Legendre"],[0.2]]
 CFL = 0.9
 tEnd = 4.0 #0.0035
 
 [moment_system]
-# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter
-closure = "StochasticGalerkin"
-moments = [["totalDegree"],[1]]
-quadPoints = [["tensorizedGrid"],[3]]
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, HyperbolicityLimiter
+closure = "HyperbolicityLimiter"
+moments = [["totalDegree"],[5]]
+quadPoints = [["tensorizedGrid"],[10]]
 #filterStrength = 0.000002
 #regularizationStrength = 1e-4
 maxIterations = 1000

@@ -79,22 +79,17 @@ void HyperbolicityLimiter2D::SolveClosure( Matrix& lambda, const Matrix& u, unsi
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
         // rho[k] = t1Max * rhoTilde + ( 1.0 - t1Max ) * rho[k];    // why do we add this (taken from scalar code)
 
-        double thetaTilde1 = pow( rho[k], 2 ) * pow( ETilde, 2 ) - 2 * rho[k] * rhoTilde * E[k] * ETilde + 2 * rho[k] * E[k] * pow( m1Tilde, 2 ) +
-                             2 * rho[k] * E[k] * pow( m2Tilde, 2 ) - 2 * rho[k] * ETilde * m1[k] * m1Tilde - 2 * rho[k] * ETilde * m2[k] * m2Tilde;
+        // a* t ^ 2 + b* t + c = 0
+        double a = ( ETilde - E[k] ) * ( rhoTilde - rho[k] ) - 0.5 * pow( m1Tilde - m1[k], 2 ) - 0.5 * pow( m2Tilde - m2[k], 2 );
+        double b = m1Tilde * ( m1Tilde - m1[k] ) - ETilde * ( rhoTilde - rho[k] ) - rhoTilde * ( ETilde - E[k] ) + m2Tilde * ( m2Tilde - m2[k] );
+        double c = ETilde * rhoTilde - 0.5 * pow( m1Tilde, 2 ) - 0.5 * pow( m2Tilde, 2 ) - e;
 
-        double thetaTilde2 = pow( rhoTilde, 2 ) * pow( E[k], 2 ) - 2 * rhoTilde * E[k] * m1[k] * m1Tilde - 2 * rhoTilde * E[k] * m2[k] * m2Tilde +
-                             2 * rhoTilde * ETilde * pow( m1[k], 2 ) + 2 * rhoTilde * ETilde * pow( m2[k], 2 ) -
-                             pow( m1[k] * m2Tilde - m2[k] * m1Tilde, 2 );
-
-        double thetaTilde = thetaTilde1 + thetaTilde2;
-
-        double denominator = pow( m1[k] - m1Tilde, 2 ) + pow( m2[k] - m2Tilde, 2 ) - 2 * rho[k] * E[k] + 2 * rho[k] * ETilde + 2 * rhoTilde * E[k] -
-                             2 * rhoTilde * ETilde;
-
-        double part1Nominator = rho[k] * ETilde - 2 * rho[k] * E[k] + rhoTilde * E[k] - m1[k] * m1Tilde - m2[k] * m2Tilde;
-
-        double t2a = ( part1Nominator + sqrt( thetaTilde ) ) / denominator;
-        double t2b = ( part1Nominator - sqrt( thetaTilde ) ) / denominator;
+        double q = -0.5 * ( b + MathTools::sign( b ) * sqrt( pow( b, 2 ) - 4.0 * a * c ) );
+        // how can I check this in C++ ?
+        // q        = real( q );
+        // if( pow( b, 2 ) - 4.0 * a * c < 0 ) std::cerr << "[RealizabilityLimiter]: Imaginary unit detected!" << std::endl;
+        double t2a = q / a;
+        double t2b = c / q;
 
         if( t2a > 1.0 || t2a < 0.0 || !std::isfinite( t2a ) ) t2a = 0.0;
         if( t2b > 1.0 || t2b < 0.0 || !std::isfinite( t2b ) ) t2b = 0.0;
@@ -104,8 +99,6 @@ void HyperbolicityLimiter2D::SolveClosure( Matrix& lambda, const Matrix& u, unsi
     }
 
     double theta = MathTools::max( t2Max, t1Max );
-    std::cout << t2Max << std::endl;
-    std::cout << "theta = " << theta << std::endl;
 
     lambda = theta * u2 + ( 1 - theta ) * u;
 }

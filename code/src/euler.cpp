@@ -93,7 +93,7 @@ double Euler::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
 }
 
 Vector Euler::IC( const Vector& x, const Vector& xi ) {
-    bool sodShockTube = false;
+    bool sodShockTube = true;
 
     double x0    = 0.5;
     double gamma = 1.4;
@@ -141,7 +141,7 @@ Vector Euler::LoadIC( const Vector& x, const Vector& xi ) {
 }
 
 Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
-    bool sodShockTube = false;
+    bool sodShockTube = true;
     double x0         = 0.5 + _sigma[0] * xi[0];    // initial shock position
     double rho_l      = 1.0;
     double P_l        = 1.0;

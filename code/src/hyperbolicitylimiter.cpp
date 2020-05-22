@@ -31,16 +31,16 @@ Matrix HyperbolicityLimiter::U( const Matrix& Lambda ) { return Lambda; }
 void HyperbolicityLimiter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 
 void HyperbolicityLimiter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    Vector rho2( _nQTotalForRef[refLevel], 0.0 );
-    Vector m2( _nQTotalForRef[refLevel], 0.0 );
-    Vector E2( _nQTotalForRef[refLevel], 0.0 );
-    Vector p2( _nQTotalForRef[refLevel], 0.0 );
+    Vector rho( _nQTotalForRef[refLevel], 0.0 );
+    Vector m( _nQTotalForRef[refLevel], 0.0 );
+    Vector E( _nQTotalForRef[refLevel], 0.0 );
+    Vector p( _nQTotalForRef[refLevel], 0.0 );
     Vector t1( _nQTotalForRef[refLevel], 0.0 );
     unsigned nTotal = _nTotalForRef[refLevel];
     // save zero order moments (realizable solution)
-    double rho1 = u( 0, 0 );
-    double m1   = u( 1, 0 );
-    double E1   = u( 2, 0 );
+    double rhoTilde = u( 0, 0 );
+    double mTilde   = u( 1, 0 );
+    double ETilde   = u( 2, 0 );
 
     // save zero order moment as full moment vector for output
     Matrix u2( _nStates, nTotal );
@@ -50,20 +50,20 @@ void HyperbolicityLimiter::SolveClosure( Matrix& lambda, const Matrix& u, unsign
 
     double t1Max = -1000;
 
-    double p1 = ( _gamma - 1.0 ) * ( E1 - 0.5 * pow( m1, 2 ) / rho1 );
+    double pTilde = ( _gamma - 1.0 ) * ( ETilde - 0.5 * pow( mTilde, 2 ) / rhoTilde );
 
     // Question: Is e a scalar in our case?
-    double e = MathTools::min( 1e-10, MathTools::min( rho1, p1 ) );
+    double e = MathTools::min( 1e-10, MathTools::min( rhoTilde, pTilde ) );
 
     // determine t1Max
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
         Vector uKinetic = EvaluateLambda( u, k, nTotal );
 
-        rho2[k] = uKinetic[0];
-        m2[k]   = uKinetic[1];
-        E2[k]   = uKinetic[2];
+        rho[k] = uKinetic[0];
+        m[k]   = uKinetic[1];
+        E[k]   = uKinetic[2];
 
-        t1[k] = ( e - rho2[k] ) / ( rho1 - rho2[k] );
+        t1[k] = ( rho[k] - e ) / ( rho[k] - rhoTilde );
         if( t1[k] > 1.0 || t1[k] < 0.0 || !std::isfinite( t1[k] ) ) t1[k] = 0.0;
 
         if( t1[k] > t1Max ) t1Max = t1[k];
@@ -73,14 +73,14 @@ void HyperbolicityLimiter::SolveClosure( Matrix& lambda, const Matrix& u, unsign
 
     // determine t2Max
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-        rho2[k] = t1Max * rho1 + ( 1.0 - t1Max ) * rho2[k];
+        rho[k] = t1Max * rhoTilde + ( 1.0 - t1Max ) * rho[k];    // why should we do this??
 
-        p2[k] = ( _gamma - 1.0 ) * ( E2[k] - 0.5 * pow( m2[k], 2 ) / rho2[k] );
+        p[k] = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
 
         // a* t ^ 2 + b* t + c = 0
-        double a = ( E2[k] - E1 ) * ( rho2[k] - rho1 ) - 0.5 * pow( m2[k] - m1, 2 );
-        double b = m2[k] * ( m2[k] - m1 ) - rho2[k] * ( E2[k] - E1 ) - E2[k] * ( rho2[k] - rho1 );
-        double c = E2[k] * rho2[k] - 0.5 * pow( m2[k], 2 ) - e;
+        double a = ( E[k] - ETilde ) * ( rho[k] - rhoTilde ) - 0.5 * pow( m[k] - mTilde, 2 );
+        double b = m[k] * ( m[k] - mTilde ) - rho[k] * ( E[k] - ETilde ) - E[k] * ( rho[k] - rhoTilde );
+        double c = E[k] * rho[k] - 0.5 * pow( m[k], 2 ) - e;
 
         double q = -0.5 * ( b + MathTools::sign( b ) * sqrt( pow( b, 2 ) - 4.0 * a * c ) );
         if( pow( b, 2 ) - 4.0 * a * c < 0 ) std::cerr << "[RealizabilityLimiter]: Imaginary unit detected!" << std::endl;
@@ -95,15 +95,16 @@ void HyperbolicityLimiter::SolveClosure( Matrix& lambda, const Matrix& u, unsign
         double t2MaxTmp = MathTools::max( t2a, t2b );
         if( t2MaxTmp > t2Max ) t2Max = t2MaxTmp;
     }
-
-    lambda = t2Max * u2 + ( 1 - t2Max ) * u;
+    double theta = t2Max;
+    if( t1Max > t2Max ) theta = t1Max;
+    lambda = theta * u2 + ( 1 - theta ) * u;
 }
 
 void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    Vector rho2( _nQTotalForRef[refLevel], 0.0 );
-    Vector m2( _nQTotalForRef[refLevel], 0.0 );
-    Vector E2( _nQTotalForRef[refLevel], 0.0 );
-    Vector p2( _nQTotalForRef[refLevel], 0.0 );
+    Vector rho( _nQTotalForRef[refLevel], 0.0 );
+    Vector m( _nQTotalForRef[refLevel], 0.0 );
+    Vector E( _nQTotalForRef[refLevel], 0.0 );
+    Vector p( _nQTotalForRef[refLevel], 0.0 );
     Vector t1( _nQTotalForRef[refLevel], 0.0 );
     unsigned nTotal = _nTotalForRef[refLevel];
     Matrix uF       = u;
@@ -115,32 +116,32 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
     }
 
     // save zero order moments (realizable solution)
-    double rho1 = uF( 0, 0 );
-    double m1   = uF( 1, 0 );
-    double E1   = uF( 2, 0 );
+    double rhoTilde = uF( 0, 0 );
+    double mTilde   = uF( 1, 0 );
+    double ETilde   = uF( 2, 0 );
 
     // save zero order moment as full moment vector for output
-    Matrix u2( _nStates, nTotal );
+    Matrix u2( _nStates, nTotal, 0.0 );
     u2( 0, 0 ) = uF( 0, 0 );
     u2( 1, 0 ) = uF( 1, 0 );
     u2( 2, 0 ) = uF( 2, 0 );
 
     double t1Max = -1000;
 
-    double p1 = ( _gamma - 1.0 ) * ( E1 - 0.5 * pow( m1, 2 ) / rho1 );
+    double pTilde = ( _gamma - 1.0 ) * ( ETilde - 0.5 * pow( mTilde, 2 ) / rhoTilde );
 
     // Question: Is e a scalar in our case?
-    double e = MathTools::min( 1e-10, MathTools::min( rho1, p1 ) );
+    double e = MathTools::min( 1e-10, MathTools::min( rhoTilde, pTilde ) );
 
     // determine t1Max
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
         Vector uKinetic = EvaluateLambda( u, k, nTotal );
 
-        rho2[k] = uKinetic[0];
-        m2[k]   = uKinetic[1];
-        E2[k]   = uKinetic[2];
+        rho[k] = uKinetic[0];
+        m[k]   = uKinetic[1];
+        E[k]   = uKinetic[2];
 
-        t1[k] = ( e - rho2[k] ) / ( rho1 - rho2[k] );
+        t1[k] = ( e - rho[k] ) / ( rhoTilde - rho[k] );
         if( t1[k] > 1.0 || t1[k] < 0.0 || !std::isfinite( t1[k] ) ) t1[k] = 0.0;
 
         if( t1[k] > t1Max ) t1Max = t1[k];
@@ -150,14 +151,14 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
 
     // determine t2Max
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-        rho2[k] = t1Max * rho1 + ( 1.0 - t1Max ) * rho2[k];
+        rho[k] = t1Max * rhoTilde + ( 1.0 - t1Max ) * rho[k];
 
-        p2[k] = ( _gamma - 1.0 ) * ( E2[k] - 0.5 * pow( m2[k], 2 ) / rho2[k] );
+        p[k] = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
 
         // a* t ^ 2 + b* t + c = 0
-        double a = ( E2[k] - E1 ) * ( rho2[k] - rho1 ) - 0.5 * pow( m2[k] - m1, 2 );
-        double b = m2[k] * ( m2[k] - m1 ) - rho2[k] * ( E2[k] - E1 ) - E2[k] * ( rho2[k] - rho1 );
-        double c = E2[k] * rho2[k] - 0.5 * pow( m2[k], 2 ) - e;
+        double a = ( E[k] - ETilde ) * ( rho[k] - rhoTilde ) - 0.5 * pow( m[k] - mTilde, 2 );
+        double b = m[k] * ( m[k] - mTilde ) - rho[k] * ( E[k] - ETilde ) - E[k] * ( rho[k] - rhoTilde );
+        double c = E[k] * rho[k] - 0.5 * pow( m[k], 2 ) - e;
 
         double q = -0.5 * ( b + MathTools::sign( b ) * sqrt( pow( b, 2 ) - 4.0 * a * c ) );
         // how can I check this in C++ ?
@@ -173,5 +174,25 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
         if( t2MaxTmp > t2Max ) t2Max = t2MaxTmp;
     }
 
-    lambda = t2Max * u2 + ( 1 - t2Max ) * uF;
+    double theta = t2Max;
+    if( t1Max > t2Max ) theta = t1Max;
+
+    lambda = theta * u2 + ( 1.0 - theta ) * uF;
+    /*
+        // test positivity for limited moments
+        for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
+            Vector uKinetic = EvaluateLambda( lambda, k, nTotal );
+
+            rho[k] = uKinetic[0];
+            m[k]   = uKinetic[1];
+            E[k]   = uKinetic[2];
+            p[k]   = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
+
+            if( rho[k] < 0.0 || E[k] < 0.0 || p[k] < 0.0 ) {
+                std::cerr << "ERROR: Non-realizable reconstruction detected" << std::endl;
+                std::cout << "theta = " << t2Max << std::endl;
+                std::cout << "states are " << rho[k] << " " << E[k] << " " << p[k] << std::endl;
+            }
+        }
+        */
 }
