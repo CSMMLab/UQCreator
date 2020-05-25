@@ -3,24 +3,41 @@
 
 HyperbolicityLimiter::HyperbolicityLimiter( Settings* settings )
     : Closure( settings ), _gamma( _settings->GetGamma() ), _lambda( _settings->GetFilterStrength() ) {
-    _alpha = 1.0;
+    _alpha          = 1.0;
+    double epsilonM = std::numeric_limits<double>::denorm_min();
+    _c              = log( epsilonM );
     if( _lambda < 0 ) _lambda = 0.0;
     unsigned nMoments = _settings->GetNMoments();
     _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                unsigned index =
-                    unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
-                _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
-            }
-        }
+
+    try {
+        auto file = cpptoml::parse_file( _settings->GetInputFile() );
+
+        auto problem = file->get_table( "moment_system" );
+        _filterOrder = problem->get_as<double>( "filterOrder" ).value_or( 1 );
+    } catch( const cpptoml::parse_exception& e ) {
+        _log->error( "[SplineFilter] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
+        exit( EXIT_FAILURE );
     }
+
+    std::cout << "-------------" << std::endl;
+    for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+        for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+            // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
+            // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+            unsigned index =
+                unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
+            _filterFunction[i] *= pow( FilterFunction( double( index ) / double( nMoments + 1 ) ), _lambda );
+        }
+        std::cout << "g = " << _filterFunction[i] << std::endl;
+    }
+    std::cout << "-------------" << std::endl;
+    // exit( EXIT_FAILURE );
 }
 
 HyperbolicityLimiter::~HyperbolicityLimiter() {}
+
+double HyperbolicityLimiter::FilterFunction( double eta ) const { return exp( _c * pow( eta, _filterOrder ) ); }
 
 void HyperbolicityLimiter::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
 
@@ -111,7 +128,7 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
 
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            uF( s, i ) = _filterFunction[i] * u( s, i );
+            uF( s, i ) = pow( _filterFunction[i], _settings->GetDT() ) * u( s, i );
         }
     }
 
@@ -135,7 +152,7 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
 
     // determine t1Max
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-        Vector uKinetic = EvaluateLambda( u, k, nTotal );
+        Vector uKinetic = EvaluateLambda( uF, k, nTotal );
 
         rho[k] = uKinetic[0];
         m[k]   = uKinetic[1];
@@ -178,21 +195,20 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
     if( t1Max > t2Max ) theta = t1Max;
 
     lambda = theta * u2 + ( 1.0 - theta ) * uF;
-    /*
-        // test positivity for limited moments
-        for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-            Vector uKinetic = EvaluateLambda( lambda, k, nTotal );
 
-            rho[k] = uKinetic[0];
-            m[k]   = uKinetic[1];
-            E[k]   = uKinetic[2];
-            p[k]   = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
+    // test positivity for limited moments
+    for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
+        Vector uKinetic = EvaluateLambda( lambda, k, nTotal );
 
-            if( rho[k] < 0.0 || E[k] < 0.0 || p[k] < 0.0 ) {
-                std::cerr << "ERROR: Non-realizable reconstruction detected" << std::endl;
-                std::cout << "theta = " << t2Max << std::endl;
-                std::cout << "states are " << rho[k] << " " << E[k] << " " << p[k] << std::endl;
-            }
+        rho[k] = uKinetic[0];
+        m[k]   = uKinetic[1];
+        E[k]   = uKinetic[2];
+        p[k]   = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
+
+        if( rho[k] < 0.0 || E[k] < 0.0 || p[k] < 0.0 ) {
+            std::cerr << "ERROR: Non-realizable reconstruction detected" << std::endl;
+            std::cout << "theta = " << theta << std::endl;
+            std::cout << "states are " << rho[k] << " " << E[k] << " " << p[k] << std::endl;
         }
-        */
+    }
 }

@@ -99,9 +99,9 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
     double gamma = 1.4;
 
     double rhoL = 1.0;
-    double rhoR = 0.1;
+    double rhoR = 0.125;
     double pL   = 1.0;
-    double pR   = 0.125;
+    double pR   = 0.1;
     double uL   = 0.0;
     double uR   = 0.0;
 
@@ -116,7 +116,7 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
         y[0]                  = rhoL;
         y[1]                  = rhoL * uL;
         double kineticEnergyL = 0.5 * rhoL * pow( uL, 2 );
-        double innerEnergyL   = ( pL / ( rhoL * ( gamma - 1 ) ) ) * rhoL;
+        double innerEnergyL   = pL / ( gamma - 1.0 );
         y[2]                  = kineticEnergyL + innerEnergyL;
     }
     else {
@@ -146,8 +146,8 @@ Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const
     double rho_l      = 1.0;
     double P_l        = 1.0;
     double u_l        = 0.0;
-    double rho_r      = 0.1;
-    double P_r        = 0.125;
+    double rho_r      = 0.125;
+    double P_r        = 0.1;
     double u_r        = 0.0;
 
     if( !sodShockTube ) {
