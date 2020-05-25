@@ -1,0 +1,42 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\usepackage{color}
+\newcommand{\comment}[1]{\textcolor{red}{#1}}
+
+
+\newcommand*\xoverline[2][0.75]{%
+    \sbox{\myboxA}{$\m@th#2$}%
+    \setbox\myboxB\null% Phantom box
+    \ht\myboxB=\ht\myboxA%
+    \dp\myboxB=\dp\myboxA%
+    \wd\myboxB=#1\wd\myboxA% Scale phantom
+    \sbox\myboxB{$\m@th\overline{\copy\myboxB}$}%  Overlined phantom
+    \setlength\mylenA{\the\wd\myboxA}%   calc width diff
+    \addtolength\mylenA{-\the\wd\myboxB}%
+    \ifdim\wd\myboxB<\wd\myboxA%
+       \rlap{\hskip 0.5\mylenA\usebox\myboxB}{\usebox\myboxA}%
+    \else
+        \hskip -0.5\mylenA\rlap{\usebox\myboxA}{\hskip 0.5\mylenA\usebox\myboxB}%
+    \fi}
+\makeatother
+\usepackage{bm}
+
+\title{Reply to Reviewers}
+\author{Jonas Kusch, Jannick Wolters and Martin Frank}
+\date{\today}                                           % Activate to display a given date or no date
+
+\setlength{\parindent}{0pt}
+
+\begin{document}
+\textbf{Jonas Kusch:} Conceptualization, Software, Validation, Formal analysis, Investigation, Writing - Original Draft, Writing - Review \& Editing \\
+\textbf{Jannick Wolters:} Software, Validation, Investigation,  Data Curation, Writing - Original Draft, Visualization \\
+\textbf{Martin Frank:} Methodology, Writing - Original Draft, Supervision, Funding acquisition  
+\end{document}  
