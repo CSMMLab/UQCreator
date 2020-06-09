@@ -1,14 +1,14 @@
 #include "euler1dfpfilter.h"
 
 Euler1DFPFilter::Euler1DFPFilter( Settings* settings ) : EulerClosure( settings ), _lambda( _settings->GetFilterStrength() ) {
-    unsigned nMoments = _settings->GetNMoments();
-    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
-    _hyperbolicityFix = false;    // turns on Graham's hyperbolicity fix
+    unsigned maxDegree = _settings->GetMaxDegree();
+    _filterFunction    = Vector( _settings->GetNTotal(), 1.0 );
+    _hyperbolicityFix  = false;    // turns on Graham's hyperbolicity fix
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
                 unsigned index =
-                    unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
+                    unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
                 _filterFunction[i] *= std::exp( -_lambda * index * ( index + 1 ) );
             }
         }

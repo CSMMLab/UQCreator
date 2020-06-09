@@ -4,7 +4,7 @@
 
 namespace cpptoml {
 inline std::shared_ptr<table> parse_file( const std::istringstream& content ) {
-    parser p{const_cast<std::istringstream&>( content )};
+    parser p{ const_cast<std::istringstream&>( content ) };
     return p.parse();
 }
 }    // namespace cpptoml
@@ -288,7 +288,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             _nTotalRefinementLevel = VectorU( _nRefinementLevels );
             _refinementLevel       = VectorU( _nRefinementLevels );
             for( unsigned i = 0; i < _nRefinementLevels; ++i ) _refinementLevel[i] = unsigned( ( *momentArray )[i] );
-            _nMoments = unsigned( ( *momentArray )[momentArray->size() - 1] );    // unsigned( ( *nMoments )[nMoments->size() - 1] );
+            _maxDegree = unsigned( ( *momentArray )[momentArray->size() - 1] );
             // compute nTotal
             if( degreeType->at( 0 ).compare( "maxDegree" ) == 0 ) {
                 _useMaxDegree = true;
@@ -311,11 +311,11 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             int previousDegree = -1;
             // loop over all levels and only store indices of certain level to ensure correct ordering
             for( unsigned level = 0; level < _nRefinementLevels; ++level ) {
-                for( unsigned i = 0; i < std::pow( _nMoments + 1, _numDimXi ); ++i ) {
+                for( unsigned i = 0; i < std::pow( _maxDegree + 1, _numDimXi ); ++i ) {
                     totalDegree = 0;
                     for( unsigned l = 0; l < _numDimXi; ++l ) {
-                        indexTest[l] = unsigned( ( i - i % unsigned( std::pow( _nMoments + 1, l ) ) ) / unsigned( std::pow( _nMoments + 1, l ) ) ) %
-                                       ( _nMoments + 1 );
+                        indexTest[l] = unsigned( ( i - i % unsigned( std::pow( _maxDegree + 1, l ) ) ) / unsigned( std::pow( _maxDegree + 1, l ) ) ) %
+                                       ( _maxDegree + 1 );
                         totalDegree += indexTest[l];
                     }
                     // if total degree is sufficiently small or max degree is used, indices are stored
@@ -497,7 +497,7 @@ void Settings::SetImplicitSource( bool hasSource ) { _hasImplicitSource = hasSou
 // moment_system
 ClosureType Settings::GetClosureType() const { return _closureType; }
 void Settings::SetClosureType( ClosureType cType ) { _closureType = cType; }
-unsigned Settings::GetNMoments() const { return _nMoments; }
+unsigned Settings::GetMaxDegree() const { return _maxDegree; }
 unsigned Settings::GetNQuadPoints() const { return _nQuadPoints; }
 void Settings::SetNQuadPoints( unsigned nqNew ) { _nQuadPoints = nqNew; }
 unsigned Settings::GetNQTotal() const { return _nQTotal; }

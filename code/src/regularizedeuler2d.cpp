@@ -2,13 +2,13 @@
 
 RegularizedEuler2D::RegularizedEuler2D( Settings* settings )
     : EulerClosure2D( settings ), _eta( _settings->GetRegularizationStrength() ), _lambda( _settings->GetFilterStrength() ) {
-    unsigned nMoments = _settings->GetNMoments();
-    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
+    unsigned maxDegree = _settings->GetMaxDegree();
+    _filterFunction    = Vector( _settings->GetNTotal(), 1.0 );
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
             for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
                 unsigned index =
-                    unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
+                    unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
                 _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) );
             }
         }

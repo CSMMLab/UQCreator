@@ -31,7 +31,7 @@ class Closure
     std::vector<Vector> _phiTildeVec;
     MatVec _hPartial;    // stores partial matrices for Hessian computation
     double _alpha;       // step size for Newton
-    unsigned _nMoments;
+    unsigned _maxDegree;
     unsigned _nQuadPoints;
     unsigned _nStates;
     unsigned _numDimXi;

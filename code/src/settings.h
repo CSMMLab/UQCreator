@@ -97,7 +97,7 @@ class Settings
     std::vector<unsigned> _cellIndexPE;    // vector of spatial cells for PE
     std::vector<int> _PEforCell;
 
-    unsigned _nMoments;                                 // number of moments in one dimension
+    unsigned _maxDegree;                                // number of moments in one dimension
     unsigned _nTotal;                                   // number of moments in all dimensions
     VectorU _nTotalRefinementLevel;                     // vector of number of moments in all dimensions for each refinement level
     VectorU _refinementLevel;                           // vector of different refinement levels
@@ -187,7 +187,7 @@ class Settings
     // moment_system
     ClosureType GetClosureType() const;
     void SetClosureType( ClosureType cType );
-    unsigned GetNMoments() const;
+    unsigned GetMaxDegree() const;
 
     unsigned GetNTotal() const;
     VectorU GetNTotalRefinementLevel() const;

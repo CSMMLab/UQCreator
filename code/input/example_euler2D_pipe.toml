@@ -9,6 +9,7 @@ format = "SU2"
 SU2MeshFile = "nozzleCoarse.su2"
 SU2BC = [["outlet","dirichlet"], ["walls", "noslip"]]
 outputFile = "nozzle_hSG_"
+#outputFile = "nozzle_IPM_"
 
 [problem]
 # available timesteppings: explicitEuler

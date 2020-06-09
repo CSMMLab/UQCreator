@@ -1,10 +1,10 @@
 #include "splinefilter.h"
 
 SplineFilter::SplineFilter( Settings* settings ) : Closure( settings ), _lambda( _settings->GetFilterStrength() ) {
-    _alpha            = 1.0;    // unsigned n;
-    unsigned nMoments = _settings->GetNMoments();
-    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
-    _eta              = pow( 1.0 / double( nMoments + 1 ), 4 );    // set to zero to turn off variance correction
+    _alpha             = 1.0;    // unsigned n;
+    unsigned maxDegree = _settings->GetMaxDegree();
+    _filterFunction    = Vector( _settings->GetNTotal(), 1.0 );
+    _eta               = pow( 1.0 / double( maxDegree + 1 ), 4 );    // set to zero to turn off variance correction
 
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
@@ -22,8 +22,8 @@ SplineFilter::SplineFilter( Settings* settings ) : Closure( settings ), _lambda(
             // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
             // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
             unsigned index =
-                unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
-            _filterFunction[i] *= pow( FilterFunction( double( index ) / double( nMoments + 1 ) ), _lambda );
+                unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
+            _filterFunction[i] *= pow( FilterFunction( double( index ) / double( maxDegree + 1 ) ), _lambda );
         }
         std::cout << "g = " << _filterFunction[i] << std::endl;
     }
@@ -34,7 +34,7 @@ SplineFilter::SplineFilter( Settings* settings ) : Closure( settings ), _lambda(
 SplineFilter::~SplineFilter() {}
 
 double SplineFilter::FilterFunction( double eta ) const {
-    if( eta > 0.1 / double( _settings->GetNMoments() + 1 ) )
+    if( eta > 0.1 / double( _settings->GetMaxDegree() + 1 ) )
         return 1.0 / ( pow( eta, 4 ) + 1.0 - _eta );
     else
         return 1.0 / ( pow( eta, 4 ) + 1.0 );

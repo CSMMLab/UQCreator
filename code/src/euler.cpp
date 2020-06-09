@@ -93,7 +93,7 @@ double Euler::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
 }
 
 Vector Euler::IC( const Vector& x, const Vector& xi ) {
-    bool sodShockTube = true;
+    bool sodShockTube = false;
 
     double x0    = 0.5;
     double gamma = 1.4;
@@ -106,8 +106,8 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
     double uR   = 0.0;
 
     if( !sodShockTube ) {
-        pR   = 0.3;    // 0.3
-        rhoR = 0.3;
+        pR   = 0.0125;    // 0.3
+        rhoR = 1.0;
     }
 
     Vector y( _nStates );
@@ -141,7 +141,7 @@ Vector Euler::LoadIC( const Vector& x, const Vector& xi ) {
 }
 
 Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
-    bool sodShockTube = true;
+    bool sodShockTube = false;
     double x0         = 0.5 + _sigma[0] * xi[0];    // initial shock position
     double rho_l      = 1.0;
     double P_l        = 1.0;
@@ -151,8 +151,8 @@ Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const
     double u_r        = 0.0;
 
     if( !sodShockTube ) {
-        P_r   = 0.3;    // 0.3
-        rho_r = 0.3;
+        P_r   = 0.125;    // 0.3
+        rho_r = 0.8;
     }
 
     if( xi.size() > 1 ) {

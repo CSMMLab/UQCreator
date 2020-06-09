@@ -7,8 +7,8 @@ HyperbolicityLimiter::HyperbolicityLimiter( Settings* settings )
     double epsilonM = std::numeric_limits<double>::denorm_min();
     _c              = log( epsilonM );
     if( _lambda < 0 ) _lambda = 0.0;
-    unsigned nMoments = _settings->GetNMoments();
-    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
+    unsigned maxDegree = _settings->GetMaxDegree();
+    _filterFunction    = Vector( _settings->GetNTotal(), 1.0 );
 
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
@@ -26,8 +26,8 @@ HyperbolicityLimiter::HyperbolicityLimiter( Settings* settings )
             // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
             // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
             unsigned index =
-                unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
-            _filterFunction[i] *= pow( FilterFunction( double( index ) / double( nMoments + 1 ) ), _lambda );
+                unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
+            _filterFunction[i] *= pow( FilterFunction( double( index ) / double( maxDegree + 1 ) ), _lambda );
         }
         std::cout << "g = " << _filterFunction[i] << std::endl;
     }
@@ -80,7 +80,8 @@ void HyperbolicityLimiter::SolveClosure( Matrix& lambda, const Matrix& u, unsign
         m[k]   = uKinetic[1];
         E[k]   = uKinetic[2];
 
-        t1[k] = ( rho[k] - e ) / ( rho[k] - rhoTilde );
+        t1[k] = ( e - rho[k] ) / ( rhoTilde - rho[k] );
+        // t1[k] = rho[k] / ( rho[k] - rhoTilde );
         if( t1[k] > 1.0 || t1[k] < 0.0 || !std::isfinite( t1[k] ) ) t1[k] = 0.0;
 
         if( t1[k] > t1Max ) t1Max = t1[k];
@@ -90,21 +91,34 @@ void HyperbolicityLimiter::SolveClosure( Matrix& lambda, const Matrix& u, unsign
 
     // determine t2Max
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-        rho[k] = t1Max * rhoTilde + ( 1.0 - t1Max ) * rho[k];    // why should we do this??
+        // rho[k] = t1Max * rhoTilde + ( 1.0 - t1Max ) * rho[k];
 
-        p[k] = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
+        // p[k] = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
 
         // a* t ^ 2 + b* t + c = 0
         double a = ( E[k] - ETilde ) * ( rho[k] - rhoTilde ) - 0.5 * pow( m[k] - mTilde, 2 );
         double b = m[k] * ( m[k] - mTilde ) - rho[k] * ( E[k] - ETilde ) - E[k] * ( rho[k] - rhoTilde );
+        // double b = m[k] * ( m[k] - mTilde ) + rho[k] * ETilde + E[k] * rhoTilde - 2.0 * E[k] * rho[k];    // my calculation of b is the same
         double c = E[k] * rho[k] - 0.5 * pow( m[k], 2 ) - e;
 
+        // Citardauq Formula as stable p-q formula
         double q = -0.5 * ( b + MathTools::sign( b ) * sqrt( pow( b, 2 ) - 4.0 * a * c ) );
         if( pow( b, 2 ) - 4.0 * a * c < 0 ) std::cerr << "[RealizabilityLimiter]: Imaginary unit detected!" << std::endl;
-        // how can I check this in C++ ?
-        // q        = real( q );
         double t2a = q / a;
         double t2b = c / q;
+
+        // test root
+        double rhoA = t2a * rhoTilde + ( 1.0 - t2a ) * rho[k];
+        double Ea   = t2a * ETilde + ( 1.0 - t2a ) * E[k];
+        double ma   = t2a * mTilde + ( 1.0 - t2a ) * m[k];
+        double root = rhoA * Ea - 0.5 * pow( ma, 2 );
+        // std::cout << "theta = " << t2a << ":   root A " << root << std::endl;
+
+        double rhoB = t2b * rhoTilde + ( 1.0 - t2b ) * rho[k];
+        double Eb   = t2b * ETilde + ( 1.0 - t2b ) * E[k];
+        double mb   = t2b * mTilde + ( 1.0 - t2b ) * m[k];
+        root        = rhoB * Eb - 0.5 * pow( mb, 2 );
+        // std::cout << "theta = " << t2b << "root B " << root << std::endl;
 
         if( t2a > 1.0 || t2a < 0.0 || !std::isfinite( t2a ) ) t2a = 0.0;
         if( t2b > 1.0 || t2b < 0.0 || !std::isfinite( t2b ) ) t2b = 0.0;
@@ -112,9 +126,13 @@ void HyperbolicityLimiter::SolveClosure( Matrix& lambda, const Matrix& u, unsign
         double t2MaxTmp = MathTools::max( t2a, t2b );
         if( t2MaxTmp > t2Max ) t2Max = t2MaxTmp;
     }
+
     double theta = t2Max;
     if( t1Max > t2Max ) theta = t1Max;
-    lambda = theta * u2 + ( 1 - theta ) * u;
+
+    theta = MathTools::max( theta, 0.0 );
+
+    lambda = theta * u2 + ( 1.0 - theta ) * u;
 }
 
 void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
@@ -159,6 +177,7 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
         E[k]   = uKinetic[2];
 
         t1[k] = ( e - rho[k] ) / ( rhoTilde - rho[k] );
+        // t1[k] = rho[k] / ( rho[k] - rhoTilde );
         if( t1[k] > 1.0 || t1[k] < 0.0 || !std::isfinite( t1[k] ) ) t1[k] = 0.0;
 
         if( t1[k] > t1Max ) t1Max = t1[k];
@@ -168,21 +187,34 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
 
     // determine t2Max
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-        rho[k] = t1Max * rhoTilde + ( 1.0 - t1Max ) * rho[k];
+        // rho[k] = t1Max * rhoTilde + ( 1.0 - t1Max ) * rho[k];
 
-        p[k] = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
+        // p[k] = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
 
         // a* t ^ 2 + b* t + c = 0
         double a = ( E[k] - ETilde ) * ( rho[k] - rhoTilde ) - 0.5 * pow( m[k] - mTilde, 2 );
         double b = m[k] * ( m[k] - mTilde ) - rho[k] * ( E[k] - ETilde ) - E[k] * ( rho[k] - rhoTilde );
+        // double b = m[k] * ( m[k] - mTilde ) + rho[k] * ETilde + E[k] * rhoTilde - 2.0 * E[k] * rho[k];    // my calculation of b is the same
         double c = E[k] * rho[k] - 0.5 * pow( m[k], 2 ) - e;
 
+        // Citardauq Formula as stable p-q formula
         double q = -0.5 * ( b + MathTools::sign( b ) * sqrt( pow( b, 2 ) - 4.0 * a * c ) );
-        // how can I check this in C++ ?
-        // q        = real( q );
         if( pow( b, 2 ) - 4.0 * a * c < 0 ) std::cerr << "[RealizabilityLimiter]: Imaginary unit detected!" << std::endl;
         double t2a = q / a;
         double t2b = c / q;
+
+        // test root
+        double rhoA = t2a * rhoTilde + ( 1.0 - t2a ) * rho[k];
+        double Ea   = t2a * ETilde + ( 1.0 - t2a ) * E[k];
+        double ma   = t2a * mTilde + ( 1.0 - t2a ) * m[k];
+        double root = rhoA * Ea - 0.5 * pow( ma, 2 );
+        // std::cout << "theta = " << t2a << ":   root A " << root << std::endl;
+
+        double rhoB = t2b * rhoTilde + ( 1.0 - t2b ) * rho[k];
+        double Eb   = t2b * ETilde + ( 1.0 - t2b ) * E[k];
+        double mb   = t2b * mTilde + ( 1.0 - t2b ) * m[k];
+        root        = rhoB * Eb - 0.5 * pow( mb, 2 );
+        // std::cout << "theta = " << t2b << "root B " << root << std::endl;
 
         if( t2a > 1.0 || t2a < 0.0 || !std::isfinite( t2a ) ) t2a = 0.0;
         if( t2b > 1.0 || t2b < 0.0 || !std::isfinite( t2b ) ) t2b = 0.0;
@@ -194,21 +226,27 @@ void HyperbolicityLimiter::SolveClosureSafe( Matrix& lambda, const Matrix& u, un
     double theta = t2Max;
     if( t1Max > t2Max ) theta = t1Max;
 
+    theta = MathTools::max( theta, 0.0 );
+
     lambda = theta * u2 + ( 1.0 - theta ) * uF;
+    /*
+        // test positivity for limited moments
+        for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
+            Vector uKinetic = EvaluateLambda( lambda, k, nTotal );
 
-    // test positivity for limited moments
-    for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
-        Vector uKinetic = EvaluateLambda( lambda, k, nTotal );
+            rho[k] = uKinetic[0];
+            m[k]   = uKinetic[1];
+            E[k]   = uKinetic[2];
+            p[k]   = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
 
-        rho[k] = uKinetic[0];
-        m[k]   = uKinetic[1];
-        E[k]   = uKinetic[2];
-        p[k]   = ( _gamma - 1.0 ) * ( E[k] - 0.5 * pow( m[k], 2 ) / rho[k] );
-
-        if( rho[k] < 0.0 || E[k] < 0.0 || p[k] < 0.0 ) {
-            std::cerr << "ERROR: Non-realizable reconstruction detected" << std::endl;
-            std::cout << "theta = " << theta << std::endl;
-            std::cout << "states are " << rho[k] << " " << E[k] << " " << p[k] << std::endl;
-        }
-    }
+            if( rho[k] < 0.0 || E[k] < 0.0 || p[k] < 0.0  ) {
+                std::cerr << "ERROR: Non-realizable reconstruction detected" << std::endl;
+                std::cout << "theta = " << theta << std::endl;
+                std::cout << "Moment vectors " << uF << std::endl;
+                std::cout << "states are " << rho[k] << " " << E[k] << " " << p[k] << std::endl;
+            }
+            if( theta > 1e-5 ) {
+                std::cout << "states are " << rho[k] << " " << E[k] << " " << p[k] << " - theta = " << theta << std::endl;
+            }
+        }*/
 }

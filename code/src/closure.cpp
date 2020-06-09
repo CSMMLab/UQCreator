@@ -27,8 +27,8 @@
 #include "uniformsparsegrid.h"
 
 Closure::Closure( Settings* settings )
-    : _settings( settings ), _nMoments( _settings->GetNMoments() ), _nQuadPoints( _settings->GetNQuadPoints() ), _nStates( _settings->GetNStates() ),
-      _maxIterations( _settings->GetMaxIterations() ) {
+    : _settings( settings ), _maxDegree( _settings->GetMaxDegree() ), _nQuadPoints( _settings->GetNQuadPoints() ),
+      _nStates( _settings->GetNStates() ), _maxIterations( _settings->GetMaxIterations() ) {
     _log = spdlog::get( "event" );
     // initialize classes: Basis Functions and Quadrature rules are defined for Legendre and Hermite
     _quad.resize( 2 );

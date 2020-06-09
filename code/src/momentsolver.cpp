@@ -211,7 +211,7 @@ void MomentSolver::Solve() {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
             if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
             if( _settings->WriteInTime() && timeIndex % _settings->GetWriteFrequency() == 1 ) {
-                Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, false );
+                Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true );
                 _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
                 if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
             }
@@ -624,7 +624,7 @@ Settings* MomentSolver::DeterminePreviousSettings() const {
 
 Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const {
     Closure* prevClosure;
-    if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) {
+    if( prevSettings->GetMaxDegree() != _settings->GetMaxDegree() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) {
         prevClosure = Closure::Create( prevSettings );
     }
     else {
@@ -657,7 +657,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         }
 
         // Converge initial condition entropy variables for One Shot IPM or if truncation order is increased
-        if( _settings->GetMaxIterations() == 1 || prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+        if( _settings->GetMaxIterations() == 1 || prevSettings->GetMaxDegree() != _settings->GetMaxDegree() ) {
             prevClosure->SetMaxIterations( 10000 );
             for( unsigned j = 0; j < _nCells; ++j ) {
                 prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNRefinementLevels() - 1 );
@@ -666,7 +666,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         }
     }
     // for restart with increased number of moments reconstruct solution at finer quad points and compute moments for new truncation order
-    if( prevSettings->GetNMoments() != _settings->GetNMoments() ) {
+    if( prevSettings->GetMaxDegree() != _settings->GetMaxDegree() ) {
         MatVec uQFullProc = MatVec( _nCells, Matrix( _nStates, _settings->GetNQTotal() ) );
         if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -692,7 +692,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatVe
         // delete reload closures and settings
         // delete prevSettings;
     }
-    // if( prevSettings->GetNMoments() != _settings->GetNMoments() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete prevClosure;
+    // if( prevSettings->GetMaxDegree() != _settings->GetMaxDegree() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete prevClosure;
 }
 
 MatVec MomentSolver::SetupIC() const {

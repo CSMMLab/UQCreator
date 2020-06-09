@@ -1,12 +1,12 @@
 #include "houlifilter.h"
 
 HouLiFilter::HouLiFilter( Settings* settings ) : Closure( settings ), _lambda( _settings->GetFilterStrength() ) {
-    _alpha            = 1.0;    // unsigned n;
-    double epsilonM   = std::numeric_limits<double>::denorm_min();
-    _gamma            = 36;
-    double _eps       = 1.0 / _lambda;
-    unsigned nMoments = _settings->GetNMoments();
-    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
+    _alpha             = 1.0;    // unsigned n;
+    double epsilonM    = std::numeric_limits<double>::denorm_min();
+    _gamma             = 36;
+    double _eps        = 1.0 / _lambda;
+    unsigned maxDegree = _settings->GetMaxDegree();
+    _filterFunction    = Vector( _settings->GetNTotal(), 1.0 );
 
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
@@ -23,8 +23,8 @@ HouLiFilter::HouLiFilter( Settings* settings ) : Closure( settings ), _lambda( _
             // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
             // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
             unsigned index =
-                unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
-            _filterFunction[i] *= exp( -FilterFunction( double( index ) / double( nMoments + 1 ) ) / _eps );
+                unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
+            _filterFunction[i] *= exp( -FilterFunction( double( index ) / double( maxDegree + 1 ) ) / _eps );
         }
     }
 }

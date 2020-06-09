@@ -2,11 +2,11 @@
 #include <limits>
 
 ExponentialFilter::ExponentialFilter( Settings* settings ) : Closure( settings ), _lambda( _settings->GetFilterStrength() ) {
-    _alpha            = 1.0;    // unsigned n;
-    double epsilonM   = std::numeric_limits<double>::denorm_min();
-    _c                = log( epsilonM );
-    unsigned nMoments = _settings->GetNMoments();
-    _filterFunction   = Vector( _settings->GetNTotal(), 1.0 );
+    _alpha             = 1.0;    // unsigned n;
+    double epsilonM    = std::numeric_limits<double>::denorm_min();
+    _c                 = log( epsilonM );
+    unsigned maxDegree = _settings->GetMaxDegree();
+    _filterFunction    = Vector( _settings->GetNTotal(), 1.0 );
 
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
@@ -23,8 +23,8 @@ ExponentialFilter::ExponentialFilter( Settings* settings ) : Closure( settings )
             // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
             // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
             unsigned index =
-                unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
-            _filterFunction[i] *= pow( FilterFunction( double( index ) / double( nMoments + 1 ) ), _lambda );
+                unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
+            _filterFunction[i] *= pow( FilterFunction( double( index ) / double( maxDegree + 1 ) ), _lambda );
         }
     }
 }

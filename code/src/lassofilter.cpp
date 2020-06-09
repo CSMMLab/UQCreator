@@ -1,10 +1,10 @@
 #include "lassofilter.h"
 
 LassoFilter::LassoFilter( Settings* settings ) : Closure( settings ) {
-    _alpha            = 1.0;    // unsigned n;
-    unsigned nMoments = _settings->GetNMoments();
-    _filterParam      = Vector( _settings->GetNTotal(), 1.0 );
-    _l1Norms          = Vector( _settings->GetNTotal(), 0.0 );
+    _alpha             = 1.0;    // unsigned n;
+    unsigned maxDegree = _settings->GetMaxDegree();
+    _filterParam       = Vector( _settings->GetNTotal(), 1.0 );
+    _l1Norms           = Vector( _settings->GetNTotal(), 0.0 );
 
     for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
         for( unsigned k = 0; k < _settings->GetNQTotal(); ++k ) {
@@ -17,7 +17,7 @@ LassoFilter::LassoFilter( Settings* settings ) : Closure( settings ) {
             // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
             // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
             unsigned index =
-                unsigned( ( i - i % unsigned( std::pow( nMoments + 1, l ) ) ) / unsigned( std::pow( nMoments + 1, l ) ) ) % ( nMoments + 1 );
+                unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
             _filterParam[i] *= index * ( index + 1 );
         }
     }
