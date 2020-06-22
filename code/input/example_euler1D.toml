@@ -23,7 +23,7 @@ tEnd = 0.14
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter
-closure = "Euler"
+closure = "HyperbolicityLimiter"
 moments = [["totalDegree"],[5]]
 quadPoints = [["tensorizedGrid"],[20]]
 #refinementThresholds = [0.0001, 0.00001]
