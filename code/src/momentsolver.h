@@ -26,6 +26,7 @@ class MomentSolver
     double _dt, _tStart, _tEnd;                // timestep, start and end time
     unsigned _nCells;                          // number of spatial cells
     unsigned _nStates;                         // number of states of the original system
+    unsigned _nMultiElemts;                    // total number of multi elements
     unsigned _nQuadPoints;                     // number of moments in one uncertain dimension
     unsigned _nQTotal;                         // total number of quad points
     VectorU _nQTotalForRef;                    // total number of quad points for each refinement level

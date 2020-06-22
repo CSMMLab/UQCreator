@@ -26,6 +26,7 @@ tEnd = 0.14
 closure = "HyperbolicityLimiter"
 moments = [["totalDegree"],[5]]
 quadPoints = [["tensorizedGrid"],[20]]
+nMultiElements = 1
 #refinementThresholds = [0.0001, 0.00001]
 #regularizationStrength = 1e-7
 #filterStrength = 0.75

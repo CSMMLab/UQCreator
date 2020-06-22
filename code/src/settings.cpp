@@ -281,6 +281,8 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
         }
         auto momentSettings = moment_system->get_array_of<cpptoml::array>( "moments" );
 
+        _nMultiElements = moment_system->get_as<unsigned>( "nMultiElements" ).value_or( 1 );
+
         if( momentSettings ) {
             auto momentArray       = ( *momentSettings )[1]->get_array_of<int64_t>();
             auto degreeType        = ( *momentSettings )[0]->get_array_of<std::string>();
@@ -522,6 +524,8 @@ GridType Settings::GetGridType() const { return _gridType; }
 VectorU Settings::GetQuadLevel() const { return _quadLevel; }
 std::vector<unsigned> Settings::GetIndicesQforRef( unsigned level ) const { return _kIndicesAtRef[level]; }
 bool Settings::HasRegularization() const { return _regularization; }
+
+unsigned Settings::GetNMultiElements() const { return _nMultiElements; }
 
 // Set Total number of Quadrature points at each refinement level
 void Settings::SetNQTotalForRef( const VectorU& nQTotalForRef ) {

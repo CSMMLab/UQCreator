@@ -77,6 +77,8 @@ class Settings
     unsigned _numCells;
     unsigned _nXPE;    // number of spatial cells on PE
 
+    unsigned _nMultiElements;    // number of multi elements
+
     unsigned _nQuadPoints;           // number of quadrature points in one dimension
     unsigned _nQTotal;               // number of quadrature points in all dimensions
     unsigned _nQPE;                  // number of total quadrature points on PE
@@ -188,6 +190,8 @@ class Settings
     ClosureType GetClosureType() const;
     void SetClosureType( ClosureType cType );
     unsigned GetMaxDegree() const;
+
+    unsigned GetNMultiElements() const;
 
     unsigned GetNTotal() const;
     VectorU GetNTotalRefinementLevel() const;

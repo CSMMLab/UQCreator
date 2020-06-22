@@ -12,6 +12,7 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     _nTotal        = _settings->GetNTotal();
     _nTotalForRef  = _settings->GetNTotalRefinementLevel();
     _nQTotalForRef = _settings->GetNQTotalForRef();
+    _nMultiElemts  = _settings->GetNMultiElements();
 
     _cellIndexPE = _settings->GetCellIndexPE();
 
