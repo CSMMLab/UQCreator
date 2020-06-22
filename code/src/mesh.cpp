@@ -67,7 +67,7 @@ BoundaryType Mesh::GetBoundaryType( unsigned i ) const { return _boundaryType[i]
 
 BoundaryType Mesh::BoundaryAtEdge( unsigned i ) const { return _boundaryTypeEdge[i]; }
 
-void Mesh::PlotInXi( const Matrix& u, unsigned state ) const {
+void Mesh::PlotInXi( const Tensor& u, unsigned state ) const {
     std::ofstream out( "../results/plotInXi" );
     unsigned nQ   = u.columns();
     unsigned nQ1D = unsigned( std::pow( nQ, 1.0 / _settings->GetNDimXi() ) );
@@ -75,7 +75,9 @@ void Mesh::PlotInXi( const Matrix& u, unsigned state ) const {
         if( k != 0 && k % nQ1D == 0 ) {
             out << std::endl;
         }
-        out << u( k, state ) << " ";
+        for( unsigned l = 0; l < _settings->GetNMultiElements(); ++l ) {
+            out << u( l, k, state ) << " ";
+        }
     }
     out.close();
 }

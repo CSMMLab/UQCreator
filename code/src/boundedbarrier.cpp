@@ -30,34 +30,38 @@ void BoundedBarrier::U( Vector& out, const Vector& Lambda ) {
     }
 }
 
-void BoundedBarrier::U( Matrix& out, const Matrix& Lambda ) {
+void BoundedBarrier::U( Tensor& out, const Tensor& Lambda ) {
     double ePos, eNeg;
-    for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
-            ePos = exp( Lambda( l, k ) );
-            eNeg = 1.0 / ePos;
-            if( Lambda( l, k ) > 0 ) {
-                out( l, k ) = _uPlus / ( eNeg + 1.0 ) + _uMinus * eNeg / ( 1.0 + eNeg );
-            }
-            else {
-                out( l, k ) = _uMinus / ( ePos + 1.0 ) + _uPlus * ePos / ( 1.0 + ePos );
+    for( unsigned s = 0; s < _nStates; ++s ) {
+        for( unsigned l = 0; l < _nStates; ++l ) {
+            for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
+                ePos = exp( Lambda( s, l, k ) );
+                eNeg = 1.0 / ePos;
+                if( Lambda( s, l, k ) > 0 ) {
+                    out( s, l, k ) = _uPlus / ( eNeg + 1.0 ) + _uMinus * eNeg / ( 1.0 + eNeg );
+                }
+                else {
+                    out( s, l, k ) = _uMinus / ( ePos + 1.0 ) + _uPlus * ePos / ( 1.0 + ePos );
+                }
             }
         }
     }
 }
 
-Matrix BoundedBarrier::U( const Matrix& Lambda ) {
+Tensor BoundedBarrier::U( const Tensor& Lambda ) {
     double ePos, eNeg;
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
-            ePos = exp( Lambda( l, k ) );
-            eNeg = 1.0 / ePos;
-            if( Lambda( l, k ) > 0 ) {
-                y( l, k ) = _uPlus / ( eNeg + 1.0 ) + _uMinus * eNeg / ( 1.0 + eNeg );
-            }
-            else {
-                y( l, k ) = _uMinus / ( ePos + 1.0 ) + _uPlus * ePos / ( 1.0 + ePos );
+    Tensor y( _nStates, _nMultiElements, Lambda.columns(), 0.0 );
+    for( unsigned s = 0; s < _nStates; ++s ) {
+        for( unsigned l = 0; l < _nStates; ++l ) {
+            for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
+                ePos = exp( Lambda( s, l, k ) );
+                eNeg = 1.0 / ePos;
+                if( Lambda( s, l, k ) > 0 ) {
+                    y( s, l, k ) = _uPlus / ( eNeg + 1.0 ) + _uMinus * eNeg / ( 1.0 + eNeg );
+                }
+                else {
+                    y( s, l, k ) = _uMinus / ( ePos + 1.0 ) + _uPlus * ePos / ( 1.0 + ePos );
+                }
             }
         }
     }

@@ -27,9 +27,9 @@ LassoFilter::~LassoFilter() {}
 
 void LassoFilter::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
 
-void LassoFilter::U( Matrix& out, const Matrix& Lambda ) { out = Lambda; }
+void LassoFilter::U( Tensor& out, const Tensor& Lambda ) { out = Lambda; }
 
-Matrix LassoFilter::U( const Matrix& Lambda ) { return Lambda; }
+Tensor LassoFilter::U( const Tensor& Lambda ) { return Lambda; }
 
 void LassoFilter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 

@@ -207,7 +207,7 @@ inline void cgeev( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, 
     fcomplex a[N * N];
     for( unsigned i = 0; i < N; ++i ) {
         for( unsigned j = 0; j < N; ++j ) {
-            a[i + j * N] = {A( i, j ), 0.0};
+            a[i + j * N] = { A( i, j ), 0.0 };
         }
     }
 

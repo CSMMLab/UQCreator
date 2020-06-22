@@ -38,6 +38,9 @@ Closure::Closure( Settings* settings )
     // get number of uncertain dimensions
     _numDimXi = _settings->GetNDimXi();
 
+    // get number of multi elements per cell
+    _nMultiElements = _settings->GetNMultiElements();
+
     // get index vector for basis function calculation
     std::vector<std::vector<unsigned>> indices = _settings->GetPolyIndices();
     _nTotal                                    = _settings->GetNTotal();
@@ -196,7 +199,8 @@ Closure* Closure::Create( Settings* settings ) {
     }
 }
 
-void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+void Closure::SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel ) {
+    /*
     int maxRefinements = 1000;
     unsigned nTotal    = _nTotalForRef[refLevel];
 
@@ -265,11 +269,13 @@ void Closure::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel )
             return;
         }
     }
+    */
     _log->error( "[closure] Newton did not converge!" );
     exit( EXIT_FAILURE );
 }
 
-void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+void Closure::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLevel ) {
+    /*
     int maxRefinements = 1000;
     unsigned nTotal    = _nTotalForRef[refLevel];
 
@@ -280,7 +286,7 @@ void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLev
     if( CalcNorm( g, nTotal ) < _settings->GetEpsilon() ) {
         return;
     }
-    Matrix H( _nStates * nTotal, _nStates * nTotal );
+    Matrix H( _nStates * nTotal * _settings->GetNMultiElements(), _nStates * nTotal * _settings->GetNMultiElements() );
     Vector dlambdaNew( _nStates * nTotal );
     // calculate initial Hessian and gradient
     Vector dlambda = -g;
@@ -340,6 +346,7 @@ void Closure::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLev
     }
     _log->error( "[closure] Newton did not converge!" );
     exit( EXIT_FAILURE );
+    */
 }
 
 double Closure::CalcNorm( Vector& test, unsigned nTotal ) const {
@@ -352,6 +359,16 @@ double Closure::CalcNorm( Vector& test, unsigned nTotal ) const {
     return sqrt( out );
 }
 
+Vector Closure::EvaluateLambda( const Tensor& lambda, unsigned l, unsigned k, unsigned nTotal ) {
+    Vector out( _nStates, 0.0 );
+    for( unsigned s = 0; s < _nStates; ++s ) {
+        for( unsigned i = 0; i < nTotal; ++i ) {
+            out[s] += lambda( s, l, i ) * _phiTildeVec[k][i];
+        }
+    }
+    return out;
+}
+
 Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k, unsigned nTotal ) {
     Vector out( _nStates, 0.0 );
     for( unsigned s = 0; s < _nStates; ++s ) {
@@ -362,24 +379,26 @@ Vector Closure::EvaluateLambda( const Matrix& lambda, unsigned k, unsigned nTota
     return out;
 }
 
-Matrix Closure::EvaluateLambda( const Matrix& lambda ) const { return lambda * _phiTildeTrans; }
+Tensor Closure::EvaluateLambda( const Tensor& lambda ) const { return lambda * _phiTildeTrans; }
 
-Matrix Closure::EvaluateLambdaOnPE( const Matrix& lambda, unsigned levelOld, unsigned levelNew ) const {
-    Matrix out( _settings->GetNStates(), _settings->GetNqPEAtRef( levelNew ), 0.0 );
+Tensor Closure::EvaluateLambdaOnPE( const Tensor& lambda, unsigned levelOld, unsigned levelNew ) const {
+    Tensor out( _settings->GetNStates(), _nMultiElements, _settings->GetNqPEAtRef( levelNew ), 0.0 );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( levelNew );
     unsigned nTotal              = _nTotalForRef[levelOld];
 
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned k = 0; k < qIndex.size(); ++k ) {
-            for( unsigned i = 0; i < nTotal; ++i ) {
-                out( s, k ) += lambda( s, i ) * _phiTildeTrans( i, qIndex[k] );
+        for( unsigned l = 0; l < _nMultiElements; ++l ) {
+            for( unsigned k = 0; k < qIndex.size(); ++k ) {
+                for( unsigned i = 0; i < nTotal; ++i ) {
+                    out( s, l, k ) += lambda( s, l, i ) * _phiTildeTrans( i, qIndex[k] );
+                }
             }
         }
     }
     return out;
 }
 
-void Closure::EvaluateLambda( Matrix& out, const Matrix& lambda ) const { out = lambda * _phiTildeTrans; }
+void Closure::EvaluateLambda( Tensor& out, const Tensor& lambda ) const { out = lambda * _phiTildeTrans; }
 
 void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned refLevel ) {
     Vector uKinetic( _nStates, 0.0 );

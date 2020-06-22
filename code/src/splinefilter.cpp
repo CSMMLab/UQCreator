@@ -42,9 +42,9 @@ double SplineFilter::FilterFunction( double eta ) const {
 
 void SplineFilter::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
 
-void SplineFilter::U( Matrix& out, const Matrix& Lambda ) { out = Lambda; }
+void SplineFilter::U( Tensor& out, const Tensor& Lambda ) { out = Lambda; }
 
-Matrix SplineFilter::U( const Matrix& Lambda ) { return Lambda; }
+Tensor SplineFilter::U( const Tensor& Lambda ) { return Lambda; }
 
 void SplineFilter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 

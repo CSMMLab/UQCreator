@@ -35,9 +35,9 @@ double ExponentialFilter::FilterFunction( double eta ) const { return exp( _c * 
 
 void ExponentialFilter::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
 
-void ExponentialFilter::U( Matrix& out, const Matrix& Lambda ) { out = Lambda; }
+void ExponentialFilter::U( Tensor& out, const Tensor& Lambda ) { out = Lambda; }
 
-Matrix ExponentialFilter::U( const Matrix& Lambda ) { return Lambda; }
+Tensor ExponentialFilter::U( const Tensor& Tensor ) { return Tensor; }
 
 void ExponentialFilter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 

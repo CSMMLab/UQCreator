@@ -38,6 +38,7 @@ class Closure
     unsigned _nQTotal;
     unsigned _nTotal;
     unsigned _maxIterations;
+    unsigned _nMultiElements;
     void Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel );
     void Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsigned refLevel );
     std::shared_ptr<spdlog::logger> _log;
@@ -57,26 +58,25 @@ class Closure
      * @return correct dual vector
      */
     // virtual void SolveClosure( Matrix& lambda, const Matrix& u );
-    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel );
-    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel );
+    virtual void SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel );
+    virtual void SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLevel );
     /**
      * calculate entropic variable from given dual vector
      * @param dual variable
      * @param dual variable
      * @return entropic state
      */
+    Vector EvaluateLambda( const Tensor& lambda, unsigned l, unsigned k, unsigned nTotal );
     Vector EvaluateLambda( const Matrix& lambda, unsigned k, unsigned nTotal );
-    Matrix EvaluateLambda( const Matrix& lambda ) const;
-    void EvaluateLambda( Matrix& out, const Matrix& lambda ) const;
-    Vector EvaluateLambda( const Matrix& lambda, const Vector& xi, unsigned k );
-    Matrix EvaluateLambda( const Matrix& lambda, const Vector& xi );
-    Matrix EvaluateLambdaOnPE( const Matrix& lambda, unsigned levelOld, unsigned levelNew ) const;
+    Tensor EvaluateLambda( const Tensor& lambda ) const;
+    void EvaluateLambda( Tensor& out, const Tensor& lambda ) const;
+    Tensor EvaluateLambdaOnPE( const Tensor& lambda, unsigned levelOld, unsigned levelNew ) const;
     /**
      * calculate solution for kinetic entropy with given entropic variable
      */
     virtual void U( Vector& out, const Vector& Lambda ) = 0;
-    virtual void U( Matrix& out, const Matrix& Lambda ) = 0;
-    virtual Matrix U( const Matrix& Lambda )            = 0;
+    virtual void U( Tensor& out, const Tensor& Lambda ) = 0;
+    virtual Tensor U( const Tensor& Lambda )            = 0;
     /**
      * calculate derivative of solution for kinetic entropy with given entropic variable
      */

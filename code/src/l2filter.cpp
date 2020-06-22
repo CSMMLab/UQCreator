@@ -24,9 +24,9 @@ L2Filter::~L2Filter() {}
 
 void L2Filter::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
 
-void L2Filter::U( Matrix& out, const Matrix& Lambda ) { out = Lambda; }
+void L2Filter::U( Tensor& out, const Tensor& Lambda ) { out = Lambda; }
 
-Matrix L2Filter::U( const Matrix& Lambda ) { return Lambda; }
+Tensor L2Filter::U( const Tensor& Lambda ) { return Lambda; }
 
 void L2Filter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 

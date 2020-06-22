@@ -17,8 +17,8 @@ class RadiHydroClosure1D : public Closure
 
     virtual void U( Vector& out, const Vector& Lambda );
     virtual void U( Vector& out, const Vector& Lambda, bool dummy );
-    virtual void U( Matrix& out, const Matrix& Lambda );
-    virtual Matrix U( const Matrix& Lambda );
+    virtual void U( Tensor& out, const Tensor& Lambda );
+    virtual Tensor U( const Tensor& Lambda );
     virtual void DU( Matrix& y, const Vector& Lambda );
     virtual void DS( Vector& ds, const Vector& u ) const;
     virtual void SolveClosure( Matrix& lambdaFull, const Matrix& uFull, unsigned refLevel );

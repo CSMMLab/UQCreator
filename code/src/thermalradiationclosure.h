@@ -16,8 +16,8 @@ class ThermalRadiationClosure : public Closure
 
     virtual void U( Vector& out, const Vector& Lambda );
     virtual void U( Vector& out, const Vector& Lambda, bool dummy );
-    virtual void U( Matrix& out, const Matrix& Lambda );
-    virtual Matrix U( const Matrix& Lambda );
+    virtual void U( Tensor& out, const Tensor& Lambda );
+    virtual Tensor U( const Tensor& Lambda );
     virtual void DU( Matrix& y, const Vector& Lambda );
     virtual void SolveClosure( Matrix& lambdaFull, const Matrix& uFull, unsigned refLevel );
     virtual void SolveClosureSafe( Matrix& lambdaFull, const Matrix& uFull, unsigned refLevel );
@@ -28,5 +28,4 @@ class ThermalRadiationClosure : public Closure
     virtual double CalcNorm( Vector& test, unsigned nTotal ) const;
 };
 
-
-#endif // THERMALRADIATIONCLOSURE_H
+#endif    // THERMALRADIATIONCLOSURE_H

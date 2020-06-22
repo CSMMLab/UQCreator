@@ -26,32 +26,36 @@ void RadiHydroClosure1D::U( Vector& out, const Vector& Lambda, bool dummy ) {
     out[2] = ( ( pow( Lambda[1], 2.0 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2.0 ) ) ) * out[0];
 }
 
-void RadiHydroClosure1D::U( Matrix& out, const Matrix& Lambda ) {
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        for( unsigned s = 0; s < _nMoments; ++s ) out( s, k ) = Lambda( s, k );
-        out( _nMoments + 0, k ) = exp( ( 2.0 * Lambda( _nMoments + 0, k ) * Lambda( _nMoments + 2, k ) -
-                                         2.0 * Lambda( _nMoments + 2, k ) * log( -Lambda( _nMoments + 2, k ) ) -
-                                         2.0 * Lambda( _nMoments + 2, k ) * _gamma - pow( Lambda( _nMoments + 1, k ), 2.0 ) ) /
-                                       ( 2.0 * Lambda( _nMoments + 2, k ) * ( _gamma - 1.0 ) ) );
-        out( _nMoments + 1, k ) = -( Lambda( _nMoments + 1, k ) / Lambda( _nMoments + 2, k ) ) * out( _nMoments + 0, k );
-        out( _nMoments + 2, k ) =
-            ( ( pow( Lambda( _nMoments + 1, k ), 2.0 ) - 2.0 * Lambda( _nMoments + 2, k ) ) / ( 2.0 * pow( Lambda( _nMoments + 2, k ), 2.0 ) ) ) *
-            out( _nMoments + 0, k );
+void RadiHydroClosure1D::U( Tensor& out, const Tensor& Lambda ) {
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            for( unsigned s = 0; s < _nMoments; ++s ) out( s, l, k ) = Lambda( s, l, k );
+            out( _nMoments + 0, l, k ) = exp( ( 2.0 * Lambda( _nMoments + 0, l, k ) * Lambda( _nMoments + 2, l, k ) -
+                                                2.0 * Lambda( _nMoments + 2, l, k ) * log( -Lambda( _nMoments + 2, l, k ) ) -
+                                                2.0 * Lambda( _nMoments + 2, l, k ) * _gamma - pow( Lambda( _nMoments + 1, l, k ), 2.0 ) ) /
+                                              ( 2.0 * Lambda( _nMoments + 2, l, k ) * ( _gamma - 1.0 ) ) );
+            out( _nMoments + 1, l, k ) = -( Lambda( _nMoments + 1, l, k ) / Lambda( _nMoments + 2, l, k ) ) * out( _nMoments + 0, l, k );
+            out( _nMoments + 2, l, k ) = ( ( pow( Lambda( _nMoments + 1, l, k ), 2.0 ) - 2.0 * Lambda( _nMoments + 2, l, k ) ) /
+                                           ( 2.0 * pow( Lambda( _nMoments + 2, l, k ), 2.0 ) ) ) *
+                                         out( _nMoments + 0, l, k );
+        }
     }
 }
 
-Matrix RadiHydroClosure1D::U( const Matrix& Lambda ) {
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        for( unsigned s = 0; s < _nMoments; ++s ) y( s, k ) = Lambda( s, k );
-        y( _nMoments + 0, k ) = exp( ( 2.0 * Lambda( _nMoments + 0, k ) * Lambda( _nMoments + 2, k ) -
-                                       2.0 * Lambda( _nMoments + 2, k ) * log( -Lambda( _nMoments + 2, k ) ) -
-                                       2.0 * Lambda( _nMoments + 2, k ) * _gamma - pow( Lambda( _nMoments + 1, k ), 2.0 ) ) /
-                                     ( 2.0 * Lambda( _nMoments + 2, k ) * ( _gamma - 1.0 ) ) );
-        y( _nMoments + 1, k ) = -( Lambda( _nMoments + 1, k ) / Lambda( _nMoments + 2, k ) ) * y( _nMoments + 0, k );
-        y( _nMoments + 2, k ) =
-            ( ( pow( Lambda( _nMoments + 1, k ), 2.0 ) - 2.0 * Lambda( _nMoments + 2, k ) ) / ( 2.0 * pow( Lambda( _nMoments + 2, k ), 2.0 ) ) ) *
-            y( _nMoments + 0, k );
+Tensor RadiHydroClosure1D::U( const Tensor& Lambda ) {
+    Tensor y( _nStates, _nMultiElements, Lambda.columns(), 0.0 );
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            for( unsigned s = 0; s < _nMoments; ++s ) y( s, l, k ) = Lambda( s, l, k );
+            y( _nMoments + 0, l, k ) = exp( ( 2.0 * Lambda( _nMoments + 0, l, k ) * Lambda( _nMoments + 2, l, k ) -
+                                              2.0 * Lambda( _nMoments + 2, l, k ) * log( -Lambda( _nMoments + 2, l, k ) ) -
+                                              2.0 * Lambda( _nMoments + 2, l, k ) * _gamma - pow( Lambda( _nMoments + 1, l, k ), 2.0 ) ) /
+                                            ( 2.0 * Lambda( _nMoments + 2, l, k ) * ( _gamma - 1.0 ) ) );
+            y( _nMoments + 1, l, k ) = -( Lambda( _nMoments + 1, l, k ) / Lambda( _nMoments + 2, l, k ) ) * y( _nMoments + 0, l, k );
+            y( _nMoments + 2, l, k ) = ( ( pow( Lambda( _nMoments + 1, l, k ), 2.0 ) - 2.0 * Lambda( _nMoments + 2, l, k ) ) /
+                                         ( 2.0 * pow( Lambda( _nMoments + 2, l, k ), 2.0 ) ) ) *
+                                       y( _nMoments + 0, l, k );
+        }
     }
 
     return y;

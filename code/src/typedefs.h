@@ -5,6 +5,7 @@
 
 #include "vectorspace.cpp"
 
+typedef VectorSpace::Tensor<double> Tensor;
 typedef VectorSpace::Matrix<double> Matrix;
 typedef VectorSpace::Vector<double> Vector;
 typedef VectorSpace::Vector<unsigned> VectorU;

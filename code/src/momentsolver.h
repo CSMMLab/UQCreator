@@ -21,12 +21,12 @@ class MomentSolver
     Closure* _closure;                         // closure class for computing duals, defines u(Lambda), du(Lambda)
     Mesh* _mesh;                               // specified mesh
     TimeSolver* _time;                         // time solver for evolving moment vector in time
-    MatVec _lambda;                            // dual matrix of dimension nCells x states x total number of moments
+    MatTens _lambda;                           // dual matrix of dimension nCells x states x total number of moments
     Problem* _problem;                         // specified problem defines right hand side and initial condition
     double _dt, _tStart, _tEnd;                // timestep, start and end time
     unsigned _nCells;                          // number of spatial cells
     unsigned _nStates;                         // number of states of the original system
-    unsigned _nMultiElemts;                    // total number of multi elements
+    unsigned _nMultiElements;                  // total number of multi elements
     unsigned _nQuadPoints;                     // number of moments in one uncertain dimension
     unsigned _nQTotal;                         // total number of quad points
     VectorU _nQTotalForRef;                    // total number of quad points for each refinement level
@@ -51,18 +51,18 @@ class MomentSolver
      * @param current time
      * @param refinement level
      */
-    void Source( MatVec& uQNew, const MatVec& uQ, double dt, double t, const VectorU& refLevel ) const;
+    void Source( MatTens& uQNew, const MatTens& uQ, double dt, double t, const VectorU& refLevel ) const;
     /**
      * sets up moments for specified initial condition
      * @return output moment matrix
      */
-    MatVec SetupIC() const;
+    MatTens SetupIC() const;
     /**
      * exports moments and duals
      * @param moment matrix for export
      * @param dual matrix for export
      */
-    void Export( const MatVec& u, const MatVec& lambda ) const;
+    void Export( const MatTens& u, const MatTens& lambda ) const;
     /**
      * imports previous settings from restart configfile if specified
      * @return pointer to previous settings
@@ -73,13 +73,13 @@ class MomentSolver
      * @param number of moments for previous settings
      * @return previous moment matrix
      */
-    MatVec ImportPrevMoments( unsigned nPrevTotal ) const;
+    MatTens ImportPrevMoments( unsigned nPrevTotal ) const;
     /**
      * imports previous duals from restart momentfile if specified
      * @param number of moments/duals for previous settings
      * @return previous dual matrix
      */
-    MatVec ImportPrevDuals( unsigned nPrevTotal );
+    MatTens ImportPrevDuals( unsigned nPrevTotal );
     /**
      * compute distance of computed mean and variance to reference solution
      * @param export matrix after computation
@@ -94,14 +94,14 @@ class MomentSolver
      * @param number of moments
      * @return moment matrix
      */
-    MatVec DetermineMoments( unsigned nTotal ) const;
+    MatTens DetermineMoments( unsigned nTotal ) const;
     /**
      * writes duals on _lambda and recomputes moment matrix for specified duals
      * @param previous settings
      * @param previous closure
      * @param previous moment matrix
      */
-    void SetDuals( Settings* prevSettings, Closure* prevClosure, MatVec& u );
+    void SetDuals( Settings* prevSettings, Closure* prevClosure, MatTens& u );
     /**
      * loads previous settings or current settings if no restart file specified
      * @return previous settings
@@ -121,10 +121,10 @@ class MomentSolver
     void WriteErrors( const VectorU& refinementLevel );
 
     Matrix WriteMeanAndVar( const VectorU& refinementLevel, double t, bool writeExact ) const;
-    void ExportRefinementIndicator( const VectorU& refinementLevel, const MatVec& u, unsigned index ) const;
-    double ComputeRefIndicator( const VectorU& refinementLevel, const Matrix& u, unsigned refLevel ) const;
-    void PerformInitialStep( const VectorU& refinementLevel, MatVec& u );
-    void DetermineGradients( MatVec& duQx, MatVec& duQy, const MatVec& uQ, const VectorU& refLevel ) const;
+    void ExportRefinementIndicator( const VectorU& refinementLevel, const MatTens& u, unsigned index ) const;
+    double ComputeRefIndicator( const VectorU& refinementLevel, const Tensor& u, unsigned refLevel ) const;
+    void PerformInitialStep( const VectorU& refinementLevel, MatTens& u );
+    void DetermineGradients( MatTens& duQx, MatTens& duQy, const MatTens& uQ, const VectorU& refLevel ) const;
     void DetermineGradientsScalarField( Matrix& dux, Matrix& duy, const Matrix& u ) const;
     void WriteGradientsScalarField( const Matrix& u ) const;
     void Write2ndDerMeanAndVar( const Matrix& meanAndVar ) const;

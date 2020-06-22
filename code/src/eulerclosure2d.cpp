@@ -17,35 +17,41 @@ void EulerClosure2D::U( Vector& out, const Vector& Lambda ) {
     out[3] = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
 }
 
-void EulerClosure2D::U( Matrix& out, const Matrix& Lambda ) {
+void EulerClosure2D::U( Tensor& out, const Tensor& Lambda ) {
     double expTerm, v1, v2, v3, v4;
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        v1      = Lambda( 0, k );
-        v2      = Lambda( 1, k );
-        v3      = Lambda( 2, k );
-        v4      = Lambda( 3, k );
-        expTerm = pow( -exp( ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) );
-        out( 0, k ) = expTerm;
-        out( 1, k ) = -( ( v2 * expTerm ) / v4 );
-        out( 2, k ) = -( ( v3 * expTerm ) / v4 );
-        out( 3, k ) = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            v1 = Lambda( 0, l, k );
+            v2 = Lambda( 1, l, k );
+            v3 = Lambda( 2, l, k );
+            v4 = Lambda( 3, l, k );
+            expTerm =
+                pow( -exp( ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) );
+            out( 0, l, k ) = expTerm;
+            out( 1, l, k ) = -( ( v2 * expTerm ) / v4 );
+            out( 2, l, k ) = -( ( v3 * expTerm ) / v4 );
+            out( 3, l, k ) = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
+        }
     }
 }
 
-Matrix EulerClosure2D::U( const Matrix& Lambda ) {
+Tensor EulerClosure2D::U( const Tensor& Lambda ) {
     double expTerm, v1, v2, v3, v4;
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        v1      = Lambda( 0, k );
-        v2      = Lambda( 1, k );
-        v3      = Lambda( 2, k );
-        v4      = Lambda( 3, k );
-        expTerm = pow( -exp( ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) );
+    Tensor y( _nStates, _nMultiElements, Lambda.columns(), 0.0 );
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            v1 = Lambda( 0, l, k );
+            v2 = Lambda( 1, l, k );
+            v3 = Lambda( 2, l, k );
+            v4 = Lambda( 3, l, k );
+            expTerm =
+                pow( -exp( ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) );
 
-        y( 0, k ) = expTerm;
-        y( 1, k ) = -( ( v2 * expTerm ) / v4 );
-        y( 2, k ) = -( ( v3 * expTerm ) / v4 );
-        y( 3, k ) = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
+            y( 0, l, k ) = expTerm;
+            y( 1, l, k ) = -( ( v2 * expTerm ) / v4 );
+            y( 2, l, k ) = -( ( v3 * expTerm ) / v4 );
+            y( 3, l, k ) = -( ( expTerm * ( -pow( v2, 2 ) - pow( v3, 2 ) + 2.0 * v4 ) ) / ( 2.0 * pow( v4, 2 ) ) );
+        }
     }
 
     return y;
@@ -62,7 +68,8 @@ void EulerClosure2D::DU( Matrix& y, const Vector& Lambda ) {
     double v3pow2    = pow( v3, 2 );
     double v2pow2    = pow( v2, 2 );
     // double expTerm =
-    //    pow( -exp( ( ( v2pow2 + v3pow2 - 2.0 * v4 * ( v1 + _gamma ) ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) ) * 1.0 / ( 1.0 + _gamma );
+    //    pow( -exp( ( ( v2pow2 + v3pow2 - 2.0 * v4 * ( v1 + _gamma ) ) / ( 2.0 * v4 ) ) ) * v4, 1.0 / ( 1.0 + _gamma ) ) * 1.0 / ( 1.0 + _gamma
+    //    );
 
     double expTerm = exp( 1.0 / ( 1.0 + _gamma ) * ( ( pow( v2, 2 ) + pow( v3, 2 ) - 2.0 * v1 * v4 - 2.0 * v4 * _gamma ) / ( 2.0 * v4 ) ) ) *
                      pow( -v4, 1.0 / ( 1.0 + _gamma ) ) / ( 1.0 + _gamma );

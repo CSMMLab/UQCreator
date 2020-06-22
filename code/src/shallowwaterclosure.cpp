@@ -12,18 +12,22 @@ void ShallowWaterClosure::U( Vector& out, const Vector& Lambda ) {
     out[1] = ( 0.5 * ( 2 * Lambda[0] * Lambda[1] + pow( Lambda[1], 3 ) ) ) / _g;
 }
 
-void ShallowWaterClosure::U( Matrix& out, const Matrix& Lambda ) {
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        out( 0, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) + pow( Lambda( 1, k ), 2 ) ) ) / ( _g );
-        out( 1, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) * Lambda( 1, k ) + pow( Lambda( 1, k ), 3 ) ) ) / _g;
+void ShallowWaterClosure::U( Tensor& out, const Tensor& Lambda ) {
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            out( 0, l, k ) = ( 0.5 * ( 2 * Lambda( 0, l, k ) + pow( Lambda( 1, l, k ), 2 ) ) ) / ( _g );
+            out( 1, l, k ) = ( 0.5 * ( 2 * Lambda( 0, l, k ) * Lambda( 1, l, k ) + pow( Lambda( 1, l, k ), 3 ) ) ) / _g;
+        }
     }
 }
 
-Matrix ShallowWaterClosure::U( const Matrix& Lambda ) {
+Tensor ShallowWaterClosure::U( const Tensor& Lambda ) {
     Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        y( 0, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) + pow( Lambda( 1, k ), 2 ) ) ) / _g;
-        y( 1, k ) = ( 0.5 * ( 2 * Lambda( 0, k ) * Lambda( 1, k ) + pow( Lambda( 1, k ), 3 ) ) ) / _g;
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            y( 0, k ) = ( 0.5 * ( 2 * Lambda( 0, l, k ) + pow( Lambda( 1, l, k ), 2 ) ) ) / _g;
+            y( 1, k ) = ( 0.5 * ( 2 * Lambda( 0, l, k ) * Lambda( 1, l, k ) + pow( Lambda( 1, l, k ), 3 ) ) ) / _g;
+        }
     }
 
     return y;

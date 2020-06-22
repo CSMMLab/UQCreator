@@ -11,24 +11,29 @@ void EulerClosure::U( Vector& out, const Vector& Lambda ) {
     out[2] = ( ( pow( Lambda[1], 2.0 ) - 2.0 * Lambda[2] ) / ( 2.0 * pow( Lambda[2], 2.0 ) ) ) * out[0];
 }
 
-void EulerClosure::U( Matrix& out, const Matrix& Lambda ) {
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        out( 0, k ) = exp( ( 2.0 * Lambda( 0, k ) * Lambda( 2, k ) - 2.0 * Lambda( 2, k ) * log( -Lambda( 2, k ) ) - 2.0 * Lambda( 2, k ) * _gamma -
-                             pow( Lambda( 1, k ), 2.0 ) ) /
-                           ( 2.0 * Lambda( 2, k ) * ( _gamma - 1.0 ) ) );
-        out( 1, k ) = -( Lambda( 1, k ) / Lambda( 2, k ) ) * out( 0, k );
-        out( 2, k ) = ( ( pow( Lambda( 1, k ), 2.0 ) - 2.0 * Lambda( 2, k ) ) / ( 2.0 * pow( Lambda( 2, k ), 2.0 ) ) ) * out( 0, k );
+void EulerClosure::U( Tensor& out, const Tensor& Lambda ) {
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            out( 0, l, k ) = exp( ( 2.0 * Lambda( 0, l, k ) * Lambda( 2, l, k ) - 2.0 * Lambda( 2, l, k ) * log( -Lambda( 2, l, k ) ) -
+                                    2.0 * Lambda( 2, l, k ) * _gamma - pow( Lambda( 1, l, k ), 2.0 ) ) /
+                                  ( 2.0 * Lambda( 2, l, k ) * ( _gamma - 1.0 ) ) );
+            out( 1, l, k ) = -( Lambda( 1, l, k ) / Lambda( 2, l, k ) ) * out( 0, l, k );
+            out( 2, l, k ) =
+                ( ( pow( Lambda( 1, l, k ), 2.0 ) - 2.0 * Lambda( 2, l, k ) ) / ( 2.0 * pow( Lambda( 2, l, k ), 2.0 ) ) ) * out( 0, l, k );
+        }
     }
 }
 
-Matrix EulerClosure::U( const Matrix& Lambda ) {
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        y( 0, k ) = exp( ( 2.0 * Lambda( 0, k ) * Lambda( 2, k ) - 2.0 * Lambda( 2, k ) * log( -Lambda( 2, k ) ) - 2.0 * Lambda( 2, k ) * _gamma -
-                           pow( Lambda( 1, k ), 2.0 ) ) /
-                         ( 2.0 * Lambda( 2, k ) * ( _gamma - 1.0 ) ) );
-        y( 1, k ) = -( Lambda( 1, k ) / Lambda( 2, k ) ) * y( 0, k );
-        y( 2, k ) = ( ( pow( Lambda( 1, k ), 2.0 ) - 2.0 * Lambda( 2, k ) ) / ( 2.0 * pow( Lambda( 2, k ), 2.0 ) ) ) * y( 0, k );
+Tensor EulerClosure::U( const Tensor& Lambda ) {
+    Tensor y( _nStates, _nMultiElements, Lambda.columns(), 0.0 );
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            y( 0, l, k ) = exp( ( 2.0 * Lambda( 0, l, k ) * Lambda( 2, l, k ) - 2.0 * Lambda( 2, l, k ) * log( -Lambda( 2, l, k ) ) -
+                                  2.0 * Lambda( 2, l, k ) * _gamma - pow( Lambda( 1, l, k ), 2.0 ) ) /
+                                ( 2.0 * Lambda( 2, l, k ) * ( _gamma - 1.0 ) ) );
+            y( 1, l, k ) = -( Lambda( 1, l, k ) / Lambda( 2, l, k ) ) * y( 0, l, k );
+            y( 2, l, k ) = ( ( pow( Lambda( 1, l, k ), 2.0 ) - 2.0 * Lambda( 2, l, k ) ) / ( 2.0 * pow( Lambda( 2, l, k ), 2.0 ) ) ) * y( 0, l, k );
+        }
     }
 
     return y;

@@ -12,20 +12,24 @@ void ThermalRadiationClosure::U( Vector& out, const Vector& Lambda ) {
 
 void ThermalRadiationClosure::U( Vector& out, const Vector& Lambda, bool dummy ) { out[0] = exp( Lambda[0] ); }
 
-void ThermalRadiationClosure::U( Matrix& out, const Matrix& Lambda ) {
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        out( 0, k ) = Lambda( 0, k );
-        out( 1, k ) = Lambda( 1, k );
-        out( 2, k ) = exp( Lambda( 2, k ) );
+void ThermalRadiationClosure::U( Tensor& out, const Tensor& Lambda ) {
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            out( 0, l, k ) = Lambda( 0, l, k );
+            out( 1, l, k ) = Lambda( 1, l, k );
+            out( 2, l, k ) = exp( Lambda( 2, l, k ) );
+        }
     }
 }
 
-Matrix ThermalRadiationClosure::U( const Matrix& Lambda ) {
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        y( 0, k ) = Lambda( 0, k );
-        y( 1, k ) = Lambda( 1, k );
-        y( 2, k ) = exp( Lambda( 2, k ) );
+Tensor ThermalRadiationClosure::U( const Tensor& Lambda ) {
+    Tensor y( _nStates, _nMultiElements, Lambda.columns(), 0.0 );
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            y( 0, l, k ) = Lambda( 0, l, k );
+            y( 1, l, k ) = Lambda( 1, l, k );
+            y( 2, l, k ) = exp( Lambda( 2, l, k ) );
+        }
     }
 
     return y;

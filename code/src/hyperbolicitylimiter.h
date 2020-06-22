@@ -19,11 +19,11 @@ class HyperbolicityLimiter : public Closure
     virtual ~HyperbolicityLimiter();
 
     virtual void U( Vector& out, const Vector& Lambda );
-    virtual void U( Matrix& out, const Matrix& Lambda );
-    virtual Matrix U( const Matrix& Lambda );
+    virtual void U( Tensor& out, const Tensor& Lambda );
+    virtual Tensor U( const Tensor& Lambda );
     virtual void DU( Matrix& y, const Vector& Lambda );
-    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel );
-    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel );
+    virtual void SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel );
+    virtual void SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLevel );
 };
 
 #endif    // HYPERBOLICITYLIMITER_H

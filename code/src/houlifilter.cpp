@@ -42,9 +42,9 @@ double HouLiFilter::FilterFunction( double eta ) const {
 
 void HouLiFilter::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
 
-void HouLiFilter::U( Matrix& out, const Matrix& Lambda ) { out = Lambda; }
+void HouLiFilter::U( Tensor& out, const Tensor& Lambda ) { out = Lambda; }
 
-Matrix HouLiFilter::U( const Matrix& Lambda ) { return Lambda; }
+Tensor HouLiFilter::U( const Tensor& Lambda ) { return Lambda; }
 
 void HouLiFilter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 

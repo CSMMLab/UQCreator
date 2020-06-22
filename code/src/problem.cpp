@@ -78,7 +78,10 @@ Problem* Problem::Create( Settings* settings ) {
     }
 }
 
-double Problem::ComputeDt( const Matrix& u, double dx, unsigned level ) const { return _settings->GetDT(); }
+double Problem::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
+    std::cout << "Using dt computation from problem class" << std::endl;
+    return _settings->GetDT();
+}
 
 Matrix Problem::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
     _log->error( "[Problem]: No exact solution specified" );
@@ -91,10 +94,10 @@ Matrix Problem::Source( const Matrix& uQ ) const {
     return uQ;
 }
 
-Matrix Problem::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+Tensor Problem::Source( const Tensor& uQ, const Vector& x, double t, unsigned level ) const {
     std::cerr << "[Problem]: Source not defined" << std::endl;
     exit( EXIT_FAILURE );
-    return uQ;
+    Tensor uQ;
 }
 
 void Problem::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {

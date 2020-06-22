@@ -4,22 +4,24 @@ KineticClosure::KineticClosure( Settings* settings ) : Closure( settings ), _nMo
 
 KineticClosure::~KineticClosure() {}
 
-void KineticClosure::U( Vector& out, const Vector& Lambda ) {
-    out[0] = exp( Lambda[0] );
-}
+void KineticClosure::U( Vector& out, const Vector& Lambda ) { out[0] = exp( Lambda[0] ); }
 
 void KineticClosure::U( Vector& out, const Vector& Lambda, bool dummy ) { out[0] = exp( Lambda[0] ); }
 
-void KineticClosure::U( Matrix& out, const Matrix& Lambda ) {
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        out( 0, k ) = exp( Lambda( 0, k ) );
+void KineticClosure::U( Tensor& out, const Tensor& Lambda ) {
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            out( 0, l, k ) = exp( Lambda( 0, l, k ) );
+        }
     }
 }
 
-Matrix KineticClosure::U( const Matrix& Lambda ) {
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        y( 0, k ) = exp( Lambda( 0, k ) );
+Tensor KineticClosure::U( const Tensor& Lambda ) {
+    Tensor y( _nStates, Lambda.columns(), 0.0 );
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            y( 0, l, k ) = exp( Lambda( 0, l, k ) );
+        }
     }
 
     return y;

@@ -22,19 +22,23 @@ void LogSin::U( Vector& out, const Vector& Lambda ) {
     }
 }
 
-void LogSin::U( Matrix& out, const Matrix& Lambda ) {
-    for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
-            out( l, k ) = ( ( _uPlus - _uMinus ) / PI ) * ( PI / 2 + std::atan( Lambda( l, k ) ) ) + _uMinus;
+void LogSin::U( Tensor& out, const Tensor& Lambda ) {
+    for( unsigned n = 0; n < _nMultiElements; ++n ) {
+        for( unsigned l = 0; l < _nStates; ++l ) {
+            for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
+                out( l, n, k ) = ( ( _uPlus - _uMinus ) / PI ) * ( PI / 2 + std::atan( Lambda( l, n, k ) ) ) + _uMinus;
+            }
         }
     }
 }
 
-Matrix LogSin::U( const Matrix& Lambda ) {
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
-            y( l, k ) = ( ( _uPlus - _uMinus ) / PI ) * ( PI / 2 + std::atan( Lambda( l, k ) ) ) + _uMinus;
+Tensor LogSin::U( const Tensor& Lambda ) {
+    Tensor y( _nStates, _nMultiElements, Lambda.columns(), 0.0 );
+    for( unsigned n = 0; n < _nMultiElements; ++n ) {
+        for( unsigned l = 0; l < _nStates; ++l ) {
+            for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
+                y( n, l, k ) = ( ( _uPlus - _uMinus ) / PI ) * ( PI / 2 + std::atan( Lambda( n, l, k ) ) ) + _uMinus;
+            }
         }
     }
     return y;

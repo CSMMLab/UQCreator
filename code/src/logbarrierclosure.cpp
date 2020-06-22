@@ -25,27 +25,31 @@ void LogBarrierClosure::U( Vector& out, const Vector& Lambda ) {
     }
 }
 
-void LogBarrierClosure::U( Matrix& out, const Matrix& Lambda ) {
-    for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
-            // double v    = Lambda( l, k );
-            // out( l, k ) = -1.0 / v + 0.5 * ( _uMinus + _uPlus ) + sqrt( pow( ( _uMinus - _uPlus ) * v, 2 ) + 4.0 ) / ( 2.0 * v );
-            out( l, k ) =
-                0.5 * ( _uMinus + _uPlus +
-                        pow( _uMinus - _uPlus, 2 ) * Lambda( l, k ) / ( sqrt( pow( _uMinus - _uPlus, 2 ) * pow( Lambda( l, k ), 2 ) + 4.0 ) + 2.0 ) );
+void LogBarrierClosure::U( Tensor& out, const Tensor& Lambda ) {
+    for( unsigned n = 0; n < _nMultiElements; ++n ) {
+        for( unsigned l = 0; l < _nStates; ++l ) {
+            for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
+                // double v    = Lambda( l, n,k );
+                // out( l, n,k ) = -1.0 / v + 0.5 * ( _uMinus + _uPlus ) + sqrt( pow( ( _uMinus - _uPlus ) * v, 2 ) + 4.0 ) / ( 2.0 * v );
+                out( l, n, k ) = 0.5 * ( _uMinus + _uPlus +
+                                         pow( _uMinus - _uPlus, 2 ) * Lambda( l, n, k ) /
+                                             ( sqrt( pow( _uMinus - _uPlus, 2 ) * pow( Lambda( l, n, k ), 2 ) + 4.0 ) + 2.0 ) );
+            }
         }
     }
 }
 
-Matrix LogBarrierClosure::U( const Matrix& Lambda ) {
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned l = 0; l < _nStates; ++l ) {
-        for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
-            // double v  = Lambda( l, k );
-            // y( l, k ) = -1.0 / v + 0.5 * ( _uMinus + _uPlus ) + sqrt( pow( ( _uMinus - _uPlus ) * v, 2 ) + 4.0 ) / ( 2.0 * v );
-            y( l, k ) =
-                0.5 * ( _uMinus + _uPlus +
-                        pow( _uMinus - _uPlus, 2 ) * Lambda( l, k ) / ( sqrt( pow( _uMinus - _uPlus, 2 ) * pow( Lambda( l, k ), 2 ) + 4.0 ) + 2.0 ) );
+Tensor LogBarrierClosure::U( const Tensor& Lambda ) {
+    Tensor y( _nStates, _nMultiElements, Lambda.columns(), 0.0 );
+    for( unsigned n = 0; n < _nMultiElements; ++n ) {
+        for( unsigned l = 0; l < _nStates; ++l ) {
+            for( unsigned int k = 0; k < Lambda.columns(); ++k ) {
+                // double v  = Lambda( l, n,k );
+                // y( l, n,k ) = -1.0 / v + 0.5 * ( _uMinus + _uPlus ) + sqrt( pow( ( _uMinus - _uPlus ) * v, 2 ) + 4.0 ) / ( 2.0 * v );
+                y( l, n, k ) = 0.5 * ( _uMinus + _uPlus +
+                                       pow( _uMinus - _uPlus, 2 ) * Lambda( l, n, k ) /
+                                           ( sqrt( pow( _uMinus - _uPlus, 2 ) * pow( Lambda( l, n, k ), 2 ) + 4.0 ) + 2.0 ) );
+            }
         }
     }
     return y;

@@ -15,9 +15,9 @@ class LogSin : public Closure
     virtual ~LogSin();
 
     virtual void U( Vector& out, const Vector& Lambda );
-    virtual void U( Matrix& out, const Matrix& Lambda );
-    virtual Matrix U( const Matrix& Lambda );
+    virtual void U( Tensor& out, const Tensor& Lambda );
+    virtual Tensor U( const Tensor& Lambda );
     virtual void DU( Matrix& y, const Vector& Lambda );
 };
 
-#endif // LOGSIN_H
+#endif    // LOGSIN_H

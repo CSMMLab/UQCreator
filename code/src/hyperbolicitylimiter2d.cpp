@@ -24,9 +24,9 @@ HyperbolicityLimiter2D::~HyperbolicityLimiter2D() {}
 
 void HyperbolicityLimiter2D::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
 
-void HyperbolicityLimiter2D::U( Matrix& out, const Matrix& Lambda ) { out = Lambda; }
+void HyperbolicityLimiter2D::U( Tensor& out, const Tensor& Lambda ) { out = Lambda; }
 
-Matrix HyperbolicityLimiter2D::U( const Matrix& Lambda ) { return Lambda; }
+Tensor HyperbolicityLimiter2D::U( const Tensor& Lambda ) { return Lambda; }
 
 void HyperbolicityLimiter2D::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 

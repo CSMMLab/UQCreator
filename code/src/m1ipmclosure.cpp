@@ -9,22 +9,26 @@ void M1IPMClosure::U( Vector& out, const Vector& Lambda ) {
     out[1] = ( exp( Lambda[0] + Lambda[1] ) * ( -1.0 + Lambda[1] ) + exp( Lambda[0] - Lambda[1] ) * ( 1.0 + Lambda[1] ) ) / pow( Lambda[1], 2 );
 }
 
-void M1IPMClosure::U( Matrix& out, const Matrix& Lambda ) {
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        out( 0, k ) = ( -exp( Lambda( 0, k ) - Lambda( 1, k ) ) + exp( Lambda( 0, k ) + Lambda( 1, k ) ) ) / Lambda( 1, k );
-        out( 1, k ) = ( exp( Lambda( 0, k ) + Lambda( 1, k ) ) * ( -1.0 + Lambda( 1, k ) ) +
-                        exp( Lambda( 0, k ) - Lambda( 1, k ) ) * ( 1.0 + Lambda( 1, k ) ) ) /
-                      pow( Lambda( 1, k ), 2 );
+void M1IPMClosure::U( Tensor& out, const Tensor& Lambda ) {
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            out( 0, l, k ) = ( -exp( Lambda( 0, l, k ) - Lambda( 1, l, k ) ) + exp( Lambda( 0, l, k ) + Lambda( 1, l, k ) ) ) / Lambda( 1, l, k );
+            out( 1, l, k ) = ( exp( Lambda( 0, l, k ) + Lambda( 1, l, k ) ) * ( -1.0 + Lambda( 1, l, k ) ) +
+                               exp( Lambda( 0, l, k ) - Lambda( 1, l, k ) ) * ( 1.0 + Lambda( 1, l, k ) ) ) /
+                             pow( Lambda( 1, l, k ), 2 );
+        }
     }
 }
 
-Matrix M1IPMClosure::U( const Matrix& Lambda ) {
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
-    for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-        y( 0, k ) = ( -exp( Lambda( 0, k ) - Lambda( 1, k ) ) + exp( Lambda( 0, k ) + Lambda( 1, k ) ) ) / Lambda( 1, k );
-        y( 1, k ) = ( exp( Lambda( 0, k ) + Lambda( 1, k ) ) * ( -1.0 + Lambda( 1, k ) ) +
-                      exp( Lambda( 0, k ) - Lambda( 1, k ) ) * ( 1.0 + Lambda( 1, k ) ) ) /
-                    pow( Lambda( 1, k ), 2 );
+Tensor M1IPMClosure::U( const Tensor& Lambda ) {
+    Tensor y( _nStates, _nMultiElements, Lambda.columns(), 0.0 );
+    for( unsigned l = 0; l < _nMultiElements; ++l ) {
+        for( unsigned k = 0; k < Lambda.columns(); ++k ) {
+            y( 0, l, k ) = ( -exp( Lambda( 0, l, k ) - Lambda( 1, l, k ) ) + exp( Lambda( 0, l, k ) + Lambda( 1, l, k ) ) ) / Lambda( 1, l, k );
+            y( 1, l, k ) = ( exp( Lambda( 0, l, k ) + Lambda( 1, l, k ) ) * ( -1.0 + Lambda( 1, l, k ) ) +
+                             exp( Lambda( 0, l, k ) - Lambda( 1, l, k ) ) * ( 1.0 + Lambda( 1, l, k ) ) ) /
+                           pow( Lambda( 1, l, k ), 2 );
+        }
     }
 
     return y;
@@ -45,8 +49,8 @@ void M1IPMClosure::DU( Matrix& y, const Vector& Lambda ) {
         y( 0, 1 ) = ( exp( Lambda[0] - Lambda[1] ) * ( 1.0 + exp( 2.0 * Lambda[1] ) * ( -1.0 + Lambda[1] ) + Lambda[1] ) ) / pow( Lambda[1], 2 );
         y( 1, 0 ) = y( 0, 1 );
         y( 1, 1 ) = ( exp( Lambda[0] - Lambda[1] ) *
-                      ( -2.0 - 2.0 * Lambda[1] - pow( Lambda[1], 2 ) + exp( 2.0 * Lambda[1] ) * ( 2.0 - 2.0 * Lambda[1] + pow( Lambda[1], 2 ) ) ) ) /
-                    pow( Lambda[1], 3 ); */
+                      ( -2.0 - 2.0 * Lambda[1] - pow( Lambda[1], 2 ) + exp( 2.0 * Lambda[1] ) * ( 2.0 - 2.0 * Lambda[1] + pow( Lambda[1], 2 ) ) )
+       ) / pow( Lambda[1], 3 ); */
     // std::cout << y << std::endl;
 }
 
