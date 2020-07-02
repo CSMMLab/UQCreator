@@ -333,7 +333,9 @@ void MomentSolver::Solve() {
                 xiEta[l]       = quad[n]->GetNodes()[index];
                 outXi << xiEta[l] << " ";
             }
-            outXi << uPlot( 0, k ) << std::endl;
+            for( unsigned l = 0; l < _nMultiElements; ++l ) {
+                outXi << uPlot( 0, l, k ) << std::endl;
+            }
         }
 
         outXi.close();
@@ -527,13 +529,15 @@ void MomentSolver::DetermineGradients( MatTens& duQx, MatTens& duQy, const MatTe
         auto neighborIDs = cell->GetNeighborIDs();
         // compute derivative for every quadrature point on PE
         for( unsigned s = 0; s < _nStates; ++s ) {
-            for( unsigned k = 0; k < _nQTotalForRef[refLevel[j]]; ++k ) {
-                // use all neighboring cells for stencil
-                for( unsigned l = 0; l < neighborIDs.size(); ++l ) {
-                    duQx[j]( s, k ) =
-                        duQx[j]( s, k ) + 0.5 * ( uQ[j]( s, k ) + uQ[neighborIDs[l]]( s, k ) ) * cell->GetNormal( l )[0] / cell->GetArea();
-                    duQy[j]( s, k ) =
-                        duQy[j]( s, k ) + 0.5 * ( uQ[j]( s, k ) + uQ[neighborIDs[l]]( s, k ) ) * cell->GetNormal( l )[1] / cell->GetArea();
+            for( unsigned n = 0; n < _nMultiElements; ++n ) {
+                for( unsigned k = 0; k < _nQTotalForRef[refLevel[j]]; ++k ) {
+                    // use all neighboring cells for stencil
+                    for( unsigned l = 0; l < neighborIDs.size(); ++l ) {
+                        duQx[j]( s, n, k ) = duQx[j]( s, n, k ) +
+                                             0.5 * ( uQ[j]( s, n, k ) + uQ[neighborIDs[l]]( s, n, k ) ) * cell->GetNormal( l )[0] / cell->GetArea();
+                        duQy[j]( s, n, k ) = duQy[j]( s, n, k ) +
+                                             0.5 * ( uQ[j]( s, n, k ) + uQ[neighborIDs[l]]( s, n, k ) ) * cell->GetNormal( l )[1] / cell->GetArea();
+                    }
                 }
             }
         }
