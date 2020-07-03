@@ -1,0 +1,4 @@
+- intrusive methods for uncertainty quantification have high numerical costs
+- adaptivity and the One-Shot approach can be used to accelerate intrusive methods
+- the proposed techniques are studied for uncertainties up to order three
+- acceleration techniques allow intrusive methods to compete with collocation methods
