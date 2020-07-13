@@ -661,13 +661,15 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTe
         // compute first initial guess
         Vector ds( _nStates );
         Vector u0( _nStates );
-        for( unsigned j = 0; j < _nCells; ++j ) {
-            for( unsigned l = 0; l < _nStates; ++l ) {
-                u0[l] = u[j]( l, 0 );
-            }
-            _closure->DS( ds, u0 );
-            for( unsigned l = 0; l < _nStates; ++l ) {
-                _lambda[j]( l, 0 ) = ds[l];
+        for( unsigned n = 0; n < _nMultiElements; ++n ) {
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                for( unsigned l = 0; l < _nStates; ++l ) {
+                    u0[l] = u[j]( l, n, 0 );
+                }
+                _closure->DS( ds, u0 );
+                for( unsigned l = 0; l < _nStates; ++l ) {
+                    _lambda[j]( l, n, 0 ) = ds[l];
+                }
             }
         }
 
@@ -722,20 +724,32 @@ MatTens MomentSolver::SetupIC() const {
     std::vector<Vector> IC;
     auto grid   = _closure->GetQuadratureGrid();
     auto xiQuad = grid->GetNodes();
+    Vector xiGrid( _nMultiElements, 0.0 );
+    double a = -1.0;
+    double b = 1.0;
+    for( unsigned n = 0; n < _nMultiElements; ++n ) {
+        xiGrid[n] = a + n * ( b - a ) / _nMultiElements;
+    }
+
     if( _settings->HasICFile() ) {
         IC = _mesh->Import();
     }
     for( unsigned j = 0; j < _nCells; ++j ) {
-        for( unsigned k = 0; k < _nQTotal; ++k ) {
-            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                xiEta[l] = xiQuad[k][l];
-            }
+        for( unsigned n = 0; n < _nMultiElements - 1; ++n ) {
+            for( unsigned k = 0; k < _nQTotal; ++k ) {
+                for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+                    double a = xiGrid[n];
+                    double b = xiGrid[n + 1];
+                    xiEta[l] = a + n * ( b - a ) / _nMultiElements;
+                    xiQuad[k][l];
+                }
 
-            if( _settings->HasICFile() ) {
-                column( uIC, k ) = _problem->LoadIC( IC[j], xiEta );
-            }
-            else {
-                column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );
+                if( _settings->HasICFile() ) {
+                    column( uIC, k ) = _problem->LoadIC( IC[j], xiEta );
+                }
+                else {
+                    column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );
+                }
             }
         }
         u[j] = uIC * phiTildeWf;
@@ -747,9 +761,11 @@ void MomentSolver::Export( const MatTens& u, const MatTens& lambda ) const {
     std::shared_ptr<spdlog::logger> moment_writer = spdlog::get( "moments" );
     for( unsigned i = 0; i < _nCells; ++i ) {
         std::stringstream line;
-        for( unsigned j = 0; j < _nStates; ++j ) {
-            for( unsigned k = 0; k < _nTotal; ++k ) {
-                line << std::setprecision( std::numeric_limits<double>::digits10 ) << u[i]( j, k ) << ",";
+        for( unsigned l = 0; l < _nMultiElements; ++l ) {
+            for( unsigned j = 0; j < _nStates; ++j ) {
+                for( unsigned k = 0; k < _nTotal; ++k ) {
+                    line << std::setprecision( std::numeric_limits<double>::digits10 ) << u[i]( j, l, k ) << ",";
+                }
             }
         }
         moment_writer->info( line.str() );
@@ -758,9 +774,11 @@ void MomentSolver::Export( const MatTens& u, const MatTens& lambda ) const {
     std::shared_ptr<spdlog::logger> dual_writer = spdlog::get( "duals" );
     for( unsigned i = 0; i < _nCells; ++i ) {
         std::stringstream line;
-        for( unsigned j = 0; j < _nStates; ++j ) {
-            for( unsigned k = 0; k < _nTotal; ++k ) {
-                line << std::setprecision( std::numeric_limits<double>::digits10 ) << lambda[i]( j, k ) << ",";
+        for( unsigned l = 0; l < _nMultiElements; ++l ) {
+            for( unsigned j = 0; j < _nStates; ++j ) {
+                for( unsigned k = 0; k < _nTotal; ++k ) {
+                    line << std::setprecision( std::numeric_limits<double>::digits10 ) << lambda[i]( j, l, k ) << ",";
+                }
             }
         }
         dual_writer->info( line.str() );

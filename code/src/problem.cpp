@@ -97,7 +97,7 @@ Matrix Problem::Source( const Matrix& uQ ) const {
 Tensor Problem::Source( const Tensor& uQ, const Vector& x, double t, unsigned level ) const {
     std::cerr << "[Problem]: Source not defined" << std::endl;
     exit( EXIT_FAILURE );
-    Tensor uQ;
+    return uQ;
 }
 
 void Problem::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
