@@ -107,8 +107,6 @@ Vector Burgers::IC( const Vector& x, const Vector& xi ) {
 Matrix Burgers::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
     double x0, x1;
 
-    bool testNumHYP = false;
-
     Matrix y( _settings->GetNumCells(), _nStates );
     if( t >= ( _x1 - _x0 ) / ( _uL - _uR ) ) {
         double tS            = ( _x1 - _x0 ) / ( _uL - _uR );

@@ -5,7 +5,7 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 1000
+numberOfCells = 500
 a = 0.0
 b = 1.0
 #outputFile = "euler_shock_filter0-75order15_P5_"
@@ -17,19 +17,19 @@ outputFile = "euler_shock_IPM_P5_"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.05]]
+distribution = [["Legendre"],[0.1]]
 CFL = 0.75
-tEnd = 0.14
+tEnd = 0.21
 
 [moment_system]
-# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter
-closure = "HyperbolicityLimiter"
+# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter, ExponentialFilter, SplineFilter, HouLiFilter
+closure = "ExponentialFilter"
 moments = [["totalDegree"],[5]]
-quadPoints = [["tensorizedGrid"],[20]]
-nMultiElements = 1
+quadPoints = [["tensorizedGrid"],[10]]
+nMultiElements = 4
 #refinementThresholds = [0.0001, 0.00001]
-#regularizationStrength = 1e-7
-#filterStrength = 0.75
-#filterOrder = 10
+regularizationStrength = 1e-7
+filterStrength = 0.75
+filterOrder = 10
 maxIterations = 10000
 epsilon = 1e-7

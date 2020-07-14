@@ -80,6 +80,21 @@ template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace
     return os;
 }
 
+template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace::Tensor<T>& a ) {
+    for( unsigned l = 0; l < a.frontRows(); ++l ) {
+        os << "(\t";
+        for( unsigned i = 0; i < a.rows(); ++i ) {
+            os << "(\t";
+            for( unsigned j = 0; j < a.columns(); ++j ) {
+                os << a( l, i, j ) << "\t";
+            }
+            os << ")" << std::endl;
+        }
+        os << ")" << std::endl;
+    }
+    return os;
+}
+
 // VECTOR //////////////////////////////////////////////////////////////////////////
 
 template <class T> double dot( const VectorSpace::Vector<T>& a, const VectorSpace::Vector<T>& b ) {

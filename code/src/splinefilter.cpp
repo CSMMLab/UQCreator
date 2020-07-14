@@ -48,18 +48,22 @@ Tensor SplineFilter::U( const Tensor& Lambda ) { return Lambda; }
 
 void SplineFilter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 
-void SplineFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+void SplineFilter::SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel ) {
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            lambda( s, i ) = pow( _filterFunction[i], _settings->GetDT() ) * u( s, i );
+        for( unsigned l = 0; l < _settings->GetNMultiElements(); ++l ) {
+            for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+                lambda( s, l, i ) = pow( _filterFunction[i], _settings->GetDT() ) * u( s, l, i );
+            }
         }
     }
 }
 
-void SplineFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
+void SplineFilter::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLevel ) {
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            lambda( s, i ) = pow( _filterFunction[i], _settings->GetDT() ) * u( s, i );
+        for( unsigned l = 0; l < _settings->GetNMultiElements(); ++l ) {
+            for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+                lambda( s, l, i ) = pow( _filterFunction[i], _settings->GetDT() ) * u( s, l, i );
+            }
         }
     }
 }

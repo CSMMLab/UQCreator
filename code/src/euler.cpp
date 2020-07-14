@@ -71,22 +71,23 @@ Matrix Euler::F( const Matrix& u ) {
     exit( EXIT_FAILURE );
 }
 
-double Euler::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+double Euler::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
     double dtMinTotal = 1e10;
     double dtMin;
     double rhoInv, v, p, a, cfl;
     unsigned kEnd = _settings->GetNqPEAtRef( level );
 
     cfl = _settings->GetCFL();
+    for( unsigned n = 0; n < _settings->GetNMultiElements(); ++n ) {
+        for( unsigned k = 0; k < kEnd; ++k ) {
+            rhoInv = 1.0 / u( 0, n, k );
+            v      = u( 1, n, k ) * rhoInv;
+            p      = ( _gamma - 1.0 ) * ( u( 2, n, k ) - 0.5 * u( 0, n, k ) * pow( v, 2 ) );
+            a      = sqrt( _gamma * p * rhoInv );
 
-    for( unsigned k = 0; k < kEnd; ++k ) {
-        rhoInv = 1.0 / u( 0, k );
-        v      = u( 1, k ) * rhoInv;
-        p      = ( _gamma - 1.0 ) * ( u( 2, k ) - 0.5 * u( 0, k ) * pow( v, 2 ) );
-        a      = sqrt( _gamma * p * rhoInv );
-
-        dtMin      = ( cfl * dx ) * std::min( std::fabs( 1.0 / ( v - a ) ), std::fabs( 1.0 / ( v + a ) ) );
-        dtMinTotal = std::min( dtMin, dtMinTotal );
+            dtMin      = ( cfl * dx ) * std::min( std::fabs( 1.0 / ( v - a ) ), std::fabs( 1.0 / ( v + a ) ) );
+            dtMinTotal = std::min( dtMin, dtMinTotal );
+        }
     }
 
     return dtMinTotal;
@@ -106,12 +107,13 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
     double uR   = 0.0;
 
     if( !sodShockTube ) {
-        pR   = 0.0125;    // 0.3
-        rhoR = 1.0;
+        pR   = 0.3;    // 0.3
+        rhoR = 0.3;
     }
 
     Vector y( _nStates );
     _sigma = _settings->GetSigma();
+    // std::cout << x[0] << " " << x0 + _sigma[0] * xi[0] << std::endl;
     if( x[0] < x0 + _sigma[0] * xi[0] ) {
         y[0]                  = rhoL;
         y[1]                  = rhoL * uL;
@@ -151,8 +153,8 @@ Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const
     double u_r        = 0.0;
 
     if( !sodShockTube ) {
-        P_r   = 0.125;    // 0.3
-        rho_r = 0.8;
+        P_r   = 0.3;    // 0.3
+        rho_r = 0.3;
     }
 
     if( xi.size() > 1 ) {

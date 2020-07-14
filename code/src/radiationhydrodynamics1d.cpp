@@ -7,12 +7,12 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     _testCase = 2;
 
     // constants
-    double k = 1.38064852e-16;         // Boltzmann's constant [cm^2 g / (s^2 K)]
-    _gamma   = 5.0 / 3.0;              // adiabatic constant
-    _R       = 8.3144621 * 1e7;        // specific gas constant [erg / (K mol)]
-    _cLight  = 299792458.0 * 100.0;    // speed of light in [cm/s]
-    _aR      = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
-    _h       = 6.62607004 * 1e-27;     // Planck's constant [cm^2 g/s]
+    // double k = 1.38064852e-16;         // Boltzmann's constant [cm^2 g / (s^2 K)]
+    _gamma  = 5.0 / 3.0;              // adiabatic constant
+    _R      = 8.3144621 * 1e7;        // specific gas constant [erg / (K mol)]
+    _cLight = 299792458.0 * 100.0;    // speed of light in [cm/s]
+    _aR     = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]
+    _h      = 6.62607004 * 1e-27;     // Planck's constant [cm^2 g/s]
 
     // initial chock states
     double rhoL, uL, TL, rhoR, uR, TR, lRef;
@@ -250,7 +250,7 @@ Vector RadiationHydrodynamics1D::Fr0( const Vector& u ) const {
 
 Vector RadiationHydrodynamics1D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
-    double k = 1.38064852e-16;    // Boltzmann's constant [cm^2 g / (s^2 K)]
+    // double k = 1.38064852e-16;    // Boltzmann's constant [cm^2 g / (s^2 K)]
 
     // initial chock states
     double rhoL, uL, TL, rhoR, uR, TR;
@@ -337,7 +337,7 @@ Matrix RadiationHydrodynamics1D::FEuler( const Vector& u ) const {
 }
 
 Vector RadiationHydrodynamics1D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    double dx = norm( n );
+    // double dx = norm( n );
     Vector out( _nStates, 0.0 );
     Vector outEuler( 3, false );
     Vector uRadiation( _nStates, false );

@@ -22,8 +22,8 @@ class SplineFilter : public Closure
     virtual void U( Tensor& out, const Tensor& Lambda );
     virtual Tensor U( const Tensor& Lambda );
     virtual void DU( Matrix& y, const Vector& Lambda );
-    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel );
-    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel );
+    virtual void SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel );
+    virtual void SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLevel );
 };
 
 #endif    // SPLINEFILTER_H

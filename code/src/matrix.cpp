@@ -342,6 +342,7 @@ template <class T> class Tensor    // column major
 
     double* GetPointer() { return _data; }
 
+    unsigned frontRows() const;
     unsigned rows() const;
     unsigned columns() const;
     void reset();
@@ -403,11 +404,11 @@ template <class T> void Tensor<T>::operator=( const Tensor<T>& other ) {
     }
 
     // ensure that only allocated data is written when sizes differ (due to adaptivity)
-    unsigned columns    = std::min( _columns, other._columns );
-    unsigned rows       = std::min( _rows, other._rows );
-    unsigned _frontRows = std::min( _frontRows, other._frontRows );
+    unsigned columns   = std::min( _columns, other._columns );
+    unsigned rows      = std::min( _rows, other._rows );
+    unsigned frontRows = std::min( _frontRows, other._frontRows );
 
-    for( unsigned l = 0; l < _frontRows; ++l ) {
+    for( unsigned l = 0; l < frontRows; ++l ) {
         for( unsigned i = 0; i < rows; ++i ) {
             for( unsigned j = 0; j < columns; ++j ) {
                 ( *this )( l, i, j ) = other( l, i, j );
@@ -429,9 +430,11 @@ template <class T> Tensor<T> Tensor<T>::Add( const Tensor<T>& other, unsigned fr
     return res;
 }
 
-template <class T> T& Tensor<T>::operator()( unsigned l, unsigned i, unsigned j ) { _data[( j * _rows + i ) * _frontRows + l]; }
+template <class T> T& Tensor<T>::operator()( unsigned l, unsigned i, unsigned j ) { return _data[( j * _rows + i ) * _frontRows + l]; }
 
 template <class T> const T& Tensor<T>::operator()( unsigned l, unsigned i, unsigned j ) const { return _data[( j * _rows + i ) * _frontRows + l]; }
+
+// template <class T> const T& Matrix<T>::operator()( unsigned i, unsigned j ) const { return _data[j * _rows + i]; }
 
 template <class T> Tensor<T> Tensor<T>::operator+( const Tensor<T>& other ) const {
     Tensor<T> res( _rows, _columns, true );
@@ -515,12 +518,14 @@ template <class T> Tensor<T> Tensor<T>::operator*( const T& scalar ) const {
 }
 
 template <class T> Tensor<T> Tensor<T>::operator*( const Matrix<T>& other ) const {
-    Tensor<T> res( _frontRows, _rows, other.columns(), true );
-    for( unsigned j = 0; j < _columns; ++j ) {
+    // ensure that only allocated data is written when sizes differ (due to adaptivity)
+    unsigned rows = std::min( _columns, other.rows() );
+    Tensor<T> res( _frontRows, _rows, other.columns(), 0.0 );
+    for( unsigned j = 0; j < rows; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             for( unsigned l = 0; l < _frontRows; ++l ) {
                 for( unsigned n = 0; n < other.columns(); ++n ) {
-                    res( l, i, n ) = ( *this )( l, i, j ) * other( j, n );
+                    res( l, i, n ) = res( l, i, n ) + ( *this )( l, i, j ) * other( j, n );
                 }
             }
         }
@@ -573,6 +578,8 @@ template <class T> void Tensor<T>::operator-=( const Tensor<T>& other ) {
         }
     }
 }
+
+template <class T> unsigned Tensor<T>::frontRows() const { return _frontRows; }
 
 template <class T> unsigned Tensor<T>::rows() const { return _rows; }
 

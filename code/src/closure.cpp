@@ -85,6 +85,9 @@ Closure::Closure( Settings* settings )
                 _phiTildeF( k, i ) *=
                     _quad[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _quad[n]->L2Norm( indices[i][l] ) * _quad[n]->fXi( _xiGrid[k][l] );
             }
+            // P(xi \in I_l) probability that xi lies in multi element I_l
+            // double P            = 1.0 / _nMultiElements;
+            //_phiTildeF( k, i )  = _phiTildeF( k, i ) / P;    // modify pdf to multielement ansatz, only valid for uniform distributions
             _phiTildeWf( k, i ) = _phiTildeF( k, i ) * _wGrid[_settings->GetNRefinementLevels() - 1][k];
             _phiTildeVec[k][i]  = _phiTilde( k, i );
         }

@@ -108,20 +108,20 @@ void HyperbolicityLimiter::SolveClosure( Tensor& lambda, const Tensor& u, unsign
             if( pow( b, 2 ) - 4.0 * a * c < 0 ) std::cerr << "[RealizabilityLimiter]: Imaginary unit detected!" << std::endl;
             double t2a = q / a;
             double t2b = c / q;
+            /*
+                        // test root
+                        double rhoA = t2a * rhoTilde + ( 1.0 - t2a ) * rho[k];
+                        double Ea   = t2a * ETilde + ( 1.0 - t2a ) * E[k];
+                        double ma   = t2a * mTilde + ( 1.0 - t2a ) * m[k];
+                        double root = rhoA * Ea - 0.5 * pow( ma, 2 );
+                        // std::cout << "theta = " << t2a << ":   root A " << root << std::endl;
 
-            // test root
-            double rhoA = t2a * rhoTilde + ( 1.0 - t2a ) * rho[k];
-            double Ea   = t2a * ETilde + ( 1.0 - t2a ) * E[k];
-            double ma   = t2a * mTilde + ( 1.0 - t2a ) * m[k];
-            double root = rhoA * Ea - 0.5 * pow( ma, 2 );
-            // std::cout << "theta = " << t2a << ":   root A " << root << std::endl;
-
-            double rhoB = t2b * rhoTilde + ( 1.0 - t2b ) * rho[k];
-            double Eb   = t2b * ETilde + ( 1.0 - t2b ) * E[k];
-            double mb   = t2b * mTilde + ( 1.0 - t2b ) * m[k];
-            root        = rhoB * Eb - 0.5 * pow( mb, 2 );
-            // std::cout << "theta = " << t2b << "root B " << root << std::endl;
-
+                        double rhoB = t2b * rhoTilde + ( 1.0 - t2b ) * rho[k];
+                        double Eb   = t2b * ETilde + ( 1.0 - t2b ) * E[k];
+                        double mb   = t2b * mTilde + ( 1.0 - t2b ) * m[k];
+                        root        = rhoB * Eb - 0.5 * pow( mb, 2 );
+                        // std::cout << "theta = " << t2b << "root B " << root << std::endl;
+            */
             if( t2a > 1.0 || t2a < 0.0 || !std::isfinite( t2a ) ) t2a = 0.0;
             if( t2b > 1.0 || t2b < 0.0 || !std::isfinite( t2b ) ) t2b = 0.0;
 
@@ -209,19 +209,20 @@ void HyperbolicityLimiter::SolveClosureSafe( Tensor& lambda, const Tensor& u, un
             if( pow( b, 2 ) - 4.0 * a * c < 0 ) std::cerr << "[RealizabilityLimiter]: Imaginary unit detected!" << std::endl;
             double t2a = q / a;
             double t2b = c / q;
+            /*
+                        // test root
+                        double rhoA = t2a * rhoTilde + ( 1.0 - t2a ) * rho[k];
+                        double Ea   = t2a * ETilde + ( 1.0 - t2a ) * E[k];
+                        double ma   = t2a * mTilde + ( 1.0 - t2a ) * m[k];
+                        double root = rhoA * Ea - 0.5 * pow( ma, 2 );
+                        // std::cout << "theta = " << t2a << ":   root A " << root << std::endl;
 
-            // test root
-            double rhoA = t2a * rhoTilde + ( 1.0 - t2a ) * rho[k];
-            double Ea   = t2a * ETilde + ( 1.0 - t2a ) * E[k];
-            double ma   = t2a * mTilde + ( 1.0 - t2a ) * m[k];
-            double root = rhoA * Ea - 0.5 * pow( ma, 2 );
-            // std::cout << "theta = " << t2a << ":   root A " << root << std::endl;
-
-            double rhoB = t2b * rhoTilde + ( 1.0 - t2b ) * rho[k];
-            double Eb   = t2b * ETilde + ( 1.0 - t2b ) * E[k];
-            double mb   = t2b * mTilde + ( 1.0 - t2b ) * m[k];
-            root        = rhoB * Eb - 0.5 * pow( mb, 2 );
-            // std::cout << "theta = " << t2b << "root B " << root << std::endl;
+                        double rhoB = t2b * rhoTilde + ( 1.0 - t2b ) * rho[k];
+                        double Eb   = t2b * ETilde + ( 1.0 - t2b ) * E[k];
+                        double mb   = t2b * mTilde + ( 1.0 - t2b ) * m[k];
+                        root        = rhoB * Eb - 0.5 * pow( mb, 2 );
+                        // std::cout << "theta = " << t2b << "root B " << root << std::endl;
+                        */
 
             if( t2a > 1.0 || t2a < 0.0 || !std::isfinite( t2a ) ) t2a = 0.0;
             if( t2b > 1.0 || t2b < 0.0 || !std::isfinite( t2b ) ) t2b = 0.0;

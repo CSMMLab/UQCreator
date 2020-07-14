@@ -18,6 +18,9 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
     VectorU edges;
     Matrix uQI( _settings->GetNStates(), _settings->GetNqPE() );
     Matrix uQJ( _settings->GetNStates(), _settings->GetNqPE() );
+
+    std::cout << "Euler: uQNew = " << uQ[10] << std::endl;
+
     for( unsigned l = 0; l < _settings->GetNMultiElements(); ++l ) {
 // compute flux at edges
 #pragma omp parallel for
@@ -42,6 +45,10 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                     uQI( s, k ) = uQ[I]( s, l, k );
                     uQJ( s, k ) = uQ[J]( s, l, k );
                 }
+            }
+            if( I == 10 ) {
+                std::cout << "Euler I==10: uQI = " << uQI << std::endl;
+                std::cout << "Euler I==10: uQ[I] = " << uQ[I] << std::endl;
             }
 
             double area = norm( _mesh->GetNormalAtEdge( j ) );
@@ -97,8 +104,19 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                 }
             }
 
-            auto uQNew = uQJ - ( dt / cell->GetArea() ) * rhs;
+            // TODO: Check if refLevel and uQ[j] is correct
+            for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+                for( unsigned k = 0; k < _settings->GetNqPEAtRef( refLevel[j] ); ++k ) {
+                    uQJ( s, k ) = uQ[j]( s, l, k );
+                }
+            }
 
+            auto uQNew = uQJ - ( dt / cell->GetArea() ) * rhs;
+            if( j == 10 ) {
+                std::cout << "Euler: rhs = " << ( dt / cell->GetArea() ) * rhs << std::endl;
+                std::cout << "Euler: uQJ = " << uQJ << std::endl;
+                std::cout << "Euler: uQNew = " << uQNew << std::endl;
+            }
             for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
                 for( unsigned k = 0; k < uQNew.columns(); ++k ) {
                     uNew[j]( s, l, k ) = uQNew( s, k );

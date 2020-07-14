@@ -22,11 +22,11 @@ void ShallowWaterClosure::U( Tensor& out, const Tensor& Lambda ) {
 }
 
 Tensor ShallowWaterClosure::U( const Tensor& Lambda ) {
-    Matrix y( _nStates, Lambda.columns(), 0.0 );
+    Tensor y( _nStates, _nMultiElements, Lambda.columns(), 0.0 );
     for( unsigned l = 0; l < _nMultiElements; ++l ) {
         for( unsigned k = 0; k < Lambda.columns(); ++k ) {
-            y( 0, k ) = ( 0.5 * ( 2 * Lambda( 0, l, k ) + pow( Lambda( 1, l, k ), 2 ) ) ) / _g;
-            y( 1, k ) = ( 0.5 * ( 2 * Lambda( 0, l, k ) * Lambda( 1, l, k ) + pow( Lambda( 1, l, k ), 3 ) ) ) / _g;
+            y( 0, l, k ) = ( 0.5 * ( 2 * Lambda( 0, l, k ) + pow( Lambda( 1, l, k ), 2 ) ) ) / _g;
+            y( 1, l, k ) = ( 0.5 * ( 2 * Lambda( 0, l, k ) * Lambda( 1, l, k ) + pow( Lambda( 1, l, k ), 3 ) ) ) / _g;
         }
     }
 

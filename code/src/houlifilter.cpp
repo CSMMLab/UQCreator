@@ -2,7 +2,6 @@
 
 HouLiFilter::HouLiFilter( Settings* settings ) : Closure( settings ), _lambda( _settings->GetFilterStrength() ) {
     _alpha             = 1.0;    // unsigned n;
-    double epsilonM    = std::numeric_limits<double>::denorm_min();
     _gamma             = 36;
     double _eps        = 1.0 / _lambda;
     unsigned maxDegree = _settings->GetMaxDegree();
