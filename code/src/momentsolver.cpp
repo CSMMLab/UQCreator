@@ -35,7 +35,6 @@ MomentSolver::~MomentSolver() {
 }
 
 void MomentSolver::Solve() {
-    std::cout << "In Solve" << std::endl;
     unsigned retCounter = 0;    // counter for retardation level
     // unsigned retLevel        = _settings->GetResidualRetardation( 0 );
     VectorU refinementLevel( _nCells, _settings->GetNRefinementLevels( retCounter ) - 1 );       // vector carries refinement level for each cell
@@ -59,15 +58,7 @@ void MomentSolver::Solve() {
     Closure* prevClosure   = DeterminePreviousClosure( prevSettings );
     if( _settings->HasRestartFile() ) _tStart = prevSettings->GetTEnd();
     MatTens u = DetermineMoments( prevSettings->GetNTotal() );
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        for( unsigned n = 0; n < _nMultiElements; ++n ) {
-            std::cout << j << " = " << u[j]( 0, n, 0 ) << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << "Determine Duals..." << std::endl;
     SetDuals( prevSettings, prevClosure, u );
-    std::cout << "Set solution matrix..." << std::endl;
     MatTens uQ    = MatTens( _nCells + 1, Tensor( _nStates, _nMultiElements, _settings->GetNqPE() ) );
     MatTens uQNew = MatTens( _nCells + 1, Tensor( _nStates, _nMultiElements, _settings->GetNqPE() ) );
     // slopes for slope limiter
@@ -103,16 +94,15 @@ void MomentSolver::Solve() {
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 && !_settings->HasSource() ) continue;
-            if( j == 10 )
-                std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
+            // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
             _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
-            if( j == 10 ) std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
+            // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
         }
 
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             uOld[j] = u[j];    // save old Moments for residual computation
-            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
+            MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal * _nMultiElements ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
 
         // save old refinement levels
@@ -161,23 +151,23 @@ void MomentSolver::Solve() {
             MPI_Bcast( &refinementLevelTransition[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
         }
 
-        std::cout << "Before recomputation" << std::endl;
-        std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
+        // std::cout << "Before recomputation" << std::endl;
+        // std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
 
         // compute solution at quad points
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
         }
-        std::cout << "Solution on quad" << std::endl;
-        std::cout << "uQ = " << uQ[_cellIndexPE[10]] << std::endl;
+        // std::cout << "Solution on quad" << std::endl;
+        // std::cout << "uQ = " << uQ[_cellIndexPE[10]] << std::endl;
 
         // compute partial moment vectors on each PE (for inexact dual variables)
         for( unsigned j = 0; j < _nCells; ++j ) {
             // recompute moments with inexact dual variables
             u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
-        std::cout << "After recomputation" << std::endl;
-        std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
+        // std::cout << "After recomputation" << std::endl;
+        // std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
         // break;
 
         // compute derivative on quadrature points of certain PE
@@ -197,7 +187,7 @@ void MomentSolver::Solve() {
         // perform time update flux
         _time->Advance( numFluxPtr, uQNew, u, uQ, dt, refinementLevel );
 
-        std::cout << "uQNew = " << uQNew[_cellIndexPE[10]] << std::endl;
+        // std::cout << "uQNew = " << uQNew[_cellIndexPE[10]] << std::endl;
 
         // perform time update source
         if( _settings->HasSource() ) {
@@ -210,8 +200,9 @@ void MomentSolver::Solve() {
             uNew[j] = uQNew[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
 
-        std::cout << "After time update" << std::endl;
-        std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", uNew = " << uNew[_cellIndexPE[10]] << std::endl;
+        // std::cout << "After time update" << std::endl;
+        // std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", uNew = " << uNew[_cellIndexPE[10]] <<
+        // std::endl;
         // break;
 
         // perform reduction onto u to obtain full moments on PE PEforCell[j], which is the PE that solves the dual problem for cell j
@@ -225,8 +216,8 @@ void MomentSolver::Solve() {
                         MPI_COMM_WORLD );
         }
 
-        std::cout << "After Reduce" << std::endl;
-        std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
+        // std::cout << "After Reduce" << std::endl;
+        // std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
 
         if( _settings->HasRegularization() ) {
             // add eta*lambda to obtain old moments
@@ -260,16 +251,16 @@ void MomentSolver::Solve() {
         // if current retardation level fulfills residual condition, then increase retardation level
         if( residualFull < _settings->GetResidualRetardation( retCounter ) && retCounter < _settings->GetNRetardationLevels() - 1 ) retCounter += 1;
     }
-    std::cout << "End" << std::endl;
-    std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
+    // std::cout << "End" << std::endl;
+    // std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
 
-    std::cout << "Writing errors..." << std::endl;
+    // std::cout << "Writing errors..." << std::endl;
     // write final error
     if( _settings->HasReferenceFile() ) this->WriteErrors( refinementLevel );
 
     // MPI Broadcast final moment vectors to all PEs
     for( unsigned j = 0; j < _nCells; ++j ) {
-        MPI_Bcast( u[j].GetPointer(), int( _nStates * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
+        MPI_Bcast( u[j].GetPointer(), int( _nStates * _nMultiElements * _nTotal ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
     }
 
     if( _settings->GetMyPE() != 0 ) return;
@@ -758,7 +749,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTe
     for( unsigned j = 0; j < _nCells; ++j ) {
         //_closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
         _lambda[j] = u[j];
-        std::cout << "lambda = " << _lambda[j]( 0, 0, 0 ) << " ; u = " << u[j]( 0, 0, 0 ) << std::endl;
+        // std::cout << "lambda = " << _lambda[j]( 0, 0, 0 ) << " ; u = " << u[j]( 0, 0, 0 ) << std::endl;
     }
 
     // if( prevSettings->GetMaxDegree() != _settings->GetMaxDegree() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete

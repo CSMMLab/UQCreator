@@ -5,12 +5,14 @@ outputDir = "../results"
 
 [mesh]
 dimension = 1
-numberOfCells = 500
+numberOfCells = 1000
 a = 0.0
 b = 1.0
 #outputFile = "euler_shock_filter0-75order15_P5_"
-#outputFile = "euler_shock_no_filter_P5_"
-outputFile = "euler_shock_IPM_P5_"
+outputFile = "euler_shock_no_MPI_P5_"
+#outputFile = "euler_shock_fSG_P4_ME4"
+#outputFile = "euler_shock_SG_P21"
+#outputFile = "euler_shock_SG_P4_ME4"
 #outputFile = "euler_shock_ref_"
 
 [problem]
@@ -23,13 +25,13 @@ tEnd = 0.21
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter, ExponentialFilter, SplineFilter, HouLiFilter
-closure = "ExponentialFilter"
+closure = "StochasticGalerkin"
 moments = [["totalDegree"],[5]]
 quadPoints = [["tensorizedGrid"],[10]]
 nMultiElements = 4
 #refinementThresholds = [0.0001, 0.00001]
-regularizationStrength = 1e-7
-filterStrength = 0.75
-filterOrder = 10
+#regularizationStrength = 1e-7
+#filterStrength = 1.0
+#filterOrder = 7
 maxIterations = 10000
 epsilon = 1e-7
