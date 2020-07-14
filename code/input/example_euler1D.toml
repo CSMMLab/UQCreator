@@ -9,7 +9,7 @@ numberOfCells = 1000
 a = 0.0
 b = 1.0
 #outputFile = "euler_shock_filter0-75order15_P5_"
-outputFile = "euler_shock_no_MPI_P5_"
+outputFile = "euler_shock_no_MPI_P5_adaptive"
 #outputFile = "euler_shock_fSG_P4_ME4"
 #outputFile = "euler_shock_SG_P21"
 #outputFile = "euler_shock_SG_P4_ME4"
@@ -26,10 +26,10 @@ tEnd = 0.21
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter, ExponentialFilter, SplineFilter, HouLiFilter
 closure = "StochasticGalerkin"
-moments = [["totalDegree"],[5]]
-quadPoints = [["tensorizedGrid"],[10]]
+moments = [["totalDegree"],[2, 3, 4, 5, 6]]
+quadPoints = [["tensorizedCCGrid"],[2, 3, 3, 3, 4]]
 nMultiElements = 4
-#refinementThresholds = [0.0001, 0.00001]
+refinementThresholds = [0.005, 0.0005]
 #regularizationStrength = 1e-7
 #filterStrength = 1.0
 #filterOrder = 7
