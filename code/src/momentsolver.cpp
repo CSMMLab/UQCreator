@@ -57,7 +57,9 @@ void MomentSolver::Solve() {
     Settings* prevSettings = DeterminePreviousSettings();
     Closure* prevClosure   = DeterminePreviousClosure( prevSettings );
     if( _settings->HasRestartFile() ) _tStart = prevSettings->GetTEnd();
-    MatTens u = DetermineMoments( prevSettings->GetNTotal() );
+    MatTens u       = DetermineMoments( prevSettings->GetNTotal() );
+    unsigned jIndex = 451;
+    std::cout << "Moments at index " << jIndex << " are " << u[jIndex] << std::endl;
     SetDuals( prevSettings, prevClosure, u );
     MatTens uQ    = MatTens( _nCells + 1, Tensor( _nStates, _nMultiElements, _settings->GetNqPE() ) );
     MatTens uQNew = MatTens( _nCells + 1, Tensor( _nStates, _nMultiElements, _settings->GetNqPE() ) );
@@ -94,9 +96,9 @@ void MomentSolver::Solve() {
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 && !_settings->HasSource() ) continue;
-            // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
+            std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
             _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
-            // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
+            std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
         }
 
         // MPI Broadcast lambdas to all PEs
@@ -705,7 +707,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTe
             if( _settings->GetMaxIterations() == 1 || prevSettings->GetMaxDegree() != _settings->GetMaxDegree() ) {
                 prevClosure->SetMaxIterations( 10000 );
                 for( unsigned j = 0; j < _nCells; ++j ) {
-                    prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNRefinementLevels() - 1 );
+                    prevClosure->( _lambda[j], u[j], prevSettings->GetNRefinementLevels() - 1 );
                 }
                 prevClosure->SetMaxIterations( maxIterations );
             }
@@ -733,7 +735,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTe
                         }
                     }
                 }
-                _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
+                _closure->( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
             }
             _closure->SetMaxIterations( maxIterations );
             // delete reload closures and settings
@@ -747,8 +749,24 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTe
     // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
     for( unsigned j = 0; j < _nCells; ++j ) {
-        //_closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
-        _lambda[j] = u[j];
+        // compute first initial guess
+        Vector ds( _nStates );
+        Vector u0( _nStates );
+        for( unsigned n = 0; n < _nMultiElements; ++n ) {
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                for( unsigned l = 0; l < _nStates; ++l ) {
+                    u0[l] = u[j]( l, n, 0 );
+                }
+                _closure->DS( ds, u0 );
+                for( unsigned l = 0; l < _nStates; ++l ) {
+                    _lambda[j]( l, n, 0 ) = ds[l];
+                }
+            }
+        }
+        std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
+        _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
+        std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
+        //_lambda[j] = u[j];
         // std::cout << "lambda = " << _lambda[j]( 0, 0, 0 ) << " ; u = " << u[j]( 0, 0, 0 ) << std::endl;
     }
 
