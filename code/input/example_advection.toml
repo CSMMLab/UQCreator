@@ -1,0 +1,33 @@
+[general]
+problem = "Advection"
+outputDir = "../results"
+#writeFrequency = 2
+
+[mesh]
+dimension = 2
+format = "SU2"
+SU2MeshFile = "squareAdvection.su2"
+SU2BC = [["OuterBoundary","dirichlet"]]
+outputFile = "advection"
+
+[problem]
+# available timesteppings: explicitEuler
+timestepping = "explicitEuler"
+# available distributions: Legendre, Hermite
+distribution = [["Legendre"],[0.1]]
+CFL = 1.0
+tEnd = 2.0
+
+[moment_system]
+# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter, ExponentialFilter, SplineFilter, HouLiFilter
+closure = "StochasticGalerkin"
+moments = [["totalDegree"],[2,3,4]]
+quadPoints = [["tensorizedCCGrid"],[3,4,5]]
+#quadPoints = [["tensorizedCCGrid"],[2, 3, 3, 3, 4]]
+#nMultiElements = 5
+refinementThresholds = [0.001, 0.0001]
+#regularizationStrength = 1e-7
+#filterStrength = 1.0
+#filterOrder = 7
+maxIterations = 10000
+epsilon = 1e-7

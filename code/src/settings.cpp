@@ -48,6 +48,13 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             if( problemTypeString->compare( "Burgers1D" ) == 0 ) {
                 _problemType = ProblemType::P_BURGERS_1D;
             }
+            else if( problemTypeString->compare( "Advection" ) == 0 ) {
+                if( _meshDimension == 1 ) {
+                    std::cerr << "Advection 1D not implemented" << std::endl;
+                }
+                else if( _meshDimension == 2 )
+                    _problemType = ProblemType::P_ADVECTION_2D;
+            }
             else if( problemTypeString->compare( "Euler1D" ) == 0 ) {
                 _problemType = ProblemType::P_EULER_1D;
             }
@@ -357,6 +364,16 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( quadratureType->at( 0 ).compare( "tensorizedGrid" ) == 0 ) {    // tensorizedGrid
                 _gridType = G_TENSORIZEDGRID;
                 _nQTotal  = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
+                // check if refinement is only unsed with constant quad level. Otherwise one needs to use nested quadrature
+                if( _nRefinementLevels > 1 ) {
+                    unsigned quadVal = _quadLevel[0];
+                    for( unsigned i = 0; i < _nRefinementLevels; ++i ) {
+                        if( _quadLevel[i] != quadVal )
+                            std::cerr
+                                << "[Settings]: ERROR! Using tensorizedGrid with quadrature refinement not possible. Choose nested quadrature set!"
+                                << std::endl;
+                    }
+                }
             }
             else if( quadratureType->at( 0 ).compare( "tensorizedCCGrid" ) == 0 ) {    // tensorizedCC
                 _gridType = G_TENSORIZEDCC;

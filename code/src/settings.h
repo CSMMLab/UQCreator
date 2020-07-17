@@ -12,6 +12,7 @@
 
 enum ProblemType {
     P_BURGERS_1D,
+    P_ADVECTION_2D,
     P_EULER_1D,
     P_EULER_2D,
     P_SHALLOWWATER_1D,

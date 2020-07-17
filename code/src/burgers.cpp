@@ -131,13 +131,14 @@ Matrix Burgers::ExactSolution( double t, const Matrix& x, const Vector& xi ) con
     return y;
 }
 
-double Burgers::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+double Burgers::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
     double dtMinTotal = 1e10;
     double cfl        = _settings->GetCFL();
     unsigned kEnd     = _settings->GetNqPEAtRef( level );
-
-    for( unsigned k = 0; k < kEnd; ++k ) {
-        dtMinTotal = std::min( cfl * dx / ( std::fabs( u( 0, k ) ) ), dtMinTotal );
+    for( unsigned l = 0; l < _settings->GetNMultiElements(); ++l ) {
+        for( unsigned k = 0; k < kEnd; ++k ) {
+            dtMinTotal = std::min( cfl * dx / ( std::fabs( u( 0, l, k ) ) ), dtMinTotal );
+        }
     }
     return dtMinTotal;
 }

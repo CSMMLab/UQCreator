@@ -207,12 +207,11 @@ void Closure::SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel )
     unsigned nTotal    = _nTotalForRef[refLevel];
     Matrix lambdaMat   = Matrix( _settings->GetNStates(), nTotal );
     Matrix uMat        = Matrix( _settings->GetNStates(), nTotal );
-    bool continueFlag  = false;
+    bool breakFlag     = false;
 
     Vector g( _nStates * nTotal );
-    Matrix H( _nStates * nTotal * _settings->GetNMultiElements(), _nStates * nTotal * _settings->GetNMultiElements() );
+    Matrix H( _nStates * nTotal, _nStates * nTotal );
     for( unsigned l = 0; l < _nMultiElements; ++l ) {
-
         // save solution in element l as a matrix
         for( unsigned s = 0; s < _nStates; ++s ) {
             for( unsigned i = 0; i < nTotal; ++i ) {
@@ -269,7 +268,7 @@ void Closure::SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel )
                             lambda( s, l, i ) = lambdaNew( s, i );
                         }
                     }
-                    continueFlag = true;
+                    breakFlag = true;
                     break;
                 }
                 else if( ++refinementCounter > maxRefinements ) {
@@ -277,9 +276,9 @@ void Closure::SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel )
                     exit( EXIT_FAILURE );
                 }
             }
-            if( continueFlag ) {
-                continueFlag = false;
-                continue;
+            if( breakFlag ) {
+                breakFlag = false;
+                break;
             }
             lambdaMat = lambdaNew;
             if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
@@ -288,7 +287,7 @@ void Closure::SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel )
                         lambda( s, l, i ) = lambdaNew( s, i );
                     }
                 }
-                continue;
+                break;
             }
         }
         if( m == _maxIterations ) {
@@ -303,12 +302,11 @@ void Closure::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLev
     unsigned nTotal    = _nTotalForRef[refLevel];
     Matrix lambdaMat   = Matrix( _settings->GetNStates(), nTotal );
     Matrix uMat        = Matrix( _settings->GetNStates(), nTotal );
-    bool continueFlag  = false;
+    bool breakFlag     = false;
 
     Vector g( _nStates * nTotal );
-    Matrix H( _nStates * nTotal * _settings->GetNMultiElements(), _nStates * nTotal * _settings->GetNMultiElements() );
+    Matrix H( _nStates * nTotal, _nStates * nTotal );
     for( unsigned l = 0; l < _nMultiElements; ++l ) {
-
         // save solution in element l as a matrix
         for( unsigned s = 0; s < _nStates; ++s ) {
             for( unsigned i = 0; i < nTotal; ++i ) {
@@ -365,7 +363,7 @@ void Closure::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLev
                             lambda( s, l, i ) = lambdaNew( s, i );
                         }
                     }
-                    continueFlag = true;
+                    breakFlag = true;
                     break;
                 }
                 else if( ++refinementCounter > maxRefinements ) {
@@ -373,9 +371,9 @@ void Closure::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLev
                     exit( EXIT_FAILURE );
                 }
             }
-            if( continueFlag ) {
-                continueFlag = false;
-                continue;
+            if( breakFlag ) {
+                breakFlag = false;
+                break;
             }
             lambdaMat = lambdaNew;
             if( CalcNorm( dlambdaNew, nTotal ) < _settings->GetEpsilon() ) {
@@ -384,7 +382,7 @@ void Closure::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLev
                         lambda( s, l, i ) = lambdaNew( s, i );
                     }
                 }
-                continue;
+                break;
             }
         }
         if( m == _maxIterations ) {
