@@ -1,15 +1,15 @@
 [general]
 problem = "Euler1D"
-outputDir = "../results"
+outputDir = "../results/PaperLouisa"
 #writeFrequency = 2
 
 [mesh]
 dimension = 1
-numberOfCells = 1000
+numberOfCells = 2000
 a = 0.0
 b = 1.0
-#outputFile = "euler_shock_filter0-75order15_P5_"
-outputFile = "euler_shock_no_MPI_P5_adaptive"
+#outputFile = "sod_ME3N4Nq10Nx2000HypLim"
+outputFile = "sod_ME3N4Nq10Nx2000IPM"
 #outputFile = "euler_shock_fSG_P4_ME4"
 #outputFile = "euler_shock_SG_P21"
 #outputFile = "euler_shock_SG_P4_ME4"
@@ -19,19 +19,20 @@ outputFile = "euler_shock_no_MPI_P5_adaptive"
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
-distribution = [["Legendre"],[0.1]]
+distribution = [["Legendre"],[0.05]]
 CFL = 0.75
-tEnd = 0.21
+tEnd = 0.14
 
 [moment_system]
 # available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter, ExponentialFilter, SplineFilter, HouLiFilter
-closure = "StochasticGalerkin"
-moments = [["totalDegree"],[2, 3, 4, 5, 6]]
-quadPoints = [["tensorizedCCGrid"],[2, 3, 3, 3, 4]]
-nMultiElements = 4
-refinementThresholds = [0.005, 0.0005]
+closure = "Euler"
+moments = [["totalDegree"],[4]]
+quadPoints = [["tensorizedGrid"],[10]]
+#quadPoints = [["tensorizedCCGrid"],[2, 3, 3, 3, 4]]
+nMultiElements = 3
+#refinementThresholds = [0.005, 0.0005]
 #regularizationStrength = 1e-7
-#filterStrength = 1.0
-#filterOrder = 7
+#filterStrength = 2.0
+#filterOrder = 10
 maxIterations = 10000
 epsilon = 1e-7

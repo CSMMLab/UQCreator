@@ -136,24 +136,25 @@ Matrix Euler2D::BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector
     return y;
 }
 
-double Euler2D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+double Euler2D::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
     double dtMinTotal = 1e10;
     double dtMin;
     double rhoInv, uU, vU, p, a, cfl;
     unsigned kEnd = _settings->GetNqPEAtRef( level );
 
     cfl = _settings->GetCFL();
+    for( unsigned l = 0; l < _settings->GetNMultiElements(); ++l ) {
+        for( unsigned k = 0; k < kEnd; ++k ) {
+            rhoInv = 1.0 / u( 0, l, k );
+            uU     = u( 1, l, k ) * rhoInv;
+            vU     = u( 2, l, k ) * rhoInv;
+            p      = ( _gamma - 1.0 ) * ( u( 3, l, k ) - 0.5 * u( 0, l, k ) * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
+            a      = sqrt( _gamma * p * rhoInv );
 
-    for( unsigned k = 0; k < kEnd; ++k ) {
-        rhoInv = 1.0 / u( 0, k );
-        uU     = u( 1, k ) * rhoInv;
-        vU     = u( 2, k ) * rhoInv;
-        p      = ( _gamma - 1.0 ) * ( u( 3, k ) - 0.5 * u( 0, k ) * ( pow( uU, 2 ) + pow( vU, 2 ) ) );
-        a      = sqrt( _gamma * p * rhoInv );
-
-        dtMin      = ( cfl / dx ) * std::min( std::min( std::fabs( 1.0 / ( vU - a ) ), std::fabs( 1.0 / ( vU + a ) ) ),
-                                         std::min( std::fabs( 1.0 / ( uU + a ) ), std::fabs( 1.0 / ( uU - a ) ) ) );
-        dtMinTotal = std::min( dtMin, dtMinTotal );
+            dtMin      = ( cfl / dx ) * std::min( std::min( std::fabs( 1.0 / ( vU - a ) ), std::fabs( 1.0 / ( vU + a ) ) ),
+                                             std::min( std::fabs( 1.0 / ( uU + a ) ), std::fabs( 1.0 / ( uU - a ) ) ) );
+            dtMinTotal = std::min( dtMin, dtMinTotal );
+        }
     }
 
     return dtMinTotal;
@@ -165,8 +166,8 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     bool pipeTestCase    = false;
     bool pipeTestCaseMC  = false;
     bool pipeTestCaseReg = false;
-    bool nozzle          = true;
-    bool testCaseRyan    = false;
+    bool nozzle          = false;
+    bool testCaseRyan    = true;
     if( nozzle ) {
         double gamma = 1.4;
 
@@ -305,7 +306,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         double Ma    = 0.8;
         double rhoFarfield;
         if( testCaseRyan ) {
-            Ma          = 6;
+            Ma          = 20.0;    // 6;
             rhoFarfield = 0.001027;
         }
         if( xi.size() == 1 ) {
@@ -320,7 +321,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         double p = rhoFarfield * ( R * T );
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + 0.0 * _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
+        double angle = ( 5.0 + 0.0 * _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 
