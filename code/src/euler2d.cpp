@@ -167,7 +167,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     bool pipeTestCaseMC  = false;
     bool pipeTestCaseReg = false;
     bool nozzle          = false;
-    bool testCaseRyan    = true;
+    bool testCaseRyan    = false;
     if( nozzle ) {
         double gamma = 1.4;
 

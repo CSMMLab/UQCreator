@@ -241,8 +241,8 @@ void MomentSolver::Solve() {
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
-            if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel );
-            if( _settings->WriteInTime() && timeIndex % _settings->GetWriteFrequency() == 1 ) {
+            if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel, t );
+            if( false && _settings->WriteInTime() && timeIndex % _settings->GetWriteFrequency() == 1 ) {
                 Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true );
                 _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
                 if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
@@ -258,7 +258,7 @@ void MomentSolver::Solve() {
 
     // std::cout << "Writing errors..." << std::endl;
     // write final error
-    if( _settings->HasReferenceFile() ) this->WriteErrors( refinementLevel );
+    if( _settings->HasReferenceFile() ) this->WriteErrors( refinementLevel, t );
 
     // MPI Broadcast final moment vectors to all PEs
     for( unsigned j = 0; j < _nCells; ++j ) {
@@ -1016,7 +1016,7 @@ Vector MomentSolver::CalculateError( const Matrix& solution, unsigned LNorm, con
     return error;
 }
 
-void MomentSolver::WriteErrors( const VectorU& refinementLevel ) {
+void MomentSolver::WriteErrors( const VectorU& refinementLevel, double t ) {
     // define rectangle for error computation
     Vector a( 2 );
     a[0] = -0.05;
@@ -1031,31 +1031,8 @@ void MomentSolver::WriteErrors( const VectorU& refinementLevel ) {
     auto l2ErrorVarLog    = spdlog::get( "l2ErrorVar" );
     auto lInfErrorVarLog  = spdlog::get( "lInfErrorVar" );
 
-    Matrix meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
-    Matrix phiTildeWf = _closure->GetPhiTildeWf();
-    Vector tmp( _nStates, 0.0 );
-    VectorU nTotal = _settings->GetNTotalRefinementLevel();
-    for( unsigned j = 0; j < _nCells; ++j ) {
-        // expected value
-        for( unsigned l = 0; l < _nMultiElements; ++l ) {
-            for( unsigned k = 0; k < _nQTotal; ++k ) {
-                _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], l, k, nTotal[refinementLevel[j]] ) );
-                for( unsigned i = 0; i < _nStates; ++i ) {
-                    meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 );
-                }
-            }
-        }
+    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true );
 
-        // variance
-        for( unsigned l = 0; l < _nMultiElements; ++l ) {
-            for( unsigned k = 0; k < _nQTotal; ++k ) {
-                _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], l, k, nTotal[refinementLevel[j]] ) );
-                for( unsigned i = 0; i < _nStates; ++i ) {
-                    meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 );
-                }
-            }
-        }
-    }
     auto l1Error   = this->CalculateError( meanAndVar, 1, a, b );
     auto l2Error   = this->CalculateError( meanAndVar, 2, a, b );
     auto lInfError = this->CalculateError( meanAndVar, 0, a, b );
@@ -1077,6 +1054,7 @@ void MomentSolver::WriteErrors( const VectorU& refinementLevel ) {
     l2ErrorVarLog->info( osL2ErrorVar.str() );
     lInfErrorVarLog->info( osLInfErrorVar.str() );
 }
+
 void MomentSolver::PerformInitialStep( const VectorU& refinementLevel, MatTens& u ) {
 // initial dual solve
 #pragma omp parallel for schedule( dynamic, 10 )

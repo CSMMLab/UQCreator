@@ -118,7 +118,7 @@ class MomentSolver
      */
     Matrix CalculateErrorField( const Matrix& solution, unsigned LNorm ) const;
 
-    void WriteErrors( const VectorU& refinementLevel );
+    void WriteErrors( const VectorU& refinementLevel, double t );
 
     Matrix WriteMeanAndVar( const VectorU& refinementLevel, double t, bool writeExact ) const;
     void ExportRefinementIndicator( const VectorU& refinementLevel, const MatTens& u, unsigned index ) const;
