@@ -16,11 +16,10 @@ HyperbolicityLimiter::HyperbolicityLimiter( Settings* settings )
         auto problem = file->get_table( "moment_system" );
         _filterOrder = problem->get_as<double>( "filterOrder" ).value_or( 1 );
     } catch( const cpptoml::parse_exception& e ) {
-        _log->error( "[SplineFilter] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
+        _log->error( "[HyperbolicityLimiter2D] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
 
-    std::cout << "-------------" << std::endl;
     for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
         for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
             // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
@@ -29,10 +28,7 @@ HyperbolicityLimiter::HyperbolicityLimiter( Settings* settings )
                 unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
             _filterFunction[i] *= pow( FilterFunction( double( index ) / double( maxDegree + 1 ) ), _lambda );
         }
-        std::cout << "g = " << _filterFunction[i] << std::endl;
     }
-    std::cout << "-------------" << std::endl;
-    // exit( EXIT_FAILURE );
 }
 
 HyperbolicityLimiter::~HyperbolicityLimiter() {}
