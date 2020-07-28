@@ -98,7 +98,6 @@ void MomentSolver::Solve() {
             _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
             // if( t > 0.0000338 && ( j == 6205 || j == 10082 || j == 12455 ) ) std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
         }
-        break;
 
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
