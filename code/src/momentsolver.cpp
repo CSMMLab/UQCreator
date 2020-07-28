@@ -98,6 +98,7 @@ void MomentSolver::Solve() {
             _closure->SolveClosureSafe( _lambda[_cellIndexPE[j]], u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
             // if( t > 0.0000338 && ( j == 6205 || j == 10082 || j == 12455 ) ) std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
         }
+        break;
 
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -297,7 +298,7 @@ void MomentSolver::Solve() {
     // WriteGradientsScalarField( meanAndVar );
 
     // export solution fields
-    this->Export( uNew, _lambda );
+    this->Export( uNew, _lambda, refinementLevel );
 
     // export refinement indicator
     if( _settings->GetNRefinementLevels() > 1 ) {
@@ -747,6 +748,58 @@ MatVec MomentSolver::SetupIC() const {
         u[j] = uIC * phiTildeWf;
     }
     return u;
+}
+
+void MomentSolver::Export( const MatVec& u, const MatVec& lambda, const VectorU& refinementLevel ) const {
+    std::shared_ptr<spdlog::logger> moment_writer = spdlog::get( "moments" );
+    for( unsigned i = 0; i < _nCells; ++i ) {
+        std::stringstream line;
+        for( unsigned j = 0; j < _nStates; ++j ) {
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                line << std::setprecision( std::numeric_limits<double>::digits10 ) << u[i]( j, k ) << ",";
+            }
+        }
+        moment_writer->info( line.str() );
+    }
+    moment_writer->flush();
+    std::shared_ptr<spdlog::logger> dual_writer = spdlog::get( "duals" );
+    for( unsigned i = 0; i < _nCells; ++i ) {
+        std::stringstream line;
+        for( unsigned j = 0; j < _nStates; ++j ) {
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                line << std::setprecision( std::numeric_limits<double>::digits10 ) << lambda[i]( j, k ) << ",";
+            }
+        }
+        dual_writer->info( line.str() );
+    }
+    dual_writer->flush();
+    if( _settings->GetProblemType() == P_EULER_2D ) {
+        Vector tmp( _nStates, 0.0 );
+        std::vector<Vector> uTemperature( _nCells, Vector( _nTotal, 0.0 ) );
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            Vector TVec( _settings->GetNQTotalForRef( refinementLevel[j] ) );
+            Matrix phiTildeWf = _closure->GetPhiTildeWfAtRef( refinementLevel[j], true );
+            for( unsigned k = 0; k < _settings->GetNQTotalForRef( refinementLevel[j] ); ++k ) {
+                _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], k, _nTotalForRef[refinementLevel[j]] ) );
+                double rho  = tmp[0];
+                double rhoU = tmp[1];
+                double rhoV = tmp[2];
+                double rhoE = tmp[3];
+                double p    = 0.4 * ( rhoE - 0.5 * ( pow( rhoU, 2 ) + pow( rhoV, 2 ) ) / rho );
+                TVec[k]     = p / ( rho * 287.87 );
+            }
+            uTemperature[j] = phiTildeWf.transpose() * TVec;
+        }
+        std::shared_ptr<spdlog::logger> T_writer = spdlog::get( "temperature" );
+        for( unsigned i = 0; i < _nCells; ++i ) {
+            std::stringstream line;
+            for( unsigned k = 0; k < _nTotal; ++k ) {
+                line << std::setprecision( std::numeric_limits<double>::digits10 ) << uTemperature[i][k] << ",";
+            }
+            T_writer->info( line.str() );
+        }
+        T_writer->flush();
+    }
 }
 
 void MomentSolver::Export( const MatVec& u, const MatVec& lambda ) const {

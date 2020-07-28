@@ -61,7 +61,7 @@ class MomentSolver
      * @param moment matrix for export
      * @param dual matrix for export
      */
-    void Export( const MatVec& u, const MatVec& lambda ) const;
+    void Export( const MatVec& u, const MatVec& lambda, const VectorU& refinementLevel ) const;
     /**
      * imports previous settings from restart configfile if specified
      * @return pointer to previous settings
@@ -127,6 +127,7 @@ class MomentSolver
     void DetermineGradientsScalarField( Matrix& dux, Matrix& duy, const Matrix& u ) const;
     void WriteGradientsScalarField( const Matrix& u ) const;
     void Write2ndDerMeanAndVar( const Matrix& meanAndVar ) const;
+    void Export( const MatVec& u, const MatVec& lambda ) const;
 
   public:
     /**

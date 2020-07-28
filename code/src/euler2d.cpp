@@ -305,7 +305,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         double Ma    = 0.8;
         double rhoFarfield;
         if( testCaseRyan ) {
-            Ma          = 6;
+            Ma          = 20.0;    // 6;
             rhoFarfield = 0.001027;
         }
         if( xi.size() == 1 ) {
@@ -320,7 +320,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         double p = rhoFarfield * ( R * T );
 
         double uMax  = Ma * a;
-        double angle = ( 1.25 + 0.0 * _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
+        double angle = ( 5.0 + 0.0 * _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
         double uF    = uMax * cos( angle );
         double vF    = uMax * sin( angle );
 
