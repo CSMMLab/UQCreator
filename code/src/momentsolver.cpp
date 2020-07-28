@@ -393,6 +393,7 @@ void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned level ) { out
 
 double MomentSolver::ComputeRefIndicator( const VectorU& refinementLevel, const Tensor& u, unsigned refLevel ) const {
     double indicator = 0;
+    double P         = 1.0 / _nMultiElements;
     for( unsigned l = 0; l < _nMultiElements; ++l ) {
         if( _settings->GetNDimXi() == 1 ) {
             indicator += std::fabs( u( 0, l, _nTotalForRef[refLevel] - 1 ) ) + std::fabs( u( 0, l, _nTotalForRef[refLevel] - 2 ) );
@@ -410,7 +411,7 @@ double MomentSolver::ComputeRefIndicator( const VectorU& refinementLevel, const 
             }
         }
     }
-    return indicator;
+    return indicator * P;
 }
 
 void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, const MatTens& u, unsigned index ) const {
