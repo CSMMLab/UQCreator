@@ -57,9 +57,7 @@ void MomentSolver::Solve() {
     Settings* prevSettings = DeterminePreviousSettings();
     Closure* prevClosure   = DeterminePreviousClosure( prevSettings );
     if( _settings->HasRestartFile() ) _tStart = prevSettings->GetTEnd();
-    MatTens u       = DetermineMoments( prevSettings->GetNTotal() );
-    unsigned jIndex = 451;
-    std::cout << "Moments at index " << jIndex << " are " << u[jIndex] << std::endl;
+    MatTens u = DetermineMoments( prevSettings->GetNTotal() );
     SetDuals( prevSettings, prevClosure, u );
     MatTens uQ    = MatTens( _nCells + 1, Tensor( _nStates, _nMultiElements, _settings->GetNqPE() ) );
     MatTens uQNew = MatTens( _nCells + 1, Tensor( _nStates, _nMultiElements, _settings->GetNqPE() ) );
@@ -782,7 +780,9 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTe
                 }
             }
         }
+        // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
         _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
+        // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
     }
 
     // if( prevSettings->GetMaxDegree() != _settings->GetMaxDegree() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete
@@ -832,6 +832,12 @@ MatTens MomentSolver::SetupIC() const {
                     u[j]( s, n, i ) = uElement( s, i );
                 }
             }
+            if( j == 3482 ) {
+                std::cout << "u = " << u[j] << std::endl;
+                std::cout << "uQ = " << uIC << std::endl;
+                // exit( EXIT_FAILURE );
+            }
+
             // std::cout << "u = " << u[j]( 0, 0, 0 ) << std::endl;
         }
     }

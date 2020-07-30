@@ -183,8 +183,8 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         y[3] = pL / ( gamma - 1 );
 
         if( x[0] > -0.5 + _sigma[0] * xi[0] ) {
-            double rhoR = 1.0;
-            double pR   = 0.125;    // 0.3;
+            double rhoR = 0.125;
+            double pR   = 0.1;    // 0.3;
             y[0]        = rhoR;
             y[1]        = rhoR * uF;
             y[2]        = rhoR * vF;
