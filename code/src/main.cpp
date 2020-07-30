@@ -112,6 +112,12 @@ std::string initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level:
     auto duals_logger = std::make_shared<spdlog::logger>( "duals", dualsFileSink );
     spdlog::register_logger( duals_logger );
 
+    auto temperatureFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + cfilename + "_temperature" );
+    temperatureFileSink->set_level( spdlog::level::info );
+    temperatureFileSink->set_pattern( "%v" );
+    auto temperature_logger = std::make_shared<spdlog::logger>( "temperature", temperatureFileSink );
+    spdlog::register_logger( temperature_logger );
+
     return cfilename;
 }
 

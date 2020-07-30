@@ -64,6 +64,13 @@ class MomentSolver
      */
     void Export( const MatTens& u, const MatTens& lambda ) const;
     /**
+     * exports moments and duals and temperature field
+     * @param moment matrix for export
+     * @param dual matrix for export
+     * @param refinement levels for export
+     */
+    void Export( const MatTens& u, const MatTens& lambda, const VectorU& refinementLevel ) const;
+    /**
      * imports previous settings from restart configfile if specified
      * @return pointer to previous settings
      */

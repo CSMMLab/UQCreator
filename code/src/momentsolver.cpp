@@ -328,7 +328,7 @@ void MomentSolver::Solve() {
     // WriteGradientsScalarField( meanAndVar );
 
     // export solution fields
-    this->Export( uNew, _lambda );
+    this->Export( uNew, _lambda, refinementLevel );
 
     // export refinement indicator
     if( _settings->GetNRefinementLevels() > 1 ) {
@@ -445,6 +445,15 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
                 for( unsigned i = 0; i < _nStates; ++i ) {
                     meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 ) * P;
                 }
+                if( _settings->GetProblemType() == P_EULER_2D ) {
+                    double rho  = tmp[0];
+                    double rhoU = tmp[1];
+                    double rhoV = tmp[2];
+                    double rhoE = tmp[3];
+                    double p    = 0.4 * ( rhoE - 0.5 * ( pow( rhoU, 2 ) + pow( rhoV, 2 ) ) / rho );
+                    double T    = p / ( rho * 287.87 );
+                    meanAndVar( 2 * _nStates, j ) += T * phiTildeWf( k, 0 ) * P;
+                }
             }
         }
 
@@ -454,6 +463,15 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
                 _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], l, k, _nTotalForRef[refinementLevel[j]] ) );
                 for( unsigned i = 0; i < _nStates; ++i ) {
                     meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 ) * P;
+                }
+                if( _settings->GetProblemType() == P_EULER_2D ) {
+                    double rho  = tmp[0];
+                    double rhoU = tmp[1];
+                    double rhoV = tmp[2];
+                    double rhoE = tmp[3];
+                    double p    = 0.4 * ( rhoE - 0.5 * ( pow( rhoU, 2 ) + pow( rhoV, 2 ) ) / rho );
+                    double T    = p / ( rho * 287.87 );
+                    meanAndVar( 2 * _nStates + 1, j ) += pow( T - meanAndVar( 2 * _nStates, j ), 2 ) * phiTildeWf( k, 0 ) * P;
                 }
             }
         }
@@ -818,6 +836,66 @@ MatTens MomentSolver::SetupIC() const {
         }
     }
     return u;
+}
+
+void MomentSolver::Export( const MatTens& u, const MatTens& lambda, const VectorU& refinementLevel ) const {
+    std::shared_ptr<spdlog::logger> moment_writer = spdlog::get( "moments" );
+    for( unsigned i = 0; i < _nCells; ++i ) {
+        std::stringstream line;
+        for( unsigned l = 0; l < _nMultiElements; ++l ) {
+            for( unsigned j = 0; j < _nStates; ++j ) {
+                for( unsigned k = 0; k < _nTotal; ++k ) {
+                    line << std::setprecision( std::numeric_limits<double>::digits10 ) << u[i]( j, l, k ) << ",";
+                }
+            }
+        }
+        moment_writer->info( line.str() );
+    }
+    moment_writer->flush();
+    std::shared_ptr<spdlog::logger> dual_writer = spdlog::get( "duals" );
+    for( unsigned i = 0; i < _nCells; ++i ) {
+        std::stringstream line;
+        for( unsigned l = 0; l < _nMultiElements; ++l ) {
+            for( unsigned j = 0; j < _nStates; ++j ) {
+                for( unsigned k = 0; k < _nTotal; ++k ) {
+                    line << std::setprecision( std::numeric_limits<double>::digits10 ) << lambda[i]( j, l, k ) << ",";
+                }
+            }
+        }
+        dual_writer->info( line.str() );
+    }
+    dual_writer->flush();
+    if( _settings->GetProblemType() == P_EULER_2D ) {
+        Vector tmp( _nStates, 0.0 );
+        std::vector<std::vector<Vector>> uTemperature( _nCells, std::vector( _nMultiElements, Vector( _nTotal, 0.0 ) ) );
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            for( unsigned l = 0; l < _nMultiElements; ++l ) {
+                Vector TVec( _settings->GetNQTotalForRef( refinementLevel[j] ) );
+                Matrix phiTildeWf = _closure->GetPhiTildeWfAtRef( refinementLevel[j], true );
+                for( unsigned k = 0; k < _settings->GetNQTotalForRef( refinementLevel[j] ); ++k ) {
+                    _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], l, k, _nTotalForRef[refinementLevel[j]] ) );
+                    double rho  = tmp[0];
+                    double rhoU = tmp[1];
+                    double rhoV = tmp[2];
+                    double rhoE = tmp[3];
+                    double p    = 0.4 * ( rhoE - 0.5 * ( pow( rhoU, 2 ) + pow( rhoV, 2 ) ) / rho );
+                    TVec[k]     = p / ( rho * 287.87 );
+                }
+                uTemperature[j][l] = phiTildeWf.transpose() * TVec;
+            }
+        }
+        std::shared_ptr<spdlog::logger> T_writer = spdlog::get( "temperature" );
+        for( unsigned i = 0; i < _nCells; ++i ) {
+            std::stringstream line;
+            for( unsigned l = 0; l < _nMultiElements; ++l ) {
+                for( unsigned k = 0; k < _nTotal; ++k ) {
+                    line << std::setprecision( std::numeric_limits<double>::digits10 ) << uTemperature[i][l][k] << ",";
+                }
+                T_writer->info( line.str() );
+            }
+        }
+        T_writer->flush();
+    }
 }
 
 void MomentSolver::Export( const MatTens& u, const MatTens& lambda ) const {

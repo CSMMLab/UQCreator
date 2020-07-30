@@ -94,7 +94,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                         }
                         ss >> id;
                     }
-                    _nodes.push_back( new Node{id, false, coords} );
+                    _nodes.push_back( new Node{ id, false, coords } );
                 }
                 break;
             }
@@ -138,7 +138,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                                         }
                                     }
                                 }
-                                boundaryElements.push_back( BoundaryElement{type, nodes} );
+                                boundaryElements.push_back( BoundaryElement{ type, nodes } );
                             }
                         }
                         else {
@@ -153,7 +153,7 @@ void Mesh2D::LoadSU2MeshFromFile( std::string meshfile ) {
                     }
 
                     assert( type != BoundaryType::NONE );
-                    _boundaries.push_back( Boundary{markerTag, type, boundaryElements} );
+                    _boundaries.push_back( Boundary{ markerTag, type, boundaryElements } );
                 }
                 break;
             }
@@ -532,6 +532,20 @@ void Mesh2D::Export( const Matrix& results, std::string append ) const {
     cellData->SetName( "Var(ρE)" );
     for( unsigned i = 0; i < _numCells; i++ ) {
         cellData->InsertNextValue( results( 7, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "E(T)" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 8, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "Var(T)" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( 9, i ) );
     }
     grid->GetCellData()->AddArray( cellData );
 

@@ -167,7 +167,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     bool pipeTestCaseMC  = false;
     bool pipeTestCaseReg = false;
     bool nozzle          = false;
-    bool testCaseRyan    = false;
+    bool testCaseRyan    = true;
     if( nozzle ) {
         double gamma = 1.4;
 
@@ -312,7 +312,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         if( testCaseRyan ) {
             Ma          = 20.0;    // 6;
             rhoFarfield = 0.001027;
-            AoA         = 5.0;
+            AoA         = 10.0;    // 5
             AoAScaling  = 0.0;
             if( xi.size() == 1 ) {
                 rhoFarfield = rhoFarfield + _sigma[0];

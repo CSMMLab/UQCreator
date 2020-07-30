@@ -110,7 +110,8 @@ void HyperbolicityLimiter2D::SolveClosure( Tensor& lambda, const Tensor& u, unsi
 
             // Citardauq Formula as stable p-q formula
             double q = -0.5 * ( b + MathTools::sign( b ) * sqrt( pow( b, 2 ) - 4.0 * a * c ) );
-            if( pow( b, 2 ) - 4.0 * a * c < 0 ) std::cerr << "[RealizabilityLimiter]: Imaginary unit detected!" << std::endl;
+            // if( pow( b, 2 ) - 4.0 * a * c < 0 ) std::cerr << "[RealizabilityLimiter]: Imaginary unit detected!" << std::endl;
+            if( pow( b, 2 ) - 4.0 * a * c < 0 ) q = -0.5 * b;    // take only real part if imaginary part detected
             double t2a = q / a;
             double t2b = c / q;
 
