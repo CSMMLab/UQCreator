@@ -89,7 +89,6 @@ void MomentSolver::Solve() {
     while( t < _tEnd && residualFull > minResidual ) {
 
         double residual = 0;
-
         // Solve dual problem
 #pragma omp parallel for schedule( dynamic, 10 )
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
@@ -770,19 +769,15 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTe
         Vector ds( _nStates );
         Vector u0( _nStates );
         for( unsigned n = 0; n < _nMultiElements; ++n ) {
-            for( unsigned j = 0; j < _nCells; ++j ) {
-                for( unsigned l = 0; l < _nStates; ++l ) {
-                    u0[l] = u[j]( l, n, 0 );
-                }
-                _closure->DS( ds, u0 );
-                for( unsigned l = 0; l < _nStates; ++l ) {
-                    _lambda[j]( l, n, 0 ) = ds[l];
-                }
+            for( unsigned s = 0; s < _nStates; ++s ) {
+                u0[s] = u[j]( s, n, 0 );
+            }
+            _closure->DS( ds, u0 );
+            for( unsigned s = 0; s < _nStates; ++s ) {
+                _lambda[j]( s, n, 0 ) = ds[s];
             }
         }
-        // std::cout << "Cell " << _cellIndexPE[j] << ", lambda = " << _lambda[_cellIndexPE[j]] << ", u = " << u[_cellIndexPE[j]] << std::endl;
         _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
-        // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
     }
 
     // if( prevSettings->GetMaxDegree() != _settings->GetMaxDegree() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete
@@ -832,7 +827,7 @@ MatTens MomentSolver::SetupIC() const {
                     u[j]( s, n, i ) = uElement( s, i );
                 }
             }
-            if( j == 3482 ) {
+            if( j == 626 ) {
                 std::cout << "u = " << u[j] << std::endl;
                 std::cout << "uQ = " << uIC << std::endl;
                 // exit( EXIT_FAILURE );

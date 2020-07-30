@@ -339,6 +339,7 @@ void Closure::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLev
         Matrix lambdaNew( _nStates, nTotal );
         AddMatrixVectorToMatrix( lambdaMat, -_alpha * g, lambdaNew, nTotal );
         Gradient( dlambdaNew, lambdaNew, uMat, refLevel );
+        // std::cout << CalcNorm( dlambdaNew, nTotal ) << std::endl;
         // perform Newton iterations
         unsigned m;
         for( m = 0; m < _maxIterations; ++m ) {
@@ -370,6 +371,7 @@ void Closure::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLev
                     _log->error( "[closure] Newton needed too many refinement steps!" );
                     exit( EXIT_FAILURE );
                 }
+                // std::cout << "Refining: " << CalcNorm( dlambdaNew, nTotal ) << std::endl;
             }
             if( breakFlag ) {
                 breakFlag = false;
