@@ -400,7 +400,7 @@ template <class T> void Tensor<T>::operator=( const Tensor<T>& other ) {
         _rows      = other._rows;
         _columns   = other._columns;
         _frontRows = other._frontRows;
-        _data      = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
+        _data      = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
     }
 
     // ensure that only allocated data is written when sizes differ (due to adaptivity)

@@ -510,9 +510,22 @@ void Mesh2D::Export( const Matrix& results, std::string append ) const {
     grid->GetCellData()->AddArray( cellData );
 
     cellData = vtkDoubleArraySP::New();
-    cellData->SetName( "Var(ρ)" );
+    cellData->SetName( "E(T)" );
     for( unsigned i = 0; i < _numCells; i++ ) {
         cellData->InsertNextValue( results( 4, i ) );
+    }
+    grid->GetCellData()->AddArray( cellData );
+
+    unsigned nStates;
+    if( _settings->GetProblemType() == P_EULER_2D )
+        nStates = _settings->GetNStates() + 1;
+    else
+        nStates = _settings->GetNStates();
+
+    cellData = vtkDoubleArraySP::New();
+    cellData->SetName( "Var(ρ)" );
+    for( unsigned i = 0; i < _numCells; i++ ) {
+        cellData->InsertNextValue( results( nStates, i ) );
     }
     grid->GetCellData()->AddArray( cellData );
 
@@ -524,28 +537,21 @@ void Mesh2D::Export( const Matrix& results, std::string append ) const {
     cellData->SetComponentName( 2, "z" );
     cellData->SetNumberOfTuples( _numCells );
     for( unsigned i = 0; i < _numCells; i++ ) {
-        cellData->SetTuple3( i, results( 5, i ), results( 6, i ), 0.0 );
+        cellData->SetTuple3( i, results( nStates + 1, i ), results( nStates + 2, i ), 0.0 );
     }
     grid->GetCellData()->AddArray( cellData );
 
     cellData = vtkDoubleArraySP::New();
     cellData->SetName( "Var(ρE)" );
     for( unsigned i = 0; i < _numCells; i++ ) {
-        cellData->InsertNextValue( results( 7, i ) );
-    }
-    grid->GetCellData()->AddArray( cellData );
-
-    cellData = vtkDoubleArraySP::New();
-    cellData->SetName( "E(T)" );
-    for( unsigned i = 0; i < _numCells; i++ ) {
-        cellData->InsertNextValue( results( 8, i ) );
+        cellData->InsertNextValue( results( nStates + 3, i ) );
     }
     grid->GetCellData()->AddArray( cellData );
 
     cellData = vtkDoubleArraySP::New();
     cellData->SetName( "Var(T)" );
     for( unsigned i = 0; i < _numCells; i++ ) {
-        cellData->InsertNextValue( results( 9, i ) );
+        cellData->InsertNextValue( results( nStates + 4, i ) );
     }
     grid->GetCellData()->AddArray( cellData );
 

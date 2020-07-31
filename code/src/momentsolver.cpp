@@ -424,12 +424,19 @@ void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, co
 
 Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, bool writeExact ) const {
     Matrix meanAndVar;
+
+    // write out temperature if Euler2D
+    unsigned nStates;
+    if( _settings->GetProblemType() == P_EULER_2D )
+        nStates = _nStates + 1;
+    else
+        nStates = _nStates;
     std::vector<std::vector<unsigned>> indicesQ;
     if( _settings->HasExactSolution() && writeExact ) {
-        meanAndVar = Matrix( 4 * _nStates, _mesh->GetNumCells(), 0.0 );
+        meanAndVar = Matrix( 4 * nStates, _mesh->GetNumCells(), 0.0 );
     }
     else {
-        meanAndVar = Matrix( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
+        meanAndVar = Matrix( 2 * nStates, _mesh->GetNumCells(), 0.0 );
     }
     Vector tmp( _nStates, 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
@@ -449,7 +456,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
                     double rhoE = tmp[3];
                     double p    = 0.4 * ( rhoE - 0.5 * ( pow( rhoU, 2 ) + pow( rhoV, 2 ) ) / rho );
                     double T    = p / ( rho * 287.87 );
-                    meanAndVar( 2 * _nStates, j ) += T * phiTildeWf( k, 0 ) * P;
+                    meanAndVar( nStates - 1, j ) += T * phiTildeWf( k, 0 ) * P;
                 }
             }
         }
@@ -459,7 +466,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
             for( unsigned k = 0; k < _settings->GetNQTotalForRef( refinementLevel[j] ); ++k ) {
                 _closure->U( tmp, _closure->EvaluateLambda( _lambda[j], l, k, _nTotalForRef[refinementLevel[j]] ) );
                 for( unsigned i = 0; i < _nStates; ++i ) {
-                    meanAndVar( i + _nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 ) * P;
+                    meanAndVar( i + nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 ) * P;
                 }
                 if( _settings->GetProblemType() == P_EULER_2D ) {
                     double rho  = tmp[0];
@@ -468,7 +475,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
                     double rhoE = tmp[3];
                     double p    = 0.4 * ( rhoE - 0.5 * ( pow( rhoU, 2 ) + pow( rhoV, 2 ) ) / rho );
                     double T    = p / ( rho * 287.87 );
-                    meanAndVar( 2 * _nStates + 1, j ) += pow( T - meanAndVar( 2 * _nStates, j ), 2 ) * phiTildeWf( k, 0 ) * P;
+                    meanAndVar( 2 * nStates - 1, j ) += pow( T - meanAndVar( nStates - 1, j ), 2 ) * phiTildeWf( k, 0 ) * P;
                 }
             }
         }
@@ -516,7 +523,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
                         wfXi *= quad[n]->fXi( quad[n]->GetNodes()[indicesQ[k][l]] ) * quad[n]->GetWeights()[indicesQ[k][l]];
                     }
 
-                    meanAndVar( 2 * _nStates + i, j ) += exactSolOnMesh( j, i ) * wfXi;
+                    meanAndVar( 2 * nStates + i, j ) += exactSolOnMesh( j, i ) * wfXi;
                 }
             }
         }
@@ -538,7 +545,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
                         if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
                         wfXi *= quad[n]->fXi( quad[n]->GetNodes()[indicesQ[k][l]] ) * quad[n]->GetWeights()[indicesQ[k][l]];
                     }
-                    meanAndVar( 3 * _nStates + i, j ) += pow( exactSolOnMesh( j, i ) - meanAndVar( 2 * _nStates + i, j ), 2 ) * wfXi;
+                    meanAndVar( 3 * nStates + i, j ) += pow( exactSolOnMesh( j, i ) - meanAndVar( 2 * nStates + i, j ), 2 ) * wfXi;
                 }
             }
         }
