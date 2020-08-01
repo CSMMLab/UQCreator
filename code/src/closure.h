@@ -24,7 +24,6 @@ class Closure
     std::vector<Vector> _quadNodes;
     VectorU _nQTotalForRef;
     VectorU _nTotalForRef;
-    Matrix _phiTilde;         // stores scaled basis functions evaluated at quadrature points
     Matrix _phiTildeTrans;    // stores scaled basis functions evaluated at quadrature points
     Matrix _phiTildeF;        // stores scaled basis functions evaluated at quadrature points times pdf
     Matrix _phiTildeWf;       // stores scaled basis functions evaluated at quadrature points times weight and pdf
@@ -85,7 +84,6 @@ class Closure
     virtual void DS( Vector& ds, const Vector& u ) const;
 
     const Vector& GetPhiTilde( int k ) const { return _phiTildeVec[k]; }
-    const Matrix& GetPhiTilde() const { return _phiTilde; }
     const Matrix& GetPhiTildeWf() const { return _phiTildeWf; }
     Matrix GetPhiTildeWfAtRef( unsigned level ) const;
     Matrix GetPhiTildeWfAtRef( unsigned level, bool full ) const;

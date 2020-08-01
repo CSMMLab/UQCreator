@@ -69,10 +69,10 @@ Closure::Closure( Settings* settings )
     _nQTotal = _quadGrid->GetNodeCount();
 
     // compute basis functions evaluated at the quadrature points
-    _phiTilde    = Matrix( _nQTotal, _nTotal, 1.0 );
-    _phiTildeF   = Matrix( _nQTotal, _nTotal, 1.0 );
-    _phiTildeWf  = Matrix( _nQTotal, _nTotal, 1.0 );
-    _phiTildeVec = std::vector<Vector>( _nQTotal, Vector( _nTotal, 0.0 ) );
+    Matrix phiTilde = Matrix( _nQTotal, _nTotal, 1.0 );
+    _phiTildeF      = Matrix( _nQTotal, _nTotal, 1.0 );
+    _phiTildeWf     = Matrix( _nQTotal, _nTotal, 1.0 );
+    _phiTildeVec    = std::vector<Vector>( _nQTotal, Vector( _nTotal, 0.0 ) );
 
     unsigned n = 0;
     for( unsigned k = 0; k < _nQTotal; ++k ) {
@@ -80,7 +80,7 @@ Closure::Closure( Settings* settings )
             for( unsigned l = 0; l < _numDimXi; ++l ) {
                 if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
                 if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                _phiTilde( k, i ) *=
+                phiTilde( k, i ) *=
                     _quad[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _quad[n]->L2Norm( indices[i][l] );    // sqrt( 2.0 * i + 1.0 );
                 _phiTildeF( k, i ) *=
                     _quad[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _quad[n]->L2Norm( indices[i][l] ) * _quad[n]->fXi( _xiGrid[k][l] );
@@ -89,11 +89,11 @@ Closure::Closure( Settings* settings )
             // double P            = 1.0 / _nMultiElements;
             //_phiTildeF( k, i )  = _phiTildeF( k, i ) / P;    // modify pdf to multielement ansatz, only valid for uniform distributions
             _phiTildeWf( k, i ) = _phiTildeF( k, i ) * _wGrid[_settings->GetNRefinementLevels() - 1][k];
-            _phiTildeVec[k][i]  = _phiTilde( k, i );
+            _phiTildeVec[k][i]  = phiTilde( k, i );
         }
     }
 
-    _phiTildeTrans      = trans( _phiTilde );
+    _phiTildeTrans      = trans( phiTilde );
     auto phiTildeFTrans = trans( _phiTildeF );
     // calculate partial matrix for Hessian calculation
     _hPartial = MatVec( _nQTotal, Matrix( _nTotal, _nTotal ) );

@@ -28,6 +28,7 @@ HyperbolicityLimiter2D::HyperbolicityLimiter2D( Settings* settings )
                 unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
             _filterFunction[i] *= pow( FilterFunction( double( index ) / double( maxDegree + 1 ) ), _lambda );
         }
+        std::cout << "Filterfunction = " << _filterFunction[i] << std::endl;
     }
 }
 

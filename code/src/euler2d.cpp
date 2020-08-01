@@ -167,6 +167,7 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     bool pipeTestCaseMC  = false;
     bool pipeTestCaseReg = false;
     bool nozzle          = true;
+    bool sod             = false;
     bool testCaseRyan    = false;
     if( nozzle ) {
         double gamma = 1.4;
@@ -183,14 +184,16 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         y[3] = pL / ( gamma - 1 );
 
         if( x[0] > -0.5 + _sigma[0] * xi[0] ) {
-            // double rhoR = 0.8;
-            // double pR   = 0.125;    // 0.3;
-            double rhoR = 0.125;
-            double pR   = 0.1;
-            y[0]        = rhoR;
-            y[1]        = rhoR * uF;
-            y[2]        = rhoR * vF;
-            y[3]        = pR / ( gamma - 1 );
+            double rhoR = 0.8;
+            double pR   = 0.125;    // 0.3;
+            if( sod ) {
+                rhoR = 0.125;
+                pR   = 0.1;
+            }
+            y[0] = rhoR;
+            y[1] = rhoR * uF;
+            y[2] = rhoR * vF;
+            y[3] = pR / ( gamma - 1 );
         }
         return y;
     }

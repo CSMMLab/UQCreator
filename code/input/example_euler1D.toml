@@ -9,11 +9,12 @@ numberOfCells = 2000
 a = 0.0
 b = 1.0
 #outputFile = "sod_ME3N4Nq10Nx2000HypLim"
-outputFile = "sod_ME3N4Nq10Nx2000IPM"
+#outputFile = "sod_ME3N4Nq10Nx2000IPM"
 #outputFile = "euler_shock_fSG_P4_ME4"
 #outputFile = "euler_shock_SG_P21"
 #outputFile = "euler_shock_SG_P4_ME4"
-#outputFile = "euler_shock_ref_"
+#outputFile = "euler_shock_IPM"
+outputFile = "euler_shock_SG"
 
 [problem]
 # available timesteppings: explicitEuler
@@ -29,7 +30,7 @@ closure = "Euler"
 moments = [["totalDegree"],[4]]
 quadPoints = [["tensorizedGrid"],[10]]
 #quadPoints = [["tensorizedCCGrid"],[2, 3, 3, 3, 4]]
-nMultiElements = 3
+nMultiElements = 1
 #refinementThresholds = [0.005, 0.0005]
 #regularizationStrength = 1e-7
 #filterStrength = 2.0
