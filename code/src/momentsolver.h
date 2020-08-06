@@ -129,7 +129,7 @@ class MomentSolver
 
     Matrix WriteMeanAndVar( const VectorU& refinementLevel, double t, bool writeExact ) const;
     void ExportRefinementIndicator( const VectorU& refinementLevel, const MatTens& u, unsigned index ) const;
-    double ComputeRefIndicator( const VectorU& refinementLevel, const Tensor& u, unsigned refLevel ) const;
+    double ComputeRefIndicator( const Tensor& u, unsigned refLevel ) const;
     void PerformInitialStep( const VectorU& refinementLevel, MatTens& u );
     void DetermineGradients( MatTens& duQx, MatTens& duQy, const MatTens& uQ, const VectorU& refLevel ) const;
     void DetermineGradientsScalarField( Matrix& dux, Matrix& duy, const Matrix& u ) const;

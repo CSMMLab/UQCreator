@@ -244,21 +244,6 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( closureTypeString->compare( "ShallowWater2D" ) == 0 ) {
                 _closureType = ClosureType::C_SHALLOWWATER_2D;
             }
-            else if( closureTypeString->compare( "L2Filter" ) == 0 ) {
-                _closureType = ClosureType::C_L2FILTER;
-            }
-            else if( closureTypeString->compare( "LassoFilter" ) == 0 ) {
-                _closureType = ClosureType::C_LASSOFILTER;
-            }
-            else if( closureTypeString->compare( "ExponentialFilter" ) == 0 ) {
-                _closureType = ClosureType::C_EXPFILTER;
-            }
-            else if( closureTypeString->compare( "SplineFilter" ) == 0 ) {
-                _closureType = ClosureType::C_SPLINEFILTER;
-            }
-            else if( closureTypeString->compare( "HouLiFilter" ) == 0 ) {
-                _closureType = ClosureType::C_HOULIFILTER;
-            }
             else if( closureTypeString->compare( "RadiationHydrodynamics" ) == 0 ) {
                 _closureType = ClosureType::C_RADHYDRO;
             }
@@ -280,15 +265,48 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else {
                 log->error(
                     "[inputfile] [moment_system] 'closure' is invalid!\nPlease set one of the following types: BoundedBarrier, LogBarrier, LogSin, "
-                    "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter,RadiationHydrodynamics,M1,HyperbolicityLimiter" );
+                    "StochasticGalerkin, Euler, Euler2D,RadiationHydrodynamics,M1,HyperbolicityLimiter" );
                 validConfig = false;
             }
         }
         else {
             log->error( "[inputfile] [moment_system] 'closure' not set!\n Please set one of the following types: BoundedBarrier, LogSin, "
-                        "StochasticGalerkin, Euler, Euler2D,L2Filter,LassoFilter" );
+                        "StochasticGalerkin, Euler, Euler2D" );
             validConfig = false;
         }
+        auto filterTypeString = moment_system->get_as<std::string>( "filter" );
+        if( filterTypeString ) {
+            if( filterTypeString->compare( "L2" ) == 0 ) {
+                _filterType = FilterType::F_L2FILTER;
+            }
+            else if( filterTypeString->compare( "Lasso" ) == 0 ) {
+                _filterType = FilterType::F_LASSOFILTER;
+            }
+            else if( filterTypeString->compare( "Exponential" ) == 0 ) {
+                _filterType = FilterType::F_EXPFILTER;
+            }
+            else if( filterTypeString->compare( "Spline" ) == 0 ) {
+                _filterType = FilterType::F_SPLINEFILTER;
+            }
+            else if( filterTypeString->compare( "HouLi" ) == 0 ) {
+                _filterType = FilterType::F_HOULIFILTER;
+            }
+            else if( filterTypeString->compare( "FokkerPlanck" ) == 0 ) {
+                _filterType = FilterType::F_FOKKERPLANCKFILTER;
+            }
+            else if( filterTypeString->compare( "None" ) == 0 ) {
+                _filterType = FilterType::F_NOFILTER;
+            }
+            else {
+                log->error( "[inputfile] [moment_system] 'filter' incorrect!\n Please set one of the following types: L2, Lasso, "
+                            "Exponential, Spline, HouLi, FokkerPlanck, None" );
+                validConfig = false;
+            }
+        }
+        else {
+            _filterType = FilterType::F_NOFILTER;
+        }
+
         auto momentSettings = moment_system->get_array_of<cpptoml::array>( "moments" );
 
         _nMultiElements = moment_system->get_as<unsigned>( "nMultiElements" ).value_or( 1 );
@@ -369,9 +387,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
                     unsigned quadVal = _quadLevel[0];
                     for( unsigned i = 0; i < _nRefinementLevels; ++i ) {
                         if( _quadLevel[i] != quadVal )
-                            std::cerr
-                                << "[Settings]: ERROR! Using tensorizedGrid with quadrature refinement not possible. Choose nested quadrature set!"
-                                << std::endl;
+                            std::cerr << "[Settings]: ERROR! Using tensorizedGrid with quadrature refinement not possible. Choose nested "
+                                         "quadrature set!"
+                                      << std::endl;
                     }
                 }
             }
@@ -519,6 +537,7 @@ void Settings::SetImplicitSource( bool hasSource ) { _hasImplicitSource = hasSou
 // moment_system
 ClosureType Settings::GetClosureType() const { return _closureType; }
 void Settings::SetClosureType( ClosureType cType ) { _closureType = cType; }
+FilterType Settings::GetFilterType() const { return _filterType; }
 unsigned Settings::GetMaxDegree() const { return _maxDegree; }
 unsigned Settings::GetNQuadPoints() const { return _nQuadPoints; }
 void Settings::SetNQuadPoints( unsigned nqNew ) { _nQuadPoints = nqNew; }

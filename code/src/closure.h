@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 #include <vector>
 
+#include "filter.h"
 #include "legendre.h"
 #include "settings.h"
 #include "typedefs.h"
@@ -17,6 +18,7 @@ class Closure
 
   protected:
     Settings* _settings;
+    Filter* _filter;
     std::vector<Polynomial*> _quad;
     QuadratureGrid* _quadGrid;
     std::vector<Vector> _xiGrid;

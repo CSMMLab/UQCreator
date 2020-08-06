@@ -37,11 +37,6 @@ enum ClosureType {
     C_EULER_2D,
     C_SHALLOWWATER_1D,
     C_SHALLOWWATER_2D,
-    C_L2FILTER,
-    C_LASSOFILTER,
-    C_EXPFILTER,
-    C_SPLINEFILTER,
-    C_HOULIFILTER,
     C_RADHYDRO,
     C_THERMALRAD_1D,
     C_M1_1D,
@@ -49,6 +44,8 @@ enum ClosureType {
     C_HYPLIM,
     C_HYPLIM_2D
 };
+
+enum FilterType { F_L2FILTER, F_LASSOFILTER, F_EXPFILTER, F_SPLINEFILTER, F_HOULIFILTER, F_FOKKERPLANCKFILTER, F_NOFILTER };
 enum LimiterType { L_MINMOD, L_NONE };
 enum TimesteppingType { T_EXPLICITEULER };
 enum DistributionType { D_LEGENDRE, D_HERMITE };
@@ -124,6 +121,7 @@ class Settings
     double _plotTimeInterval;
     LimiterType _limiterType;
     ClosureType _closureType;
+    FilterType _filterType;
     ProblemType _problemType;
     TimesteppingType _timesteppingType;
     GridType _gridType;
@@ -190,6 +188,7 @@ class Settings
     // moment_system
     ClosureType GetClosureType() const;
     void SetClosureType( ClosureType cType );
+    FilterType GetFilterType() const;
     unsigned GetMaxDegree() const;
 
     unsigned GetNMultiElements() const;

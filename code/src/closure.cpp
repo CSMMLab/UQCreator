@@ -1,16 +1,10 @@
 #include "closure.h"
 #include "boundedbarrier.h"
-#include "euler1dfpfilter.h"
-#include "euler2dfpfilter.h"
 #include "eulerclosure.h"
 #include "eulerclosure2d.h"
-#include "exponentialfilter.h"
-#include "houlifilter.h"
 #include "hyperbolicitylimiter.h"
 #include "hyperbolicitylimiter2d.h"
 #include "kineticclosure.h"
-#include "l2filter.h"
-#include "lassofilter.h"
 #include "logbarrierclosure.h"
 #include "logsin.h"
 #include "m1ipmclosure.h"
@@ -20,7 +14,6 @@
 #include "regularizedeuler2d.h"
 #include "shallowwaterclosure.h"
 #include "shallowwaterclosure2d.h"
-#include "splinefilter.h"
 #include "stochasticgalerkin.h"
 #include "tensorizedquadrature.h"
 #include "thermalradiationclosure.h"
@@ -100,6 +93,8 @@ Closure::Closure( Settings* settings )
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         _hPartial[k] = outer( column( _phiTildeTrans, k ), column( phiTildeFTrans, k ) );    // TODO
     }
+
+    _filter = Filter::Create( _settings );
     /*
         // Test if polynomials are orthonormal
         Matrix testQuad( _nTotal, _nTotal, 0.0 );
@@ -136,10 +131,7 @@ Closure* Closure::Create( Settings* settings ) {
         return new StochasticGalerkin( settings );
     }
     else if( closureType == ClosureType::C_EULER_1D ) {
-        if( !settings->HasRegularization() && settings->GetFilterStrength() > 0 ) {
-            return new Euler1DFPFilter( settings );
-        }
-        else if( settings->HasRegularization() ) {
+        if( settings->HasRegularization() ) {
             return new RegularizedEuler1D( settings );
         }
         else {
@@ -147,10 +139,7 @@ Closure* Closure::Create( Settings* settings ) {
         }
     }
     else if( closureType == ClosureType::C_EULER_2D ) {
-        if( !settings->HasRegularization() && settings->GetFilterStrength() > 0 ) {
-            return new Euler2DFPFilter( settings );
-        }
-        else if( settings->HasRegularization() ) {
+        if( settings->HasRegularization() ) {
             return new RegularizedEuler2D( settings );
         }
         else {
@@ -162,21 +151,6 @@ Closure* Closure::Create( Settings* settings ) {
     }
     else if( closureType == ClosureType::C_SHALLOWWATER_2D ) {
         return new ShallowWaterClosure2D( settings );
-    }
-    else if( closureType == ClosureType::C_L2FILTER ) {
-        return new L2Filter( settings );
-    }
-    else if( closureType == ClosureType::C_LASSOFILTER ) {
-        return new LassoFilter( settings );
-    }
-    else if( closureType == ClosureType::C_EXPFILTER ) {
-        return new ExponentialFilter( settings );
-    }
-    else if( closureType == ClosureType::C_SPLINEFILTER ) {
-        return new SplineFilter( settings );
-    }
-    else if( closureType == ClosureType::C_HOULIFILTER ) {
-        return new HouLiFilter( settings );
     }
     else if( closureType == ClosureType::C_RADHYDRO ) {
         return new RadiHydroClosure1D( settings );
@@ -213,10 +187,10 @@ void Closure::SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel )
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     for( unsigned l = 0; l < _nMultiElements; ++l ) {
         // save solution in element l as a matrix
+        _filter->FilterMoments( uMat, u, l );
         for( unsigned s = 0; s < _nStates; ++s ) {
             for( unsigned i = 0; i < nTotal; ++i ) {
                 lambdaMat( s, i ) = lambda( s, l, i );
-                uMat( s, i )      = u( s, l, i );
             }
         }
 
@@ -308,10 +282,10 @@ void Closure::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLev
     Matrix H( _nStates * nTotal, _nStates * nTotal );
     for( unsigned l = 0; l < _nMultiElements; ++l ) {
         // save solution in element l as a matrix
+        _filter->FilterMoments( uMat, u, l );
         for( unsigned s = 0; s < _nStates; ++s ) {
             for( unsigned i = 0; i < nTotal; ++i ) {
                 lambdaMat( s, i ) = lambda( s, l, i );
-                uMat( s, i )      = u( s, l, i );
             }
         }
 

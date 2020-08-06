@@ -111,10 +111,10 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < static_cast<unsigned>( _cellIndexPE.size() ); ++j ) {
             // if( _mesh->GetBoundaryType( _cellIndexPE[j] ) == BoundaryType::DIRICHLET && timeIndex > 0 ) continue;
             double indicator;
-            if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D )
+            if( _settings->GetNTotal() == 1 )    // turn off adaptivity if just one moment is used
                 indicator = 0.0;
             else
-                indicator = ComputeRefIndicator( refinementLevel, u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
+                indicator = ComputeRefIndicator( u[_cellIndexPE[j]], refinementLevel[_cellIndexPE[j]] );
 
             // std::cout << "Indicator " << indicator << ", level = " << refinementLevel[_cellIndexPE[j]] << std::endl;
             // std::cout << "Threshold: " << _settings->GetRefinementThreshold() << " " << _settings->GetCoarsenThreshold() << std::endl;
@@ -377,25 +377,25 @@ void MomentSolver::Source( MatTens& uQNew, const MatTens& uQ, double dt, double 
     for( unsigned j = 0; j < _nCells; ++j ) {
         if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
         Tensor out = _problem->Source( uQNew[j], _mesh->GetCenterPos( j ), t, refLevel[j] );    //  use uQ or uQNew?
-        // std::cout << out << std::endl;
-        // exit( EXIT_FAILURE );
-        // std::cout << uQNew[j] << std::endl;
-        uQNew[j] = uQNew[j] + out * dt;
-        // std::cout << uQNew[j] << std::endl;
-        // std::cout << "----------------------------" << std::endl;
+        uQNew[j]   = uQNew[j] + out * dt;
     }
 }
 
 void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned level ) { out += g; }
 
-double MomentSolver::ComputeRefIndicator( const VectorU& refinementLevel, const Tensor& u, unsigned refLevel ) const {
+double MomentSolver::ComputeRefIndicator( const Tensor& u, unsigned refLevel ) const {
     double indicator = 0;
     double P         = 1.0 / _nMultiElements;
     for( unsigned l = 0; l < _nMultiElements; ++l ) {
         if( _settings->GetNDimXi() == 1 ) {
-            indicator += std::fabs( u( 0, l, _nTotalForRef[refLevel] - 1 ) ) + std::fabs( u( 0, l, _nTotalForRef[refLevel] - 2 ) );
+            if( _nTotalForRef[refLevel] - 2 > 0 ) {    // take last two moments as indicator to account for even/odd effects
+                indicator += std::fabs( u( 0, l, _nTotalForRef[refLevel] - 1 ) ) + std::fabs( u( 0, l, _nTotalForRef[refLevel] - 2 ) );
+            }
+            else if( _nTotalForRef[refLevel] - 1 > 0 ) {    // if only moment up to order 1 exists, take this twice
+                indicator += 2.0 * std::fabs( u( 0, l, _nTotalForRef[refLevel] - 1 ) );
+            }
         }
-        else {
+        else {    // in multi-D, take moments from highest level
             unsigned prevRefinementLevel;
             if( refLevel == 0 ) {
                 prevRefinementLevel = 1;

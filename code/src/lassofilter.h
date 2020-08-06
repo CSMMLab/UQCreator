@@ -1,9 +1,9 @@
 #ifndef LASSOFILTER_H
 #define LASSOFILTER_H
 
-#include "closure.h"
+#include "filter.h"
 
-class LassoFilter : public Closure
+class LassoFilter : public Filter
 {
   private:
     LassoFilter() = delete;
@@ -15,12 +15,9 @@ class LassoFilter : public Closure
     LassoFilter( Settings* settings );
     virtual ~LassoFilter();
 
-    virtual void U( Vector& out, const Vector& Lambda );
-    virtual void U( Tensor& out, const Tensor& Lambda );
-    virtual Tensor U( const Tensor& Lambda );
-    virtual void DU( Matrix& y, const Vector& Lambda );
-    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel );
-    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel );
+    virtual void FilterMoments( Tensor& u ) const;
+    virtual void FilterMoments( Tensor& v, const Tensor& u ) const;
+    virtual double FilterMoments( double u, unsigned i ) const;
 };
 
 #endif    // LASSOFILTER_H

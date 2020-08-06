@@ -1,40 +1,9 @@
 #include "hyperbolicitylimiter2d.h"
 #include "mathtools.h"
 
-HyperbolicityLimiter2D::HyperbolicityLimiter2D( Settings* settings )
-    : Closure( settings ), _gamma( _settings->GetGamma() ), _lambda( _settings->GetFilterStrength() ) {
-    _alpha          = 1.0;
-    double epsilonM = std::numeric_limits<double>::denorm_min();
-    _c              = log( epsilonM );
-    if( _lambda < 0 ) _lambda = 0.0;
-    unsigned maxDegree = _settings->GetMaxDegree();
-    _filterFunction    = Vector( _settings->GetNTotal(), 1.0 );
-
-    try {
-        auto file = cpptoml::parse_file( _settings->GetInputFile() );
-
-        auto problem = file->get_table( "moment_system" );
-        _filterOrder = problem->get_as<double>( "filterOrder" ).value_or( 1 );
-    } catch( const cpptoml::parse_exception& e ) {
-        _log->error( "[HyperbolicityLimiter2D] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
-        exit( EXIT_FAILURE );
-    }
-
-    for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-        for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-            // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-            // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-            unsigned index =
-                unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
-            _filterFunction[i] *= pow( FilterFunction( double( index ) / double( maxDegree + 1 ) ), _lambda );
-        }
-        std::cout << "Filterfunction = " << _filterFunction[i] << std::endl;
-    }
-}
+HyperbolicityLimiter2D::HyperbolicityLimiter2D( Settings* settings ) : Closure( settings ), _gamma( _settings->GetGamma() ) { _alpha = 1.0; }
 
 HyperbolicityLimiter2D::~HyperbolicityLimiter2D() {}
-
-double HyperbolicityLimiter2D::FilterFunction( double eta ) const { return exp( _c * pow( eta, _filterOrder ) ); }
 
 void HyperbolicityLimiter2D::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
 
@@ -54,13 +23,8 @@ void HyperbolicityLimiter2D::SolveClosure( Tensor& lambda, const Tensor& u, unsi
     unsigned nTotal = _nTotalForRef[refLevel];
     Tensor uF       = u;
 
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            for( unsigned l = 0; l < _nMultiElements; ++l ) {
-                uF( s, l, i ) = pow( _filterFunction[i], _settings->GetDT() ) * u( s, l, i );
-            }
-        }
-    }
+    // store filtered moments onto uF
+    _filter->FilterMoments( uF, u );
 
     for( unsigned l = 0; l < _nMultiElements; ++l ) {
 

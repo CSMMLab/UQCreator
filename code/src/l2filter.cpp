@@ -1,13 +1,12 @@
 #include "l2filter.h"
 
-L2Filter::L2Filter( Settings* settings ) : Closure( settings ), _lambda( _settings->GetFilterStrength() ) {
-    _alpha             = 1.0;    // unsigned n;
+L2Filter::L2Filter( Settings* settings ) : Filter( settings ) {}
+
+void L2Filter::SetupFilter() {
     unsigned maxDegree = _settings->GetMaxDegree();
-    _filterFunction    = Vector( _settings->GetNTotal(), 1.0 );
-    double eta         = _lambda * pow( 1, 2 ) * pow( 1 + 1, 2 );    // punishes variance dampening
-                                                                     // eta               = 0.0;
     for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
         for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+            double eta = _lambda * pow( 1, 2 ) * pow( 1 + 1, 2 );    // punishes variance dampening
             // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
             // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
             unsigned index =
@@ -18,30 +17,7 @@ L2Filter::L2Filter( Settings* settings ) : Closure( settings ), _lambda( _settin
                 _filterFunction[i] *= 1.0 / ( 1.0 + _lambda * pow( index, 2 ) * pow( index + 1, 2 ) - eta );
         }
     }
+    _lambda = 0.0;    // reset lambda
 }
 
 L2Filter::~L2Filter() {}
-
-void L2Filter::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
-
-void L2Filter::U( Tensor& out, const Tensor& Lambda ) { out = Lambda; }
-
-Tensor L2Filter::U( const Tensor& Lambda ) { return Lambda; }
-
-void L2Filter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
-
-void L2Filter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            lambda( s, i ) = _filterFunction[i] * u( s, i );
-        }
-    }
-}
-
-void L2Filter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            lambda( s, i ) = _filterFunction[i] * u( s, i );
-        }
-    }
-}

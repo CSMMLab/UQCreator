@@ -16,8 +16,8 @@ class RegularizedEuler1D : public EulerClosure
 
   public:
     RegularizedEuler1D( Settings* settings );
-    virtual void SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel );
-    virtual void SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel );
+    virtual void SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel );
+    virtual void SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLevel );
     virtual ~RegularizedEuler1D();
 };
-#endif // REGULARIZEDEULER1D_H
+#endif    // REGULARIZEDEULER1D_H

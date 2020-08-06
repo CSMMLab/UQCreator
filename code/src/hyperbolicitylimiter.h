@@ -8,11 +8,6 @@ class HyperbolicityLimiter : public Closure
   private:
     HyperbolicityLimiter() = delete;
     double _gamma;
-    Vector _filterFunction;
-    unsigned _filterOrder;    // order of the filter
-    double _lambda;
-    double _c;    // machine precision constant
-    double FilterFunction( double eta ) const;
 
   public:
     HyperbolicityLimiter( Settings* settings );

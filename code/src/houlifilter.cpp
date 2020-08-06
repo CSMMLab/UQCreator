@@ -1,11 +1,13 @@
 #include "houlifilter.h"
 
-HouLiFilter::HouLiFilter( Settings* settings ) : Closure( settings ), _lambda( _settings->GetFilterStrength() ) {
-    _alpha             = 1.0;    // unsigned n;
-    _gamma             = 36;
-    double _eps        = 1.0 / _lambda;
-    unsigned maxDegree = _settings->GetMaxDegree();
-    _filterFunction    = Vector( _settings->GetNTotal(), 1.0 );
+HouLiFilter::HouLiFilter( Settings* settings ) : Filter( settings ) {
+    _gamma      = 36;
+    double _eps = 1.0 / _lambda;
+
+    // reset lambda to 1
+    _lambda = 1.0;
+
+    _filterFunction = Vector( _settings->GetNTotal(), 1.0 );
 
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
@@ -16,7 +18,10 @@ HouLiFilter::HouLiFilter( Settings* settings ) : Closure( settings ), _lambda( _
         _log->error( "[HouLiFilter] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
+}
 
+void HouLiFilter::SetupFilter() {
+    unsigned maxDegree = _settings->GetMaxDegree();
     for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
         for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
             // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
@@ -36,29 +41,5 @@ double HouLiFilter::FilterFunction( double eta ) const {
     }
     else {
         return pow( eta, _gamma );
-    }
-}
-
-void HouLiFilter::U( Vector& out, const Vector& Lambda ) { out = Lambda; }
-
-void HouLiFilter::U( Tensor& out, const Tensor& Lambda ) { out = Lambda; }
-
-Tensor HouLiFilter::U( const Tensor& Lambda ) { return Lambda; }
-
-void HouLiFilter::DU( Matrix& y, const Vector& Lambda ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
-
-void HouLiFilter::SolveClosure( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            lambda( s, i ) = pow( _filterFunction[i], _settings->GetDT() ) * u( s, i );
-        }
-    }
-}
-
-void HouLiFilter::SolveClosureSafe( Matrix& lambda, const Matrix& u, unsigned refLevel ) {
-    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-            lambda( s, i ) = pow( _filterFunction[i], _settings->GetDT() ) * u( s, i );
-        }
     }
 }
