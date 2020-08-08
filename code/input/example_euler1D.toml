@@ -1,42 +1,33 @@
 [general]
 problem = "Euler1D"
-outputDir = "../results/PaperMinEntropy"
+outputDir = "../results/PaperLouisa"
 #writeFrequency = 2
 
 [mesh]
 dimension = 1
-numberOfCells = 1000
+numberOfCells = 2000
 a = 0.0
 b = 1.0
-#outputFile = "sod_ME3N4Nq10Nx2000HypLim"
-#outputFile = "sod_ME3N4Nq10Nx2000IPM"
-#outputFile = "euler_shock_fSG_P4_ME4"
-#outputFile = "euler_shock_SG_P21"
-#outputFile = "euler_shock_fSG_P14_ME1_ERFCLOG"
-outputFile = "euler_shock_SG_P14_ME1_ERFC"
-#outputFile = "euler_shock_IPM"
-#outputFile = "euler_shock_IPM_Nq20_1"
+outputFile = "sod_fIPMN14Nq30Nx2000IPMFokkerPlanck5e-5"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[0.05]]
-CFL = 0.9
+CFL = 0.75
 tEnd = 0.14
 
 [moment_system]
-# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, HyperbolicityLimiter
+# available closures: BoundedBarrier, StochasticGalerkin, Euler, Euler2D, L2Filter, HyperbolicityLimiter, ExponentialFilter, SplineFilter, HouLiFilter
 closure = "Euler"
 moments = [["totalDegree"],[14]]
 quadPoints = [["tensorizedGrid"],[30]]
 #quadPoints = [["tensorizedCCGrid"],[2, 3, 3, 3, 4]]
 nMultiElements = 1
-filterStrength = 20.0
-filterOrder = 10
 #refinementThresholds = [0.005, 0.0005]
-#regularizationStrength = 1e-7
-# Erfc, Erfc
-filter = "Erfc"
+regularizationStrength = 1e-7
+filterStrength = 5e-5
+filter = "FokkerPlanck"
 maxIterations = 10000
 epsilon = 1e-7

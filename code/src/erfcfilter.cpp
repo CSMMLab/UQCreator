@@ -1,8 +1,6 @@
 #include "erfcfilter.h"
 
 ErfcFilter::ErfcFilter( Settings* settings ) : Filter( settings ) {
-    _filterFunction = Vector( _settings->GetNTotal(), 1.0 );
-
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
 

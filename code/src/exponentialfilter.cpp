@@ -4,8 +4,6 @@
 ExponentialFilter::ExponentialFilter( Settings* settings ) : Filter( settings ) {
     double epsilonM = std::numeric_limits<double>::denorm_min();
     _c              = log( epsilonM );
-    _filterFunction = Vector( _settings->GetNTotal(), 1.0 );
-
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
 

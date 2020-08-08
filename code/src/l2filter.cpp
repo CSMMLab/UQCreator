@@ -20,4 +20,32 @@ void L2Filter::SetupFilter() {
     _lambda = 0.0;    // reset lambda
 }
 
+void L2Filter::FilterMoments( Tensor& u ) const {
+    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        for( unsigned l = 0; l < _settings->GetNMultiElements(); ++l ) {
+            for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+                u( s, l, i ) = _filterFunction[i] * u( s, l, i );
+            }
+        }
+    }
+}
+
+void L2Filter::FilterMoments( Tensor& v, const Tensor& u ) const {
+    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        for( unsigned l = 0; l < _settings->GetNMultiElements(); ++l ) {
+            for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+                v( s, l, i ) = _filterFunction[i] * u( s, l, i );
+            }
+        }
+    }
+}
+
+void L2Filter::FilterMoments( Matrix& v, const Tensor& u, unsigned l ) const {
+    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+            v( s, i ) = _filterFunction[i] * u( s, l, i );
+        }
+    }
+}
+
 L2Filter::~L2Filter() {}

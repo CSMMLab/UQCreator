@@ -1,8 +1,6 @@
 #include "erfclogfilter.h"
 
 ErfcLogFilter::ErfcLogFilter( Settings* settings ) : Filter( settings ) {
-    _filterFunction = Vector( _settings->GetNTotal(), 1.0 );
-
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
 
@@ -32,6 +30,5 @@ void ErfcLogFilter::SetupFilter() {
 
 double ErfcLogFilter::FilterFunction( double eta ) const {
     double thetaBar = std::fabs( eta ) - 0.5;
-    return 0.5 * erfc( 2.0 * sqrt( _filterOrder ) * thetaBar*sqrt(-log(1.0-4.0*pow(thetaBar,2))/(4.0*pow(thetaBar,2))) );
+    return 0.5 * erfc( 2.0 * sqrt( _filterOrder ) * thetaBar * sqrt( -log( 1.0 - 4.0 * pow( thetaBar, 2 ) ) / ( 4.0 * pow( thetaBar, 2 ) ) ) );
 }
-

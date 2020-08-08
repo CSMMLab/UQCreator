@@ -7,7 +7,6 @@ class LassoFilter : public Filter
 {
   private:
     LassoFilter() = delete;
-    double _lambda;
     Vector _filterParam;
     Vector _l1Norms;
 
@@ -15,9 +14,11 @@ class LassoFilter : public Filter
     LassoFilter( Settings* settings );
     virtual ~LassoFilter();
 
+    virtual void SetupFilter();
+
     virtual void FilterMoments( Tensor& u ) const;
     virtual void FilterMoments( Tensor& v, const Tensor& u ) const;
-    virtual double FilterMoments( double u, unsigned i ) const;
+    virtual void FilterMoments( Matrix& v, const Tensor& u, unsigned l ) const;
 };
 
 #endif    // LASSOFILTER_H

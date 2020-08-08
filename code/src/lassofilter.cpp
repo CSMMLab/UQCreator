@@ -20,9 +20,6 @@ LassoFilter::LassoFilter( Settings* settings ) : Filter( settings ) {
     // get number of uncertain dimensions
     unsigned numDimXi = _settings->GetNDimXi();
 
-    // get number of multi elements per cell
-    unsigned nMultiElements = _settings->GetNMultiElements();
-
     // get index vector for basis function calculation
     std::vector<std::vector<unsigned>> indices = _settings->GetPolyIndices();
     unsigned nTotal                            = _settings->GetNTotal();
@@ -97,6 +94,8 @@ LassoFilter::LassoFilter( Settings* settings ) : Filter( settings ) {
     }
 }
 
+void Filter::SetupFilter() {}
+
 LassoFilter::~LassoFilter() {}
 
 void LassoFilter::FilterMoments( Tensor& u ) const {
@@ -131,4 +130,16 @@ void LassoFilter::FilterMoments( Tensor& v, const Tensor& u ) const {
     }
 }
 
-double LassoFilter::FilterMoments( double u, unsigned i ) const { return pow( _filterFunction[i], _settings->GetDT() * _lambda ) * u; }
+void LassoFilter::FilterMoments( Matrix& v, const Tensor& u, unsigned l ) const {
+    double scL1, filterStrength;
+    unsigned nMax = _settings->GetNTotal() - 1;
+    for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
+        double uLastMoment = u( s, l, nMax );
+        filterStrength     = std::fabs( uLastMoment ) / ( _filterParam[nMax] * _l1Norms[nMax] );
+        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+            scL1 = 1.0 - filterStrength * _filterParam[i] * _l1Norms[i] / std::fabs( u( s, l, i ) );
+            if( scL1 < 0 || std::fabs( u( s, l, i ) ) < 1e-7 ) scL1 = 0.0;
+            v( s, i ) = scL1 * u( s, l, i );
+        }
+    }
+}

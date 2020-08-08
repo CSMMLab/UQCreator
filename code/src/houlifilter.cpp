@@ -1,13 +1,11 @@
 #include "houlifilter.h"
 
 HouLiFilter::HouLiFilter( Settings* settings ) : Filter( settings ) {
-    _gamma      = 36;
-    double _eps = 1.0 / _lambda;
+    _gamma = 36;
+    _eps   = 1.0 / _lambda;
 
     // reset lambda to 1
     _lambda = 1.0;
-
-    _filterFunction = Vector( _settings->GetNTotal(), 1.0 );
 
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );

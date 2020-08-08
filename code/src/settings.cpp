@@ -305,7 +305,7 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             }
             else {
                 log->error( "[inputfile] [moment_system] 'filter' incorrect!\n Please set one of the following types: L2, Lasso, "
-                            "Exponential, Spline, HouLi, FokkerPlanck, Erfc, None" );
+                            "Exponential, Spline, HouLi, FokkerPlanck, Erfc, ErfcLog, None" );
                 validConfig = false;
             }
         }
