@@ -240,7 +240,7 @@ void MomentSolver::Solve() {
             log->info( "{:03.8f}   {:01.5e}   {:01.5e}", t, residualFull, residualFull / dt );
             if( _settings->HasReferenceFile() && timeIndex % _settings->GetWriteFrequency() == 1 ) this->WriteErrors( refinementLevel, t );
             if( false && _settings->WriteInTime() && timeIndex % _settings->GetWriteFrequency() == 1 ) {
-                Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true );
+                Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true, true );
                 _mesh->Export( meanAndVar, "_" + std::to_string( timeIndex ) );
                 if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
             }
@@ -275,7 +275,7 @@ void MomentSolver::Solve() {
     log->info( "" );
     log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
     // compute mean and variance numerical + exact (if exact solution specified)
-    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true );
+    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true, true );
     // write exact solution on reference field
     if( _settings->HasExactSolution() && !_settings->HasReferenceFile() ) {
         _referenceSolution.resize( _nCells );
@@ -422,12 +422,12 @@ void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, co
     _mesh->Export( refinementIndicatorPlot, "_refinementIndicator" + std::to_string( index ) );
 }
 
-Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, bool writeExact ) const {
+Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, bool writeExact, bool writeTemperature ) const {
     Matrix meanAndVar;
 
     // write out temperature if Euler2D
     unsigned nStates;
-    if( _settings->GetProblemType() == P_EULER_2D )
+    if( _settings->GetProblemType() == P_EULER_2D && writeTemperature )
         nStates = _nStates + 1;
     else
         nStates = _nStates;
@@ -449,7 +449,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
                 for( unsigned i = 0; i < _nStates; ++i ) {
                     meanAndVar( i, j ) += tmp[i] * phiTildeWf( k, 0 ) * P;
                 }
-                if( _settings->GetProblemType() == P_EULER_2D ) {
+                if( _settings->GetProblemType() == P_EULER_2D && writeTemperature ) {
                     double rho  = tmp[0];
                     double rhoU = tmp[1];
                     double rhoV = tmp[2];
@@ -468,7 +468,7 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
                 for( unsigned i = 0; i < _nStates; ++i ) {
                     meanAndVar( i + nStates, j ) += pow( tmp[i] - meanAndVar( i, j ), 2 ) * phiTildeWf( k, 0 ) * P;
                 }
-                if( _settings->GetProblemType() == P_EULER_2D ) {
+                if( _settings->GetProblemType() == P_EULER_2D && writeTemperature ) {
                     double rho  = tmp[0];
                     double rhoU = tmp[1];
                     double rhoV = tmp[2];
@@ -1118,7 +1118,7 @@ void MomentSolver::WriteErrors( const VectorU& refinementLevel, double t ) {
     auto l2ErrorVarLog    = spdlog::get( "l2ErrorVar" );
     auto lInfErrorVarLog  = spdlog::get( "lInfErrorVar" );
 
-    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true );
+    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true, false );
 
     auto l1Error   = this->CalculateError( meanAndVar, 1, a, b );
     auto l2Error   = this->CalculateError( meanAndVar, 2, a, b );
