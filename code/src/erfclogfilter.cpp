@@ -1,9 +1,6 @@
-#include "exponentialfilter.h"
-#include <limits>
+#include "erfclogfilter.h"
 
-ExponentialFilter::ExponentialFilter( Settings* settings ) : Filter( settings ) {
-    double epsilonM = std::numeric_limits<double>::denorm_min();
-    _c              = log( epsilonM );
+ErfcLogFilter::ErfcLogFilter( Settings* settings ) : Filter( settings ) {
     _filterFunction = Vector( _settings->GetNTotal(), 1.0 );
 
     try {
@@ -12,14 +9,14 @@ ExponentialFilter::ExponentialFilter( Settings* settings ) : Filter( settings ) 
         auto problem = file->get_table( "moment_system" );
         _filterOrder = problem->get_as<double>( "filterOrder" ).value_or( 1 );
     } catch( const cpptoml::parse_exception& e ) {
-        _log->error( "[ExponentialFilter] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
+        _log->error( "[ErfcLogFilter] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
 }
 
-ExponentialFilter::~ExponentialFilter() {}
+ErfcLogFilter::~ErfcLogFilter() {}
 
-void ExponentialFilter::SetupFilter() {
+void ErfcLogFilter::SetupFilter() {
     unsigned maxDegree = _settings->GetMaxDegree();
     for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
         for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
@@ -29,7 +26,12 @@ void ExponentialFilter::SetupFilter() {
                 unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
             _filterFunction[i] *= FilterFunction( double( index ) / double( maxDegree + 1 ) );
         }
+        std::cout << _filterFunction[i] << std::endl;
     }
 }
 
-double ExponentialFilter::FilterFunction( double eta ) const { return exp( _c * pow( eta, _filterOrder ) ); }
+double ErfcLogFilter::FilterFunction( double eta ) const {
+    double thetaBar = std::fabs( eta ) - 0.5;
+    return 0.5 * erfc( 2.0 * sqrt( _filterOrder ) * thetaBar*sqrt(-log(1.0-4.0*pow(thetaBar,2))/(4.0*pow(thetaBar,2))) );
+}
+

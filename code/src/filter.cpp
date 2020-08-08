@@ -1,4 +1,6 @@
 #include "filter.h"
+#include "erfcfilter.h"
+#include "erfclogfilter.h"
 #include "exponentialfilter.h"
 #include "fokkerplanckfilter.h"
 #include "houlifilter.h"
@@ -7,9 +9,8 @@
 #include "splinefilter.h"
 
 Filter::Filter( Settings* settings ) : _settings( settings ), _lambda( _settings->GetFilterStrength() ) {
-    _log               = spdlog::get( "event" );
-    unsigned maxDegree = _settings->GetMaxDegree();
-    _filterFunction    = Vector( _settings->GetNTotal(), 1.0 );
+    _log            = spdlog::get( "event" );
+    _filterFunction = Vector( _settings->GetNTotal(), 1.0 );
 
     try {
         auto file    = cpptoml::parse_file( _settings->GetInputFile() );
@@ -75,6 +76,12 @@ Filter* Filter::Create( Settings* settings ) {
     }
     else if( filterType == FilterType::F_FOKKERPLANCKFILTER ) {
         tmp = new FokkerPlanckFilter( settings );
+    }
+    else if( filterType == FilterType::F_ERFCFILTER ) {
+        tmp = new ErfcFilter( settings );
+    }
+    else if( filterType == FilterType::F_ERFCLOGFILTER ) {
+        tmp = new ErfcLogFilter( settings );
     }
     else if( filterType == FilterType::F_NOFILTER ) {
         tmp = new Filter( settings );

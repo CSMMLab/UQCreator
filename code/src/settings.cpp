@@ -294,12 +294,18 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             else if( filterTypeString->compare( "FokkerPlanck" ) == 0 ) {
                 _filterType = FilterType::F_FOKKERPLANCKFILTER;
             }
+            else if( filterTypeString->compare( "Erfc" ) == 0 ) {
+                _filterType = FilterType::F_ERFCFILTER;
+            }
+            else if( filterTypeString->compare( "ErfcLog" ) == 0 ) {
+                _filterType = FilterType::F_ERFCLOGFILTER;
+            }
             else if( filterTypeString->compare( "None" ) == 0 ) {
                 _filterType = FilterType::F_NOFILTER;
             }
             else {
                 log->error( "[inputfile] [moment_system] 'filter' incorrect!\n Please set one of the following types: L2, Lasso, "
-                            "Exponential, Spline, HouLi, FokkerPlanck, None" );
+                            "Exponential, Spline, HouLi, FokkerPlanck, Erfc, None" );
                 validConfig = false;
             }
         }
