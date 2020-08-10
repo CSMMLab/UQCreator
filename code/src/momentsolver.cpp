@@ -666,12 +666,12 @@ void MomentSolver::Write2ndDerMeanAndVar( const Matrix& meanAndVar ) const {
     _log->info( "\nExpectation 2nd Der error w.r.t reference solution:" );
     _log->info( "State   L1-error      L2-error" );
     for( unsigned i = 0; i < _nStates; ++i ) {
-        _log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
+        _log->info( "{:1d}       {:01.9e}   {:01.9e}", i, l1Error[i], l2Error[i] );
     }
     _log->info( "\nVariance 2nd Der error w.r.t reference solution:" );
     _log->info( "State   L1-error      L2-error" );
     for( unsigned i = _nStates; i < 2 * _nStates; ++i ) {
-        _log->info( "{:1d}       {:01.5e}   {:01.5e}", i, l1Error[i], l2Error[i] );
+        _log->info( "{:1d}       {:01.9e}   {:01.9e}", i, l1Error[i], l2Error[i] );
     }
 }
 

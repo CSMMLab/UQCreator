@@ -94,7 +94,7 @@ LassoFilter::LassoFilter( Settings* settings ) : Filter( settings ) {
     }
 }
 
-void Filter::SetupFilter() {}
+void LassoFilter::SetupFilter() {}
 
 LassoFilter::~LassoFilter() {}
 
