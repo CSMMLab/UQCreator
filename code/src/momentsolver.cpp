@@ -275,7 +275,7 @@ void MomentSolver::Solve() {
     log->info( "" );
     log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
     // compute mean and variance numerical + exact (if exact solution specified)
-    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true, true );
+    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true, false );
     // write exact solution on reference field
     if( _settings->HasExactSolution() && !_settings->HasReferenceFile() ) {
         _referenceSolution.resize( _nCells );
@@ -312,14 +312,15 @@ void MomentSolver::Solve() {
         _mesh->Export( meanAndVarErrors, "_errors" );
 
         // export 2nd derivative error
-        if( _settings->HasReferenceFile() ) Write2ndDerMeanAndVar( meanAndVar );
+        if( _settings->HasReferenceFile() ) Write2ndDerMeanAndVar( refinementLevel, t );
     }
 
     // export mean and variance
     if( _settings->GetProblemType() == P_SHALLOWWATER_2D )
         _mesh->ExportShallowWater( meanAndVar );
     else {
-        _mesh->Export( meanAndVar, "" );
+        Matrix meanVarT = WriteMeanAndVar( refinementLevel, t, true, true );
+        _mesh->Export( meanVarT, "" );
     }
 
     // WriteGradientsScalarField( meanAndVar );
@@ -626,9 +627,10 @@ void MomentSolver::WriteGradientsScalarField( const Matrix& u ) const {
     _mesh->Export( duy, "_yDer" );
 }
 
-void MomentSolver::Write2ndDerMeanAndVar( const Matrix& meanAndVar ) const {
+void MomentSolver::Write2ndDerMeanAndVar( const VectorU& refinementLevel, double t ) const {
     Matrix MeanVar( 2 * _nStates, _nCells );
     Matrix MeanVarExact( 2 * _nStates, _nCells );
+    Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true, false );
     std::cout << "meanAndVar rows " << meanAndVar.rows() << std::endl;
     for( unsigned s = 0; s < _nStates; ++s ) {
         for( unsigned j = 0; j < _nCells; ++j ) {

@@ -134,7 +134,7 @@ class MomentSolver
     void DetermineGradients( MatTens& duQx, MatTens& duQy, const MatTens& uQ, const VectorU& refLevel ) const;
     void DetermineGradientsScalarField( Matrix& dux, Matrix& duy, const Matrix& u ) const;
     void WriteGradientsScalarField( const Matrix& u ) const;
-    void Write2ndDerMeanAndVar( const Matrix& meanAndVar ) const;
+    void Write2ndDerMeanAndVar( const VectorU& refinementLevel, double t ) const;
 
   public:
     /**
