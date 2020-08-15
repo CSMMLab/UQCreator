@@ -172,11 +172,9 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
         }
         auto distribution = problem->get_array_of<cpptoml::array>( "distribution" );
         if( distribution ) {
-            std::cout << "distribution" << std::endl;
             _numDimXi = unsigned( distribution->at( 0 )->get_array_of<std::string>()->size() );
             _distributionType.resize( _numDimXi );
             _sigma.resize( _numDimXi );
-            std::cout << "sigma size " << _sigma.size() << std::endl;
             auto dist  = ( *distribution )[0]->get_array_of<std::string>();
             auto sigma = ( *distribution )[1]->get_array_of<double>();
             for( unsigned i = 0; i < dist->size(); ++i ) {

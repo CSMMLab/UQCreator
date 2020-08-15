@@ -87,6 +87,7 @@ void MomentSolver::Solve() {
 
     // Begin time loop
     while( t < _tEnd && residualFull > minResidual ) {
+        std::cout << "start while" << std::endl;
 
         double residual = 0;
         // Solve dual problem
@@ -98,11 +99,15 @@ void MomentSolver::Solve() {
             // std::cout << "result = " << _lambda[_cellIndexPE[j]] << std::endl;
         }
 
+        std::cout << "dual done" << std::endl;
+
         // MPI Broadcast lambdas to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             uOld[j] = u[j];    // save old Moments for residual computation
             MPI_Bcast( _lambda[j].GetPointer(), int( _nStates * _nTotal * _nMultiElements ), MPI_DOUBLE, PEforCell[j], MPI_COMM_WORLD );
         }
+
+        std::cout << "bcast done" << std::endl;
 
         // save old refinement levels
         refinementLevelOld = refinementLevel;
@@ -128,10 +133,14 @@ void MomentSolver::Solve() {
             // std::cout << "Refinement level is " << refinementLevel[_cellIndexPE[j]] << std::endl;
         }
 
+        std::cout << "ref done" << std::endl;
+
         // broadcast refinemt level to all PEs
         for( unsigned j = 0; j < _nCells; ++j ) {
             MPI_Bcast( &refinementLevel[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
         }
+
+        std::cout << "bcast ref done" << std::endl;
 
         // determine transition refinement level to ensure that neighboring cells of high refinement level have fine uQ reconstruction
         // important for FV stencil in Advance function
@@ -150,6 +159,8 @@ void MomentSolver::Solve() {
             MPI_Bcast( &refinementLevelTransition[j], 1, MPI_UNSIGNED, PEforCell[j], MPI_COMM_WORLD );
         }
 
+        std::cout << "bcast ref done 2" << std::endl;
+
         // std::cout << "Before recomputation" << std::endl;
         // std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
 
@@ -157,6 +168,8 @@ void MomentSolver::Solve() {
         for( unsigned j = 0; j < _nCells; ++j ) {
             uQ[j] = _closure->U( _closure->EvaluateLambdaOnPE( _lambda[j], refinementLevelOld[j], refinementLevelTransition[j] ) );
         }
+
+        std::cout << "u done" << std::endl;
         // std::cout << "Solution on quad" << std::endl;
         // std::cout << "uQ = " << uQ[_cellIndexPE[10]] << std::endl;
 
@@ -165,6 +178,8 @@ void MomentSolver::Solve() {
             // recompute moments with inexact dual variables
             u[j] = uQ[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
+
+        std::cout << "uHat done" << std::endl;
         // std::cout << "After recomputation" << std::endl;
         // std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
         // break;
@@ -182,9 +197,11 @@ void MomentSolver::Solve() {
         _settings->SetDT( dt );
         t += dt;
         ++timeIndex;
+        std::cout << "dt done" << std::endl;
 
         // perform time update flux
         _time->Advance( numFluxPtr, uQNew, u, uQ, dt, refinementLevel );
+        std::cout << "Advance done" << std::endl;
 
         // std::cout << "uQNew = " << uQNew[_cellIndexPE[10]] << std::endl;
 
@@ -192,6 +209,7 @@ void MomentSolver::Solve() {
         if( _settings->HasSource() ) {
             this->Source( uQNew, uQ, dt, t, refinementLevel );
         }
+        std::cout << "Source done" << std::endl;
 
         // compute partial moments from time updated solution at quad points on each PE
         for( unsigned j = 0; j < _nCells; ++j ) {
@@ -214,6 +232,7 @@ void MomentSolver::Solve() {
                         PEforCell[j],
                         MPI_COMM_WORLD );
         }
+        std::cout << "Reduce done" << std::endl;
 
         // std::cout << "After Reduce" << std::endl;
         // std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
@@ -227,6 +246,7 @@ void MomentSolver::Solve() {
                                                              _nTotalForRef[refinementLevelOld[_cellIndexPE[j]]] );
             }
         }
+        std::cout << "Reg done" << std::endl;
 
         // compute residual
         for( unsigned j = 0; j < _cellIndexPE.size(); ++j ) {
@@ -234,6 +254,7 @@ void MomentSolver::Solve() {
                 residual += std::abs( u[_cellIndexPE[j]]( 0, l, 0 ) - uOld[_cellIndexPE[j]]( 0, l, 0 ) ) * _mesh->GetArea( _cellIndexPE[j] );
             }
         }
+        std::cout << "Res done" << std::endl;
 
         MPI_Allreduce( &residual, &residualFull, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
         if( _settings->GetMyPE() == 0 ) {
@@ -245,10 +266,12 @@ void MomentSolver::Solve() {
                 if( _settings->GetNRefinementLevels() > 1 ) ExportRefinementIndicator( refinementLevel, u, timeIndex );
             }
         }
+        std::cout << "Write done" << std::endl;
         // break;
 
         // if current retardation level fulfills residual condition, then increase retardation level
         if( residualFull < _settings->GetResidualRetardation( retCounter ) && retCounter < _settings->GetNRetardationLevels() - 1 ) retCounter += 1;
+        std::cout << "Ret done" << std::endl;
     }
     // std::cout << "End" << std::endl;
     // std::cout << "Cell " << _cellIndexPE[10] << ", lambda = " << _lambda[_cellIndexPE[10]] << ", u = " << u[_cellIndexPE[10]] << std::endl;
@@ -809,7 +832,6 @@ MatTens MomentSolver::SetupIC() const {
         xiGrid[n] = a + n * ( b - a ) / _nMultiElements;
     }
     double dXiGrid = ( b - a ) / _nMultiElements;
-    // std::cout << "xiGrid = " << xiGrid << std::endl;
 
     if( _settings->HasICFile() ) {
         IC = _mesh->Import();
@@ -827,7 +849,6 @@ MatTens MomentSolver::SetupIC() const {
                 else {
                     column( uIC, k ) = _problem->IC( _mesh->GetCenterPos( j ), xiEta );
                 }
-                // std::cout << "xiEta[" << k << "] = " << xiEta << " ; u = " << _problem->IC( _mesh->GetCenterPos( j ), xiEta ) << std::endl;
             }
 
             auto uElement = uIC * phiTildeWf;
@@ -836,13 +857,6 @@ MatTens MomentSolver::SetupIC() const {
                     u[j]( s, n, i ) = uElement( s, i );
                 }
             }
-            if( j == 626 ) {
-                std::cout << "u = " << u[j] << std::endl;
-                std::cout << "uQ = " << uIC << std::endl;
-                // exit( EXIT_FAILURE );
-            }
-
-            // std::cout << "u = " << u[j]( 0, 0, 0 ) << std::endl;
         }
     }
     return u;

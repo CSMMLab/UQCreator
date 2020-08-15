@@ -1,7 +1,6 @@
 #include "fokkerplanckfilter.h"
 
 FokkerPlanckFilter::FokkerPlanckFilter( Settings* settings ) : Filter( settings ) {
-    std::cout << "FP Filter construct." << std::endl;
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
 
@@ -14,7 +13,6 @@ FokkerPlanckFilter::FokkerPlanckFilter( Settings* settings ) : Filter( settings 
 }
 
 void FokkerPlanckFilter::SetupFilter() {
-    std::cout << "FP Filter setting up." << std::endl;
     unsigned maxDegree = _settings->GetMaxDegree();
     for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
         for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
@@ -26,7 +24,6 @@ void FokkerPlanckFilter::SetupFilter() {
         }
     }
     _lambda = 0.0;    // reset lambda
-    std::cout << "FP Filter set up." << std::endl;
 }
 
 void FokkerPlanckFilter::FilterMoments( Tensor& u ) const {

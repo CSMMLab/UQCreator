@@ -112,27 +112,45 @@ Matrix Euler2D::F( const Matrix& u ) {
 }
 
 Matrix Euler2D::BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const {
+    std::cout << "Computing boundary flux" << std::endl;
     unsigned nStates = u.rows();
-    unsigned Nq      = _settings->GetNqPEAtRef( level );
+    std::cout << "states are " << nStates << std::endl;
+    unsigned Nq = _settings->GetNqPEAtRef( level );
+    std::cout << "Nq are " << Nq << " ,cols are " << u.columns() << std::endl;
     Matrix y( nStates, Nq );
     Vector uB( nStates );
     for( unsigned k = 0; k < Nq; ++k ) {
+        std::cout << "k = " << k << std::endl;
         Vector v( 2, 0.0 );
         v.reset();
-        v[0]           = u( 1, k ) / u( 0, k );
-        v[1]           = u( 2, k ) / u( 0, k );
-        double vn      = dot( nUnit, v );
-        Vector Vn      = vn * nUnit;
-        Vector Vb      = -Vn + v;
+        std::cout << "reset" << std::endl;
+        v[0] = u( 1, k ) / u( 0, k );
+        v[1] = u( 2, k ) / u( 0, k );
+        std::cout << "v written" << std::endl;
+        double vn = dot( nUnit, v );
+        std::cout << "dot done" << std::endl;
+        Vector Vn = vn * nUnit;
+        std::cout << "vn written" << std::endl;
+        std::cout << v.size() << " " << Vn.size() << std::endl;
+        std::cout << "v is " << v << std::endl;
+        std::cout << "vn is " << Vn << std::endl;
+        // std::cout << "add is " << v + Vn << std::endl;
+        std::cout << "diff is " << v - Vn << std::endl;
+        Vector Vb = v - Vn;
+        std::cout << "Vb written" << std::endl;
         double velMagB = Vb[0] * Vb[0] + Vb[1] * Vb[1];
         double velMag  = v[0] * v[0] + v[1] * v[1];
         double rho     = u( 0, k );
-        uB[0]          = rho;
-        uB[1]          = rho * ( Vb[0] );
-        uB[2]          = rho * ( Vb[1] );
-        uB[3]          = u( 3, k ) + rho * 0.5 * ( velMagB - velMag );
+        std::cout << "v rho computed" << std::endl;
+        uB[0] = rho;
+        uB[1] = rho * ( Vb[0] );
+        uB[2] = rho * ( Vb[1] );
+        uB[3] = u( 3, k ) + rho * 0.5 * ( velMagB - velMag );
+        std::cout << "uB written" << std::endl;
         column( y, k ) = F( uB ) * n;
+        std::cout << "y written" << std::endl;
     }
+    std::cout << "boundary flux computed in function" << std::endl;
     return y;
 }
 

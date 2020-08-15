@@ -148,7 +148,7 @@ template <class T> T& Vector<T>::operator[]( int i ) { return _data[i]; }
 template <class T> const T& Vector<T>::operator[]( int i ) const { return _data[i]; }
 
 template <class T> Vector<T> Vector<T>::operator+( const Vector& other ) const {
-    Vector<T> res( _N );
+    Vector<T> res( _N, true );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] + other._data[i];
     }
@@ -156,15 +156,19 @@ template <class T> Vector<T> Vector<T>::operator+( const Vector& other ) const {
 }
 
 template <class T> Vector<T> Vector<T>::operator-( const Vector& other ) const {
-    Vector<T> res( _N );
+    std::cout << "Operator -" << std::endl;
+    std::cout << "size is " << _N << std::endl;
+    Vector<T> res( _N, true );
+    std::cout << "created res with size " << _N << std::endl;
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] - other._data[i];
     }
+    std::cout << "done op - " << std::endl;
     return res;
 }
 
 template <class T> Vector<T> Vector<T>::operator*( const Vector& other ) const {
-    Vector<T> res( _N );
+    Vector<T> res( _N, true );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] * other._data[i];
     }
@@ -172,7 +176,7 @@ template <class T> Vector<T> Vector<T>::operator*( const Vector& other ) const {
 }
 
 template <class T> Vector<T> Vector<T>::operator/( const Vector& other ) const {
-    Vector<T> res( _N );
+    Vector<T> res( _N, true );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] / other._data[i];
     }
@@ -180,7 +184,7 @@ template <class T> Vector<T> Vector<T>::operator/( const Vector& other ) const {
 }
 
 template <class T> Vector<T> Vector<T>::operator+( const T& scalar ) const {
-    Vector<T> res( _N );
+    Vector<T> res( _N, true );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] + scalar;
     }
@@ -188,7 +192,7 @@ template <class T> Vector<T> Vector<T>::operator+( const T& scalar ) const {
 }
 
 template <class T> Vector<T> Vector<T>::operator-( const T& scalar ) const {
-    Vector<T> res( _N );
+    Vector<T> res( _N, true );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] - scalar;
     }
@@ -196,7 +200,7 @@ template <class T> Vector<T> Vector<T>::operator-( const T& scalar ) const {
 }
 
 template <class T> Vector<T> Vector<T>::operator*( const T& scalar ) const {
-    Vector<T> res( _N );
+    Vector<T> res( _N, true );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] * scalar;
     }
@@ -204,7 +208,7 @@ template <class T> Vector<T> Vector<T>::operator*( const T& scalar ) const {
 }
 
 template <class T> Vector<T> Vector<T>::operator/( const T& scalar ) const {
-    Vector<T> res( _N );
+    Vector<T> res( _N, true );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] / scalar;
     }

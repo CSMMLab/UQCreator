@@ -59,9 +59,12 @@ std::string initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level:
     terminalSink->set_level( terminalLogLvl );
     terminalSink->set_pattern( "%v" );
 
-    auto file      = cpptoml::parse_file( configFile );
-    auto general   = file->get_table( "general" );
-    auto outputDir = general->get_as<std::string>( "outputDir" ).value_or( "." );
+    auto file                       = cpptoml::parse_file( configFile );
+    auto general                    = file->get_table( "general" );
+    std::filesystem::path inputFile = configFile;
+    auto inputDir                   = std::experimental::filesystem::path( inputFile.parent_path() );
+    auto outputDir                  = general->get_as<std::string>( "outputDir" ).value_or( "." );
+    outputDir                       = inputDir.string() + "/" + outputDir + "/";
     if( !std::filesystem::exists( outputDir ) ) {
         std::filesystem::create_directory( outputDir );
     }
@@ -122,9 +125,13 @@ std::string initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level:
 }
 
 void initErrorLogger( std::string configFile, std::string filename ) {
-    auto file      = cpptoml::parse_file( configFile );
+    auto file                       = cpptoml::parse_file( configFile );
+    std::filesystem::path inputFile = configFile;
+    auto inputDir                   = std::experimental::filesystem::path( inputFile.parent_path() );
+
     auto general   = file->get_table( "general" );
     auto outputDir = general->get_as<std::string>( "outputDir" ).value_or( "." );
+    outputDir      = inputDir.string() + "/" + outputDir + "/";
 
     auto l1ErrorMeanSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + filename + "_L1ErrorMean" );
     l1ErrorMeanSink->set_level( spdlog::level::info );
