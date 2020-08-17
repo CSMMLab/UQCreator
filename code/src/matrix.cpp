@@ -89,7 +89,8 @@ template <class T> Matrix<T>::Matrix( const Matrix& other ) : _rows( other._rows
 }
 
 template <class T> Matrix<T>::~Matrix() {
-    free( _data );    // delete[] _data;
+    // free( _data );
+    delete[] _data;
 }
 
 template <class T> void Matrix<T>::operator=( const Matrix<T>& other ) {
