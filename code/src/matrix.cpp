@@ -60,7 +60,8 @@ template <class T> class Matrix    // column major
 template <class T> Matrix<T>::Matrix() : _data( nullptr ), _rows( 0 ), _columns( 0 ) {}
 
 template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skipZeroInit ) : _rows( rows ), _columns( columns ) {
-    _data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
+    //_data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
+    _data = new T[_rows * _columns];
     if( !skipZeroInit ) {
         for( unsigned j = 0; j < _columns; ++j ) {
             for( unsigned i = 0; i < _rows; ++i ) {
@@ -71,7 +72,8 @@ template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skip
 }
 
 template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) : _rows( rows ), _columns( columns ) {
-    _data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
+    //_data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
+    _data = new T[_rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             _data[j * _rows + i] = init;
@@ -80,7 +82,8 @@ template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) 
 }
 
 template <class T> Matrix<T>::Matrix( const Matrix& other ) : _rows( other._rows ), _columns( other._columns ) {
-    _data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
+    //_data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
+    _data = new T[_rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             _data[j * _rows + i] = other._data[j * _rows + i];
@@ -97,7 +100,8 @@ template <class T> void Matrix<T>::operator=( const Matrix<T>& other ) {
     if( _data == nullptr ) {
         _rows    = other._rows;
         _columns = other._columns;
-        _data    = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
+        //_data    = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
+        _data = new T[_rows * _columns];
     }
 
     // ensure that only allocated data is written when sizes differ (due to adaptivity)
@@ -267,7 +271,8 @@ template <class T> void Matrix<T>::reset() {
 
 template <class T> void Matrix<T>::resize( unsigned rows, unsigned columns ) {
     auto dataOld = _data;
-    _data        = static_cast<T*>( malloc( rows * columns * sizeof( T ) ) );
+    //_data        = static_cast<T*>( malloc( rows * columns * sizeof( T ) ) );
+    _data = new T[_rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             _data[j * rows + i] = dataOld[j * _rows + i];
@@ -357,7 +362,8 @@ template <class T> Tensor<T>::Tensor() : _data( nullptr ), _rows( 0 ), _columns(
 template <class T>
 Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, bool skipZeroInit )
     : _rows( rows ), _columns( columns ), _frontRows( frontRows ) {
-    _data = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+    //_data = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+    _data = new T[_frontRows * _rows * _columns];
     if( !skipZeroInit ) {
         for( unsigned j = 0; j < _columns; ++j ) {
             for( unsigned i = 0; i < _rows; ++i ) {
@@ -371,7 +377,8 @@ Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, bool ski
 
 template <class T>
 Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, T init ) : _rows( rows ), _columns( columns ), _frontRows( frontRows ) {
-    _data = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+    //_data = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+    _data = new T[_frontRows * _rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             for( unsigned l = 0; l < _frontRows; ++l ) {
@@ -382,7 +389,8 @@ Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, T init )
 }
 
 template <class T> Tensor<T>::Tensor( const Tensor& other ) : _rows( other._rows ), _columns( other._columns ), _frontRows( other._frontRows ) {
-    _data = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+    //_data = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+    _data = new T[_frontRows * _rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             for( unsigned l = 0; l < _frontRows; ++l ) {
@@ -393,7 +401,8 @@ template <class T> Tensor<T>::Tensor( const Tensor& other ) : _rows( other._rows
 }
 
 template <class T> Tensor<T>::~Tensor() {
-    free( _data );    // delete[] _data;
+    // free( _data );
+    delete[] _data;
 }
 
 template <class T> void Tensor<T>::operator=( const Tensor<T>& other ) {
@@ -401,7 +410,8 @@ template <class T> void Tensor<T>::operator=( const Tensor<T>& other ) {
         _rows      = other._rows;
         _columns   = other._columns;
         _frontRows = other._frontRows;
-        _data      = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+        //_data      = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+        _data = new T[_frontRows * _rows * _columns];
     }
 
     // ensure that only allocated data is written when sizes differ (due to adaptivity)

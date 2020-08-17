@@ -211,7 +211,7 @@ template <class T>
 inline void cgeev( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, VectorSpace::Matrix<T>& VR, VectorSpace::Matrix<T>& W ) {
 
     /* Locals */
-    int N = A.columns();
+    unsigned long N = A.columns();
     int n = A.columns(), lda = A.columns(), ldvl = A.columns(), ldvr = A.columns(), info, lwork;
     fcomplex wkopt;
     fcomplex* work;
