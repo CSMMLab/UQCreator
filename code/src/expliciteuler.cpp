@@ -19,14 +19,10 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
     Matrix uQI( _settings->GetNStates(), _settings->GetNqPE() );
     Matrix uQJ( _settings->GetNStates(), _settings->GetNqPE() );
 
-    // std::cout << "Euler: uQNew = " << uQ[10] << std::endl;
-
     for( unsigned l = 0; l < _settings->GetNMultiElements(); ++l ) {
-        std::cout << "ME " << l << std::endl;
 // compute flux at edges
 #pragma omp parallel for
         for( unsigned j = 0; j < _mesh->GetNEdges(); ++j ) {
-            std::cout << "edge = " << j << std::endl;
             _flux[j].reset();    // is this needed? should be fine
             std::pair cells = _mesh->CellsAtEdge( j );
             unsigned I      = cells.first;
@@ -41,23 +37,18 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                 level = refLevel[I];    // take max ref level of cells I and J
                 if( level < refLevel[J] ) level = refLevel[J];
             }
-            std::cout << "ref level is " << level << std::endl;
-            std::cout << "nQ at ref level is " << _settings->GetNqPEAtRef( level ) << std::endl;
             for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
                 for( unsigned k = 0; k < _settings->GetNqPEAtRef( level ); ++k ) {
                     uQI( s, k ) = uQ[I]( s, l, k );
                     uQJ( s, k ) = uQ[J]( s, l, k );
                 }
             }
-            std::cout << "written on UQI and UQJ " << std::endl;
 
             double area = norm( _mesh->GetNormalAtEdge( j ) );
             if( _mesh->BoundaryAtEdge( j ) != NOSLIP && _mesh->BoundaryAtEdge( j ) != DIRICHLET ) {
-                std::cout << "volume " << std::endl;
                 fluxFunc( _flux[j], _problem->G( uQI, uQJ, _mesh->GetNormalAtEdge( j ) / area, _mesh->GetNormalAtEdge( j ), level ), level );
             }
             else if( _mesh->BoundaryAtEdge( j ) == NOSLIP ) {
-                std::cout << "noslip " << std::endl;
                 if( I == numCells ) {
                     std::cerr << "ERROR" << std::endl;
                     exit( EXIT_FAILURE );
@@ -65,10 +56,8 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                         _flux[j], _problem->BoundaryFlux( uQJ, _mesh->GetNormalAtEdge( j ) / area, _mesh->GetNormalAtEdge( j ), level ), level );
                 }
                 else if( J == numCells ) {
-                    std::cout << j << std::endl;
                     fluxFunc(
                         _flux[j], _problem->BoundaryFlux( uQI, _mesh->GetNormalAtEdge( j ) / area, _mesh->GetNormalAtEdge( j ), level ), level );
-                    std::cout << "Flux function computed." << std::endl;
                 }
                 else {
                     std::cerr << "ERROR 1" << std::endl;
@@ -76,7 +65,6 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                 }
             }
         }
-        std::cout << "flux computation DONE " << std::endl;
 
 #pragma omp parallel for
         for( unsigned j = 0; j < numCells; ++j ) {
@@ -103,9 +91,6 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                 }
                 else {
                     std::cerr << "WRONG" << std::endl;
-                    std::cout << "Edges of Cell " << j << std::endl;
-                    std::cout << "Cell index is " << cell->GetID() << std::endl;
-                    std::cout << I << " " << J << std::endl;
                 }
             }
 
@@ -124,6 +109,5 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                 }
             }
         }
-        std::cout << "up uQ DONE " << std::endl;
     }
 }
