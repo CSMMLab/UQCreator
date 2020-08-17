@@ -4,10 +4,9 @@
 #include "matrix.cpp"
 
 /* Complex datatype */
-struct _fcomplex {
-    float re, im;
+struct complex {
+    double re, im;
 };
-typedef struct _fcomplex fcomplex;
 
 extern "C" {
 void dgesv_( int* n, int* nrhs, double* A, int* lda, int* ipiv, double* b, int* ldb, int* info );
@@ -15,14 +14,14 @@ void dposv_( char* uplo, int* n, int* nrhs, double* A, int* lda, double* b, int*
 void cgeev_( char* jobvl,
              char* jobvr,
              int* n,
-             fcomplex* a,
+             complex* a,
              int* lda,
-             fcomplex* w,
-             fcomplex* vl,
+             complex* w,
+             complex* vl,
              int* ldvl,
-             fcomplex* vr,
+             complex* vr,
              int* ldvr,
-             fcomplex* work,
+             complex* work,
              int* lwork,
              float* rwork,
              int* info );
@@ -210,42 +209,31 @@ template <class T> inline void posv( VectorSpace::Matrix<T>& A, VectorSpace::Vec
 template <class T>
 inline void cgeev( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, VectorSpace::Matrix<T>& VR, VectorSpace::Matrix<T>& W ) {
 
-    /* Locals */
     unsigned long N = A.columns();
     int n = A.columns(), lda = A.columns(), ldvl = A.columns(), ldvr = A.columns(), info, lwork;
-    fcomplex wkopt;
-    fcomplex* work;
-    /* Local arrays */
-    /* rwork dimension should be at least 2*n */
-    float rwork[2 * N];
-    fcomplex w[N], vl[N * N], vr[N * N];
-    fcomplex a[N * N];
+    complex wkopt;
+    complex* work;
+    float rwork[2 * N];    // rwork dimension should be at least 2*n
+    complex w[N], vl[N * N], vr[N * N];
+    complex a[N * N];
     for( unsigned i = 0; i < N; ++i ) {
         for( unsigned j = 0; j < N; ++j ) {
             a[i + j * N] = { A( i, j ), 0.0 };
         }
     }
-
     /* Executable statements */
-    printf( " CGEEV Example Program Results\n" );
     /* Query and allocate the optimal workspace */
     lwork = -1;
-    cgeev_( "Vectors", "Vectors", &n, a, &lda, w, vl, &ldvl, vr, &ldvr, &wkopt, &lwork, rwork, &info );
-    lwork = (int)wkopt.re;
-    work  = (fcomplex*)malloc( lwork * sizeof( fcomplex ) );
-    /* Solve eigenproblem */
-    cgeev_( "Vectors", "Vectors", &n, a, &lda, w, vl, &ldvl, vr, &ldvr, work, &lwork, rwork, &info );
-    /* Check for convergence */
+    cgeev_( const_cast<char*>( "Vectors" ), const_cast<char*>( "Vectors" ), &n, a, &lda, w, vl, &ldvl, vr, &ldvr, &wkopt, &lwork, rwork, &info );
+    lwork = static_cast<int>( wkopt.re );
+    // work  = (complex*)malloc( lwork * sizeof( complex ) );
+    work = new complex[lwork];
+    cgeev_( const_cast<char*>( "Vectors" ), const_cast<char*>( "Vectors" ), &n, a, &lda, w, vl, &ldvl, vr, &ldvr, work, &lwork, rwork, &info );
     if( info > 0 ) {
-        printf( "The algorithm failed to compute eigenvalues.\n" );
+        auto log = spdlog::get( "event" );
+        log->error( "[cgeev] The algorithm failed to compute eigenvalues.\n" );
         exit( 1 );
     }
-    /* Print eigenvalues */
-    // print_matrix( "Eigenvalues", 1, n, w, 1 );
-    /* Print left eigenvectors */
-    // print_matrix( "Left eigenvectors", n, n, vl, ldvl );
-    /* Print right eigenvectors */
-    // print_matrix( "Right eigenvectors", n, n, vr, ldvr );
     for( unsigned i = 0; i < N; ++i ) {
         for( unsigned j = 0; j < N; ++j ) {
             VL( i, j ) = vl[i + j * N].re;
@@ -253,6 +241,7 @@ inline void cgeev( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, 
         }
         W( i, i ) = w[i].re;
     }
+    delete work;
 }
 
 // multiplies PE part of A and x and saves result on b
