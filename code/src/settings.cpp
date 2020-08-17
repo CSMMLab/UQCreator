@@ -195,7 +195,6 @@ void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
             log->error( "[inputfile] [problem] 'distribution' not set!\nPlease set one of the following types: Legendre, Hermite" );
             validConfig = false;
         }
-        std::cout << "sigma size " << _sigma.size() << std::endl;
         auto CFL = problem->get_as<double>( "CFL" );
         if( CFL ) {
             _CFL = *CFL;

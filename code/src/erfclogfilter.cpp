@@ -24,7 +24,6 @@ void ErfcLogFilter::SetupFilter() {
                 unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
             _filterFunction[i] *= FilterFunction( double( index ) / double( maxDegree + 1 ) );
         }
-        std::cout << _filterFunction[i] << std::endl;
     }
 }
 
