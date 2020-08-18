@@ -3,10 +3,13 @@
 
 #include "problem.h"
 
+enum ICType { I_NOZZLE, I_NOZZLE_SOD, I_NACA, I_NACA_HIGHMACH };
+
 class Euler2D : public Problem
 {
   private:
     double _gamma;
+    ICType _problemType;
 
   public:
     Euler2D( Settings* settings );

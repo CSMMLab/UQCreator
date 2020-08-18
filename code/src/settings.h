@@ -28,6 +28,7 @@ enum ProblemType {
     P_KINETIC_1D,
     P_NAVIERSTOKES_1D
 };
+
 enum ClosureType {
     C_BOUNDEDBARRIER,
     C_LOGBARRIER,

@@ -447,7 +447,7 @@ std::vector<Vector> Mesh2D::Import() const {
 }
 
 void Mesh2D::Export( const Matrix& results, std::string append ) const {
-    assert( results.rows() == _settings->GetNStates() * 2 );
+    // assert( results.rows() == _settings->GetNStates() * 2 );
     std::string vtkFile = _settings->GetOutputFile() + append;
     auto writer         = vtkUnstructuredGridWriterSP::New();
     if( vtkFile.substr( _outputFile.find_last_of( "." ) + 1 ) != "vtk" ) {
