@@ -92,6 +92,9 @@ LassoFilter::LassoFilter( Settings* settings ) : Filter( settings ) {
             _filterParam[i] *= index * ( index + 1 );
         }
     }
+    delete quad[0];
+    delete quad[1];
+    delete quadGrid;
 }
 
 void LassoFilter::SetupFilter() {}
@@ -136,7 +139,7 @@ void LassoFilter::FilterMoments( Matrix& v, const Tensor& u, unsigned l ) const 
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
         double uLastMoment = u( s, l, nMax );
         filterStrength     = std::fabs( uLastMoment ) / ( _filterParam[nMax] * _l1Norms[nMax] );
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+        for( unsigned i = 0; i < v.columns(); ++i ) {
             scL1 = 1.0 - filterStrength * _filterParam[i] * _l1Norms[i] / std::fabs( u( s, l, i ) );
             if( scL1 < 0 || std::fabs( u( s, l, i ) ) < 1e-7 ) scL1 = 0.0;
             v( s, i ) = scL1 * u( s, l, i );

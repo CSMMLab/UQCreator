@@ -26,8 +26,8 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     _variances = _settings->GetSigma();
 
     // get quadrature grid
-    auto grid = QuadratureGrid::Create( _settings, _settings->GetNQTotal() );
-    _xiQuad   = grid->GetNodes();
+    _grid   = QuadratureGrid::Create( _settings, _settings->GetNQTotal() );
+    _xiQuad = _grid->GetNodes();
 
     // compute Roe flux components
     Matrix P( 2, 2, 1.0 );
@@ -60,7 +60,7 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     }
 }
 
-ThermalRadiative::~ThermalRadiative() {}
+ThermalRadiative::~ThermalRadiative() { delete _grid; }
 
 Vector ThermalRadiative::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     // Lax-Friedrichs

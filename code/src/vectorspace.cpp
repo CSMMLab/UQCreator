@@ -98,6 +98,7 @@ template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace
 
 template <class T> double dot( const VectorSpace::Vector<T>& a, const VectorSpace::Vector<T>& b ) {
     double res = 0.0;
+    assert( a.size() == b.size() );
     for( unsigned i = 0; i < a.size(); ++i ) {
         res += a[i] * b[i];
     }
@@ -106,6 +107,7 @@ template <class T> double dot( const VectorSpace::Vector<T>& a, const VectorSpac
 
 template <class T> VectorSpace::Matrix<T> outer( const VectorSpace::Vector<T>& a, const VectorSpace::Vector<T>& b ) {
     VectorSpace::Matrix<T> res( a.size(), a.size() );
+    assert( a.size() == b.size() );
     for( unsigned i = 0; i < a.size(); ++i ) {
         for( unsigned j = 0; j < b.size(); ++j ) {
             res( i, j ) += a[i] * b[j];

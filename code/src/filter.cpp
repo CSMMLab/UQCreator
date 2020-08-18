@@ -22,6 +22,8 @@ Filter::Filter( Settings* settings ) : _settings( settings ), _lambda( _settings
     }
 }
 
+Filter::~Filter() {}
+
 void Filter::SetupFilter() {
     // turn off filter
     _lambda = 0.0;
@@ -49,7 +51,7 @@ void Filter::FilterMoments( Tensor& v, const Tensor& u ) const {
 
 void Filter::FilterMoments( Matrix& v, const Tensor& u, unsigned l ) const {
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+        for( unsigned i = 0; i < v.columns(); ++i ) {
             v( s, i ) = pow( _filterFunction[i], _settings->GetDT() * _lambda ) * u( s, l, i );
         }
     }

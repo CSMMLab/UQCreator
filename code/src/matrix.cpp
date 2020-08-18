@@ -1,4 +1,5 @@
 #include "vector.cpp"
+#include <assert.h>
 
 template <class T> VectorSpace::Vector<T> column( VectorSpace::Matrix<T>& mat, unsigned i );
 template <class T> VectorSpace::Vector<T> column( const VectorSpace::Matrix<T>& mat, unsigned i );
@@ -59,49 +60,48 @@ template <class T> class Matrix    // column major
 
 template <class T> Matrix<T>::Matrix() : _data( nullptr ), _rows( 0 ), _columns( 0 ) {}
 
-template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skipZeroInit ) : _rows( rows ), _columns( columns ) {
+template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skipZeroInit ) : _rows( rows ), _columns( columns ), _data( nullptr ) {
     //_data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
     _data = new T[_rows * _columns];
     if( !skipZeroInit ) {
         for( unsigned j = 0; j < _columns; ++j ) {
             for( unsigned i = 0; i < _rows; ++i ) {
+                assert( j * _rows + i < _rows * _columns );
                 _data[j * _rows + i] = 0.0;
             }
         }
     }
 }
 
-template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) : _rows( rows ), _columns( columns ) {
+template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) : _rows( rows ), _columns( columns ), _data( nullptr ) {
     //_data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
     _data = new T[_rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
+            assert( j * _rows + i < _rows * _columns );
             _data[j * _rows + i] = init;
         }
     }
 }
 
-template <class T> Matrix<T>::Matrix( const Matrix& other ) : _rows( other._rows ), _columns( other._columns ) {
+template <class T> Matrix<T>::Matrix( const Matrix& other ) : _rows( other._rows ), _columns( other._columns ), _data( nullptr ) {
     //_data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
     _data = new T[_rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
+            assert( j * _rows + i < _rows * _columns );
             _data[j * _rows + i] = other._data[j * _rows + i];
         }
     }
 }
 
-template <class T> Matrix<T>::~Matrix() {
-    // free( _data );
-    delete[] _data;
-}
+template <class T> Matrix<T>::~Matrix() { delete[] _data; }
 
 template <class T> void Matrix<T>::operator=( const Matrix<T>& other ) {
     if( _data == nullptr ) {
         _rows    = other._rows;
         _columns = other._columns;
-        //_data    = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
-        _data = new T[_rows * _columns];
+        _data    = new T[_rows * _columns];
     }
 
     // ensure that only allocated data is written when sizes differ (due to adaptivity)
@@ -117,6 +117,8 @@ template <class T> void Matrix<T>::operator=( const Matrix<T>& other ) {
 
 template <class T> Matrix<T> Matrix<T>::Add( const Matrix<T>& other, unsigned rows, unsigned columns ) const {
     Matrix<T> res( _rows, _columns, true );
+    assert( _rows == other._rows );
+    assert( _columns == other.columns() );
 
     for( unsigned j = 0; j < columns; ++j ) {
         for( unsigned i = 0; i < rows; ++i ) {
@@ -126,15 +128,26 @@ template <class T> Matrix<T> Matrix<T>::Add( const Matrix<T>& other, unsigned ro
     return res;
 }
 
-template <class T> T& Matrix<T>::operator()( unsigned i, unsigned j ) { return _data[j * _rows + i]; }
+template <class T> T& Matrix<T>::operator()( unsigned i, unsigned j ) {
+    assert( j * _rows + i < _rows * _columns );
+    return _data[j * _rows + i];
+}
 
-template <class T> const T& Matrix<T>::operator()( unsigned i, unsigned j ) const { return _data[j * _rows + i]; }
+template <class T> const T& Matrix<T>::operator()( unsigned i, unsigned j ) const {
+    assert( j * _rows + i < _rows * _columns );
+    return _data[j * _rows + i];
+}
 
 template <class T> Matrix<T> Matrix<T>::operator+( const Matrix<T>& other ) const {
-    Matrix<T> res( _rows, _columns, true );
 
-    for( unsigned j = 0; j < _columns; ++j ) {
-        for( unsigned i = 0; i < _rows; ++i ) {
+    // ensure that only allocated data is written when sizes differ (due to adaptivity)
+    unsigned columns = std::min( _columns, other._columns );
+    unsigned rows    = std::min( _rows, other._rows );
+
+    Matrix<T> res( rows, columns, true );
+
+    for( unsigned j = 0; j < columns; ++j ) {
+        for( unsigned i = 0; i < rows; ++i ) {
             res( i, j ) = ( *this )( i, j ) + other( i, j );
         }
     }
@@ -142,9 +155,15 @@ template <class T> Matrix<T> Matrix<T>::operator+( const Matrix<T>& other ) cons
 }
 
 template <class T> Matrix<T> Matrix<T>::operator-( const Matrix<T>& other ) const {
-    Matrix<T> res( _rows, _columns, true );
-    for( unsigned j = 0; j < _columns; ++j ) {
-        for( unsigned i = 0; i < _rows; ++i ) {
+
+    // ensure that only allocated data is written when sizes differ (due to adaptivity)
+    unsigned columns = std::min( _columns, other._columns );
+    unsigned rows    = std::min( _rows, other._rows );
+
+    Matrix<T> res( rows, columns, true );
+
+    for( unsigned j = 0; j < columns; ++j ) {
+        for( unsigned i = 0; i < rows; ++i ) {
             res( i, j ) = ( *this )( i, j ) - other( i, j );
         }
     }
@@ -242,14 +261,20 @@ template <class T> Vector<T> Matrix<T>::operator*( const Vector<T>& vector ) con
 }
 
 template <class T> void Matrix<T>::operator+=( const Matrix<T>& other ) {
-    for( unsigned j = 0; j < _columns; ++j ) {
-        for( unsigned i = 0; i < _rows; ++i ) {
+    unsigned columns = std::min( _columns, other._columns );
+    unsigned rows    = std::min( _rows, other._rows );
+    // assert( _rows == other._rows );
+    // assert( _columns == other.columns() );
+    for( unsigned j = 0; j < columns; ++j ) {
+        for( unsigned i = 0; i < rows; ++i ) {
             ( *this )( i, j ) += other( i, j );
         }
     }
 }
 
 template <class T> void Matrix<T>::operator-=( const Matrix<T>& other ) {
+    assert( _rows == other._rows );
+    assert( _columns == other.columns() );
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             ( *this )( i, j ) -= other( i, j );
@@ -270,7 +295,7 @@ template <class T> void Matrix<T>::reset() {
 }
 
 template <class T> void Matrix<T>::resize( unsigned rows, unsigned columns ) {
-    auto dataOld = _data;
+    T* dataOld = _data;
     //_data        = static_cast<T*>( malloc( rows * columns * sizeof( T ) ) );
     _data = new T[_rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
@@ -278,7 +303,7 @@ template <class T> void Matrix<T>::resize( unsigned rows, unsigned columns ) {
             _data[j * rows + i] = dataOld[j * _rows + i];
         }
     }
-    delete dataOld;
+    delete[] dataOld;
     _rows    = rows;
     _columns = columns;
 }
@@ -361,8 +386,7 @@ template <class T> Tensor<T>::Tensor() : _data( nullptr ), _rows( 0 ), _columns(
 
 template <class T>
 Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, bool skipZeroInit )
-    : _rows( rows ), _columns( columns ), _frontRows( frontRows ) {
-    //_data = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+    : _rows( rows ), _columns( columns ), _frontRows( frontRows ), _data( nullptr ) {
     _data = new T[_frontRows * _rows * _columns];
     if( !skipZeroInit ) {
         for( unsigned j = 0; j < _columns; ++j ) {
@@ -376,8 +400,8 @@ Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, bool ski
 }
 
 template <class T>
-Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, T init ) : _rows( rows ), _columns( columns ), _frontRows( frontRows ) {
-    //_data = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, T init )
+    : _rows( rows ), _columns( columns ), _frontRows( frontRows ), _data( nullptr ) {
     _data = new T[_frontRows * _rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
@@ -388,8 +412,8 @@ Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, T init )
     }
 }
 
-template <class T> Tensor<T>::Tensor( const Tensor& other ) : _rows( other._rows ), _columns( other._columns ), _frontRows( other._frontRows ) {
-    //_data = static_cast<T*>( malloc( _frontRows * _rows * _columns * sizeof( T ) ) );
+template <class T>
+Tensor<T>::Tensor( const Tensor& other ) : _rows( other._rows ), _columns( other._columns ), _frontRows( other._frontRows ), _data( nullptr ) {
     _data = new T[_frontRows * _rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
@@ -401,8 +425,7 @@ template <class T> Tensor<T>::Tensor( const Tensor& other ) : _rows( other._rows
 }
 
 template <class T> Tensor<T>::~Tensor() {
-    // free( _data );
-    delete[] _data;
+    if( _data ) delete[] _data;
 }
 
 template <class T> void Tensor<T>::operator=( const Tensor<T>& other ) {
@@ -441,9 +464,15 @@ template <class T> Tensor<T> Tensor<T>::Add( const Tensor<T>& other, unsigned fr
     return res;
 }
 
-template <class T> T& Tensor<T>::operator()( unsigned l, unsigned i, unsigned j ) { return _data[( j * _rows + i ) * _frontRows + l]; }
+template <class T> T& Tensor<T>::operator()( unsigned l, unsigned i, unsigned j ) {
+    assert( ( j * _rows + i ) * _frontRows + l < _frontRows * _rows * _columns );
+    return _data[( j * _rows + i ) * _frontRows + l];
+}
 
-template <class T> const T& Tensor<T>::operator()( unsigned l, unsigned i, unsigned j ) const { return _data[( j * _rows + i ) * _frontRows + l]; }
+template <class T> const T& Tensor<T>::operator()( unsigned l, unsigned i, unsigned j ) const {
+    assert( ( j * _rows + i ) * _frontRows + l < _frontRows * _rows * _columns );
+    return _data[( j * _rows + i ) * _frontRows + l];
+}
 
 // template <class T> const T& Matrix<T>::operator()( unsigned i, unsigned j ) const { return _data[j * _rows + i]; }
 

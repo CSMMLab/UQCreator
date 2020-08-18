@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <cmath>
 #include <initializer_list>
 #include <iostream>
@@ -75,7 +76,7 @@ template <class T> class Vector
 
 template <class T> Vector<T>::Vector() : _data( nullptr ), _N( 0 ), _ref( false ) {}
 
-template <class T> Vector<T>::Vector( unsigned n, bool skipZeroInit ) : _N( n ), _ref( false ) {
+template <class T> Vector<T>::Vector( unsigned n, bool skipZeroInit ) : _N( n ), _ref( false ), _data( nullptr ) {
     //_data = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     _data = new T[_N];
     if( !skipZeroInit ) {
@@ -85,7 +86,7 @@ template <class T> Vector<T>::Vector( unsigned n, bool skipZeroInit ) : _N( n ),
     }
 }
 
-template <class T> Vector<T>::Vector( unsigned n, T init ) : _N( n ), _ref( false ) {
+template <class T> Vector<T>::Vector( unsigned n, T init ) : _N( n ), _ref( false ), _data( nullptr ) {
     //_data = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     _data = new T[_N];
     for( unsigned i = 0; i < _N; ++i ) {
@@ -96,13 +97,13 @@ template <class T> Vector<T>::Vector( unsigned n, T init ) : _N( n ), _ref( fals
 template <class T> Vector<T>::Vector( unsigned n, T* ptr ) : _N( n ), _ref( true ) { _data = ptr; }
 
 template <class T> Vector<T>::~Vector() {
-    if( !_ref ) {
+    if( !_ref && _data ) {
         // free( _data );
         delete[] _data;
     }
 }
 
-template <class T> Vector<T>::Vector( const Vector& other ) : _N( other._N ), _ref( false ) {
+template <class T> Vector<T>::Vector( const Vector& other ) : _N( other._N ), _ref( false ), _data( nullptr ) {
     //_data = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     _data = new T[_N];
     for( unsigned i = 0; i < _N; ++i ) {
@@ -110,7 +111,7 @@ template <class T> Vector<T>::Vector( const Vector& other ) : _N( other._N ), _r
     }
 }
 
-template <class T> Vector<T>::Vector( std::initializer_list<T> initList ) : _N( initList.size() ), _ref( false ) {
+template <class T> Vector<T>::Vector( std::initializer_list<T> initList ) : _N( initList.size() ), _ref( false ), _data( nullptr ) {
     //_data        = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     _data        = new T[_N];
     auto listPtr = initList.begin();
@@ -127,6 +128,7 @@ template <class T> void Vector<T>::operator=( const Vector& other ) {
         _data = new T[_N];
         //_data = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     }
+    assert( _N == other._N );
     for( unsigned i = 0; i < _N; ++i ) {
         this->_data[i] = other._data[i];
     }
@@ -139,21 +141,35 @@ template <class T> void Vector<T>::operator=( const std::vector<T>& other ) {
         _data = new T[_N];
         //_data = static_cast<T*>( malloc( _N * sizeof( T ) ) );
     }
+    assert( _N == other.size() );
     for( unsigned i = 0; i < _N; ++i ) {
         this->_data[i] = other[i];
     }
 }
 
-template <class T> T& Vector<T>::operator[]( unsigned i ) { return _data[i]; }
+template <class T> T& Vector<T>::operator[]( unsigned i ) {
+    assert( i < _N );
+    return _data[i];
+}
 
-template <class T> const T& Vector<T>::operator[]( unsigned i ) const { return _data[i]; }
+template <class T> const T& Vector<T>::operator[]( unsigned i ) const {
+    assert( i < _N );
+    return _data[i];
+}
 
-template <class T> T& Vector<T>::operator[]( int i ) { return _data[i]; }
+template <class T> T& Vector<T>::operator[]( int i ) {
+    assert( i < _N );
+    return _data[i];
+}
 
-template <class T> const T& Vector<T>::operator[]( int i ) const { return _data[i]; }
+template <class T> const T& Vector<T>::operator[]( int i ) const {
+    assert( i < _N );
+    return _data[i];
+}
 
 template <class T> Vector<T> Vector<T>::operator+( const Vector& other ) const {
     Vector<T> res( _N, true );
+    assert( other._N == _N );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] + other._data[i];
     }
@@ -161,6 +177,7 @@ template <class T> Vector<T> Vector<T>::operator+( const Vector& other ) const {
 }
 
 template <class T> Vector<T> Vector<T>::operator-( const Vector& other ) const {
+    assert( other._N == _N );
     Vector<T> res( _N, true );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] - other._data[i];
@@ -169,6 +186,7 @@ template <class T> Vector<T> Vector<T>::operator-( const Vector& other ) const {
 }
 
 template <class T> Vector<T> Vector<T>::operator*( const Vector& other ) const {
+    assert( other._N == _N );
     Vector<T> res( _N, true );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] * other._data[i];
@@ -177,6 +195,7 @@ template <class T> Vector<T> Vector<T>::operator*( const Vector& other ) const {
 }
 
 template <class T> Vector<T> Vector<T>::operator/( const Vector& other ) const {
+    assert( other._N == _N );
     Vector<T> res( _N, true );
     for( unsigned i = 0; i < _N; ++i ) {
         res[i] = this->_data[i] / other._data[i];
@@ -217,24 +236,28 @@ template <class T> Vector<T> Vector<T>::operator/( const T& scalar ) const {
 }
 
 template <class T> void Vector<T>::operator+=( const Vector& other ) {
+    assert( other._N == _N );
     for( unsigned i = 0; i < _N; ++i ) {
         this->_data[i] += other._data[i];
     }
 }
 
 template <class T> void Vector<T>::operator-=( const Vector& other ) {
+    assert( other._N == _N );
     for( unsigned i = 0; i < _N; ++i ) {
         this->_data[i] -= other._data[i];
     }
 }
 
 template <class T> void Vector<T>::operator*=( const Vector& other ) {
+    assert( other._N == _N );
     for( unsigned i = 0; i < _N; ++i ) {
         this->_data[i] *= other._data[i];
     }
 }
 
 template <class T> void Vector<T>::operator/=( const Vector& other ) {
+    assert( other._N == _N );
     for( unsigned i = 0; i < _N; ++i ) {
         this->_data[i] /= other._data[i];
     }
@@ -297,6 +320,7 @@ template <class T> T* Vector<T>::end() { return &_data[_N]; }
 
 template <class T> T Vector<T>::inner( const Vector<T>& a ) const {
     double tmp = 0.0;
+    assert( a.size() == _N );
     for( unsigned i = 0; i < a.size(); ++i ) {
         tmp += a[i] * _data[i];
     }

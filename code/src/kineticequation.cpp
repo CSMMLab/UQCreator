@@ -7,8 +7,8 @@ KineticEquation::KineticEquation( Settings* settings ) : Problem( settings ) {
     _settings->SetExactSolution( false );
 
     // get quadrature grid
-    auto grid = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
-    _xiQuad   = grid->GetNodes();
+    _grid   = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
+    _xiQuad = _grid->GetNodes();
 
     try {
         auto file = cpptoml::parse_file( _settings->GetInputFile() );
@@ -22,7 +22,7 @@ KineticEquation::KineticEquation( Settings* settings ) : Problem( settings ) {
     }
 }
 
-KineticEquation::~KineticEquation() {}
+KineticEquation::~KineticEquation() { delete _grid; }
 
 Vector KineticEquation::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     _log->error( "[KineticEquation: G scalar not implemented]" );

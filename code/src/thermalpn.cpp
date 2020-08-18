@@ -60,8 +60,8 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _variances = _settings->GetSigma();
 
     // get quadrature grid
-    auto grid = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
-    _xiQuad   = grid->GetNodes();
+    _grid   = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
+    _xiQuad = _grid->GetNodes();
 
     // compute Roe flux components
     Matrix P( 2, 2, 1.0 );
@@ -101,7 +101,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _AbsA = vr * absW * vr.inv();
 }
 
-ThermalPN::~ThermalPN() {}
+ThermalPN::~ThermalPN() { delete _grid; }
 
 Vector ThermalPN::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     // Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();

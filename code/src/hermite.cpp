@@ -6,6 +6,8 @@ Hermite::Hermite( unsigned degree ) : Polynomial( degree ) {
     Compute();
 }
 
+Hermite::~Hermite() {}
+
 void Hermite::Compute() {
     assert( _degree > 0 );
 

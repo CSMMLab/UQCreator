@@ -4,9 +4,12 @@
 #include "mathtools.h"
 #include "problem.h"
 
+class QuadratureGrid;
+
 class ThermalPN2D : public Problem
 {
   private:
+    QuadratureGrid* _grid;
     double _kB;
     double _sigmaSB;
     double _epsilon;

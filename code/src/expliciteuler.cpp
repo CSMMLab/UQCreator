@@ -3,7 +3,6 @@
 
 ExplicitEuler::ExplicitEuler( Settings* settings, Mesh* mesh, Problem* problem ) : TimeSolver( settings, mesh, problem ) {
     _cells = _mesh->GetGrid();
-    _ghostCell( _settings->GetNStates(), _settings->GetNQuadPoints() );
 }
 
 void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigned )> const& fluxFunc,

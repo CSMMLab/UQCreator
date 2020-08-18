@@ -29,6 +29,8 @@ TensorizedQuadrature::~TensorizedQuadrature() {
     delete[] _nodes;
 
     delete[] _weights;
+
+    for( unsigned i = 0; i < _quad.size(); ++i ) delete _quad[i];
 }
 
 void TensorizedQuadrature::CreateGrid() {

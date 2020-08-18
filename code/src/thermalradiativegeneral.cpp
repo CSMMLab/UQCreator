@@ -28,8 +28,8 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     _variances = _settings->GetSigma();
 
     // get quadrature grid
-    auto grid = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
-    _xiQuad   = grid->GetNodes();
+    _grid   = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
+    _xiQuad = _grid->GetNodes();
 
     // compute Roe flux components
     Matrix P( 2, 2, 1.0 );
@@ -67,7 +67,7 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     }
 }
 
-ThermalRadiativeGeneral::~ThermalRadiativeGeneral() {}
+ThermalRadiativeGeneral::~ThermalRadiativeGeneral() { delete _grid; }
 
 Vector ThermalRadiativeGeneral::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     // Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();

@@ -3,9 +3,12 @@
 
 #include "problem.h"
 
+class QuadratureGrid;
+
 class ThermalRadiative : public Problem
 {
   private:
+    QuadratureGrid* _grid;
     double _epsilon;
     double _c;
     double _a;

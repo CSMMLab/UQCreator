@@ -55,8 +55,8 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     _variances = _settings->GetSigma();
 
     // get quadrature grid
-    auto grid = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
-    _xiQuad   = grid->GetNodes();
+    _grid   = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
+    _xiQuad = _grid->GetNodes();
 
     _settings->SetRefinementThreshold( 1e-15 * _settings->GetRefinementThreshold() / ( _a * pow( _TRef, 4 ) ) );
     _settings->SetCoarsenThreshold( 1e-15 * _settings->GetCoarsenThreshold() / ( _a * pow( _TRef, 4 ) ) );
@@ -90,7 +90,7 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
     _AbsAz = vr * absW * vr.inv();
 }
 
-ThermalPN2D::~ThermalPN2D() {}
+ThermalPN2D::~ThermalPN2D() { delete _grid; }
 
 Vector ThermalPN2D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
 

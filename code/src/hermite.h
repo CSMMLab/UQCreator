@@ -13,6 +13,7 @@ class Hermite : public Polynomial
 
   public:
     Hermite( unsigned degree );
+    ~Hermite();
 
     virtual double Evaluate( unsigned m, double x );
     virtual const Vector& GetNodes();

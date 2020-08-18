@@ -15,11 +15,11 @@ FokkerPlanckFilter::FokkerPlanckFilter( Settings* settings ) : Filter( settings 
 void FokkerPlanckFilter::SetupFilter() {
     unsigned maxDegree = _settings->GetMaxDegree();
     for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
-        for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
+        for( unsigned m = 0; m < _settings->GetNDimXi(); ++m ) {
             // if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
             // if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
             unsigned index =
-                unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, l ) ) ) / unsigned( std::pow( maxDegree + 1, l ) ) ) % ( maxDegree + 1 );
+                unsigned( ( i - i % unsigned( std::pow( maxDegree + 1, m ) ) ) / unsigned( std::pow( maxDegree + 1, m ) ) ) % ( maxDegree + 1 );
             _filterFunction[i] *= std::exp( -_lambda * index * ( index + 1 ) );
         }
     }
@@ -48,7 +48,7 @@ void FokkerPlanckFilter::FilterMoments( Tensor& v, const Tensor& u ) const {
 
 void FokkerPlanckFilter::FilterMoments( Matrix& v, const Tensor& u, unsigned l ) const {
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+        for( unsigned i = 0; i < v.columns(); ++i ) {
             v( s, i ) = _filterFunction[i] * u( s, l, i );
         }
     }

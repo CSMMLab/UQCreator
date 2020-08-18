@@ -70,13 +70,13 @@ Closure::Closure( Settings* settings )
     unsigned n = 0;
     for( unsigned k = 0; k < _nQTotal; ++k ) {
         for( unsigned i = 0; i < _nTotal; ++i ) {
-            for( unsigned l = 0; l < _numDimXi; ++l ) {
-                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
+            for( unsigned m = 0; m < _numDimXi; ++m ) {
+                if( _settings->GetDistributionType( m ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( m ) == DistributionType::D_HERMITE ) n = 1;
                 phiTilde( k, i ) *=
-                    _quad[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _quad[n]->L2Norm( indices[i][l] );    // sqrt( 2.0 * i + 1.0 );
+                    _quad[n]->Evaluate( indices[i][m], _xiGrid[k][m] ) / _quad[n]->L2Norm( indices[i][m] );    // sqrt( 2.0 * i + 1.0 );
                 _phiTildeF( k, i ) *=
-                    _quad[n]->Evaluate( indices[i][l], _xiGrid[k][l] ) / _quad[n]->L2Norm( indices[i][l] ) * _quad[n]->fXi( _xiGrid[k][l] );
+                    _quad[n]->Evaluate( indices[i][m], _xiGrid[k][m] ) / _quad[n]->L2Norm( indices[i][m] ) * _quad[n]->fXi( _xiGrid[k][m] );
             }
             // P(xi \in I_l) probability that xi lies in multi element I_l
             // double P            = 1.0 / _nMultiElements;
@@ -113,6 +113,7 @@ Closure::~Closure() {
         delete _quad[l];
     }
     delete _quadGrid;
+    delete _filter;
 }
 
 Closure* Closure::Create( Settings* settings ) {
@@ -370,9 +371,9 @@ void Closure::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLev
 
 double Closure::CalcNorm( Vector& test, unsigned nTotal ) const {
     double out = 0.0;
-    for( unsigned l = 0; l < _nStates; ++l ) {
+    for( unsigned s = 0; s < _nStates; ++s ) {
         for( unsigned i = 0; i < nTotal; ++i ) {
-            out += pow( test[l * nTotal + i], 2 );
+            out += pow( test[s * nTotal + i], 2 );
         }
     }
     return sqrt( out );
@@ -427,8 +428,8 @@ void Closure::Gradient( Vector& g, const Matrix& lambda, const Matrix& u, unsign
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {
         U( uKinetic, EvaluateLambda( lambda, k, nTotal ) );
         for( unsigned i = 0; i < nTotal; ++i ) {
-            for( unsigned l = 0; l < _nStates; ++l ) {
-                g[l * nTotal + i] += uKinetic[l] * _phiTildeF( k, i ) * _wGrid[refLevel][k];
+            for( unsigned s = 0; s < _nStates; ++s ) {
+                g[s * nTotal + i] += uKinetic[s] * _phiTildeF( k, i ) * _wGrid[refLevel][k];
             }
         }
     }
@@ -443,11 +444,11 @@ void Closure::Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel ) {
 
     for( unsigned k = 0; k < _nQTotalForRef[refLevel]; ++k ) {    // TODO: reorder to avoid cache misses
         DU( dUdLambda, EvaluateLambda( lambda, k, nTotal ) );
-        for( unsigned l = 0; l < _nStates; ++l ) {
+        for( unsigned s = 0; s < _nStates; ++s ) {
             for( unsigned m = 0; m < _nStates; ++m ) {
                 for( unsigned j = 0; j < nTotal; ++j ) {
                     for( unsigned i = 0; i < nTotal; ++i ) {
-                        H( m * nTotal + j, l * nTotal + i ) += _hPartial[k]( j, i ) * _wGrid[refLevel][k] * dUdLambda( l, m );
+                        H( m * nTotal + j, s * nTotal + i ) += _hPartial[k]( j, i ) * _wGrid[refLevel][k] * dUdLambda( s, m );
                     }
                 }
             }
@@ -456,17 +457,17 @@ void Closure::Hessian( Matrix& H, const Matrix& lambda, unsigned refLevel ) {
 }
 
 void Closure::AddMatrixVectorToMatrix( const Matrix& A, const Vector& b, Matrix& y, unsigned nTotal ) const {
-    for( unsigned l = 0; l < _nStates; ++l ) {
+    for( unsigned s = 0; s < _nStates; ++s ) {
         for( unsigned j = 0; j < nTotal; ++j ) {
-            y( l, j ) = A( l, j ) + b[l * nTotal + j];
+            y( s, j ) = A( s, j ) + b[s * nTotal + j];
         }
     }
 }
 
 void Closure::SubstractVectorMatrixOnVector( Vector& b, const Matrix& A, unsigned nTotal ) const {
-    for( unsigned l = 0; l < _nStates; ++l ) {
+    for( unsigned s = 0; s < _nStates; ++s ) {
         for( unsigned j = 0; j < nTotal; ++j ) {
-            b[l * nTotal + j] = b[l * nTotal + j] - A( l, j );
+            b[s * nTotal + j] = b[s * nTotal + j] - A( s, j );
         }
     }
 }

@@ -136,10 +136,12 @@ void MomentSolver::Solve() {
             refinementLevelTransition[_cellIndexPE[j]] = refinementLevel[_cellIndexPE[j]];
             auto neighbors                             = _mesh->GetNeighborIDs( _cellIndexPE[j] );
             unsigned maxRefLevelNghs                   = refinementLevel[_cellIndexPE[j]];
-            for( unsigned l = 0; l < neighbors.size(); ++l ) {
-                if( maxRefLevelNghs < refinementLevel[neighbors[l]] && neighbors[l] != _nCells ) {
-                    maxRefLevelNghs                            = refinementLevel[neighbors[l]];
-                    refinementLevelTransition[_cellIndexPE[j]] = maxRefLevelNghs;
+            for( unsigned ngh = 0; ngh < neighbors.size(); ++ngh ) {
+                if( neighbors[ngh] != _nCells ) {
+                    if( maxRefLevelNghs < refinementLevel[neighbors[ngh]] ) {
+                        maxRefLevelNghs                            = refinementLevel[neighbors[ngh]];
+                        refinementLevelTransition[_cellIndexPE[j]] = maxRefLevelNghs;
+                    }
                 }
             }
         }
@@ -324,12 +326,12 @@ void MomentSolver::Solve() {
         auto uPlot                    = closurePlot->U( closurePlot->EvaluateLambda( testLambda ) );
 
         for( unsigned k = 0; k < uPlot.columns(); ++k ) {
-            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                unsigned index = unsigned( ( k - k % unsigned( std::pow( nQFine, l ) ) ) / unsigned( std::pow( nQFine, l ) ) ) % nQFine;
-                xiEta[l]       = quad[n]->GetNodes()[index];
-                outXi << xiEta[l] << " ";
+            for( unsigned m = 0; m < _settings->GetNDimXi(); ++m ) {
+                if( _settings->GetDistributionType( m ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( m ) == DistributionType::D_HERMITE ) n = 1;
+                unsigned index = unsigned( ( k - k % unsigned( std::pow( nQFine, m ) ) ) / unsigned( std::pow( nQFine, m ) ) ) % nQFine;
+                xiEta[m]       = quad[n]->GetNodes()[index];
+                outXi << xiEta[m] << " ";
             }
             for( unsigned l = 0; l < _nMultiElements; ++l ) {
                 outXi << uPlot( 0, l, k ) << std::endl;
@@ -337,6 +339,7 @@ void MomentSolver::Solve() {
         }
 
         outXi.close();
+        delete closurePlot;
 
         _settings->SetNQuadPoints( nQOriginal );
     }
@@ -473,26 +476,26 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
         indicesQ.resize( nQTotal );
         for( unsigned k = 0; k < nQTotal; ++k ) {
             indicesQ[k].resize( _settings->GetNDimXi() );
-            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                indicesQ[k][l] = unsigned( ( k - k % unsigned( std::pow( nQuadFine, l ) ) ) / unsigned( std::pow( nQuadFine, l ) ) ) % nQuadFine;
+            for( unsigned m = 0; m < _settings->GetNDimXi(); ++m ) {
+                indicesQ[k][m] = unsigned( ( k - k % unsigned( std::pow( nQuadFine, m ) ) ) / unsigned( std::pow( nQuadFine, m ) ) ) % nQuadFine;
             }
         }
 
         for( unsigned k = 0; k < nQTotal; ++k ) {
-            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                xiEta[l] = quad[n]->GetNodes()[indicesQ[k][l]];
+            for( unsigned m = 0; m < _settings->GetNDimXi(); ++m ) {
+                if( _settings->GetDistributionType( m ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( m ) == DistributionType::D_HERMITE ) n = 1;
+                xiEta[m] = quad[n]->GetNodes()[indicesQ[k][m]];
             }
             Matrix exactSolOnMesh = _problem->ExactSolution( t, xGrid, xiEta );
             for( unsigned j = 0; j < _nCells; ++j ) {
                 // expected value exact
                 for( unsigned i = 0; i < _nStates; ++i ) {
                     double wfXi = 1.0;
-                    for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                        if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                        if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                        wfXi *= quad[n]->fXi( quad[n]->GetNodes()[indicesQ[k][l]] ) * quad[n]->GetWeights()[indicesQ[k][l]];
+                    for( unsigned m = 0; m < _settings->GetNDimXi(); ++m ) {
+                        if( _settings->GetDistributionType( m ) == DistributionType::D_LEGENDRE ) n = 0;
+                        if( _settings->GetDistributionType( m ) == DistributionType::D_HERMITE ) n = 1;
+                        wfXi *= quad[n]->fXi( quad[n]->GetNodes()[indicesQ[k][m]] ) * quad[n]->GetWeights()[indicesQ[k][m]];
                     }
 
                     meanAndVar( 2 * nStates + i, j ) += exactSolOnMesh( j, i ) * wfXi;
@@ -501,10 +504,10 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
         }
         // variance exact
         for( unsigned k = 0; k < nQTotal; ++k ) {
-            for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                xiEta[l] = quad[n]->GetNodes()[indicesQ[k][l]];
+            for( unsigned m = 0; m < _settings->GetNDimXi(); ++m ) {
+                if( _settings->GetDistributionType( m ) == DistributionType::D_LEGENDRE ) n = 0;
+                if( _settings->GetDistributionType( m ) == DistributionType::D_HERMITE ) n = 1;
+                xiEta[m] = quad[n]->GetNodes()[indicesQ[k][m]];
             }
 
             Matrix exactSolOnMesh = _problem->ExactSolution( t, xGrid, xiEta );
@@ -512,15 +515,17 @@ Matrix MomentSolver::WriteMeanAndVar( const VectorU& refinementLevel, double t, 
                 // expected value exact
                 for( unsigned i = 0; i < _nStates; ++i ) {
                     double wfXi = 1.0;
-                    for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                        if( _settings->GetDistributionType( l ) == DistributionType::D_LEGENDRE ) n = 0;
-                        if( _settings->GetDistributionType( l ) == DistributionType::D_HERMITE ) n = 1;
-                        wfXi *= quad[n]->fXi( quad[n]->GetNodes()[indicesQ[k][l]] ) * quad[n]->GetWeights()[indicesQ[k][l]];
+                    for( unsigned m = 0; m < _settings->GetNDimXi(); ++m ) {
+                        if( _settings->GetDistributionType( m ) == DistributionType::D_LEGENDRE ) n = 0;
+                        if( _settings->GetDistributionType( m ) == DistributionType::D_HERMITE ) n = 1;
+                        wfXi *= quad[n]->fXi( quad[n]->GetNodes()[indicesQ[k][m]] ) * quad[n]->GetWeights()[indicesQ[k][m]];
                     }
                     meanAndVar( 3 * nStates + i, j ) += pow( exactSolOnMesh( j, i ) - meanAndVar( 2 * nStates + i, j ), 2 ) * wfXi;
                 }
             }
         }
+        delete quad[0];
+        delete quad[1];
     }
     return meanAndVar;
 }
@@ -557,11 +562,11 @@ void MomentSolver::DetermineGradients( MatTens& duQx, MatTens& duQy, const MatTe
             for( unsigned n = 0; n < _nMultiElements; ++n ) {
                 for( unsigned k = 0; k < _nQTotalForRef[refLevel[j]]; ++k ) {
                     // use all neighboring cells for stencil
-                    for( unsigned l = 0; l < neighborIDs.size(); ++l ) {
-                        duQx[j]( s, n, k ) = duQx[j]( s, n, k ) +
-                                             0.5 * ( uQ[j]( s, n, k ) + uQ[neighborIDs[l]]( s, n, k ) ) * cell->GetNormal( l )[0] / cell->GetArea();
-                        duQy[j]( s, n, k ) = duQy[j]( s, n, k ) +
-                                             0.5 * ( uQ[j]( s, n, k ) + uQ[neighborIDs[l]]( s, n, k ) ) * cell->GetNormal( l )[1] / cell->GetArea();
+                    for( unsigned idx = 0; idx < neighborIDs.size(); ++idx ) {
+                        duQx[j]( s, n, k ) = duQx[j]( s, n, k ) + 0.5 * ( uQ[j]( s, n, k ) + uQ[neighborIDs[idx]]( s, n, k ) ) *
+                                                                      cell->GetNormal( idx )[0] / cell->GetArea();
+                        duQy[j]( s, n, k ) = duQy[j]( s, n, k ) + 0.5 * ( uQ[j]( s, n, k ) + uQ[neighborIDs[idx]]( s, n, k ) ) *
+                                                                      cell->GetNormal( idx )[1] / cell->GetArea();
                     }
                 }
             }
@@ -581,9 +586,9 @@ void MomentSolver::DetermineGradientsScalarField( Matrix& dux, Matrix& duy, cons
             if( cell->IsBoundaryCell() ) continue;
             auto neighborIDs = cell->GetNeighborIDs();
             // use all neighboring cells for stencil
-            for( unsigned l = 0; l < neighborIDs.size(); ++l ) {
-                dux( s, j ) = dux( s, j ) + 0.5 * ( u( s, j ) + u( s, neighborIDs[l] ) ) * cell->GetNormal( l )[0] / cell->GetArea();
-                duy( s, j ) = duy( s, j ) + 0.5 * ( u( s, j ) + u( s, neighborIDs[l] ) ) * cell->GetNormal( l )[1] / cell->GetArea();
+            for( unsigned idx = 0; idx < neighborIDs.size(); ++idx ) {
+                dux( s, j ) = dux( s, j ) + 0.5 * ( u( s, j ) + u( s, neighborIDs[idx] ) ) * cell->GetNormal( idx )[0] / cell->GetArea();
+                duy( s, j ) = duy( s, j ) + 0.5 * ( u( s, j ) + u( s, neighborIDs[idx] ) ) * cell->GetNormal( idx )[1] / cell->GetArea();
             }
         }
     }
@@ -786,8 +791,8 @@ MatTens MomentSolver::SetupIC() const {
     for( unsigned j = 0; j < _nCells; ++j ) {
         for( unsigned n = 0; n < _nMultiElements; ++n ) {
             for( unsigned k = 0; k < _nQTotal; ++k ) {
-                for( unsigned l = 0; l < _settings->GetNDimXi(); ++l ) {
-                    xiEta[l] = xiGrid[n] + 0.5 * ( xiQuad[k][l] + 1.0 ) * dXiGrid;    // TODO: check if not uniform distribution
+                for( unsigned m = 0; m < _settings->GetNDimXi(); ++m ) {
+                    xiEta[m] = xiGrid[n] + 0.5 * ( xiQuad[k][m] + 1.0 ) * dXiGrid;    // TODO: check if not uniform distribution
                 }
 
                 if( _settings->HasICFile() ) {

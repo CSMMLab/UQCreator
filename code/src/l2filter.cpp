@@ -42,7 +42,7 @@ void L2Filter::FilterMoments( Tensor& v, const Tensor& u ) const {
 
 void L2Filter::FilterMoments( Matrix& v, const Tensor& u, unsigned l ) const {
     for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
-        for( unsigned i = 0; i < _settings->GetNTotal(); ++i ) {
+        for( unsigned i = 0; i < v.columns(); ++i ) {
             v( s, i ) = _filterFunction[i] * u( s, l, i );
         }
     }
