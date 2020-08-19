@@ -148,12 +148,16 @@ template <class T> void Vector<T>::operator=( const std::vector<T>& other ) {
 }
 
 template <class T> T& Vector<T>::operator[]( unsigned i ) {
+#ifndef NDEBUG
     assert( i < _N );
+#endif
     return _data[i];
 }
 
 template <class T> const T& Vector<T>::operator[]( unsigned i ) const {
+#ifndef NDEBUG
     assert( i < _N );
+#endif
     return _data[i];
 }
 

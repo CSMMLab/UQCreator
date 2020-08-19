@@ -129,12 +129,20 @@ template <class T> Matrix<T> Matrix<T>::Add( const Matrix<T>& other, unsigned ro
 }
 
 template <class T> T& Matrix<T>::operator()( unsigned i, unsigned j ) {
+#ifndef NDEBUG
+    assert( i < _rows );
+    assert( j < _columns );
     assert( j * _rows + i < _rows * _columns );
+#endif
     return _data[j * _rows + i];
 }
 
 template <class T> const T& Matrix<T>::operator()( unsigned i, unsigned j ) const {
+#ifndef NDEBUG
+    assert( i < _rows );
+    assert( j < _columns );
     assert( j * _rows + i < _rows * _columns );
+#endif
     return _data[j * _rows + i];
 }
 
