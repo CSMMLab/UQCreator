@@ -1,11 +1,24 @@
 #include "euler.h"
 
-Euler::Euler( Settings* settings ) : Problem( settings ) {
+Euler::Euler( Settings* settings ) : Problem( settings ), _problemType( I_SOD ) {
     _nStates = 3;
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( true );
     try {
-        auto file = cpptoml::parse_file( _settings->GetInputFile() );
+        auto file     = cpptoml::parse_file( _settings->GetInputFile() );
+        auto general  = file->get_table( "general" );
+        auto ICString = general->get_as<std::string>( "testCase" );
+        if( ICString ) {
+            if( ICString->compare( "sod" ) == 0 ) {
+                _problemType = ICEuler1DType::I_SOD;
+            }
+            else if( ICString->compare( "highDensityShock" ) == 0 ) {
+                _problemType = ICEuler1DType::I_HIGH;
+            }
+            else {
+                _log->error( "[euler1d] Unknown testcase defined!" );
+            }
+        }
 
         auto problem = file->get_table( "problem" );
         _gamma       = problem->get_as<double>( "gamma" ).value_or( 1.4 );
@@ -94,7 +107,6 @@ double Euler::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
 }
 
 Vector Euler::IC( const Vector& x, const Vector& xi ) {
-    bool sodShockTube = true;
 
     double x0    = 0.5;
     double gamma = 1.4;
@@ -106,7 +118,7 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
     double uL   = 0.0;
     double uR   = 0.0;
 
-    if( !sodShockTube ) {
+    if( _problemType == I_HIGH ) {
         rhoR = 0.8;
         pR   = 0.125;    // 0.3;
     }
@@ -142,16 +154,15 @@ Vector Euler::LoadIC( const Vector& x, const Vector& xi ) {
 }
 
 Matrix Euler::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
-    bool sodShockTube = true;
-    double x0         = 0.5 + _sigma[0] * xi[0];    // initial shock position
-    double rho_l      = 1.0;
-    double P_l        = 1.0;
-    double u_l        = 0.0;
-    double rho_r      = 0.125;
-    double P_r        = 0.1;
-    double u_r        = 0.0;
+    double x0    = 0.5 + _sigma[0] * xi[0];    // initial shock position
+    double rho_l = 1.0;
+    double P_l   = 1.0;
+    double u_l   = 0.0;
+    double rho_r = 0.125;
+    double P_r   = 0.1;
+    double u_r   = 0.0;
 
-    if( !sodShockTube ) {
+    if( _problemType == I_HIGH ) {
         P_r   = 0.125;    // 0.3
         rho_r = 0.8;
     }
