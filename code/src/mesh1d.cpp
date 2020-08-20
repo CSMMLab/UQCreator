@@ -28,7 +28,7 @@ Mesh1D::Mesh1D( Settings* settings ) : Mesh( settings, 1 ) {
     _edgesAtCell[0][0] = 0;
     _edgesAtCell[0][1] = 1;
 
-    Vector unitNormal{1};
+    Vector unitNormal{ 1 };
     Vector scaledNormal = _cells[0]->GetArea() * unitNormal;
     _normals.push_back( scaledNormal );
     _edges.push_back( std::make_pair( _numCells, 0 ) );
@@ -92,14 +92,14 @@ void Mesh1D::CreateGrid( double a, double b ) {
     _nodes.resize( _numCells + 1 );
     for( unsigned i = 0; i < _numCells + 1; ++i ) {
         if( i == 0 || i == _numCells ) {
-            _nodes[i] = new Node{i, true, std::vector<double>( _dimension, a + i * ( b - a ) / ( _numCells ) )};
+            _nodes[i] = new Node{ i, true, std::vector<double>( _dimension, a + i * ( b - a ) / ( _numCells ) ) };
         }
         else {
-            _nodes[i] = new Node{i, false, std::vector<double>( _dimension, a + i * ( b - a ) / ( _numCells ) )};
+            _nodes[i] = new Node{ i, false, std::vector<double>( _dimension, a + i * ( b - a ) / ( _numCells ) ) };
         }
     }
     for( unsigned i = 0; i < _numCells; ++i ) {
-        std::vector<Node*> cellNodes{_nodes[i], _nodes[i + 1]};
+        std::vector<Node*> cellNodes{ _nodes[i], _nodes[i + 1] };
         _cells[i] = new Line( i, cellNodes );
     }
 }
@@ -240,7 +240,7 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
         out << GetCenterPos( j )[0];
         for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
             out << " " << results( s, j );
-            if( _settings->HasExactSolution() ) out << " " << results( 2 * _settings->GetNStates() + s, j );
+            if( _settings->HasExactSolution() && !append.compare( "_errors" ) ) out << " " << results( 2 * _settings->GetNStates() + s, j );
         }
         if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D ) {
             double rho    = results( 4, j );
@@ -276,7 +276,7 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
                 std::cerr << "Negative variance found in EXPORT" << std::endl;
                 exit( EXIT_FAILURE );
             }
-            if( _settings->HasExactSolution() ) outV << " " << results( 3 * _settings->GetNStates() + s, j );
+            if( _settings->HasExactSolution() && !append.compare( "_errors" ) ) outV << " " << results( 3 * _settings->GetNStates() + s, j );
         }
         outV << std::endl;
     }
