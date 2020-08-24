@@ -679,93 +679,71 @@ Closure* MomentSolver::DeterminePreviousClosure( Settings* prevSettings ) const 
 }
 
 void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTens& u ) {
-    // unsigned maxIterations = _closure->GetMaxIterations();
-    /*
-        if( _settings->LoadLambda() ) {
-            _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
-        }
-        else {
-            // compute dual states for given moment vector
-            _lambda = MatTens( _nCells, Tensor( _nStates, _nMultiElements, prevSettings->GetNTotal(), 0.0 ) );
+    unsigned maxIterations = _closure->GetMaxIterations();
 
-            // compute first initial guess
-            Vector ds( _nStates );
-            Vector u0( _nStates );
-            for( unsigned n = 0; n < _nMultiElements; ++n ) {
-                for( unsigned j = 0; j < _nCells; ++j ) {
-                    for( unsigned l = 0; l < _nStates; ++l ) {
-                        u0[l] = u[j]( l, n, 0 );
-                    }
-                    _closure->DS( ds, u0 );
-                    for( unsigned l = 0; l < _nStates; ++l ) {
-                        _lambda[j]( l, n, 0 ) = ds[l];
-                    }
-                }
-            }
+    // load or compute duals of read-in solution
+    if( _settings->LoadLambda() ) {
+        _lambda = this->ImportPrevDuals( prevSettings->GetNTotal() );
+    }
+    else {
+        // compute dual states for given moment vector
+        _lambda = MatTens( _nCells, Tensor( _nStates, _nMultiElements, prevSettings->GetNTotal(), 0.0 ) );
 
-            // Converge initial condition entropy variables for One Shot IPM or if truncation order is increased
-            if( _settings->GetMaxIterations() == 1 || prevSettings->GetMaxDegree() != _settings->GetMaxDegree() ) {
-                prevClosure->SetMaxIterations( 10000 );
-                for( unsigned j = 0; j < _nCells; ++j ) {
-                    prevClosure->( _lambda[j], u[j], prevSettings->GetNRefinementLevels() - 1 );
-                }
-                prevClosure->SetMaxIterations( maxIterations );
-            }
-        }
-        // for restart with increased number of moments reconstruct solution at finer quad points and compute moments for new truncation order
-        if( prevSettings->GetMaxDegree() != _settings->GetMaxDegree() ) {
-            MatTens uQFullProc = MatTens( _nCells, Tensor( _nStates, _nMultiElements, _settings->GetNQTotal() ) );
-            if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
-            for( unsigned j = 0; j < _nCells; ++j ) {
-                // compute solution with low moment order at fine Quadrature nodes
-                _closure->U( uQFullProc[j], _closure->EvaluateLambda( _lambda[j] ) );
-
-                // compute higher order moments
-                auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
-                u[j].resize( _nStates, _nMultiElements, _nTotal );
-                u[j] = uCurrent;    // new Moments of size _nTotal
-
-                // compute lambda with size _nTotal
-                Tensor lambdaOld = _lambda[j];
-                _lambda[j].resize( _nStates, _nMultiElements, _nTotal );
-                for( unsigned s = 0; s < _nStates; ++s ) {
-                    for( unsigned l = 0; l < _nStates; ++l ) {
-                        for( unsigned i = prevSettings->GetNTotal(); i < _settings->GetNTotal(); ++i ) {
-                            _lambda[j]( s, l, i ) = 0.0;
-                        }
-                    }
-                }
-                _closure->( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
-            }
-            _closure->SetMaxIterations( maxIterations );
-            // delete reload closures and settings
-            // delete prevSettings;
-        }
-    */
-
-    // compute dual states for given moment vector
-    _lambda = MatTens( _nCells, Tensor( _nStates, _nMultiElements, prevSettings->GetNTotal(), 0.0 ) );
-
-    // Solve dual problem
-#pragma omp parallel for schedule( dynamic, 10 )
-    for( unsigned j = 0; j < _nCells; ++j ) {
         // compute first initial guess
         Vector ds( _nStates );
         Vector u0( _nStates );
-        for( unsigned n = 0; n < _nMultiElements; ++n ) {
-            for( unsigned s = 0; s < _nStates; ++s ) {
-                u0[s] = u[j]( s, n, 0 );
-            }
-            _closure->DS( ds, u0 );
-            for( unsigned s = 0; s < _nStates; ++s ) {
-                _lambda[j]( s, n, 0 ) = ds[s];
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            for( unsigned n = 0; n < _nMultiElements; ++n ) {
+                for( unsigned s = 0; s < _nStates; ++s ) {
+                    u0[s] = u[j]( s, n, 0 );
+                }
+                _closure->DS( ds, u0 );
+                for( unsigned s = 0; s < _nStates; ++s ) {
+                    _lambda[j]( s, n, 0 ) = ds[s];
+                }
             }
         }
-        _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
+
+        // Converge initial condition entropy variables for One Shot IPM or if truncation order is increased
+        if( _settings->GetMaxIterations() == 1 || prevSettings->GetMaxDegree() != _settings->GetMaxDegree() ) {
+            prevClosure->SetMaxIterations( 10000 );
+            for( unsigned j = 0; j < _nCells; ++j ) {
+                prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNRefinementLevels() - 1 );
+            }
+            prevClosure->SetMaxIterations( maxIterations );
+        }
     }
 
-    // if( prevSettings->GetMaxDegree() != _settings->GetMaxDegree() || prevSettings->GetNQTotal() != _settings->GetNQTotal() ) delete
-    // prevClosure;
+    // for restart with increased number of moments reconstruct solution at finer quad points and compute moments for new truncation order
+    if( prevSettings->GetMaxDegree() != _settings->GetMaxDegree() ) {
+        MatTens uQFullProc = MatTens( _nCells, Tensor( _nStates, _nMultiElements, _settings->GetNQTotal() ) );
+        if( maxIterations == 1 ) _closure->SetMaxIterations( 10000 );    // if one shot IPM is used, make sure that initial duals are converged
+        for( unsigned j = 0; j < _nCells; ++j ) {
+            // compute solution with low moment order at fine Quadrature nodes
+            _closure->U( uQFullProc[j], _closure->EvaluateLambda( _lambda[j] ) );
+
+            // compute higher order moments
+            auto uCurrent = uQFullProc[j] * _closure->GetPhiTildeWf();
+            u[j].resize( _nStates, _nMultiElements, _nTotal );
+            u[j] = uCurrent;    // new Moments of size _nTotal
+
+            // compute lambda with size _nTotal
+            Tensor lambdaOld = _lambda[j];
+            _lambda[j].resize( _nStates, _nMultiElements, _nTotal );
+            for( unsigned s = 0; s < _nStates; ++s ) {
+                for( unsigned l = 0; l < _nStates; ++l ) {
+                    for( unsigned i = prevSettings->GetNTotal(); i < _settings->GetNTotal(); ++i ) {
+                        _lambda[j]( s, l, i ) = 0.0;
+                    }
+                }
+            }
+            _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
+        }
+        _closure->SetMaxIterations( maxIterations );
+    }
+    // delete reload closures and settings
+    if( prevSettings != _settings ) delete prevSettings;
+    if( prevClosure != _closure ) delete prevClosure;
 }
 
 MatTens MomentSolver::SetupIC() const {

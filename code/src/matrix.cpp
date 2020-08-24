@@ -358,7 +358,7 @@ template <class T> class Tensor    // column major
     Tensor( const Tensor& other );
     ~Tensor();
     void operator=( const Tensor<T>& other );
-    void resize( unsigned frontRows, unsigned rows, unsigned columns );
+    void resize( unsigned frontrows, unsigned rows, unsigned columns );
     Tensor<T> Add( const Tensor<T>& other, unsigned frontRows, unsigned rows, unsigned columns ) const;
 
     T& operator()( unsigned l, unsigned i, unsigned j );
@@ -642,18 +642,25 @@ template <class T> void Tensor<T>::reset() {
         }
     }
 }
-/*
-template <class T> void Tensor<T>::resize( unsigned rows, unsigned columns ) {
+
+template <class T> void Tensor<T>::resize( unsigned frontrows, unsigned rows, unsigned columns ) {
     auto dataOld = _data;
-    _data        = static_cast<T*>( malloc( rows * columns * sizeof( T ) ) );
-    for( unsigned j = 0; j < _columns; ++j ) {
-        for( unsigned i = 0; i < _rows; ++i ) {
-            _data[j * rows + i] = dataOld[j * _rows + i];
+    _data        = new T[rows * columns * frontrows];
+
+    unsigned rowsMin  = std::min( rows, _rows );
+    unsigned colMin   = std::min( columns, _columns );
+    unsigned frontMin = std::min( frontrows, _frontRows );
+    for( unsigned j = 0; j < colMin; ++j ) {
+        for( unsigned i = 0; i < rowsMin; ++i ) {
+            for( unsigned l = 0; l < frontMin; ++l ) {
+                _data[( j * _rows + i ) * _frontRows + l] = dataOld[( j * _rows + i ) * _frontRows + l];
+            }
         }
     }
     delete dataOld;
-    _rows    = rows;
-    _columns = columns;
-}*/
+    _rows      = rows;
+    _columns   = columns;
+    _frontRows = frontrows;
+}
 
 }    // namespace VectorSpace
