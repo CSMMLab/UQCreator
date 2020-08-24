@@ -474,6 +474,7 @@ ProblemType Settings::GetProblemType() const { return _problemType; }
 unsigned Settings::GetNStates() const { return _nStates; }
 void Settings::SetNStates( unsigned n ) { _nStates = n; }
 std::string Settings::GetInputFile() const { return _inputFile; }
+void Settings::SetInputFile( std::string inputFile ) { _inputFile = inputFile; }
 std::string Settings::GetInputDir() const { return _inputDir; }
 std::string Settings::GetOutputDir() const { return _outputDir; }
 int Settings::GetWriteFrequency() const { return _writeFrequency; }

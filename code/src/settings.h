@@ -158,6 +158,7 @@ class Settings
     unsigned GetNStates() const;
     void SetNStates( unsigned n );
     std::string GetInputFile() const;
+    void SetInputFile( std::string inputFile );
     std::string GetInputDir() const;
     std::string GetOutputDir() const;
     int GetWriteFrequency() const;

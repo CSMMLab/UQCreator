@@ -660,6 +660,7 @@ Settings* MomentSolver::DeterminePreviousSettings() const {
         prevSettings->SetGamma( _settings->GetGamma() );
         prevSettings->SetClosureType( _settings->GetClosureType() );
         prevSettings->SetNumCells( _settings->GetNumCells() );
+        prevSettings->SetInputFile( _settings->GetInputFile() );
     }
     else {
         prevSettings = _settings;
@@ -731,7 +732,7 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTe
             Tensor lambdaOld = _lambda[j];
             _lambda[j].resize( _nStates, _nMultiElements, _nTotal );
             for( unsigned s = 0; s < _nStates; ++s ) {
-                for( unsigned l = 0; l < _nStates; ++l ) {
+                for( unsigned l = 0; l < _nMultiElements; ++l ) {
                     for( unsigned i = prevSettings->GetNTotal(); i < _settings->GetNTotal(); ++i ) {
                         _lambda[j]( s, l, i ) = 0.0;
                     }
