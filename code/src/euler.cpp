@@ -4,6 +4,7 @@ Euler::Euler( Settings* settings ) : Problem( settings ), _problemType( I_SOD ) 
     _nStates = 3;
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( true );
+    _sigma = _settings->GetSigma();
     try {
         auto file     = cpptoml::parse_file( _settings->GetInputFile() );
         auto general  = file->get_table( "general" );
@@ -124,7 +125,6 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
     }
 
     Vector y( _nStates );
-    _sigma = _settings->GetSigma();
     if( x[0] < x0 + _sigma[0] * xi[0] ) {
         y[0]                  = rhoL;
         y[1]                  = rhoL * uL;

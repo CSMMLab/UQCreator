@@ -3,6 +3,8 @@
 Euler2D::Euler2D( Settings* settings ) : Problem( settings ), _problemType( I_NACA ) {
     _nStates = 4;
     _settings->SetNStates( _nStates );
+    _sigma = _settings->GetSigma();
+
     try {
         auto file     = cpptoml::parse_file( _settings->GetInputFile() );
         auto general  = file->get_table( "general" );
@@ -181,7 +183,6 @@ double Euler2D::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
 
 Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
-    _sigma = _settings->GetSigma();
 
     if( _problemType == I_NOZZLE || _problemType == I_NOZZLE_SOD ) {
         double gamma = 1.4;
@@ -257,8 +258,6 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
 
 Vector Euler2D::LoadIC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates );
-
-    _sigma = _settings->GetSigma();
 
     double rhoFarfield = x[0];
     double u           = x[1] / rhoFarfield;

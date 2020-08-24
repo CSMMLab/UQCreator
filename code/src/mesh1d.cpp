@@ -240,7 +240,7 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
         out << GetCenterPos( j )[0];
         for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
             out << " " << results( s, j );
-            if( _settings->HasExactSolution() && !append.compare( "_errors" ) ) out << " " << results( 2 * _settings->GetNStates() + s, j );
+            if( _settings->HasExactSolution() && append.compare( "_errors" ) != 0 ) out << " " << results( 2 * _settings->GetNStates() + s, j );
         }
         if( _settings->GetProblemType() == P_RADIATIONHYDRO_1D ) {
             double rho    = results( 4, j );
@@ -276,7 +276,7 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
                 std::cerr << "Negative variance found in EXPORT" << std::endl;
                 exit( EXIT_FAILURE );
             }
-            if( _settings->HasExactSolution() && !append.compare( "_errors" ) ) outV << " " << results( 3 * _settings->GetNStates() + s, j );
+            if( _settings->HasExactSolution() && append.compare( "_errors" ) != 0 ) outV << " " << results( 3 * _settings->GetNStates() + s, j );
         }
         outV << std::endl;
     }
