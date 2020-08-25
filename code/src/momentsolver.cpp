@@ -619,16 +619,16 @@ void MomentSolver::Write2ndDerMeanAndVar( const VectorU& refinementLevel, double
     Matrix dux( 2 * _nStates, _nCells, 0.0 );
     Matrix duy( 2 * _nStates, _nCells, 0.0 );
     DetermineGradientsScalarField( dux, duy, MeanVarExact - MeanVar );
-    _mesh->Export( dux, "_ErrorXDer" );
-    _mesh->Export( duy, "_ErrorYDer" );
+    //_mesh->Export( dux, "_ErrorXDer" );
+    //_mesh->Export( duy, "_ErrorYDer" );
     Matrix duxx( 2 * _nStates, _nCells, 0.0 );
     Matrix duyy( 2 * _nStates, _nCells, 0.0 );
     DetermineGradientsScalarField( duxx, duyy, dux );
-    _mesh->Export( duxx, "_ErrorXXDer" );
-    _mesh->Export( duyy, "_ErrorXYDer" );
+    //_mesh->Export( duxx, "_ErrorXXDer" );
+    //_mesh->Export( duyy, "_ErrorXYDer" );
     DetermineGradientsScalarField( duxx, duyy, duy );
-    _mesh->Export( duxx, "_ErrorYXDer" );
-    _mesh->Export( duyy, "_ErrorYYDer" );
+    //_mesh->Export( duxx, "_ErrorYXDer" );
+    //_mesh->Export( duyy, "_ErrorYYDer" );
 
     Vector l1Error( 2 * _nStates, 0.0 );
     Vector l2Error( 2 * _nStates, 0.0 );

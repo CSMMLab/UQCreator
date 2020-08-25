@@ -214,10 +214,10 @@ template <class T> Matrix<T> Matrix<T>::operator-( const T& scalar ) const {
 }
 
 template <class T> Matrix<T> Matrix<T>::transpose() const {
-    Matrix<T> res( _rows, _columns, true );
+    Matrix<T> res( _columns, _rows, true );
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
-            res( i, j ) = ( *this )( j, i );
+            res( j, i ) = ( *this )( i, j );
         }
     }
     return res;

@@ -509,15 +509,17 @@ void Mesh2D::Export( const Matrix& results, std::string append ) const {
     }
     grid->GetCellData()->AddArray( cellData );
 
-    cellData = vtkDoubleArraySP::New();
-    cellData->SetName( "E(T)" );
-    for( unsigned i = 0; i < _numCells; i++ ) {
-        cellData->InsertNextValue( results( 4, i ) );
+    if( append.compare( "_errors" ) != 0 ) {
+        cellData = vtkDoubleArraySP::New();
+        cellData->SetName( "E(T)" );
+        for( unsigned i = 0; i < _numCells; i++ ) {
+            cellData->InsertNextValue( results( 4, i ) );
+        }
+        grid->GetCellData()->AddArray( cellData );
     }
-    grid->GetCellData()->AddArray( cellData );
 
     unsigned nStates;
-    if( _settings->GetProblemType() == P_EULER_2D )
+    if( _settings->GetProblemType() == P_EULER_2D && append.compare( "_errors" ) != 0 )
         nStates = _settings->GetNStates() + 1;
     else
         nStates = _settings->GetNStates();
@@ -548,12 +550,14 @@ void Mesh2D::Export( const Matrix& results, std::string append ) const {
     }
     grid->GetCellData()->AddArray( cellData );
 
-    cellData = vtkDoubleArraySP::New();
-    cellData->SetName( "Var(T)" );
-    for( unsigned i = 0; i < _numCells; i++ ) {
-        cellData->InsertNextValue( results( nStates + 4, i ) );
+    if( append.compare( "_errors" ) != 0 ) {
+        cellData = vtkDoubleArraySP::New();
+        cellData->SetName( "Var(T)" );
+        for( unsigned i = 0; i < _numCells; i++ ) {
+            cellData->InsertNextValue( results( nStates + 4, i ) );
+        }
+        grid->GetCellData()->AddArray( cellData );
     }
-    grid->GetCellData()->AddArray( cellData );
 
     grid->SetPoints( pts );
     grid->Squeeze();
