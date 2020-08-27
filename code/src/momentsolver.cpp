@@ -59,8 +59,8 @@ void MomentSolver::Solve() {
     if( _settings->HasRestartFile() ) _tStart = prevSettings->GetTEnd();
     MatTens u = DetermineMoments( prevSettings->GetNTotal() );
     SetDuals( prevSettings, prevClosure, u );
-    MatTens uQ    = MatTens( _nCells + 1, Tensor( _nStates, _nMultiElements, _settings->GetNqPE() ) );
-    MatTens uQNew = MatTens( _nCells + 1, Tensor( _nStates, _nMultiElements, _settings->GetNqPE() ) );
+    MatTens uQ    = MatTens( _nCells, Tensor( _nStates, _nMultiElements, _settings->GetNqPE() ) );
+    MatTens uQNew = MatTens( _nCells, Tensor( _nStates, _nMultiElements, _settings->GetNqPE() ) );
     // slopes for slope limiter
     MatTens duQx( _nCells, Tensor( _nStates, _nMultiElements, _settings->GetNqPE(), 0.0 ) );
     MatTens duQy( _nCells, Tensor( _nStates, _nMultiElements, _settings->GetNqPE(), 0.0 ) );
@@ -182,7 +182,6 @@ void MomentSolver::Solve() {
 
         // compute partial moments from time updated solution at quad points on each PE
         for( unsigned j = 0; j < _nCells; ++j ) {
-            // uQNew[j] = uQ[j];    // DEBUG
             uNew[j] = uQNew[j] * _closure->GetPhiTildeWfAtRef( refinementLevel[j] );
         }
 
@@ -540,7 +539,10 @@ MatTens MomentSolver::DetermineMoments( unsigned nTotal ) const {
         if( nTotal != _nTotal ) {
             MatTens uIC = this->SetupIC();
             for( unsigned j = 0; j < _nCells; ++j ) {
-                if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) u[j] = uIC[j];
+                if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) {
+                    u[j].resize( _nStates, _nMultiElements, _nTotal );
+                    u[j] = uIC[j];
+                }
             }
         }
     }
@@ -709,7 +711,14 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTe
         if( _settings->GetMaxIterations() == 1 || prevSettings->GetMaxDegree() != _settings->GetMaxDegree() ) {
             prevClosure->SetMaxIterations( 10000 );
             for( unsigned j = 0; j < _nCells; ++j ) {
-                prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNRefinementLevels() - 1 );
+                // solve on high number of moments if cell is Dirichlet Cell
+                if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) {
+                    _lambda[j].resize( _nStates, _nMultiElements, _nTotal );
+                    _lambda[j].reset( 0, 0, prevSettings->GetNTotal() );
+                    _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
+                }
+                else
+                    prevClosure->SolveClosureSafe( _lambda[j], u[j], prevSettings->GetNRefinementLevels() - 1 );
             }
             prevClosure->SetMaxIterations( maxIterations );
         }
@@ -729,14 +738,9 @@ void MomentSolver::SetDuals( Settings* prevSettings, Closure* prevClosure, MatTe
             u[j] = uCurrent;    // new Moments of size _nTotal
 
             // compute lambda with size _nTotal
-            Tensor lambdaOld = _lambda[j];
-            _lambda[j].resize( _nStates, _nMultiElements, _nTotal );
-            for( unsigned s = 0; s < _nStates; ++s ) {
-                for( unsigned l = 0; l < _nMultiElements; ++l ) {
-                    for( unsigned i = prevSettings->GetNTotal(); i < _settings->GetNTotal(); ++i ) {
-                        _lambda[j]( s, l, i ) = 0.0;
-                    }
-                }
+            if( _lambda[j].columns() != _nTotal ) {
+                _lambda[j].resize( _nStates, _nMultiElements, _nTotal );
+                _lambda[j].reset( 0, 0, prevSettings->GetNTotal() );
             }
             _closure->SolveClosureSafe( _lambda[j], u[j], _settings->GetNRefinementLevels() - 1 );
         }

@@ -385,6 +385,8 @@ template <class T> class Tensor    // column major
     unsigned rows() const;
     unsigned columns() const;
     void reset();
+    // reset tensor starting, leaving out indices 0,...,startFRow-1; ...
+    void reset( unsigned startFRow, unsigned startRow, unsigned startColumns );
 
     friend Vector<T> column<>( Tensor<T>& mat, unsigned i );
     friend Vector<T> column<>( const Tensor<T>& mat, unsigned i );
@@ -637,6 +639,16 @@ template <class T> void Tensor<T>::reset() {
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
             for( unsigned l = 0; l < _frontRows; ++l ) {
+                ( *this )( l, i, j ) = 0.0;
+            }
+        }
+    }
+}
+
+template <class T> void Tensor<T>::reset( unsigned startFRow, unsigned startRow, unsigned startColumns ) {
+    for( unsigned j = startColumns; j < _columns; ++j ) {
+        for( unsigned i = startRow; i < _rows; ++i ) {
+            for( unsigned l = startFRow; l < _frontRows; ++l ) {
                 ( *this )( l, i, j ) = 0.0;
             }
         }

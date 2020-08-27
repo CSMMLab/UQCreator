@@ -19,8 +19,8 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
     Matrix uQJ( _settings->GetNStates(), _settings->GetNqPE() );
 
     for( unsigned l = 0; l < _settings->GetNMultiElements(); ++l ) {
-// compute flux at edges
-#pragma omp parallel for
+        // compute flux at edges
+        //#pragma omp parallel for
         for( unsigned j = 0; j < _mesh->GetNEdges(); ++j ) {
             _flux[j].reset();    // is this needed? should be fine
             std::pair cells = _mesh->CellsAtEdge( j );
@@ -38,8 +38,8 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
             }
             for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {
                 for( unsigned k = 0; k < _settings->GetNqPEAtRef( level ); ++k ) {
-                    uQI( s, k ) = uQ[I]( s, l, k );
-                    uQJ( s, k ) = uQ[J]( s, l, k );
+                    if( I != numCells ) uQI( s, k ) = uQ[I]( s, l, k );
+                    if( J != numCells ) uQJ( s, k ) = uQ[J]( s, l, k );
                 }
             }
 
