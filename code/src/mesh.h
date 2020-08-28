@@ -79,7 +79,7 @@ class Mesh
 
     virtual std::vector<Vector> Import() const                             = 0;
     virtual void Export( const Matrix& results, std::string append ) const = 0;
-    virtual void ExportShallowWater( const Matrix& results ) const {}
+    virtual void ExportShallowWater( const Matrix& results ) const { unused( results ); }
     virtual void PlotInXi( const Tensor& u, unsigned state ) const;
 
     Mesh( Settings* settings, unsigned dimension );

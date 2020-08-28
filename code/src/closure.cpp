@@ -472,7 +472,10 @@ void Closure::SubstractVectorMatrixOnVector( Vector& b, const Matrix& A, unsigne
     }
 }
 
-void Closure::DS( Vector& ds, const Vector& u ) const {}
+void Closure::DS( Vector& ds, const Vector& u ) const {
+    unused( ds );
+    unused( u );
+}
 
 std::vector<Polynomial*> Closure::GetQuadrature() { return _quad; }
 
@@ -496,6 +499,8 @@ Matrix Closure::GetPhiTildeWfAtRef( unsigned level ) const {
 }
 
 Matrix Closure::GetPhiTildeWfAtRef( unsigned level, bool full ) const {
+    unused( full );
+
     unsigned kStart = 0;
     unsigned kEnd   = _nQTotalForRef[level] - 1;
     Matrix phiTildeWfTrans( _nQTotalForRef[level], _nTotalForRef[level], false );

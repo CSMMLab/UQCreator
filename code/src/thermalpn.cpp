@@ -104,6 +104,8 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
 ThermalPN::~ThermalPN() { delete _grid; }
 
 Vector ThermalPN::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+    unused( n );
+
     // Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
     Vector g     = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * _AbsA * ( v - u );
     g[_nMoments] = 0.0;    // set temperature flux to zero
@@ -156,7 +158,7 @@ void ThermalPN::SetupSystemMatrices() {
     _Ay = Matrix( _nMoments, _nMoments );
     _Az = Matrix( _nMoments, _nMoments );
     // loop over columns of A
-    for( int l = 0; l <= _N; ++l ) {
+    for( int l = 0; l <= static_cast<int>( _N ); ++l ) {
         for( int k = -l; k <= l; ++k ) {
             i = unsigned( GlobalIndex( l, k ) );
 
@@ -245,13 +247,13 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
     bool expl                    = true;
 
     Matrix y( nStates, Nq, 0.0 );
-    double S           = 0.0;    // source, needs to be defined
-    double varianceVal = 0;
+    double S = 0.0;    // source, needs to be defined
+    // double varianceVal = 0;
 
     for( unsigned k = 0; k < qIndex.size(); ++k ) {
         if( _testCase == 0 && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
-            S           = _a;
-            varianceVal = _variances[0];
+            S = _a;
+            // varianceVal = _variances[0];
         }
         else {
             S = 0.0;
@@ -347,6 +349,9 @@ void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matr
 }*/
 
 void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+    unused( x );
+    unused( t );
+
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
@@ -396,11 +401,16 @@ double ThermalPN::ScaledTemperature( double eTilde ) const {
 }
 
 Matrix ThermalPN::F( const Matrix& u ) {
+    unused( u );
+
     _log->error( "[ThermalPN] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
 
 double ThermalPN::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+    unused( u );
+    unused( level );
+
     double cfl = _settings->GetCFL();
 
     double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
@@ -480,6 +490,9 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
 }
 
 Vector ThermalPN::LoadIC( const Vector& x, const Vector& xi ) {
+    unused( x );
+    unused( xi );
+
     _log->error( "[ThermalPN: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }
@@ -561,7 +574,7 @@ Vector ThermalPN::SF( const Vector& u, const Vector& uOld ) const {
 
 Matrix ThermalPN::DSF( const Vector& u ) const {
     Matrix y( 2, 2 );
-    double E     = u[0];
+    // double E     = u[0];
     double e     = u[1];
     double dt    = _settings->GetDT();
     double alpha = pow( _a * pow( _TRef, 3 ) / _cV, 4 );

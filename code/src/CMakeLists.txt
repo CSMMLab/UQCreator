@@ -4,7 +4,7 @@ set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native" )
 set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native -pg -no-pie" )
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall" )
+set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wextra" )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../bin/" )
 
@@ -23,7 +23,7 @@ include_directories( ${MPI_INCLUDE_PATH} )
 find_package( LAPACK REQUIRED )
 include_directories( ${LAPACK_INCLUDE_DIR} )
 
-find_package( VTK REQUIRED COMPONENTS vtkIOGeometry vtkFiltersCore HINTS ~/projects/VTK-INSTALL/ )
+find_package( VTK REQUIRED COMPONENTS vtkIOGeometry vtkFiltersCore )
 
 include_directories( ${CMAKE_SOURCE_DIR}/../ext/cpptoml/include )
 include_directories( ${CMAKE_SOURCE_DIR}/../ext/spdlog/include )

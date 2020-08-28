@@ -9,6 +9,7 @@ class HouLiFilter : public Filter
     HouLiFilter() = delete;
 
     double _eps;
+    unsigned _gamma;
 
     double FilterFunction( double eta ) const;
 

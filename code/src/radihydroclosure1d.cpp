@@ -20,6 +20,8 @@ void RadiHydroClosure1D::U( Vector& out, const Vector& Lambda ) {
 }
 
 void RadiHydroClosure1D::U( Vector& out, const Vector& Lambda, bool dummy ) {
+    unused( dummy );
+
     out[0] = exp( ( 2.0 * Lambda[0] * Lambda[2] - 2.0 * Lambda[2] * log( -Lambda[2] ) - 2.0 * Lambda[2] * _gamma - pow( Lambda[1], 2.0 ) ) /
                   ( 2.0 * Lambda[2] * ( _gamma - 1.0 ) ) );
     out[1] = -( Lambda[1] / Lambda[2] ) * out[0];

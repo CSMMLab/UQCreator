@@ -60,7 +60,7 @@ template <class T> class Matrix    // column major
 
 template <class T> Matrix<T>::Matrix() : _data( nullptr ), _rows( 0 ), _columns( 0 ) {}
 
-template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skipZeroInit ) : _rows( rows ), _columns( columns ), _data( nullptr ) {
+template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skipZeroInit ) : _data( nullptr ), _rows( rows ), _columns( columns ) {
     //_data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
     _data = new T[_rows * _columns];
     if( !skipZeroInit ) {
@@ -73,7 +73,7 @@ template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, bool skip
     }
 }
 
-template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) : _rows( rows ), _columns( columns ), _data( nullptr ) {
+template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) : _data( nullptr ), _rows( rows ), _columns( columns ) {
     //_data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
     _data = new T[_rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
@@ -84,7 +84,7 @@ template <class T> Matrix<T>::Matrix( unsigned rows, unsigned columns, T init ) 
     }
 }
 
-template <class T> Matrix<T>::Matrix( const Matrix& other ) : _rows( other._rows ), _columns( other._columns ), _data( nullptr ) {
+template <class T> Matrix<T>::Matrix( const Matrix& other ) : _data( nullptr ), _rows( other._rows ), _columns( other._columns ) {
     //_data = static_cast<T*>( malloc( _rows * _columns * sizeof( T ) ) );
     _data = new T[_rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
@@ -396,7 +396,7 @@ template <class T> Tensor<T>::Tensor() : _data( nullptr ), _rows( 0 ), _columns(
 
 template <class T>
 Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, bool skipZeroInit )
-    : _rows( rows ), _columns( columns ), _frontRows( frontRows ), _data( nullptr ) {
+    : _data( nullptr ), _rows( rows ), _columns( columns ), _frontRows( frontRows ) {
     _data = new T[_frontRows * _rows * _columns];
     if( !skipZeroInit ) {
         for( unsigned j = 0; j < _columns; ++j ) {
@@ -411,7 +411,7 @@ Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, bool ski
 
 template <class T>
 Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, T init )
-    : _rows( rows ), _columns( columns ), _frontRows( frontRows ), _data( nullptr ) {
+    : _data( nullptr ), _rows( rows ), _columns( columns ), _frontRows( frontRows ) {
     _data = new T[_frontRows * _rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
@@ -423,7 +423,7 @@ Tensor<T>::Tensor( unsigned frontRows, unsigned rows, unsigned columns, T init )
 }
 
 template <class T>
-Tensor<T>::Tensor( const Tensor& other ) : _rows( other._rows ), _columns( other._columns ), _frontRows( other._frontRows ), _data( nullptr ) {
+Tensor<T>::Tensor( const Tensor& other ) : _data( nullptr ), _rows( other._rows ), _columns( other._columns ), _frontRows( other._frontRows ) {
     _data = new T[_frontRows * _rows * _columns];
     for( unsigned j = 0; j < _columns; ++j ) {
         for( unsigned i = 0; i < _rows; ++i ) {
@@ -656,8 +656,8 @@ template <class T> void Tensor<T>::reset( unsigned startFRow, unsigned startRow,
 }
 
 template <class T> void Tensor<T>::resize( unsigned frontrows, unsigned rows, unsigned columns ) {
-    auto dataOld = _data;
-    _data        = new T[rows * columns * frontrows];
+    T* dataOld = _data;
+    _data      = new T[rows * columns * frontrows];
 
     unsigned rowsMin  = std::min( rows, _rows );
     unsigned colMin   = std::min( columns, _columns );
@@ -669,7 +669,7 @@ template <class T> void Tensor<T>::resize( unsigned frontrows, unsigned rows, un
             }
         }
     }
-    delete dataOld;
+    delete[] dataOld;
     _rows      = rows;
     _columns   = columns;
     _frontRows = frontrows;

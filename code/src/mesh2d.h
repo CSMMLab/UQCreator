@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <assert.h>
-#include <boost/algorithm/string.hpp>
 #include <fstream>
 #include <iostream>
 #include <sstream>

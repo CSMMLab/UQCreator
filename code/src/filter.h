@@ -15,7 +15,7 @@ class Filter
     double _lambda;    // filter strength
     Vector _filterFunction;
     unsigned _filterOrder;    // order of the filter
-    unsigned _gamma;
+    // unsigned _gamma;
     std::shared_ptr<spdlog::logger> _log;
 
     double FilterFunction( double eta ) const;

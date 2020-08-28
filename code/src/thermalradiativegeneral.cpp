@@ -70,6 +70,8 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
 ThermalRadiativeGeneral::~ThermalRadiativeGeneral() { delete _grid; }
 
 Vector ThermalRadiativeGeneral::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+    unused( n );
+
     // Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
     Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * _AbsA * ( v - u );
     g[2]     = 0.0;    // set temperature flux to zero
@@ -100,13 +102,13 @@ Matrix ThermalRadiativeGeneral::Source( const Matrix& uQ, const Vector& x, doubl
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
 
     Matrix y( nStates, Nq, 0.0 );
-    double S           = 0.0;    // source, needs to be defined
-    double varianceVal = 0;
+    double S = 0.0;    // source, needs to be defined
+    // double varianceVal = 0;
 
     for( unsigned k = 0; k < qIndex.size(); ++k ) {
         if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
-            S           = _a;
-            varianceVal = _variances[0];
+            S = _a;
+            // varianceVal = _variances[0];
         }
         else {
             S = 0.0;
@@ -161,11 +163,17 @@ double ThermalRadiativeGeneral::ScaledTemperature( double eTilde ) const {
 }
 
 Matrix ThermalRadiativeGeneral::F( const Matrix& u ) {
+    unused( u );
+
     _log->error( "[ThermalRadiativeGeneral] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
 
 double ThermalRadiativeGeneral::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+    unused( u );
+    unused( dx );
+    unused( level );
+
     double cfl = _settings->GetCFL();
 
     double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
@@ -223,6 +231,9 @@ Vector ThermalRadiativeGeneral::IC( const Vector& x, const Vector& xi ) {
 }
 
 Vector ThermalRadiativeGeneral::LoadIC( const Vector& x, const Vector& xi ) {
+    unused( x );
+    unused( xi );
+
     _log->error( "[ThermalRadiativeGeneral: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }

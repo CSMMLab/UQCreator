@@ -254,6 +254,9 @@ Vector Euler2D::IC( const Vector& x, const Vector& xi ) {
         y[3]                  = kineticEnergyL + innerEnergyL;
         return y;
     }
+    _log->error( "[euler2d] Invalid initial condition!" );
+    exit( EXIT_FAILURE );
+    return Vector( 1u, -1.0 );
 }
 
 Vector Euler2D::LoadIC( const Vector& x, const Vector& xi ) {

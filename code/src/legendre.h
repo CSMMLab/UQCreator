@@ -4,8 +4,6 @@
 #include "mathtools.h"
 #include "polynomial.h"
 
-#include <boost/math/special_functions/legendre.hpp>
-
 class Legendre : public Polynomial
 {
   private:

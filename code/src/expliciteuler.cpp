@@ -11,6 +11,8 @@ void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigne
                              MatTens& uQ,
                              double dt,
                              const VectorU& refLevel ) {
+    unused( u );
+
     auto numCells = _mesh->GetNumCells();
     Cell* cell;
     VectorU neighbors;

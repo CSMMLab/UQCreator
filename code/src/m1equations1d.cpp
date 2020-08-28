@@ -119,6 +119,10 @@ Matrix M1Equations1D::F( const Matrix& u ) {
 }
 
 Matrix M1Equations1D::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+    unused( x );
+    unused( t );
+    unused( level );
+
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = static_cast<unsigned>( uQ.columns() );
     Vector g( nStates, 0.0 );
@@ -134,6 +138,8 @@ Matrix M1Equations1D::Source( const Matrix& uQ, const Vector& x, double t, unsig
 }
 
 double M1Equations1D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+    unused( u );
+    unused( level );
 
     double cfl = _settings->GetCFL();
 
@@ -166,4 +172,9 @@ Vector M1Equations1D::IC( const Vector& x, const Vector& xi ) {
     return y;
 }
 
-Vector M1Equations1D::LoadIC( const Vector& x, const Vector& xi ) { return Vector( 1 ); }
+Vector M1Equations1D::LoadIC( const Vector& x, const Vector& xi ) {
+    unused( x );
+    unused( xi );
+
+    return Vector( 1 );
+}

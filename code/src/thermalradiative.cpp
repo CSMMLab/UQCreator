@@ -63,6 +63,8 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
 ThermalRadiative::~ThermalRadiative() { delete _grid; }
 
 Vector ThermalRadiative::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+    unused( n );
+
     // Lax-Friedrichs
     // Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
     // upwinding
@@ -93,15 +95,15 @@ Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t, un
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq, 0.0 );
-    double S           = 0.0;    // source, needs to be defined
-    double varianceVal = 0;
+    double S = 0.0;    // source, needs to be defined
+    // double varianceVal = 0;
 
     // std::cout << "level " << level << ", Nq = " << Nq << std::endl;
 
     for( unsigned k = 0; k < Nq; ++k ) {
         if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[k][0] ) {
-            S           = _a;
-            varianceVal = _variances[0];
+            S = _a;
+            // varianceVal = _variances[0];
         }
         else {
             S = 0.0;
@@ -122,11 +124,16 @@ Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t, un
 }
 
 Matrix ThermalRadiative::F( const Matrix& u ) {
+    unused( u );
+
     _log->error( "[ThermalRadiative] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
 
 double ThermalRadiative::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+    unused( u );
+    unused( level );
+
     double cfl = _settings->GetCFL();
 
     double maxVelocity = std::sqrt( 1.0 / 3.0 ) / _epsilon;
@@ -135,9 +142,11 @@ double ThermalRadiative::ComputeDt( const Matrix& u, double dx, unsigned level )
 }
 
 Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
+    unused( xi );
+
     Vector y( _nStates, 0.0 );
-    auto sigma     = _settings->GetSigma();
-    double sigmaXi = sigma[0] * xi[0];
+    auto sigma = _settings->GetSigma();
+    // double sigmaXi = sigma[0] * xi[0];
     double E, F, T;
     F = 0;
 
@@ -167,6 +176,9 @@ Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
 }
 
 Vector ThermalRadiative::LoadIC( const Vector& x, const Vector& xi ) {
+    unused( x );
+    unused( xi );
+
     _log->error( "[ThermalRadiative: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }

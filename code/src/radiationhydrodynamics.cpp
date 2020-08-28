@@ -231,6 +231,8 @@ Matrix RadiationHydrodynamics::F( const Vector& u ) const {
 }
 
 Vector RadiationHydrodynamics::IC( const Vector& x, const Vector& xi ) {
+    unused( xi );
+
     Vector y( _nStates, 0.0 );
     /*
     double x0      = 0.0;

@@ -226,6 +226,8 @@ void MomentSolver::Solve() {
 
         // if current retardation level fulfills residual condition, then increase retardation level
         if( residualFull < _settings->GetResidualRetardation( retCounter ) && retCounter < _settings->GetNRetardationLevels() - 1 ) retCounter += 1;
+
+        break;
     }
 
     // write final error
@@ -246,6 +248,7 @@ void MomentSolver::Solve() {
     log->info( "Finished!" );
     log->info( "" );
     log->info( "Runtime: {0}s", std::chrono::duration_cast<std::chrono::milliseconds>( toc - tic ).count() / 1000.0 );
+
     // compute mean and variance numerical + exact (if exact solution specified)
     Matrix meanAndVar = WriteMeanAndVar( refinementLevel, t, true, false );
     // write exact solution on reference field
@@ -345,6 +348,8 @@ void MomentSolver::Solve() {
 }
 
 void MomentSolver::Source( MatTens& uQNew, const MatTens& uQ, double dt, double t, const VectorU& refLevel ) const {
+    unused( uQ );
+
     //#pragma omp parallel for
     auto uQTilde = uQNew;
 
@@ -355,7 +360,11 @@ void MomentSolver::Source( MatTens& uQNew, const MatTens& uQ, double dt, double 
     }
 }
 
-void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned level ) { out += g; }
+void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned level ) {
+    unused( level );
+
+    out += g;
+}
 
 double MomentSolver::ComputeRefIndicator( const Tensor& u, unsigned refLevel ) const {
     double indicator = 0;
@@ -386,6 +395,8 @@ double MomentSolver::ComputeRefIndicator( const Tensor& u, unsigned refLevel ) c
 }
 
 void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, const MatTens& u, unsigned index ) const {
+    unused( u );
+
     // loop over all cells and check refinement indicator
     Matrix refinementIndicatorPlot( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {
@@ -663,6 +674,7 @@ Settings* MomentSolver::DeterminePreviousSettings() const {
         prevSettings->SetClosureType( _settings->GetClosureType() );
         prevSettings->SetNumCells( _settings->GetNumCells() );
         prevSettings->SetInputFile( _settings->GetInputFile() );
+        prevSettings->SetDT( _dt );
     }
     else {
         prevSettings = _settings;
@@ -908,9 +920,8 @@ Settings* MomentSolver::ImportPrevSettings() const {
         }
     }
     std::istringstream inputStream( prevSettingsStream.str() );
-    Settings* prevSettings = new Settings( inputStream );
 
-    return prevSettings;
+    return new Settings( inputStream );
 }
 
 MatTens MomentSolver::ImportPrevMoments( unsigned nPrevTotal ) const {

@@ -93,6 +93,7 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
 ThermalPN2D::~ThermalPN2D() { delete _grid; }
 
 Vector ThermalPN2D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+    unused( nUnit );
 
     // Vector g = F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
 
@@ -148,7 +149,7 @@ void ThermalPN2D::SetupSystemMatrices() {
     _Ay = Matrix( _nMoments, _nMoments );
     _Az = Matrix( _nMoments, _nMoments );
     // loop over columns of A
-    for( int l = 0; l <= _N; ++l ) {
+    for( int l = 0; l <= static_cast<int>( _N ); ++l ) {
         for( int k = -l; k <= l; ++k ) {
             i = unsigned( GlobalIndex( l, k ) );
 
@@ -232,16 +233,16 @@ Matrix ThermalPN2D::Source( const Matrix& uQ, const Vector& x, double t, unsigne
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
-    double dt                    = _settings->GetDT();
+    // double dt                    = _settings->GetDT();
 
     Matrix y( nStates, Nq, 0.0 );
-    double S           = 0.0;    // source, needs to be defined
-    double varianceVal = 0;
+    double S = 0.0;    // source, needs to be defined
+    // double varianceVal = 0;
 
     for( unsigned k = 0; k < qIndex.size(); ++k ) {
         if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
-            S           = _a;
-            varianceVal = _variances[0];
+            S = _a;
+            // varianceVal = _variances[0];
         }
         else {
             S = 0.0;
@@ -294,6 +295,9 @@ double ThermalPN2D::ScaledTemperature( double eTilde ) const {
 }
 
 double ThermalPN2D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+    unused( u );
+    unused( level );
+
     double cfl = _settings->GetCFL();
 
     double maxVelocity = 1.0 / _epsilon;
@@ -323,6 +327,9 @@ Vector ThermalPN2D::IC( const Vector& x, const Vector& xi ) {
 }
 
 Vector ThermalPN2D::LoadIC( const Vector& x, const Vector& xi ) {
+    unused( x );
+    unused( xi );
+
     _log->error( "[ThermalPN2D: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }
@@ -394,6 +401,8 @@ int ThermalPN2D::kPlus( int k ) const { return k + Sgn( k ); }
 int ThermalPN2D::kMinus( int k ) const { return k - Sgn( k ); }
 
 Matrix ThermalPN2D::F( const Matrix& u ) {
+    unused( u );
+
     _log->error( "[ThermalPN2D] Flux not implemented" );
     exit( EXIT_FAILURE );
 }

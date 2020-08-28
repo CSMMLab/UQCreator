@@ -62,11 +62,17 @@ Matrix ShallowWater::F( const Vector& u ) {
 }
 
 Matrix ShallowWater::F( const Matrix& u ) {
+    unused( u );
+
     _log->error( "[ShallowWater] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
 
 double ShallowWater::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+    unused( u );
+    unused( dx );
+    unused( level );
+
     _log->error( "[ShallowWater] ComputeDt not implemented" );
     return 0.0;
 }
@@ -109,6 +115,9 @@ Vector ShallowWater::IC( const Vector& x, const Vector& xi ) {
 }
 
 Vector ShallowWater::LoadIC( const Vector& x, const Vector& xi ) {
+    unused( x );
+    unused( xi );
+
     _log->error( "[ShallowWater: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }

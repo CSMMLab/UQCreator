@@ -5,6 +5,8 @@
 
 #include "vectorspace.cpp"
 
+template <class T> void unused( const T& ) {}
+
 typedef VectorSpace::Tensor<double> Tensor;
 typedef VectorSpace::Matrix<double> Matrix;
 typedef VectorSpace::Vector<double> Vector;

@@ -4,8 +4,6 @@
 #include "mathtools.h"
 #include "polynomial.h"
 
-#include <boost/math/special_functions/hermite.hpp>
-
 class Hermite : public Polynomial
 {
   private:

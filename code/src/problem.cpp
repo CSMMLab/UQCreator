@@ -83,11 +83,19 @@ Problem* Problem::Create( Settings* settings ) {
 }
 
 double Problem::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
+    unused( u );
+    unused( dx );
+    unused( level );
+
     std::cout << "Using dt computation from problem class" << std::endl;
     return _settings->GetDT();
 }
 
 Matrix Problem::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
+    unused( t );
+    unused( x );
+    unused( xi );
+
     _log->error( "[Problem]: No exact solution specified" );
     exit( EXIT_FAILURE );
 }
@@ -99,17 +107,33 @@ Matrix Problem::Source( const Matrix& uQ ) const {
 }
 
 Tensor Problem::Source( const Tensor& uQ, const Vector& x, double t, unsigned level ) const {
+    unused( x );
+    unused( t );
+    unused( level );
+
     std::cerr << "[Problem]: Source not defined" << std::endl;
     exit( EXIT_FAILURE );
     return uQ;
 }
 
 void Problem::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+    unused( uQNew );
+    unused( uQTilde );
+    unused( uQ );
+    unused( x );
+    unused( t );
+    unused( level );
+
     std::cerr << "[Problem]: Source not defined" << std::endl;
     exit( EXIT_FAILURE );
 }
 
 Matrix Problem::BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const {
+    unused( u );
+    unused( nUnit );
+    unused( n );
+    unused( level );
+
     std::cerr << "[Problem]: Boundary Flux not defined" << std::endl;
     exit( EXIT_FAILURE );
 }

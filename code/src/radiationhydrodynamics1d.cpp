@@ -15,22 +15,23 @@ RadiationHydrodynamics1D::RadiationHydrodynamics1D( Settings* settings ) : PNEqu
     _h      = 6.62607004 * 1e-27;     // Planck's constant [cm^2 g/s]
 
     // initial chock states
-    double rhoL, uL, TL, rhoR, uR, TR, lRef;
+    // double rhoL, TL, uR;
+    double uL, rhoR, TR, lRef;
     if( _testCase == 1 ) {
-        rhoL = 5.45887 * 1e-13;    // [g/cm^3]
-        uL   = 2.3545 * 1e5;       // [cm/s]
-        TL   = 100.0;              // [K]
+        // rhoL = 5.45887 * 1e-13;    // [g/cm^3]
+        uL = 2.3545 * 1e5;    // [cm/s]
+        // TL   = 100.0;              // [K]
         rhoR = 1.2479 * 1e-12;
-        uR   = 1.03 * 1e5;
+        // uR   = 1.03 * 1e5;
         TR   = 207.757;
         lRef = 1000;
     }
     else {
-        uL   = 5.88588 * 1e5;      // [cm/s]   from Zhang paper
-        rhoL = 5.45887 * 1e-13;    // [g/cm^3]
-        TL   = 100.0;              // [K]
+        uL = 5.88588 * 1e5;    // [cm/s]   from Zhang paper
+        // rhoL = 5.45887 * 1e-13;    // [g/cm^3]
+        // TL = 100.0;    // [K]
         rhoR = 1.964050 * 1e-12;
-        uR   = 1.63 * 1e5;
+        // uR   = 1.63 * 1e5;
         TR   = 855.72;
         lRef = 4000;
     }
@@ -337,6 +338,8 @@ Matrix RadiationHydrodynamics1D::FEuler( const Vector& u ) const {
 }
 
 Vector RadiationHydrodynamics1D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+    unused( n );
+
     // double dx = norm( n );
     Vector out( _nStates, 0.0 );
     Vector outEuler( 3, false );

@@ -16,6 +16,8 @@ void Polynomial::Sort() {
 }
 
 Polynomial* Polynomial::Create( Settings* settings, unsigned order, DistributionType distributionType ) {
+    unused( settings );
+
     auto log = spdlog::get( "event" );
     if( distributionType == DistributionType::D_LEGENDRE ) {
         return new Legendre( order );

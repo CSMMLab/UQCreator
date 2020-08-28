@@ -49,7 +49,6 @@ void TensorizedCC::CreateGrid() {
     _quad[1] = Polynomial::Create( _settings, _nQuadPoints, DistributionType::D_HERMITE );
 
     unsigned nQuadLevel = static_cast<unsigned>( std::pow( 2, _nQuadPoints ) + 1 );
-    unsigned currentIndex;
     std::vector<unsigned> tmp;
     tmp.resize( _numDimXi );
     bool push;
@@ -93,6 +92,8 @@ void TensorizedCC::CreateGrid() {
             _weights[k] *= w[indicesQ[k][l]];
         }
     }
+
+    delete quadGrid;
 }
 
 std::vector<Vector> TensorizedCC::GetNodes() {

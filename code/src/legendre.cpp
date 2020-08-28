@@ -27,12 +27,16 @@ void Legendre::Compute() {
     Sort();
 }
 
-double Legendre::Evaluate( unsigned m, double x ) { return boost::math::legendre_p( m, x ); }
+double Legendre::Evaluate( unsigned m, double x ) { return std::legendre( m, x ); }
 
 const Vector& Legendre::GetNodes() { return _nodes; }
 
 const Vector& Legendre::GetWeights() { return _weights; }
 
-double Legendre::fXi( const double xi ) const { return 0.5; }
+double Legendre::fXi( const double xi ) const {
+    unused( xi );
+
+    return 0.5;
+}
 
 double Legendre::L2Norm( unsigned i ) const { return sqrt( 1.0 / ( 2.0 * i + 1.0 ) ); }
