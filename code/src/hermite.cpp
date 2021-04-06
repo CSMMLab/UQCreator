@@ -34,9 +34,7 @@ const Vector& Hermite::GetNodes() { return _nodes; }
 
 const Vector& Hermite::GetWeights() { return _weights; }
 
-double Hermite::fXi( const double xi ) const {
-    unused( xi );
-
+double Hermite::fXi( const double /*xi*/ ) const {
     return 1.0 / sqrt( PI );    // * exp( -0.5 * pow( xi, 2 ) );
 }
 

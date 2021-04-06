@@ -6,9 +6,11 @@
 #include <vector>
 
 namespace VectorSpace {
+
 template <class T> class Vector;
 template <class T> class Matrix;
 template <class T> class Tensor;
+
 }    // namespace VectorSpace
 
 template <class T> inline void gesv( const VectorSpace::Matrix<T>& A, VectorSpace::Vector<T>& b, int* ipiv );

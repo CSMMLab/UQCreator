@@ -10,11 +10,7 @@ void ThermalRadiationClosure::U( Vector& out, const Vector& Lambda ) {
     out[2] = exp( Lambda[2] );
 }
 
-void ThermalRadiationClosure::U( Vector& out, const Vector& Lambda, bool dummy ) {
-    unused( dummy );
-
-    out[0] = exp( Lambda[0] );
-}
+void ThermalRadiationClosure::U( Vector& out, const Vector& Lambda, bool /*dummy*/ ) { out[0] = exp( Lambda[0] ); }
 
 void ThermalRadiationClosure::U( Tensor& out, const Tensor& Lambda ) {
     for( unsigned l = 0; l < _nMultiElements; ++l ) {

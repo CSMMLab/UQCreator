@@ -6,11 +6,7 @@ KineticClosure::~KineticClosure() {}
 
 void KineticClosure::U( Vector& out, const Vector& Lambda ) { out[0] = exp( Lambda[0] ); }
 
-void KineticClosure::U( Vector& out, const Vector& Lambda, bool dummy ) {
-    unused( dummy );
-
-    out[0] = exp( Lambda[0] );
-}
+void KineticClosure::U( Vector& out, const Vector& Lambda, bool /*dummy*/ ) { out[0] = exp( Lambda[0] ); }
 
 void KineticClosure::U( Tensor& out, const Tensor& Lambda ) {
     for( unsigned l = 0; l < _nMultiElements; ++l ) {

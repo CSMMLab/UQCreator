@@ -17,9 +17,7 @@ Advection2D::Advection2D( Settings* settings ) : Problem( settings ) {
     }
 }
 
-Vector Advection2D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    unused( nUnit );
-
+Vector Advection2D::G( const Vector& u, const Vector& v, const Vector& /*nUnit*/, const Vector& n ) {
     double inner = _omega[0] * n[0] + _omega[1] * n[1];
     if( inner > 0 ) {
         return inner * u;
@@ -84,17 +82,9 @@ Matrix Advection2D::ExactSolution( double t, const Matrix& x, const Vector& xi )
     return y;
 }
 
-double Advection2D::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
-    unused( u );
-    unused( level );
+double Advection2D::ComputeDt( const Tensor& /*u*/, double dx, unsigned /*level*/ ) const { return _settings->GetCFL() / dx / norm( _omega ); }
 
-    return _settings->GetCFL() / dx / norm( _omega );
-}
-
-Vector Advection2D::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
+Vector Advection2D::LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) {
     _log->error( "[Advection2D: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }

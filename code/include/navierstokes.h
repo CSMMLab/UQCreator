@@ -22,13 +22,8 @@ class NavierStokes : public Problem
     // Matrix F( const Matrix& u );
     // virtual double ComputeDt( const Matrix& u, double dx, unsigned level ) const;
     virtual Vector IC( const Vector& x, const Vector& xi );
-    virtual Vector LoadIC( const Vector& x, const Vector& xi ) {
-        unused( x );
-        unused( xi );
-        return Vector( 1 );
-    };
+    virtual Vector LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) { return Vector( 1 ); };
     // virtual Matrix ExactSolution( double t, const Matrix& x, const Vector& xi ) const;
-
     // void GKS( Matrix* flux, const Vector& u, const Vector& v, double dt );
 };
 

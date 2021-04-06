@@ -10,20 +10,8 @@ void StochasticGalerkin::U( Tensor& out, const Tensor& Lambda ) { out = Lambda; 
 
 Tensor StochasticGalerkin::U( const Tensor& Lambda ) { return Lambda; }
 
-void StochasticGalerkin::DU( Matrix& y, const Vector& Lambda ) {
-    unused( Lambda );
+void StochasticGalerkin::DU( Matrix& y, const Vector& /*Lambda*/ ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 
-    y = VectorSpace::IdentityMatrix<double>( _nStates );
-}
+void StochasticGalerkin::SolveClosure( Tensor& lambda, const Tensor& u, unsigned /*refLevel*/ ) { _filter->FilterMoments( lambda, u ); }
 
-void StochasticGalerkin::SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel ) {
-    unused( refLevel );
-
-    _filter->FilterMoments( lambda, u );
-}
-
-void StochasticGalerkin::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned refLevel ) {
-    unused( refLevel );
-
-    _filter->FilterMoments( lambda, u );
-}
+void StochasticGalerkin::SolveClosureSafe( Tensor& lambda, const Tensor& u, unsigned /*refLevel*/ ) { _filter->FilterMoments( lambda, u ); }

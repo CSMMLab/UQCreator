@@ -62,9 +62,7 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
 
 ThermalRadiative::~ThermalRadiative() { delete _grid; }
 
-Vector ThermalRadiative::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    unused( n );
-
+Vector ThermalRadiative::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& /*n*/ ) {
     // Lax-Friedrichs
     // Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
     // upwinding
@@ -123,29 +121,20 @@ Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t, un
     return y;
 }
 
-Matrix ThermalRadiative::F( const Matrix& u ) {
-    unused( u );
-
+Matrix ThermalRadiative::F( const Matrix& /*u*/ ) {
     _log->error( "[ThermalRadiative] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
 
-double ThermalRadiative::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
-    unused( u );
-    unused( level );
-
-    double cfl = _settings->GetCFL();
-
+double ThermalRadiative::ComputeDt( const Matrix& /*u*/, double dx, unsigned /*level*/ ) const {
+    double cfl         = _settings->GetCFL();
     double maxVelocity = std::sqrt( 1.0 / 3.0 ) / _epsilon;
-
     return ( cfl * dx ) / maxVelocity;
 }
 
-Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
-    unused( xi );
-
+Vector ThermalRadiative::IC( const Vector& x, const Vector& /*xi*/ ) {
     Vector y( _nStates, 0.0 );
-    auto sigma = _settings->GetSigma();
+    // auto sigma = _settings->GetSigma();
     // double sigmaXi = sigma[0] * xi[0];
     double E, F, T;
     F = 0;
@@ -175,10 +164,7 @@ Vector ThermalRadiative::IC( const Vector& x, const Vector& xi ) {
     return y;
 }
 
-Vector ThermalRadiative::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
+Vector ThermalRadiative::LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) {
     _log->error( "[ThermalRadiative: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }

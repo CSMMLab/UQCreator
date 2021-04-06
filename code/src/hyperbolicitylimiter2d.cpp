@@ -11,11 +11,7 @@ void HyperbolicityLimiter2D::U( Tensor& out, const Tensor& Lambda ) { out = Lamb
 
 Tensor HyperbolicityLimiter2D::U( const Tensor& Lambda ) { return Lambda; }
 
-void HyperbolicityLimiter2D::DU( Matrix& y, const Vector& Lambda ) {
-    unused( Lambda );
-
-    y = VectorSpace::IdentityMatrix<double>( _nStates );
-}
+void HyperbolicityLimiter2D::DU( Matrix& y, const Vector& /*Lambda*/ ) { y = VectorSpace::IdentityMatrix<double>( _nStates ); }
 
 void HyperbolicityLimiter2D::SolveClosure( Tensor& lambda, const Tensor& u, unsigned refLevel ) {
     Vector rho( _nQTotalForRef[refLevel], 0.0 );

@@ -92,11 +92,8 @@ ThermalPN2D::ThermalPN2D( Settings* settings ) : Problem( settings ) {
 
 ThermalPN2D::~ThermalPN2D() { delete _grid; }
 
-Vector ThermalPN2D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    unused( nUnit );
-
+Vector ThermalPN2D::G( const Vector& u, const Vector& v, const Vector& /*nUnit*/, const Vector& n ) {
     // Vector g = F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
-
     Vector g     = 0.5 * ( F( u ) + F( v ) ) * n - 0.5 * _AbsAx * ( v - u ) * fabs( n[0] ) - 0.5 * _AbsAy * ( v - u ) * fabs( n[1] );
     g[_nMoments] = 0.0;    // set temperature flux to zero
     return g;
@@ -294,14 +291,9 @@ double ThermalPN2D::ScaledTemperature( double eTilde ) const {
     return T / _TRef;
 }
 
-double ThermalPN2D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
-    unused( u );
-    unused( level );
-
-    double cfl = _settings->GetCFL();
-
+double ThermalPN2D::ComputeDt( const Matrix& /*u*/, double dx, unsigned /*level*/ ) const {
+    double cfl         = _settings->GetCFL();
     double maxVelocity = 1.0 / _epsilon;
-
     return ( cfl / dx ) / maxVelocity;
 }
 
@@ -326,10 +318,7 @@ Vector ThermalPN2D::IC( const Vector& x, const Vector& xi ) {
     return y;
 }
 
-Vector ThermalPN2D::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
+Vector ThermalPN2D::LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) {
     _log->error( "[ThermalPN2D: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }
@@ -400,9 +389,7 @@ int ThermalPN2D::kPlus( int k ) const { return k + Sgn( k ); }
 
 int ThermalPN2D::kMinus( int k ) const { return k - Sgn( k ); }
 
-Matrix ThermalPN2D::F( const Matrix& u ) {
-    unused( u );
-
+Matrix ThermalPN2D::F( const Matrix& /*u*/ ) {
     _log->error( "[ThermalPN2D] Flux not implemented" );
     exit( EXIT_FAILURE );
 }

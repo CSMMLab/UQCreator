@@ -24,19 +24,12 @@ KineticEquation::KineticEquation( Settings* settings ) : Problem( settings ) {
 
 KineticEquation::~KineticEquation() { delete _grid; }
 
-Vector KineticEquation::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    unused( u );
-    unused( v );
-    unused( nUnit );
-    unused( n );
-
+Vector KineticEquation::G( const Vector& /*u*/, const Vector& /*v*/, const Vector& /*nUnit*/, const Vector& /*n*/ ) {
     _log->error( "[KineticEquation: G scalar not implemented]" );
     exit( EXIT_FAILURE );
 }
 
-Matrix KineticEquation::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
-    unused( n );
-
+Matrix KineticEquation::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& /*n*/, unsigned level ) {
     unsigned nStates = u.rows();
     unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq );
@@ -57,10 +50,7 @@ Matrix KineticEquation::F( const Vector& u, double mu ) {
     return flux;
 }
 
-double KineticEquation::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
-    unused( u );
-    unused( level );
-
+double KineticEquation::ComputeDt( const Matrix& /*u*/, double dx, unsigned /*level*/ ) const {
     double cfl = _settings->GetCFL();
     return cfl * dx;
 }
@@ -81,19 +71,12 @@ Vector KineticEquation::IC( const Vector& x, const Vector& xi ) {
     return y;
 }
 
-Vector KineticEquation::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
+Vector KineticEquation::LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) {
     _log->error( "[KineticEquation: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }
 
-Matrix KineticEquation::ExactSolution( double t, const Matrix& x, const Vector& xi ) const {
-    unused( t );
-    unused( x );
-    unused( xi );
-
+Matrix KineticEquation::ExactSolution( double /*t*/, const Matrix& /*x*/, const Vector& /*xi*/ ) const {
     _log->error( "[KineticEquation: ExactSolution not implemented]" );
     exit( EXIT_FAILURE );
 }

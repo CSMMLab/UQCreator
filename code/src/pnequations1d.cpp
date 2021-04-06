@@ -17,7 +17,7 @@ PNEquations1D::PNEquations1D( Settings* settings ) : Problem( settings ), _N( 1 
     }
 }
 
-PNEquations1D::PNEquations1D( Settings* settings, bool noSystemMatrix ) : Problem( settings ) { unused( noSystemMatrix ); }
+PNEquations1D::PNEquations1D( Settings* settings, bool /*noSystemMatrix*/ ) : Problem( settings ) {}
 
 PNEquations1D::~PNEquations1D() {}
 
@@ -182,11 +182,7 @@ Matrix PNEquations1D::F( const Matrix& u ) {
     return 0.5 * pow( u, 2 );
 }
 
-Matrix PNEquations1D::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
-    unused( x );
-    unused( t );
-    unused( level );
-
+Matrix PNEquations1D::Source( const Matrix& uQ, const Vector& /*x*/, double /*t*/, unsigned /*level*/ ) const {
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = static_cast<unsigned>( uQ.columns() );
     Vector g( nStates, 0.0 );
@@ -201,20 +197,13 @@ Matrix PNEquations1D::Source( const Matrix& uQ, const Vector& x, double t, unsig
     return y;
 }
 
-double PNEquations1D::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
-    unused( u );
-    unused( level );
-
-    double cfl = _settings->GetCFL();
-
+double PNEquations1D::ComputeDt( const Matrix& /*u*/, double dx, unsigned /*level*/ ) const {
+    double cfl         = _settings->GetCFL();
     double maxVelocity = 1.0;
-
     return ( cfl * dx ) / maxVelocity;
 }
 
-Vector PNEquations1D::IC( const Vector& x, const Vector& xi ) {
-    unused( xi );
-
+Vector PNEquations1D::IC( const Vector& x, const Vector& /*xi*/ ) {
     Vector y( _nStates, 0.0 );
     double x0    = 0.0;
     double s2    = 1.0 * std::pow( 0.01, 2 );    // std::pow( 0.03, 2 );
@@ -226,9 +215,4 @@ Vector PNEquations1D::IC( const Vector& x, const Vector& xi ) {
     return y;
 }
 
-Vector PNEquations1D::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
-    return Vector( 1 );
-}
+Vector PNEquations1D::LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) { return Vector( 1 ); }

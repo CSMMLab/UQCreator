@@ -345,9 +345,7 @@ void MomentSolver::Solve() {
     }
 }
 
-void MomentSolver::Source( MatTens& uQNew, const MatTens& uQ, double dt, double t, const VectorU& refLevel ) const {
-    unused( uQ );
-
+void MomentSolver::Source( MatTens& uQNew, const MatTens& /*uQ*/, double dt, double t, const VectorU& refLevel ) const {
     //#pragma omp parallel for
     auto uQTilde = uQNew;
 
@@ -358,11 +356,7 @@ void MomentSolver::Source( MatTens& uQNew, const MatTens& uQ, double dt, double 
     }
 }
 
-void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned level ) {
-    unused( level );
-
-    out += g;
-}
+void MomentSolver::numFlux( Matrix& out, const Matrix& g, unsigned /*level*/ ) { out += g; }
 
 double MomentSolver::ComputeRefIndicator( const Tensor& u, unsigned refLevel ) const {
     double indicator = 0;
@@ -392,9 +386,7 @@ double MomentSolver::ComputeRefIndicator( const Tensor& u, unsigned refLevel ) c
     return indicator * P;
 }
 
-void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, const MatTens& u, unsigned index ) const {
-    unused( u );
-
+void MomentSolver::ExportRefinementIndicator( const VectorU& refinementLevel, const MatTens& /*u*/, unsigned index ) const {
     // loop over all cells and check refinement indicator
     Matrix refinementIndicatorPlot( 2 * _nStates, _mesh->GetNumCells(), 0.0 );
     for( unsigned j = 0; j < _nCells; ++j ) {

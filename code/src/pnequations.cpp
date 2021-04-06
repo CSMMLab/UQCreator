@@ -39,7 +39,7 @@ PNEquations::PNEquations( Settings* settings ) : Problem( settings ) {
     std::cout << "DONE" << std::endl;
 }
 
-PNEquations::PNEquations( Settings* settings, bool noSystemMatrix ) : Problem( settings ) { unused( noSystemMatrix ); }
+PNEquations::PNEquations( Settings* settings, bool /*noSystemMatrix*/ ) : Problem( settings ) {}
 
 PNEquations::~PNEquations() {}
 
@@ -173,9 +173,7 @@ void PNEquations::SetupSystemMatrices() {
     std::cout << "A_z =" << _Az << std::endl;
 }
 
-Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    unused( nUnit );
-
+Vector PNEquations::G( const Vector& u, const Vector& v, const Vector& /*nUnit*/, const Vector& n ) {
     // return F( 0.5 * ( u + v ) ) * n - 0.5 * ( v - u ) * norm( n );
     return 0.5 * ( F( u ) + F( v ) ) * n - 0.5 * _AbsAx * ( v - u ) * fabs( n[0] ) - 0.5 * _AbsAz * ( v - u ) * fabs( n[1] );
 }
@@ -206,11 +204,7 @@ Matrix PNEquations::F( const Matrix& u ) {
     return 0.5 * pow( u, 2 );
 }
 
-Matrix PNEquations::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
-    unused( x );
-    unused( t );
-    unused( level );
-
+Matrix PNEquations::Source( const Matrix& uQ, const Vector& /*x*/, double /*t*/, unsigned /*level*/ ) const {
     unsigned nStates = static_cast<unsigned>( uQ.rows() );
     unsigned Nq      = static_cast<unsigned>( uQ.columns() );
     Vector g( nStates, 0.0 );
@@ -225,20 +219,13 @@ Matrix PNEquations::Source( const Matrix& uQ, const Vector& x, double t, unsigne
     return y;
 }
 
-double PNEquations::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
-    unused( u );
-    unused( level );
-
-    double cfl = _settings->GetCFL();
-
+double PNEquations::ComputeDt( const Matrix& /*u*/, double dx, unsigned /*level*/ ) const {
+    double cfl         = _settings->GetCFL();
     double maxVelocity = 1.0;
-
     return ( cfl / dx ) / maxVelocity;
 }
 
-Vector PNEquations::IC( const Vector& x, const Vector& xi ) {
-    unused( xi );
-
+Vector PNEquations::IC( const Vector& x, const Vector& /*xi*/ ) {
     Vector y( _nStates, 0.0 );
     double x0    = 0.0;
     double y0    = 0.0;
@@ -251,9 +238,4 @@ Vector PNEquations::IC( const Vector& x, const Vector& xi ) {
     return y;
 }
 
-Vector PNEquations::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
-    return Vector( 1 );
-}
+Vector PNEquations::LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) { return Vector( 1 ); }

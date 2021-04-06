@@ -7,12 +7,10 @@ ExplicitEuler::ExplicitEuler( Settings* settings, Mesh* mesh, Problem* problem )
 
 void ExplicitEuler::Advance( std::function<void( Matrix&, const Matrix&, unsigned )> const& fluxFunc,
                              MatTens& uNew,
-                             MatTens& u,
+                             MatTens& /*u*/,
                              MatTens& uQ,
                              double dt,
                              const VectorU& refLevel ) {
-    unused( u );
-
     auto numCells = _mesh->GetNumCells();
     Cell* cell;
     VectorU neighbors;

@@ -3,9 +3,7 @@
 
 #include <vector>
 
-#include "vectorspace.cpp"
-
-template <class T> void unused( const T& ) {}
+#include "../src/vectorspace.cpp"
 
 typedef VectorSpace::Tensor<double> Tensor;
 typedef VectorSpace::Matrix<double> Matrix;

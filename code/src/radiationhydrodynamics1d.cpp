@@ -337,9 +337,7 @@ Matrix RadiationHydrodynamics1D::FEuler( const Vector& u ) const {
     return flux;
 }
 
-Vector RadiationHydrodynamics1D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    unused( n );
-
+Vector RadiationHydrodynamics1D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& /*n*/ ) {
     // double dx = norm( n );
     Vector out( _nStates, 0.0 );
     Vector outEuler( 3, false );

@@ -215,9 +215,11 @@ inline void cgeev( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, 
     int n = A.columns(), lda = A.columns(), ldvl = A.columns(), ldvr = A.columns(), info, lwork;
     complex wkopt;
     complex* work;
-    float rwork[2 * N];    // rwork dimension should be at least 2*n
-    complex w[N], vl[N * N], vr[N * N];
-    complex a[N * N];
+    float* rwork = new float[2 * N];    // rwork dimension should be at least 2*n
+    complex* w   = new complex[N];
+    complex* vl  = new complex[N * N];
+    complex* vr  = new complex[N * N];
+    complex* a   = new complex[N * N];
     for( unsigned i = 0; i < N; ++i ) {
         for( unsigned j = 0; j < N; ++j ) {
             a[i + j * N] = { A( i, j ), 0.0 };
@@ -244,6 +246,11 @@ inline void cgeev( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, 
         W( i, i ) = w[i].re;
     }
     delete work;
+    delete[] rwork;
+    delete[] w;
+    delete[] vl;
+    delete[] vr;
+    delete[] a;
 }
 
 // multiplies PE part of A and x and saves result on b

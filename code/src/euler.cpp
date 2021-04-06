@@ -34,9 +34,7 @@ Euler::~Euler() {}
 
 void Euler::Solve() {}
 
-Vector Euler::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    unused( n );
-
+Vector Euler::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& /*n*/ ) {
     double rhoInv = 1.0 / u[0];
     double vU     = u[1] * rhoInv;
     double p      = ( _gamma - 1.0 ) * ( u[2] - 0.5 * u[0] * pow( vU, 2 ) );
@@ -82,9 +80,7 @@ Matrix Euler::F( const Vector& u ) {
     return flux;
 }
 
-Matrix Euler::F( const Matrix& u ) {
-    unused( u );
-
+Matrix Euler::F( const Matrix& /*u*/ ) {
     _log->error( "[euler] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
@@ -152,10 +148,7 @@ Vector Euler::IC( const Vector& x, const Vector& xi ) {
     return y;
 }
 
-Vector Euler::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
+Vector Euler::LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) {
     _log->error( "[Euler: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }

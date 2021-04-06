@@ -226,13 +226,14 @@ template <class T> Matrix<T> Matrix<T>::transpose() const {
 template <class T> Matrix<T> Matrix<T>::inv() const {
     Matrix<T> res( _rows, _columns, true );
     Vector<T> v( _rows );
-    int ipiv[_rows];
+    int* ipiv = new int[_rows];
     for( unsigned i = 0; i < _columns; ++i ) {
         v.reset();
         v[i] = 1.0;
         gesv( *this, v, ipiv );
         for( unsigned j = 0; j < _columns; ++j ) res( j, i ) = v[j];
     }
+    delete[] ipiv;
     return res;
 }
 

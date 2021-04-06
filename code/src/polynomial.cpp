@@ -15,9 +15,7 @@ void Polynomial::Sort() {
     _weights = sorted_weights;
 }
 
-Polynomial* Polynomial::Create( Settings* settings, unsigned order, DistributionType distributionType ) {
-    unused( settings );
-
+Polynomial* Polynomial::Create( Settings* /*settings*/, unsigned order, DistributionType distributionType ) {
     auto log = spdlog::get( "event" );
     if( distributionType == DistributionType::D_LEGENDRE ) {
         return new Legendre( order );

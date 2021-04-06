@@ -18,9 +18,7 @@ Burgers::Burgers( Settings* settings ) : Problem( settings ) {
     }
 }
 
-Vector Burgers::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    unused( n );
-
+Vector Burgers::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& /*n*/ ) {
     // return 0.5 * ( F( u[0] ) + F( v[0] ) ) * nUnit - 0.5 * ( v[0] - u[0] ) * norm( n ) / _settings->GetDT();
     if( u[0] * nUnit[0] > 0 ) {
         return F( u[0] ) * nUnit[0];
@@ -145,10 +143,7 @@ double Burgers::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
     return dtMinTotal;
 }
 
-Vector Burgers::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
+Vector Burgers::LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) {
     _log->error( "[Burgers: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }

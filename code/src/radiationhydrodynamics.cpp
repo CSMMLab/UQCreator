@@ -230,9 +230,7 @@ Matrix RadiationHydrodynamics::F( const Vector& u ) const {
     return flux;
 }
 
-Vector RadiationHydrodynamics::IC( const Vector& x, const Vector& xi ) {
-    unused( xi );
-
+Vector RadiationHydrodynamics::IC( const Vector& x, const Vector& /*xi*/ ) {
     Vector y( _nStates, 0.0 );
     /*
     double x0      = 0.0;

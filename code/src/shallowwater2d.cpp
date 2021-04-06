@@ -64,9 +64,7 @@ Matrix ShallowWater2D::F( const Vector& u ) const {
     return flux;
 }
 
-Matrix ShallowWater2D::F( const Matrix& u ) {
-    unused( u );
-
+Matrix ShallowWater2D::F( const Matrix& /*u*/ ) {
     _log->error( "[ShallowWater2D] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
@@ -126,10 +124,7 @@ Vector ShallowWater2D::IC( const Vector& x, const Vector& xi ) {
     exit( EXIT_FAILURE );
 }
 
-Vector ShallowWater2D::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
+Vector ShallowWater2D::LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) {
     _log->error( "[ShallowWater2D: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }

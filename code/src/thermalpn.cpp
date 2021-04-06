@@ -103,9 +103,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
 
 ThermalPN::~ThermalPN() { delete _grid; }
 
-Vector ThermalPN::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    unused( n );
-
+Vector ThermalPN::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& /*n*/ ) {
     // Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
     Vector g     = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * _AbsA * ( v - u );
     g[_nMoments] = 0.0;    // set temperature flux to zero
@@ -348,10 +346,7 @@ void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matr
     }
 }*/
 
-void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
-    unused( x );
-    unused( t );
-
+void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& /*x*/, double /*t*/, unsigned level ) const {
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
@@ -400,22 +395,15 @@ double ThermalPN::ScaledTemperature( double eTilde ) const {
     return T / _TRef;
 }
 
-Matrix ThermalPN::F( const Matrix& u ) {
-    unused( u );
-
+Matrix ThermalPN::F( const Matrix& /*u*/ ) {
     _log->error( "[ThermalPN] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
 
-double ThermalPN::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
-    unused( u );
-    unused( level );
-
-    double cfl = _settings->GetCFL();
-
+double ThermalPN::ComputeDt( const Matrix& /*u*/, double dx, unsigned /*level*/ ) const {
+    double cfl         = _settings->GetCFL();
     double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
     // double maxVelocity = 1.0 / _epsilon;
-
     return ( cfl * dx ) / maxVelocity;
 }
 
@@ -425,10 +413,10 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     double sigmaXi = 0.0;
     if( sigma.size() > 0 ) sigmaXi = sigma[0] * xi[0];
 
-    double E = 1e-5 * _a * pow( _TRef, 4 );
-    double F = 0;
-    double T = 0.02 * 11604.0;
-    double internalEnergy;
+    double E              = 1e-5 * _a * pow( _TRef, 4 );
+    double F              = 0;
+    double T              = 0.02 * 11604.0;
+    double internalEnergy = 0.0;
 
     if( _testCase == 0 ) {
         E = 0.0;    // std::fmax( 1e-4 * _a,
@@ -489,10 +477,7 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     return y;
 }
 
-Vector ThermalPN::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
+Vector ThermalPN::LoadIC( const Vector& /*x*/, const Vector& /*xi*/ ) {
     _log->error( "[ThermalPN: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }
