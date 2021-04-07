@@ -1,12 +1,12 @@
 #include "filter.h"
-#include "erfcfilter.h"
-#include "erfclogfilter.h"
-#include "exponentialfilter.h"
-#include "fokkerplanckfilter.h"
-#include "houlifilter.h"
-#include "l2filter.h"
-#include "lassofilter.h"
-#include "splinefilter.h"
+#include "filters/erfcfilter.h"
+#include "filters/erfclogfilter.h"
+#include "filters/exponentialfilter.h"
+#include "filters/fokkerplanckfilter.h"
+#include "filters/houlifilter.h"
+#include "filters/l2filter.h"
+#include "filters/lassofilter.h"
+#include "filters/splinefilter.h"
 
 Filter::Filter( Settings* settings ) : _settings( settings ), _lambda( _settings->GetFilterStrength() ) {
     _log            = spdlog::get( "event" );
