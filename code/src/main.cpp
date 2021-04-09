@@ -193,6 +193,44 @@ void PrintInit( std::string configFile ) {
     log->info( "" );
 }
 
+extern "C" {
+void run( InitSettings,
+          double* ( *G )(double*, double*, double*, double*, unsigned),
+          double* ( *F )(double*, double*),
+          double ( *ComputeDt )( unsigned ),
+          double* ( *IC )(double*, double*, double*),
+          void ( *U )( double*, double* ),
+          void ( *DU )( double*, double* ),
+          void ( *SolveClosure )( double*, double*, unsigned ) ) {
+    MPI_Init( nullptr, nullptr );
+    std::string configFile  = "foo";
+    std::string logfilename = initLogger( spdlog::level::info, spdlog::level::info, configFile );
+    MPI_Barrier( MPI_COMM_WORLD );
+    auto log           = spdlog::get( "event" );
+    Settings* settings = new Settings( configFile );
+    if( settings->GetMyPE() == 0 ) {
+        PrintInit( configFile );
+    }
+    if( settings->HasReferenceFile() ) initErrorLogger( configFile, logfilename );
+    Mesh* mesh       = Mesh::Create( settings );
+    Problem* problem = Problem::Create( settings );
+    problem->SetMesh( mesh );
+    MomentSolver* solver = new MomentSolver( settings, mesh, problem );
+
+    solver->Solve();
+
+    log->info( "" );
+    log->info( "Process exited normally on PE {:1d} .", settings->GetMyPE() );
+
+    delete solver;
+    delete problem;
+    delete mesh;
+    delete settings;
+
+    MPI_Finalize();
+}
+}
+
 int main( int argc, char* argv[] ) {
     MPI_Init( &argc, &argv );
 

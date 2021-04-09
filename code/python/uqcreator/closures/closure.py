@@ -1,3 +1,5 @@
+from abc import ABCMeta, abstractmethod
+
 class Closure(metaclass = ABCMeta):
     def __init__(self):
         pass
@@ -8,5 +10,5 @@ class Closure(metaclass = ABCMeta):
     def DU(self):
         pass
     @abstractmethod
-    def DS(self):
+    def SolveClosure(self):
         pass

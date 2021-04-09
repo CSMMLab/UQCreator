@@ -19,6 +19,212 @@ Settings::Settings( const std::istringstream& inputStream ) {
     Init( file, true );
 }
 
+Settings::Settings( const InitSettings& ini ) {
+    auto log = spdlog::get( "event" );
+
+    MPI_Comm_rank( MPI_COMM_WORLD, &_mype );
+    MPI_Comm_size( MPI_COMM_WORLD, &_npes );
+    _inputFile = "N/A";
+    _cwd       = ini.cwd;
+    _inputDir  = _cwd;
+
+    // section mesh
+    _meshDimension = ini.dim;
+    _problemType   = ProblemType::P_PYTHON_API;
+
+    _outputDir = ini.outputDir;
+    _outputDir = ini.outputFile;
+
+    std::string refFile( ini.referenceFile );
+    _writeFrequency = ini.writeFrequency;
+    if( _writeFrequency == -1 )
+        _writeInTime = false;
+    else
+        _writeInTime = true;
+    if( !refFile.empty() ) {
+        _referenceFile = _inputDir.string() + "/" + refFile;
+    }
+
+    // section problem
+    std::string timesteppingTypeString( ini.timesteppingType );
+    if( timesteppingTypeString.compare( "explicitEuler" ) == 0 ) {
+        _timesteppingType = TimesteppingType::T_EXPLICITEULER;
+    }
+    else {
+        log->error( "'timestepping' is invalid!\nPlease set one of the following types: explicitEuler" );
+    }
+
+    for( unsigned i = 0; i < ini.nUncertainties; ++i ) {
+        std::string dist( ini.dist[i] );
+        if( dist.compare( "Legendre" ) == 0 ) {
+            _distributionType[i] = DistributionType::D_LEGENDRE;
+        }
+        else if( dist.compare( "Hermite" ) == 0 ) {
+            _distributionType[i] = DistributionType::D_HERMITE;
+        }
+        else {
+            log->error( "'distribution' is invalid!\nPlease set one of the following types: Legendre, Hermite" );
+        }
+        _sigma[i] = ini.sigma[i];
+    }
+
+    _CFL         = ini.cfl;
+    _tEnd        = ini.tEnd;
+    _minResidual = ini.residual;
+
+    _closureType = ClosureType::C_PYTHON_API;
+
+    std::string filterTypeString = ini.filter;
+    if( filterTypeString.compare( "L2" ) == 0 ) {
+        _filterType = FilterType::F_L2FILTER;
+    }
+    else if( filterTypeString.compare( "Lasso" ) == 0 ) {
+        _filterType = FilterType::F_LASSOFILTER;
+    }
+    else if( filterTypeString.compare( "Exponential" ) == 0 ) {
+        _filterType = FilterType::F_EXPFILTER;
+    }
+    else if( filterTypeString.compare( "Spline" ) == 0 ) {
+        _filterType = FilterType::F_SPLINEFILTER;
+    }
+    else if( filterTypeString.compare( "HouLi" ) == 0 ) {
+        _filterType = FilterType::F_HOULIFILTER;
+    }
+    else if( filterTypeString.compare( "FokkerPlanck" ) == 0 ) {
+        _filterType = FilterType::F_FOKKERPLANCKFILTER;
+    }
+    else if( filterTypeString.compare( "Erfc" ) == 0 ) {
+        _filterType = FilterType::F_ERFCFILTER;
+    }
+    else if( filterTypeString.compare( "ErfcLog" ) == 0 ) {
+        _filterType = FilterType::F_ERFCLOGFILTER;
+    }
+    else if( filterTypeString.compare( "None" ) == 0 ) {
+        _filterType = FilterType::F_NOFILTER;
+    }
+    else {
+        log->error( "'filter' incorrect!\n Please set one of the following types: L2, Lasso, Exponential, Spline, HouLi, FokkerPlanck, Erfc, "
+                    "ErfcLog, None" );
+    }
+
+    _nMultiElements = ini.nMultiElements;
+
+    auto momentArray       = ini.moments;
+    auto degreeType        = ini.momentDegreeType;
+    _nRefinementLevels     = ini.nRefinementLevels;
+    _nTotalRefinementLevel = VectorU( _nRefinementLevels );
+    _refinementLevel       = VectorU( _nRefinementLevels );
+    for( unsigned i = 0; i < _nRefinementLevels; ++i ) _refinementLevel[i] = unsigned( momentArray[i] );
+    _maxDegree = unsigned( momentArray[_nRefinementLevels - 1] );
+    // compute nTotal
+    if( std::string( degreeType[0] ).compare( "maxDegree" ) == 0 ) {
+        _useMaxDegree = true;
+    }
+    else if( std::string( degreeType[0] ).compare( "totalDegree" ) == 0 ) {
+        _useMaxDegree = false;
+    }
+    else {
+        log->error( "'moments' is invalid!\nPlease set one of the following types: totalDegree, maxDegree" );
+    }
+    _nTotal = 0;
+
+    _polyIndices.resize( 0 );
+    // setup map from i\in(0,...,nTotal-1) to individual indices for basis function calculation
+    VectorU nTotal( _nRefinementLevels );
+    std::vector<unsigned> indexTest;
+    indexTest.resize( _numDimXi );
+    int totalDegree;    // compute total degree of basis function i
+    int previousDegree = -1;
+    // loop over all levels and only store indices of certain level to ensure correct ordering
+    for( unsigned level = 0; level < _nRefinementLevels; ++level ) {
+        for( unsigned i = 0; i < std::pow( _maxDegree + 1, _numDimXi ); ++i ) {
+            totalDegree = 0;
+            for( unsigned l = 0; l < _numDimXi; ++l ) {
+                indexTest[l] = unsigned( ( i - i % unsigned( std::pow( _maxDegree + 1, l ) ) ) / unsigned( std::pow( _maxDegree + 1, l ) ) ) %
+                               ( _maxDegree + 1 );
+                totalDegree += indexTest[l];
+            }
+            // if total degree is sufficiently small or max degree is used, indices are stored
+            if( ( unsigned( totalDegree ) <= GetPolyDegreeforRefLevel( level ) && totalDegree > previousDegree ) || this->UsesMaxDegree() ) {
+                _polyIndices.push_back( indexTest );
+            }
+        }
+        _nTotalRefinementLevel[level] = static_cast<unsigned>( _polyIndices.size() );
+        if( UsesMaxDegree() ) break;
+        previousDegree = int( GetPolyDegreeforRefLevel( level ) );
+    }
+    _nTotal = unsigned( _polyIndices.size() );
+
+    auto nQArray        = ini.quadOrder;
+    auto quadratureType = ini.quadType;
+    _nQuadPoints        = unsigned( nQArray[_nRefinementLevels - 1] );
+    _quadLevel          = VectorU( _nRefinementLevels );
+    for( unsigned i = 0; i < _nRefinementLevels; ++i ) _quadLevel[i] = unsigned( nQArray[i] );
+
+    // computing Nq Total
+    if( std::string( quadratureType[0] ).compare( "sparseGrid" ) == 0 ) {
+        _gridType = G_SPARSEGRID;
+        _nQTotal  = unsigned( std::pow( 2, _nQuadPoints ) ) + 1u;
+    }
+    else if( std::string( quadratureType[0] ).compare( "tensorizedGrid" ) == 0 ) {    // tensorizedGrid
+        _gridType = G_TENSORIZEDGRID;
+        _nQTotal  = unsigned( std::pow( _nQuadPoints, _numDimXi ) );
+        // check if refinement is only unsed with constant quad level. Otherwise one needs to use nested quadrature
+        if( _nRefinementLevels > 1 ) {
+            unsigned quadVal = _quadLevel[0];
+            for( unsigned i = 0; i < _nRefinementLevels; ++i ) {
+                if( _quadLevel[i] != quadVal )
+                    std::cerr << "[Settings]: ERROR! Using tensorizedGrid with quadrature refinement not possible. Choose nested "
+                                 "quadrature set!"
+                              << std::endl;
+            }
+        }
+    }
+    else if( std::string( quadratureType[0] ).compare( "tensorizedCCGrid" ) == 0 ) {    // tensorizedCC
+        _gridType = G_TENSORIZEDCC;
+        if( _nQuadPoints == 0 )
+            _nQTotal = 1;
+        else
+            _nQTotal = unsigned( std::pow( static_cast<unsigned>( std::pow( 2, _nQuadPoints ) + 1 ), _numDimXi ) );
+    }
+    else {
+        log->error( "[inputfile] [moment_system] 'quadType' not defined!" );
+    }
+
+    // read convergence retardation
+    auto retardationSteps    = ini.retardationSteps;
+    auto residualRetardation = ini.retardationResidual;
+    _nRetardationLevels      = unsigned( ini.nRetardationSteps ) + 1;
+    _retardationSteps        = VectorU( _nRetardationLevels, false );
+    _residualRetardation     = Vector( _nRetardationLevels, false );
+
+    for( unsigned i = 0; i < _nRetardationLevels - 1; ++i ) {
+        _retardationSteps[i]    = unsigned( retardationSteps[i] );
+        _residualRetardation[i] = residualRetardation[i];
+    }
+    _retardationSteps[_nRetardationLevels - 1]    = _nRefinementLevels;
+    _residualRetardation[_nRetardationLevels - 1] = _minResidual;
+
+    if( _nRefinementLevels > 1 ) {
+        auto refinementThresholds = ini.refinementThresholds;
+        _refinementThreshold      = refinementThresholds[0];
+        _coarsenThreshold         = refinementThresholds[1];
+    }
+
+    _regularizationStrength = ini.regularizationStrength;
+    if( _regularizationStrength < 0 )
+        _regularization = false;
+    else
+        _regularization = true;
+
+    _filterStrength = ini.filterStrength;
+
+    _maxIterations     = ini.maxIterations;
+    _epsilon           = ini.epsilon;
+    _hasSource         = false;
+    _hasImplicitSource = false;
+}
+
 void Settings::Init( std::shared_ptr<cpptoml::table> file, bool restart ) {
     auto log = spdlog::get( "event" );
 

@@ -10,6 +10,37 @@
 
 #include "typedefs.h"
 
+struct InitSettings {
+    char* cwd;
+    unsigned dim;
+    char* outputDir;
+    char* outputFile;
+    char* referenceFile;
+    unsigned writeFrequency;
+    char* timesteppingType;
+    unsigned nUncertainties;
+    char** dist;
+    double* sigma;
+    double cfl;
+    double tEnd;
+    double residual;
+    char* filter;
+    unsigned nMultiElements;
+    unsigned nRefinementLevels;
+    unsigned* moments;
+    char** momentDegreeType;
+    unsigned* quadOrder;
+    char** quadType;
+    unsigned nRetardationSteps;
+    unsigned* retardationSteps;
+    double* retardationResidual;
+    double* refinementThresholds;
+    double regularizationStrength;
+    double filterStrength;
+    unsigned maxIterations;
+    double epsilon;
+};
+
 enum ProblemType {
     P_BURGERS_1D,
     P_ADVECTION_2D,
@@ -26,7 +57,8 @@ enum ProblemType {
     P_THERMALPN_1D,
     P_THERMALPN_2D,
     P_KINETIC_1D,
-    P_NAVIERSTOKES_1D
+    P_NAVIERSTOKES_1D,
+    P_PYTHON_API
 };
 
 enum ClosureType {
@@ -43,7 +75,8 @@ enum ClosureType {
     C_M1_1D,
     C_KINETIC,
     C_HYPLIM,
-    C_HYPLIM_2D
+    C_HYPLIM_2D,
+    C_PYTHON_API
 };
 
 enum FilterType {
@@ -152,6 +185,7 @@ class Settings
   public:
     Settings( std::string inputFile );
     Settings( const std::istringstream& inputStream );
+    Settings( const InitSettings& ini );
     ~Settings();
 
     ProblemType GetProblemType() const;

@@ -1,3 +1,5 @@
+from abc import ABCMeta, abstractmethod
+
 class Problem(metaclass = ABCMeta):
     def __init__(self):
         pass
