@@ -3,9 +3,12 @@
 #include <mpi.h>
 #include <omp.h>
 
+#include "closure.h"
+#include "closures/externalclosure.h"
 #include "mesh.h"
 #include "momentsolver.h"
 #include "problem.h"
+#include "problems/externalproblem.h"
 #include "settings.h"
 
 #include "spdlog/spdlog.h"
@@ -124,7 +127,75 @@ std::string initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level:
     return cfilename;
 }
 
-void initErrorLogger( std::string configFile, std::string filename ) {
+std::string
+initLogger( spdlog::level::level_enum terminalLogLvl, spdlog::level::level_enum fileLogLvl, std::string inputFile, std::string outputDir ) {
+    // event logger
+    auto terminalSink = std::make_shared<spdlog::sinks::stdout_sink_mt>();
+    terminalSink->set_level( terminalLogLvl );
+    terminalSink->set_pattern( "%v" );
+
+    auto inputDir = std::experimental::filesystem::path( std::filesystem::path( inputFile ).parent_path() );
+    outputDir     = inputDir.string() + "/" + outputDir + "/";
+    if( !std::filesystem::exists( outputDir ) ) {
+        std::filesystem::create_directory( outputDir );
+    }
+    if( !std::filesystem::exists( outputDir + "/logs" ) ) {
+        std::filesystem::create_directory( outputDir + "/logs" );
+    }
+
+    int pe;
+    MPI_Comm_rank( MPI_COMM_WORLD, &pe );
+    char cfilename[1024];
+    if( pe == 0 ) {
+        std::string filename = currentDateTime();
+        int ctr              = 0;
+        if( std::filesystem::exists( outputDir + "/logs/" + filename ) ) {
+            filename += "_" + std::to_string( ++ctr );
+        }
+        while( std::filesystem::exists( outputDir + "/logs/" + filename ) ) {
+            filename.pop_back();
+            filename += std::to_string( ++ctr );
+        }
+        strncpy( cfilename, filename.c_str(), sizeof( cfilename ) );
+        cfilename[sizeof( cfilename ) - 1] = 0;
+    }
+    MPI_Bcast( &cfilename, sizeof( cfilename ), MPI_CHAR, 0, MPI_COMM_WORLD );
+    MPI_Barrier( MPI_COMM_WORLD );
+
+    auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + cfilename );
+    fileSink->set_level( fileLogLvl );
+    fileSink->set_pattern( "%Y-%m-%d %H:%M:%S.%f | %v" );
+
+    std::vector<spdlog::sink_ptr> sinks;
+    sinks.push_back( terminalSink );
+    if( fileLogLvl != spdlog::level::off ) sinks.push_back( fileSink );
+
+    auto event_logger = std::make_shared<spdlog::logger>( "event", begin( sinks ), end( sinks ) );
+    spdlog::register_logger( event_logger );
+    spdlog::flush_every( std::chrono::seconds( 5 ) );
+
+    auto momentFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + cfilename + "_moments" );
+    momentFileSink->set_level( spdlog::level::info );
+    momentFileSink->set_pattern( "%v" );
+    auto moment_logger = std::make_shared<spdlog::logger>( "moments", momentFileSink );
+    spdlog::register_logger( moment_logger );
+
+    auto dualsFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + cfilename + "_duals" );
+    dualsFileSink->set_level( spdlog::level::info );
+    dualsFileSink->set_pattern( "%v" );
+    auto duals_logger = std::make_shared<spdlog::logger>( "duals", dualsFileSink );
+    spdlog::register_logger( duals_logger );
+
+    auto temperatureFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>( outputDir + "/logs/" + cfilename + "_temperature" );
+    temperatureFileSink->set_level( spdlog::level::info );
+    temperatureFileSink->set_pattern( "%v" );
+    auto temperature_logger = std::make_shared<spdlog::logger>( "temperature", temperatureFileSink );
+    spdlog::register_logger( temperature_logger );
+
+    return cfilename;
+}
+
+void initErrorLogger( const std::string& configFile, const std::string& filename ) {
     auto file                       = cpptoml::parse_file( configFile );
     std::filesystem::path inputFile = configFile;
     auto inputDir                   = std::experimental::filesystem::path( inputFile.parent_path() );
@@ -194,28 +265,28 @@ void PrintInit( std::string configFile ) {
 }
 
 extern "C" {
-void run( InitSettings,
+void run( InitSettings init,
           double* ( *G )(double*, double*, double*, double*, unsigned),
-          double* ( *F )(double*, double*),
+          double* ( *F )(double*),
           double ( *ComputeDt )( unsigned ),
-          double* ( *IC )(double*, double*, double*),
+          double* ( *IC )(double*, double*),
           void ( *U )( double*, double* ),
           void ( *DU )( double*, double* ),
           void ( *SolveClosure )( double*, double*, unsigned ) ) {
     MPI_Init( nullptr, nullptr );
-    std::string configFile  = "foo";
-    std::string logfilename = initLogger( spdlog::level::info, spdlog::level::info, configFile );
+    std::string logfilename = initLogger( spdlog::level::info, spdlog::level::info, init.cwd, init.outputDir );
     MPI_Barrier( MPI_COMM_WORLD );
     auto log           = spdlog::get( "event" );
-    Settings* settings = new Settings( configFile );
-    if( settings->GetMyPE() == 0 ) {
-        PrintInit( configFile );
-    }
-    if( settings->HasReferenceFile() ) initErrorLogger( configFile, logfilename );
+    Settings* settings = new Settings( init );
+    // if( settings->GetMyPE() == 0 ) {
+    //    PrintInit( configFile );
+    //}
+    // if( settings->HasReferenceFile() ) initErrorLogger( configFile, logfilename );
     Mesh* mesh       = Mesh::Create( settings );
-    Problem* problem = Problem::Create( settings );
+    Problem* problem = new ExternalProblem( G, F, ComputeDt, IC, settings );
     problem->SetMesh( mesh );
-    MomentSolver* solver = new MomentSolver( settings, mesh, problem );
+    Closure* closure     = new ExternalClosure( U, DU, SolveClosure, settings );
+    MomentSolver* solver = new MomentSolver( settings, mesh, problem, closure );
 
     solver->Solve();
 
@@ -223,6 +294,7 @@ void run( InitSettings,
     log->info( "Process exited normally on PE {:1d} .", settings->GetMyPE() );
 
     delete solver;
+    delete closure;
     delete problem;
     delete mesh;
     delete settings;
@@ -254,7 +326,8 @@ int main( int argc, char* argv[] ) {
     Mesh* mesh       = Mesh::Create( settings );
     Problem* problem = Problem::Create( settings );
     problem->SetMesh( mesh );
-    MomentSolver* solver = new MomentSolver( settings, mesh, problem );
+    Closure* closure     = Closure::Create( settings );
+    MomentSolver* solver = new MomentSolver( settings, mesh, problem, closure );
 
     solver->Solve();
 
@@ -262,6 +335,7 @@ int main( int argc, char* argv[] ) {
     log->info( "Process exited normally on PE {:1d} .", settings->GetMyPE() );
 
     delete solver;
+    delete closure;
     delete problem;
     delete mesh;
     delete settings;

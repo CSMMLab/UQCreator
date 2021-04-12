@@ -1,7 +1,8 @@
 #include "momentsolver.h"
 #include <mpi.h>
 
-MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) : _settings( settings ), _mesh( mesh ), _problem( problem ) {
+MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem, Closure* closure )
+    : _settings( settings ), _mesh( mesh ), _problem( problem ), _closure( closure ) {
     _log         = spdlog::get( "event" );
     _nCells      = _settings->GetNumCells();
     _tStart      = 0.0;
@@ -16,7 +17,6 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
 
     _cellIndexPE = _settings->GetCellIndexPE();
 
-    _closure = Closure::Create( _settings );
     _nQTotal = _settings->GetNQTotal();
     _time    = TimeSolver::Create( _settings, _mesh, _problem );
 
@@ -29,10 +29,7 @@ MomentSolver::MomentSolver( Settings* settings, Mesh* mesh, Problem* problem ) :
     }
 }
 
-MomentSolver::~MomentSolver() {
-    delete _closure;
-    delete _time;
-}
+MomentSolver::~MomentSolver() { delete _time; }
 
 void MomentSolver::Solve() {
     unsigned retCounter = 0;    // counter for retardation level

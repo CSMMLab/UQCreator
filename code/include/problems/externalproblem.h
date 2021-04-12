@@ -6,9 +6,17 @@
 class ExternalProblem : public Problem
 {
   private:
+    double* ( *_G )( double*, double*, double*, double*, unsigned );
+    double* ( *_F )( double* );
+    double ( *_ComputeDt )( unsigned );
+    double* ( *_IC )( double*, double* );
 
   public:
-    ExternalProblem( Settings* settings );
+    ExternalProblem( double* ( *G )(double*, double*, double*, double*, unsigned),
+                     double* ( *F )(double*),
+                     double ( *ComputeDt )( unsigned ),
+                     double* ( *IC )(double*, double*),
+                     Settings* settings );
     virtual ~ExternalProblem();
     virtual void Solve();
     inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
@@ -21,4 +29,4 @@ class ExternalProblem : public Problem
     virtual Matrix BoundaryFlux( const Matrix& u, const Vector& nUnit, const Vector& n, unsigned level ) const;
 };
 
-#endif // EXTERNALPROBLEM
+#endif    // EXTERNALPROBLEM

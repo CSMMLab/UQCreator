@@ -45,6 +45,7 @@ template <class T> class Matrix    // column major
     void operator-=( const Matrix<T>& other );
 
     double* GetPointer() { return _data; }
+    double* GetPointer() const { return _data; }
 
     unsigned rows() const;
     unsigned columns() const;
@@ -381,6 +382,7 @@ template <class T> class Tensor    // column major
     void operator-=( const Tensor<T>& other );
 
     double* GetPointer() { return _data; }
+    double* GetPointer() const { return _data; }
 
     unsigned frontRows() const;
     unsigned rows() const;

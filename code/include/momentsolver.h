@@ -18,11 +18,11 @@ class MomentSolver
 {
   private:
     Settings* _settings;                       // settings class
-    Closure* _closure;                         // closure class for computing duals, defines u(Lambda), du(Lambda)
     Mesh* _mesh;                               // specified mesh
     TimeSolver* _time;                         // time solver for evolving moment vector in time
     MatTens _lambda;                           // dual matrix of dimension nCells x states x total number of moments
     Problem* _problem;                         // specified problem defines right hand side and initial condition
+    Closure* _closure;                         // closure class for computing duals, defines u(Lambda), du(Lambda)
     double _dt, _tStart, _tEnd;                // timestep, start and end time
     unsigned _nCells;                          // number of spatial cells
     unsigned _nStates;                         // number of states of the original system
@@ -142,8 +142,9 @@ class MomentSolver
      * @param settings class
      * @param specified mesh
      * @param specified problem
+     * @param specified closure
      */
-    MomentSolver( Settings* settings, Mesh* mesh, Problem* problem );
+    MomentSolver( Settings* settings, Mesh* mesh, Problem* problem, Closure* closure );
     /**
      * destructor
      */

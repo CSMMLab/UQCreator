@@ -30,11 +30,11 @@ template <class T> class Vector
     typedef const T* const_iterator;
 
     Vector();
-    Vector( unsigned n, bool skipZeroInit = false );
+    explicit Vector( unsigned n, bool skipZeroInit = false );
     Vector( unsigned n, T init );
     Vector( unsigned n, T* ptr );
     Vector( const Vector& other );
-    Vector( std::initializer_list<T> initList );
+    explicit Vector( std::initializer_list<T> initList );
     ~Vector();
     void operator=( const Vector& other );
     void operator=( const std::vector<T>& other );
@@ -63,6 +63,9 @@ template <class T> class Vector
     void operator-=( const T& scalar );
     void operator*=( const T& scalar );
     void operator/=( const T& scalar );
+
+    double* GetPointer() { return _data; }
+    double* GetPointer() const { return _data; }
 
     unsigned size() const;
     void reset();
