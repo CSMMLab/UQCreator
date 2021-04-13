@@ -39,19 +39,16 @@
 *.exe
 *.out
 *.app
-code/bin/*
+bin/*
 
 # build files
-code/build/*
+build/*
 
-# input files
-code/input/*
-
-# results 
-code/results/*
+# examples
+examples/*
 
 # ext
-code/ext/*
+ext/*
 
 # tmp data
 .fuse_hidden*
@@ -323,6 +320,3 @@ TSWLatexianTemp*
 ### LaTeX Patch ###
 # glossaries
 *.glstex
-
-# bwsync dir
-result_sync/*
