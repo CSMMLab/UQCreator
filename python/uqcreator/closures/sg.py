@@ -1,5 +1,5 @@
 import numpy as np
-from closure import Closure
+from uqcreator.closures.closure import Closure
 
 class StochasticGalerkin(Closure):
     def __init__(self, nStates):

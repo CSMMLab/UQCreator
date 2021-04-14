@@ -1,4 +1,4 @@
-from ctypes import Structure, c_uint, c_double, c_char_p, Array
+from ctypes import Structure, c_uint, c_double, c_char_p, POINTER
 
 class CSettingsStruct(Structure):
     _fields_ = [
@@ -10,22 +10,22 @@ class CSettingsStruct(Structure):
         ("writeFrequency", c_uint),
         ("timesteppingType", c_char_p),
         ("nUncertainties", c_uint),
-        ("dist", Array(c_char_p)),
-        ("sigma", Array(c_double)),
+        ("dist", POINTER(c_char_p)),
+        ("sigma", POINTER(c_double)),
         ("cfl", c_double),
         ("tEnd", c_double),
         ("residual", c_double),
         ("filter", c_char_p),
         ("nMultiElements", c_uint),
         ("nRefinementLevels", c_uint),
-        ("moments", Array(c_uint)),
-        ("momentDegreeType", Array(c_char_p)),
-        ("quadOrder", Array(c_uint)),
-        ("quadType", Array(c_char_p)),
+        ("moments", POINTER(c_uint)),
+        ("momentDegreeType", POINTER(c_char_p)),
+        ("quadOrder", POINTER(c_uint)),
+        ("quadType", POINTER(c_char_p)),
         ("nRetardationSteps", c_uint),
-        ("retardationSteps", Array(c_uint)),
-        ("retardationResidual", Array(c_double)),
-        ("refinementThresholds", Array(c_double)),
+        ("retardationSteps", POINTER(c_uint)),
+        ("retardationResidual", POINTER(c_double)),
+        ("refinementThresholds", POINTER(c_double)),
         ("regularizationStrength", c_double),
         ("filterStrength", c_double),
         ("maxIterations", c_uint),

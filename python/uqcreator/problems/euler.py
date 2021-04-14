@@ -1,5 +1,5 @@
 import numpy as np
-from problem import Problem
+from uqcreator.problems import Problem
 
 class Euler(Problem):
     def __init__(self, dim, nStates):
@@ -56,25 +56,23 @@ class Euler(Problem):
         return flux
 
     def computeDt(self, level):
-        dtMinTotal = 1e10;
-        kEnd = _settings->GetNqPEAtRef( level );
+        dtMinTotal = 1e10
+        kEnd = 1 #_settings->GetNqPEAtRef( level )
 
-        cfl = _settings->GetCFL();
-        for l in range( _settings->GetNMultiElements() ):
+        cfl = 0.9#_settings->GetCFL()
+        for l in range( 1 ):#_settings->GetNMultiElements() ):
             for k in range(kEnd):
                 rhoInv = 1.0 / u[0, l, k ]
                 uU     = u[ 1, l, k ] * rhoInv
                 vU     = u[ 2, l, k ] * rhoInv
                 p      = ( self.gamma - 1.0 ) * ( u[ 3, l, k ] - 0.5 * u[ 0, l, k ] * ( uU**2 + vU**2 ) )
-                a      = sqrt( self.gamma * p * rhoInv )
+                a      = np.sqrt( self.gamma * p * rhoInv )
 
                 dtMin      = ( cfl / dx ) * min( min( abs( 1.0 / ( vU - a ) ), abs( 1.0 / ( vU + a ) ) ), \
                                                  min( abs( 1.0 / ( uU + a ) ), abs( 1.0 / ( uU - a ) ) ) )
                 dtMinTotal = min( dtMin, dtMinTotal )
-            }
-        }
 
-        return dtMinTotal;
+        return dtMinTotal
 
     def IC(self, x, xi):
         gamma       = 1.4;
@@ -86,16 +84,17 @@ class Euler(Problem):
         p           = 101325.0;
         rhoFarfield = p / ( R * T );        
 
-        if( len(xi) > 1 ) {
+        sigma = np.array((1,1))
+
+        if( len(xi) > 1 ):
             Ma = Ma - sigma[1];
             Ma = Ma + xi[1] * sigma[1];
-        }
 
-        a = sqrt( gamma * R * T );
+        a = np.sqrt( gamma * R * T );
         uMax  = Ma * a;
-        angle = ( AoA + AoAScaling * _sigma[0] * xi[0] ) * ( 2.0 * M_PI ) / 360.0;
-        uF    = uMax * cos( angle );
-        vF    = uMax * sin( angle );
+        angle = ( AoA + AoAScaling * sigma[0] * xi[0] ) * ( 2.0 * np.pi ) / 360.0;
+        uF    = uMax * np.cos( angle );
+        vF    = uMax * np.sin( angle );
 
         y = np.zeros(self.nStates)
         y[0]                  = rhoFarfield;
