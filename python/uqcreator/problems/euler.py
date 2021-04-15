@@ -74,34 +74,5 @@ class Euler(Problem):
 
         return dtMinTotal
 
-    def IC(self, x, xi):
-        gamma       = 1.4;
-        R           = 287.87;
-        T           = 273.15;
-        Ma          = 0.8;
-        AoA         = 1.25;
-        AoAScaling  = 1.0;
-        p           = 101325.0;
-        rhoFarfield = p / ( R * T );        
-
-        sigma = np.array((1,1))
-
-        if( len(xi) > 1 ):
-            Ma = Ma - sigma[1];
-            Ma = Ma + xi[1] * sigma[1];
-
-        a = np.sqrt( gamma * R * T );
-        uMax  = Ma * a;
-        angle = ( AoA + AoAScaling * sigma[0] * xi[0] ) * ( 2.0 * np.pi ) / 360.0;
-        uF    = uMax * np.cos( angle );
-        vF    = uMax * np.sin( angle );
-
-        y = np.zeros(self.nStates)
-        y[0]                  = rhoFarfield;
-        y[1]                  = rhoFarfield * uF;
-        y[2]                  = rhoFarfield * vF;
-        kineticEnergyL = 0.5 * rhoFarfield * ( pow( uF, 2 ) + pow( vF, 2 ) );
-        innerEnergyL   = ( p / ( rhoFarfield * ( gamma - 1 ) ) ) * rhoFarfield;
-        y[3]                  = kineticEnergyL + innerEnergyL;
-        return y;       
+          
         
