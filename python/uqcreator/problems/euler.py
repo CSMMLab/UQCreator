@@ -2,9 +2,9 @@ import numpy as np
 from uqcreator.problems import Problem
 
 class Euler(Problem):
-    def __init__(self, dim, nStates):
-        self.dim = dim
-        self.nStates = nStates
+    def __init__(self):
+        self.dim = 2
+        self.nStates = 4
         self.nQ = 1
         self.gamma = 1.4
     

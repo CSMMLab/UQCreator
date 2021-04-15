@@ -36,7 +36,7 @@ class CSettingsStruct(Structure):
 class Settings():
     def __init__(self):
         self.general = {
-            "outputDir" : "",
+            "outputDir" : ".",
             "referenceSolution" : "",
             "writeFrequency" : 0,
             "restartFile" : ""
@@ -44,20 +44,20 @@ class Settings():
         self.mesh = {
             "dimension" : 2,
             "format" : "SU2",
-            "SU2MeshFile" : "", 
-            "SU2BC" : [[], []],
+            "file" : "", 
+            "bc" : [],
             "outputFile" : ""
         }
         self.problem = {
             "timestepping" : "explicitEuler",
-            "distribution" : [[], []],
-            "CFL" : 0.9,
+            "uncertainties" : [[], []],
+            "cfl" : 0.9,
             "tEnd" : 1.0,
             "residual" : 1e-7
         }
         self.moment_system = {
-            "moments" : [[],[]],
-            "quadPoints" : [[],[]],
+            "moments" : [],
+            "quadPoints" : [],
             "maxIterations" : 1000,
             "epsilon" : 1e-7
         }

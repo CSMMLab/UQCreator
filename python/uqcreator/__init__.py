@@ -1,4 +1,4 @@
 from uqcreator.closures import *
 from uqcreator.problems import *
-from . import settings
-from . import solver
+from .settings import Settings
+from .solver import Solver

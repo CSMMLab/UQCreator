@@ -10,7 +10,7 @@ class Problem(metaclass = ABCMeta):
     def F(self):
         pass
     @abstractmethod
-    def ComputeDt(self):
+    def computeDt(self):
         pass
     @abstractmethod
     def IC(self):
