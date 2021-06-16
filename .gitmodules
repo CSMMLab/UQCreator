@@ -1,6 +1,6 @@
 [submodule "code/ext/cpptoml"]
 	path = code/ext/cpptoml
-	url = git://github.com/skystrife/cpptoml.git
+    url = git://github.com/jawolters/cpptoml.git
 
 [submodule "code/ext/spdlog"]
 	path = code/ext/spdlog
