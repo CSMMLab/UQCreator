@@ -34,7 +34,7 @@ tEnd = 1444.99964756299792458
 #tEnd = 4.796679328
 #tEnd = 100
 #tEnd = 156155.50755939528
-nPNMoments = 1
+nPNMoments = 2
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics, M1, ThermalRadiation
