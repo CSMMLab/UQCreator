@@ -60,8 +60,8 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _variances = _settings->GetSigma();
 
     // get quadrature grid
-    _grid   = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
-    _xiQuad = _grid->GetNodes();
+    auto grid = QuadratureGrid::Create( _settings, _settings->GetNQuadPoints() );
+    _xiQuad   = grid->GetNodes();
 
     // compute Roe flux components
     Matrix P( 2, 2, 1.0 );
@@ -94,20 +94,16 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     this->SetupSystemMatrices();
 
     // compute Roe matrix
-    std::cout << ( 1.0 / _epsilon ) * _Az << std::endl;
     cgeev( ( 1.0 / _epsilon ) * _Az, vl, vr, w );
     Matrix absW( _nMoments, _nMoments, 0.0 );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
 
     _AbsA = vr * absW * vr.inv();
-    std::cout << _AbsA << std::endl;
 }
 
-ThermalPN::~ThermalPN() { delete _grid; }
+ThermalPN::~ThermalPN() {}
 
 Vector ThermalPN::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
-    unused( n );
-
     // Vector g = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * ( v - u ) * norm( n ) / _settings->GetDT();
     Vector g     = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * _AbsA * ( v - u );
     g[_nMoments] = 0.0;    // set temperature flux to zero
@@ -160,7 +156,7 @@ void ThermalPN::SetupSystemMatrices() {
     _Ay = Matrix( _nMoments, _nMoments );
     _Az = Matrix( _nMoments, _nMoments );
     // loop over columns of A
-    for( int l = 0; l <= static_cast<int>( _N ); ++l ) {
+    for( int l = 0; l <= _N; ++l ) {
         for( int k = -l; k <= l; ++k ) {
             i = unsigned( GlobalIndex( l, k ) );
 
@@ -240,93 +236,6 @@ int ThermalPN::GlobalIndex( int l, int k ) const {
     }
 }
 
-Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
-    unsigned nStates             = static_cast<unsigned>( uQ.rows() );
-    unsigned Nq                  = _settings->GetNqPEAtRef( level );
-    std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
-    double dt                    = _settings->GetDT();
-    bool fullImplicit            = false;
-    bool expl                    = true;
-
-    Matrix y( nStates, Nq, 0.0 );
-    double S = 0.0;    // source, needs to be defined
-    // double varianceVal = 0;
-
-    for( unsigned k = 0; k < qIndex.size(); ++k ) {
-        if( _testCase == 0 && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
-            S = _a;
-            // varianceVal = _variances[0];
-        }
-        else {
-            S = 0.0;
-        }
-
-        double Q = S / _sigma / _a / std::pow( _TRef, 4 );
-
-        // compute conserved/primitive variables
-        double E      = uQ( 0, k );
-        double eTilde = uQ( _nMoments, k );    // scaled internal energy
-
-        if( expl ) {
-            double TTilde = ScaledTemperature( eTilde );
-            y( 0, k )     = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
-            for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = -uQ( i, k ) / _epsilon;
-            y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
-        }
-        else if( fullImplicit ) {
-            Vector u( 2 );
-            u[0]        = E;
-            u[1]        = eTilde;
-            Vector uOld = u;
-            Vector out  = Newton( u, uOld );
-
-            // update radiation energy
-            y( 0, k ) = ( out[0] - E ) / dt;
-
-            // update moments
-            for( unsigned i = 1; i < _nMoments; ++i ) {
-                y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
-                y( i, k ) = ( y( i, k ) - uQ( i, k ) ) / dt;
-            }
-
-            // update energy
-            y( _nMoments, k ) = ( out[1] - eTilde ) / dt;
-
-            // keep fixed energy at boundary cell
-            if( fabs( x[0] - _mesh->GetCell( 0 )->GetCenter()[0] ) < 1e-7 ) {
-                y( _nMoments, k ) = 0.0;
-                // std::cout << "Source E = " << y( 0, k ) - E << std::endl;
-                // std::cout << "Source E = " << y( 0, k ) << std::endl;
-                // std::cout << "E = " << E << std::endl;
-            }
-        }
-        else {
-            // compute conserved/primitive variables
-            double TTilde = ScaledTemperature( eTilde );
-
-            // compute Fleck constant
-            double f  = 1.0 / ( 1.0 + 4.0 / _epsilon * pow( TTilde, 3 ) * dt / _cV );
-            double fE = 1.0 / ( 1.0 + dt * f / _epsilon );
-
-            // update radiation energy
-            y( 0, k )   = fE * ( E + ( std::pow( TTilde, 4 ) + Q ) * dt * f / _epsilon );
-            double ENew = y( 0, k );
-            y( 0, k )   = ( y( 0, k ) - E ) / dt;    // explicit source correction
-
-            // update moments
-            for( unsigned i = 1; i < _nMoments; ++i ) {
-                y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
-                y( i, k ) = ( y( i, k ) - uQ( i, k ) ) / dt;    // explicit source correction
-            }
-
-            // update energy
-            y( _nMoments, k ) = eTilde + dt * ( ENew - std::pow( TTilde, 4 ) ) * f / _epsilon;
-            y( _nMoments, k ) = ( y( _nMoments, k ) - eTilde ) / dt;    // explicit source correction
-        }
-    }
-    return y;
-}
-
 Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
@@ -334,17 +243,19 @@ Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned 
     double dt                    = _settings->GetDT();
     bool fullImplicit            = false;
     bool expl                    = true;
-    unsigned nMultiElements      = _settings->GetNMultiElements();
+
+    double S                = 0.0;    // source, needs to be defined
+    double varianceVal      = 0;
+    unsigned nMultiElements = _settings->GetNMultiElements();
 
     Tensor y( _nStates, nMultiElements, Nq, 0.0 );
 
-    double S = 0.0;    // source, needs to be defined
     // double varianceVal = 0;
     for( unsigned l = 0; l < nMultiElements; ++l ) {
         for( unsigned k = 0; k < qIndex.size(); ++k ) {
             if( _testCase == 0 && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
-                S = _a;
-                // varianceVal = _variances[0];
+                S           = _a;
+                varianceVal = _variances[0];
             }
             else {
                 S = 0.0;
@@ -417,14 +328,98 @@ Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned 
     return y;
 }
 
+Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+    unsigned nStates             = static_cast<unsigned>( uQ.rows() );
+    unsigned Nq                  = _settings->GetNqPEAtRef( level );
+    std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
+    double dt                    = _settings->GetDT();
+    bool fullImplicit            = false;
+    bool expl                    = true;
+
+    Matrix y( nStates, Nq, 0.0 );
+    double S           = 0.0;    // source, needs to be defined
+    double varianceVal = 0;
+
+    for( unsigned k = 0; k < qIndex.size(); ++k ) {
+        if( _testCase == 0 && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
+            S           = _a;
+            varianceVal = _variances[0];
+        }
+        else {
+            S = 0.0;
+        }
+
+        double Q = S / _sigma / _a / std::pow( _TRef, 4 );
+
+        // compute conserved/primitive variables
+        double E      = uQ( 0, k );
+        double eTilde = uQ( _nMoments, k );    // scaled internal energy
+
+        if( expl ) {
+            double TTilde = ScaledTemperature( eTilde );
+            y( 0, k )     = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
+            for( unsigned i = 1; i < _nMoments; ++i ) y( i, k ) = -uQ( i, k ) / _epsilon;
+            y( _nMoments, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
+        }
+        else if( fullImplicit ) {
+            Vector u( 2 );
+            u[0]        = E;
+            u[1]        = eTilde;
+            Vector uOld = u;
+            Vector out  = Newton( u, uOld );
+
+            // update radiation energy
+            y( 0, k ) = ( out[0] - E ) / dt;
+
+            // update moments
+            for( unsigned i = 1; i < _nMoments; ++i ) {
+                y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
+                y( i, k ) = ( y( i, k ) - uQ( i, k ) ) / dt;
+            }
+
+            // update energy
+            y( _nMoments, k ) = ( out[1] - eTilde ) / dt;
+
+            // keep fixed energy at boundary cell
+            if( fabs( x[0] - _mesh->GetCell( 0 )->GetCenter()[0] ) < 1e-7 ) {
+                y( _nMoments, k ) = 0.0;
+                // std::cout << "Source E = " << y( 0, k ) - E << std::endl;
+                // std::cout << "Source E = " << y( 0, k ) << std::endl;
+                // std::cout << "E = " << E << std::endl;
+            }
+        }
+        else {
+            // compute conserved/primitive variables
+            double TTilde = ScaledTemperature( eTilde );
+
+            // compute Fleck constant
+            double f  = 1.0 / ( 1.0 + 4.0 / _epsilon * pow( TTilde, 3 ) * dt / _cV );
+            double fE = 1.0 / ( 1.0 + dt * f / _epsilon );
+
+            // update radiation energy
+            y( 0, k )   = fE * ( E + ( std::pow( TTilde, 4 ) + Q ) * dt * f / _epsilon );
+            double ENew = y( 0, k );
+            y( 0, k )   = ( y( 0, k ) - E ) / dt;    // explicit source correction
+
+            // update moments
+            for( unsigned i = 1; i < _nMoments; ++i ) {
+                y( i, k ) = uQ( i, k ) / ( 1.0 + dt / _epsilon );
+                y( i, k ) = ( y( i, k ) - uQ( i, k ) ) / dt;    // explicit source correction
+            }
+
+            // update energy
+            y( _nMoments, k ) = eTilde + dt * ( ENew - std::pow( TTilde, 4 ) ) * f / _epsilon;
+            y( _nMoments, k ) = ( y( _nMoments, k ) - eTilde ) / dt;    // explicit source correction
+        }
+    }
+    return y;
+}
 /*
 void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
-
     Matrix y( nStates, Nq, 0.0 );
-
     for( unsigned k = 0; k < qIndex.size(); ++k ) {
         double E      = uQ( 0, k );
         double eTilde = uQ( _nMoments, k );    // scaled internal energy
@@ -436,15 +431,11 @@ void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matr
         double dt    = _settings->GetDT();
         double gamma = pow( _a * pow( _TRef, 3 ) / _cV, 4 );
         for( unsigned i = 0; i < _nMoments; ++i ) uQNew( i, k ) = uQTilde( i, k );
-
         uQNew( _nMoments, k ) = uQTilde( _nMoments, k ) / ( 1.0 + dt * dt * 4.0 * gamma * pow( uQ( _nMoments, k ), 3 ) );
     }
 }*/
 
 void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
-    unused( x );
-    unused( t );
-
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
@@ -494,16 +485,11 @@ double ThermalPN::ScaledTemperature( double eTilde ) const {
 }
 
 Matrix ThermalPN::F( const Matrix& u ) {
-    unused( u );
-
     _log->error( "[ThermalPN] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
 
 double ThermalPN::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
-    unused( u );
-    unused( level );
-
     double cfl = _settings->GetCFL();
 
     double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
@@ -583,9 +569,6 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
 }
 
 Vector ThermalPN::LoadIC( const Vector& x, const Vector& xi ) {
-    unused( x );
-    unused( xi );
-
     _log->error( "[ThermalPN: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }
@@ -667,7 +650,7 @@ Vector ThermalPN::SF( const Vector& u, const Vector& uOld ) const {
 
 Matrix ThermalPN::DSF( const Vector& u ) const {
     Matrix y( 2, 2 );
-    // double E     = u[0];
+    double E     = u[0];
     double e     = u[1];
     double dt    = _settings->GetDT();
     double alpha = pow( _a * pow( _TRef, 3 ) / _cV, 4 );
