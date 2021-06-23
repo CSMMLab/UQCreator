@@ -95,10 +95,15 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
 
     // compute Roe matrix
     cgeev( ( 1.0 / _epsilon ) * _Az, vl, vr, w );
+    std::cout << "cgeev_roe ended" << std::endl;
     Matrix absW( _nMoments, _nMoments, 0.0 );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
 
-    _AbsA = vr * absW * vr.inv();
+    std::cout << vl * w * vr - ( 1.0 / _epsilon ) * _Az << std::endl;
+
+    _AbsA = vl * absW * vl.inv();
+    // std::cout << _Az << std::endl;
+    std::cout << _AbsA << std::endl;
 }
 
 ThermalPN::~ThermalPN() {}

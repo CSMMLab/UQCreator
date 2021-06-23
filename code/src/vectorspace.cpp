@@ -25,6 +25,20 @@ void cgeev_( char* jobvl,
              int* lwork,
              float* rwork,
              int* info );
+void dgesvd_( char* JOBU,
+              char* JOBVT,
+              int* M,
+              int* N,
+              double* A,
+              int* LDA,
+              double* S,
+              double* U,
+              int* LDU,
+              double* VT,
+              int* LDVT,
+              double* WORK,
+              int* LWORK,
+              int* INFO );
 }
 
 // MATRIX //////////////////////////////////////////////////////////////////////////
@@ -228,8 +242,11 @@ inline void cgeev( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, 
     lwork = -1;
     cgeev_( const_cast<char*>( "Vectors" ), const_cast<char*>( "Vectors" ), &n, a, &lda, w, vl, &ldvl, vr, &ldvr, &wkopt, &lwork, rwork, &info );
     lwork = static_cast<int>( wkopt.re );
-    // work  = (complex*)malloc( lwork * sizeof( complex ) );
+    std::cout << wkopt.re << " " << wkopt.im << std::endl;
+    std::cout << "lwork = " << lwork << std::endl;
+    if( lwork <= 0 ) lwork = 1;
     work = new complex[lwork];
+    std::cout << "lwork after = " << lwork << std::endl;
     cgeev_( const_cast<char*>( "Vectors" ), const_cast<char*>( "Vectors" ), &n, a, &lda, w, vl, &ldvl, vr, &ldvr, work, &lwork, rwork, &info );
     if( info > 0 ) {
         auto log = spdlog::get( "event" );
@@ -244,6 +261,57 @@ inline void cgeev( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, 
         W( i, i ) = w[i].re;
     }
     delete work;
+}
+
+template <class T>
+inline void cgeev_roe( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, VectorSpace::Matrix<T>& VR, VectorSpace::Matrix<T>& W ) {
+
+    /* Locals */
+    int N = A.columns();
+    int n = A.columns(), lda = A.columns(), ldvl = A.columns(), ldvr = A.columns(), info, lwork;
+    std::cout << "n = " << n << std::endl;
+    double wkopt;
+    double* work;
+    /* Local arrays */
+    double w[N], vl[N * N], vr[N * N];
+    double a[N * N];
+    for( unsigned i = 0; i < N; ++i ) {
+        for( unsigned j = 0; j < N; ++j ) {
+            a[i + j * N] = A( i, j );
+            std::cout << a[i + j * N] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+    /* Executable statements */
+    /* Query and allocate the optimal workspace */
+    lwork = -1;
+    dgesvd_( const_cast<char*>( "A" ), const_cast<char*>( "A" ), &n, &N, a, &lda, w, vl, &ldvl, vr, &ldvr, &wkopt, &lwork, &info );
+
+    lwork = static_cast<int>( wkopt );
+    work  = new double[lwork];
+    /* Solve eigenproblem */
+    dgesvd_( const_cast<char*>( "A" ), const_cast<char*>( "A" ), &n, &N, a, &lda, w, vl, &ldvl, vr, &ldvr, work, &lwork, &info );
+    /* Check for convergence */
+    if( info > 0 ) {
+        printf( "The algorithm failed to compute eigenvalues.\n" );
+        exit( 1 );
+    }
+    /* Print eigenvalues */
+    // print_matrix( "Eigenvalues", 1, n, w, 1 );
+    /* Print left eigenvectors */
+    // print_matrix( "Left eigenvectors", n, n, vl, ldvl );
+    /* Print right eigenvectors */
+    // print_matrix( "Right eigenvectors", n, n, vr, ldvr );
+    for( unsigned i = 0; i < N; ++i ) {
+        for( unsigned j = 0; j < N; ++j ) {
+            VL( i, j ) = vl[i + j * N];
+            VR( i, j ) = vr[i + j * N];
+        }
+        W( i, i ) = w[i];
+        std::cout << w[i] << std::endl;
+    }
 }
 
 // multiplies PE part of A and x and saves result on b
