@@ -4,9 +4,10 @@
 #include "matrix.cpp"
 
 /* Complex datatype */
-struct complex {
-    double re, im;
+struct _fcomplex {
+    float re, im;
 };
+typedef struct _fcomplex fcomplex;
 
 extern "C" {
 void dgesv_( int* n, int* nrhs, double* A, int* lda, int* ipiv, double* b, int* ldb, int* info );
@@ -14,31 +15,17 @@ void dposv_( char* uplo, int* n, int* nrhs, double* A, int* lda, double* b, int*
 void cgeev_( char* jobvl,
              char* jobvr,
              int* n,
-             complex* a,
+             fcomplex* a,
              int* lda,
-             complex* w,
-             complex* vl,
+             fcomplex* w,
+             fcomplex* vl,
              int* ldvl,
-             complex* vr,
+             fcomplex* vr,
              int* ldvr,
-             complex* work,
+             fcomplex* work,
              int* lwork,
              float* rwork,
              int* info );
-void dgesvd_( char* JOBU,
-              char* JOBVT,
-              int* M,
-              int* N,
-              double* A,
-              int* LDA,
-              double* S,
-              double* U,
-              int* LDU,
-              double* VT,
-              int* LDVT,
-              double* WORK,
-              int* LWORK,
-              int* INFO );
 }
 
 // MATRIX //////////////////////////////////////////////////////////////////////////
@@ -93,26 +80,10 @@ template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace
     return os;
 }
 
-template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace::Tensor<T>& a ) {
-    for( unsigned l = 0; l < a.frontRows(); ++l ) {
-        os << "(\t";
-        for( unsigned i = 0; i < a.rows(); ++i ) {
-            os << "(\t";
-            for( unsigned j = 0; j < a.columns(); ++j ) {
-                os << a( l, i, j ) << "\t";
-            }
-            os << ")" << std::endl;
-        }
-        os << ")" << std::endl;
-    }
-    return os;
-}
-
 // VECTOR //////////////////////////////////////////////////////////////////////////
 
 template <class T> double dot( const VectorSpace::Vector<T>& a, const VectorSpace::Vector<T>& b ) {
     double res = 0.0;
-    assert( a.size() == b.size() );
     for( unsigned i = 0; i < a.size(); ++i ) {
         res += a[i] * b[i];
     }
@@ -121,7 +92,6 @@ template <class T> double dot( const VectorSpace::Vector<T>& a, const VectorSpac
 
 template <class T> VectorSpace::Matrix<T> outer( const VectorSpace::Vector<T>& a, const VectorSpace::Vector<T>& b ) {
     VectorSpace::Matrix<T> res( a.size(), a.size() );
-    assert( a.size() == b.size() );
     for( unsigned i = 0; i < a.size(); ++i ) {
         for( unsigned j = 0; j < b.size(); ++j ) {
             res( i, j ) += a[i] * b[j];
@@ -225,74 +195,31 @@ template <class T> inline void posv( VectorSpace::Matrix<T>& A, VectorSpace::Vec
 template <class T>
 inline void cgeev( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, VectorSpace::Matrix<T>& VR, VectorSpace::Matrix<T>& W ) {
 
-    unsigned long N = A.columns();
+    /* Locals */
+    int N = A.columns();
     int n = A.columns(), lda = A.columns(), ldvl = A.columns(), ldvr = A.columns(), info, lwork;
-    complex wkopt;
-    complex* work;
-    float rwork[2 * N];    // rwork dimension should be at least 2*n
-    complex w[N], vl[N * N], vr[N * N];
-    complex a[N * N];
+    fcomplex wkopt;
+    fcomplex* work;
+    /* Local arrays */
+    /* rwork dimension should be at least 2*n */
+    float rwork[2 * N];
+    fcomplex w[N], vl[N * N], vr[N * N];
+    fcomplex a[N * N];
     for( unsigned i = 0; i < N; ++i ) {
         for( unsigned j = 0; j < N; ++j ) {
             a[i + j * N] = { A( i, j ), 0.0 };
         }
     }
-    /* Executable statements */
-    /* Query and allocate the optimal workspace */
-    lwork = -1;
-    cgeev_( const_cast<char*>( "Vectors" ), const_cast<char*>( "Vectors" ), &n, a, &lda, w, vl, &ldvl, vr, &ldvr, &wkopt, &lwork, rwork, &info );
-    lwork = static_cast<int>( wkopt.re );
-    std::cout << wkopt.re << " " << wkopt.im << std::endl;
-    std::cout << "lwork = " << lwork << std::endl;
-    if( lwork <= 0 ) lwork = 1;
-    work = new complex[lwork];
-    std::cout << "lwork after = " << lwork << std::endl;
-    cgeev_( const_cast<char*>( "Vectors" ), const_cast<char*>( "Vectors" ), &n, a, &lda, w, vl, &ldvl, vr, &ldvr, work, &lwork, rwork, &info );
-    if( info > 0 ) {
-        auto log = spdlog::get( "event" );
-        log->error( "[cgeev] The algorithm failed to compute eigenvalues.\n" );
-        exit( 1 );
-    }
-    for( unsigned i = 0; i < N; ++i ) {
-        for( unsigned j = 0; j < N; ++j ) {
-            VL( i, j ) = vl[i + j * N].re;
-            VR( i, j ) = vr[i + j * N].re;
-        }
-        W( i, i ) = w[i].re;
-    }
-    delete work;
-}
-
-template <class T>
-inline void cgeev_roe( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& VL, VectorSpace::Matrix<T>& VR, VectorSpace::Matrix<T>& W ) {
-
-    /* Locals */
-    int N = A.columns();
-    int n = A.columns(), lda = A.columns(), ldvl = A.columns(), ldvr = A.columns(), info, lwork;
-    std::cout << "n = " << n << std::endl;
-    double wkopt;
-    double* work;
-    /* Local arrays */
-    double w[N], vl[N * N], vr[N * N];
-    double a[N * N];
-    for( unsigned i = 0; i < N; ++i ) {
-        for( unsigned j = 0; j < N; ++j ) {
-            a[i + j * N] = A( i, j );
-            std::cout << a[i + j * N] << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
 
     /* Executable statements */
+    printf( " CGEEV Example Program Results\n" );
     /* Query and allocate the optimal workspace */
     lwork = -1;
-    dgesvd_( const_cast<char*>( "A" ), const_cast<char*>( "A" ), &n, &N, a, &lda, w, vl, &ldvl, vr, &ldvr, &wkopt, &lwork, &info );
-
-    lwork = static_cast<int>( wkopt );
-    work  = new double[lwork];
+    cgeev_( "Vectors", "Vectors", &n, a, &lda, w, vl, &ldvl, vr, &ldvr, &wkopt, &lwork, rwork, &info );
+    lwork = (int)wkopt.re;
+    work  = (fcomplex*)malloc( lwork * sizeof( fcomplex ) );
     /* Solve eigenproblem */
-    dgesvd_( const_cast<char*>( "A" ), const_cast<char*>( "A" ), &n, &N, a, &lda, w, vl, &ldvl, vr, &ldvr, work, &lwork, &info );
+    cgeev_( "Vectors", "Vectors", &n, a, &lda, w, vl, &ldvl, vr, &ldvr, work, &lwork, rwork, &info );
     /* Check for convergence */
     if( info > 0 ) {
         printf( "The algorithm failed to compute eigenvalues.\n" );
@@ -306,11 +233,10 @@ inline void cgeev_roe( const VectorSpace::Matrix<T>& A, VectorSpace::Matrix<T>& 
     // print_matrix( "Right eigenvectors", n, n, vr, ldvr );
     for( unsigned i = 0; i < N; ++i ) {
         for( unsigned j = 0; j < N; ++j ) {
-            VL( i, j ) = vl[i + j * N];
-            VR( i, j ) = vr[i + j * N];
+            VL( i, j ) = vl[i + j * N].re;
+            VR( i, j ) = vr[i + j * N].re;
         }
-        W( i, i ) = w[i];
-        std::cout << w[i] << std::endl;
+        W( i, i ) = w[i].re;
     }
 }
 
@@ -326,4 +252,19 @@ void multOnPENoReset(
             }
         }
     }
+}
+
+template <class T> std::ostream& operator<<( std::ostream& os, const VectorSpace::Tensor<T>& a ) {
+    for( unsigned l = 0; l < a.frontRows(); ++l ) {
+        os << "(\t";
+        for( unsigned i = 0; i < a.rows(); ++i ) {
+            os << "(\t";
+            for( unsigned j = 0; j < a.columns(); ++j ) {
+                os << a( l, i, j ) << "\t";
+            }
+            os << ")" << std::endl;
+        }
+        os << ")" << std::endl;
+    }
+    return os;
 }

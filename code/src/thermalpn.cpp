@@ -101,7 +101,7 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
 
     std::cout << vl * w * vr - ( 1.0 / _epsilon ) * _Az << std::endl;
 
-    _AbsA = vl * absW * vl.inv();
+    _AbsA = vr * absW * vr.inv();
     // std::cout << _Az << std::endl;
     std::cout << _AbsA << std::endl;
 }
