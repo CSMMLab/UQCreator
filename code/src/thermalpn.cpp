@@ -95,15 +95,11 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
 
     // compute Roe matrix
     cgeev( ( 1.0 / _epsilon ) * _Az, vl, vr, w );
-    std::cout << "cgeev_roe ended" << std::endl;
     Matrix absW( _nMoments, _nMoments, 0.0 );
     for( unsigned i = 0; i < _nMoments; ++i ) absW( i, i ) = fabs( w( i, i ) );
 
-    std::cout << vl * w * vr - ( 1.0 / _epsilon ) * _Az << std::endl;
-
     _AbsA = vr * absW * vr.inv();
-    // std::cout << _Az << std::endl;
-    std::cout << _AbsA << std::endl;
+    std::cout << "AbsA = " << _AbsA << std::endl;
 }
 
 ThermalPN::~ThermalPN() {}
@@ -242,7 +238,7 @@ int ThermalPN::GlobalIndex( int l, int k ) const {
 }
 
 Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned level ) const {
-    unsigned nStates             = static_cast<unsigned>( uQ.rows() );
+    unsigned nStates             = static_cast<unsigned>( uQ.frontRows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
     double dt                    = _settings->GetDT();
@@ -253,7 +249,7 @@ Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned 
     double varianceVal      = 0;
     unsigned nMultiElements = _settings->GetNMultiElements();
 
-    Tensor y( _nStates, nMultiElements, Nq, 0.0 );
+    Tensor y( nStates, nMultiElements, Nq, 0.0 );
 
     // double varianceVal = 0;
     for( unsigned l = 0; l < nMultiElements; ++l ) {
