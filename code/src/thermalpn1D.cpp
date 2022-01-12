@@ -1,7 +1,7 @@
-#include "thermalpn.h"
+#include "thermalpn1D.h"
 #include "quadraturegrid.h"
 
-ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
+ThermalPN1D::ThermalPN1D( Settings* settings ) : Problem( settings ) {
     // read PN specific settings
     try {
         auto file              = cpptoml::parse_file( _settings->GetInputFile() );
@@ -10,27 +10,30 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
         auto general           = file->get_table( "general" );
         auto problemTypeString = general->get_as<std::string>( "testCase" );
         if( problemTypeString->compare( "Marshak" ) == 0 )
-            _testCase = TPNG_MARSHAK;
+            _testCase = TPN_MARSHAK;
         else if( problemTypeString->compare( "SuOlson" ) == 0 )
-            _testCase = TPNG_SUOLSON;
+            _testCase = TPN_SUOLSON;
         else if( problemTypeString->compare( "radiatingShock" ) == 0 )
-            _testCase = TPNG_RADIATINGSHOCK;
+            _testCase = TPN_RADIATINGSHOCK;
         else
-            _testCase = TPNG_MARSHAK;
+            _testCase = TPN_MARSHAK;
     } catch( const cpptoml::parse_exception& e ) {
-        _log->error( "[ThermalPN] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
+        _log->error( "[ThermalPN1D] Failed to parse {0}: {1}", _settings->GetInputFile(), e.what() );
         exit( EXIT_FAILURE );
     }
+    _nMoments = _N + 1;
+
     if( _N == 1 )    // GlobalIndex has different ordering here
         _nMoments = 4;
     else
         _nMoments = unsigned( GlobalIndex( _N, _N ) + 1 );
+
     _nStates = _nMoments + 1;
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
     _settings->SetSource( true );
     _settings->SetImplicitSource( false );
-    if( _testCase == TPNG_SUOLSON )
+    if( _testCase == TPN_SUOLSON )
         _constitutiveLaw = 1;    // 1 is Su Olson, 2 is constant
     else
         _constitutiveLaw = 2;
@@ -45,20 +48,20 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     double sigmaSB = 5.6704 * 1e-5;                // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
     double density = 2.7;
-    if( _testCase == TPNG_MARSHAK ) {
+    if( _testCase == TPN_MARSHAK ) {
         _cV = density * 0.831 * 1e7;    // heat capacity: [kJ/(kg K)] = [1000 m^2 / s^2 / K] therefore density * 0.831 * 1e7
     }
-    else if( _testCase == TPNG_RADIATINGSHOCK ) {
+    else if( _testCase == TPN_RADIATINGSHOCK ) {
         _cV = 0.718 * 1e-13;    // heat capacity. Air has cV = 0.718*1e7 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]   density * 0.831 * 1e-7
     }
 
     _epsilon = 1.0 / _sigma;
 
-    if( _testCase == TPNG_SUOLSON || _testCase == TPNG_RADIATINGSHOCK ) {
+    if( _testCase == TPN_SUOLSON || _testCase == TPN_RADIATINGSHOCK ) {
         _epsilon = 4.0 * _a / _alpha;
-        if( _testCase == TPNG_RADIATINGSHOCK ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
+        if( _testCase == TPN_RADIATINGSHOCK ) _TRef = pow( _cV / _a, 1.0 / 4.0 );    // ensure eTilde = O(1)
     }
-    if( _testCase == TPNG_MARSHAK ) {
+    if( _testCase == TPN_MARSHAK ) {
         _epsilon = 1.0 / _sigma;
         _TRef    = 80.0 * 11604.0;
     }
@@ -81,6 +84,25 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     // setup flux Jacobians for PN
     this->SetupSystemMatrices();
 
+    _nMoments = _N + 1;
+    Vector gamma( _nMoments, 0.0 );
+    for( unsigned n = 0; n < _nMoments; ++n ) {
+        gamma[n] = sqrt( 2.0 / ( 2.0 * n + 1.0 ) );
+    }
+    gamma[0] = 1 / Delta( 0, 0 );
+    gamma[1] = 1 / Delta( 1, 0 );
+
+    Matrix A( _nMoments, _nMoments, 0.0 );
+    for( unsigned n = 0; n < _nMoments; ++n ) {
+        if( n < _nMoments - 1 ) A( n, n + 1 ) = ( n + 1.0 ) / ( 2.0 * n + 1.0 ) * gamma[n + 1] / gamma[n];
+        if( n > 0 ) A( n, n - 1 ) = n / ( 2.0 * n + 1.0 ) * gamma[n - 1] / gamma[n];
+    }
+
+    std::cout << _Az << std::endl;
+    std::cout << A << std::endl;
+    _Az.resize( _nMoments, _nMoments );
+    _Az = A;
+
     // compute Roe matrix
     Matrix vl( _nMoments, _nMoments, 0.0 );
     Matrix vr( _nMoments, _nMoments, 0.0 );
@@ -92,15 +114,15 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _AbsA = vr * absW * vr.inv();
 }
 
-ThermalPN::~ThermalPN() {}
+ThermalPN1D::~ThermalPN1D() {}
 
-Vector ThermalPN::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
+Vector ThermalPN1D::G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n ) {
     Vector g     = 0.5 * ( F( u ) + F( v ) ) * nUnit - 0.5 * _AbsA * ( v - u );
     g[_nMoments] = 0.0;    // set temperature flux to zero
     return g;
 }
 
-Matrix ThermalPN::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
+Matrix ThermalPN1D::G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level ) {
     unsigned nStates = u.rows();
     unsigned Nq      = _settings->GetNqPEAtRef( level );
     Matrix y( nStates, Nq );
@@ -110,7 +132,7 @@ Matrix ThermalPN::G( const Matrix& u, const Matrix& v, const Vector& nUnit, cons
     return y;
 }
 
-Matrix ThermalPN::F( const Vector& u ) {
+Matrix ThermalPN1D::F( const Vector& u ) {
     Matrix flux( u.size(), 1, 0.0 );
     // Vector outZ = _c / _epsilon * _Az * u;
     // outZ[0]     = 1.0 / _c / _c * outZ[0];
@@ -122,7 +144,7 @@ Matrix ThermalPN::F( const Vector& u ) {
     return flux;
 }
 
-double ThermalPN::Delta( int l, int k ) const {
+double ThermalPN1D::Delta( int l, int k ) const {
     if( l == 0 ) {
         return std::sqrt( 4.0 * M_PI ) * 2.0 * M_PI / _c;
     }
@@ -139,57 +161,15 @@ double ThermalPN::Delta( int l, int k ) const {
     }
 }
 
-void ThermalPN::SetupSystemMatrices() {
+void ThermalPN1D::SetupSystemMatrices() {
     int j;
     unsigned i;
-    _Ax = Matrix( _nMoments, _nMoments );
-    _Ay = Matrix( _nMoments, _nMoments );
     _Az = Matrix( _nMoments, _nMoments );
     // loop over columns of A
     for( int l = 0; l <= _N; ++l ) {
         for( int k = -l; k <= l; ++k ) {
             i = unsigned( GlobalIndex( l, k ) );
 
-            // flux matrix in direction x
-            if( k != -1 ) {
-                j = GlobalIndex( l - 1, kMinus( k ) );
-                if( j >= 0 && j < int( _nMoments ) )
-                    _Ax( i, unsigned( j ) ) = 0.5 * CTilde( l - 1, std::abs( k ) - 1 ) / Delta( l - 1, std::abs( k ) - 1 );
-                j = GlobalIndex( l + 1, kMinus( k ) );
-                if( j >= 0 && j < int( _nMoments ) ) {
-                    _Ax( i, unsigned( j ) ) = -0.5 * DTilde( l + 1, std::abs( k ) - 1 ) / Delta( l + 1, std::abs( k ) - 1 );
-                }
-            }
-
-            j = GlobalIndex( l - 1, kPlus( k ) );
-            if( j >= 0 && j < int( _nMoments ) )
-                _Ax( i, unsigned( j ) ) = -0.5 * ETilde( l - 1, std::abs( k ) + 1 ) / Delta( l - 1, std::abs( k ) + 1 );
-
-            j = GlobalIndex( l + 1, kPlus( k ) );
-            if( j >= 0 && j < int( _nMoments ) )
-                _Ax( i, unsigned( j ) ) = 0.5 * FTilde( l + 1, std::abs( k ) + 1 ) / Delta( l + 1, std::abs( k ) + 1 );
-
-            //
-            // flux matrix in direction y
-            if( k != 1 ) {
-                j = GlobalIndex( l - 1, -kMinus( k ) );
-                if( j >= 0 && j < int( _nMoments ) )
-                    _Ay( i, unsigned( j ) ) = -0.5 * Sgn( k ) * CTilde( l - 1, std::abs( k ) - 1 ) / Delta( l - 1, std::abs( k ) - 1 );
-
-                j = GlobalIndex( l + 1, -kMinus( k ) );
-                if( j >= 0 && j < int( _nMoments ) )
-                    _Ay( i, unsigned( j ) ) = 0.5 * Sgn( k ) * DTilde( l + 1, std::abs( k ) - 1 ) / Delta( l + 1, std::abs( k ) - 1 );
-            }
-
-            j = GlobalIndex( l - 1, -kPlus( k ) );
-            if( j >= 0 && j < int( _nMoments ) )
-                _Ay( i, unsigned( j ) ) = -0.5 * Sgn( k ) * ETilde( l - 1, std::abs( k ) + 1 ) / Delta( l - 1, std::abs( k ) + 1 );
-
-            j = GlobalIndex( l + 1, -kPlus( k ) );
-            if( j >= 0 && j < int( _nMoments ) )
-                _Ay( i, unsigned( j ) ) = 0.5 * Sgn( k ) * FTilde( l + 1, std::abs( k ) + 1 ) / Delta( l + 1, std::abs( k ) + 1 );
-
-            //
             // flux matrix in direction z
             j = GlobalIndex( l - 1, k );
             if( j >= 0 && j < int( _nMoments ) ) _Az( i, unsigned( j ) ) = AParam( l - 1, k ) / Delta( l - 1, k );
@@ -199,15 +179,13 @@ void ThermalPN::SetupSystemMatrices() {
 
             // multiply to change to monomials for up to order one
             for( unsigned n = 0; n < _nMoments; ++n ) {
-                _Ax( i, n ) = _Ax( i, n ) * Delta( l, k );
-                _Ay( i, n ) = _Ay( i, n ) * Delta( l, k );
                 _Az( i, n ) = _Az( i, n ) * Delta( l, k );
             }
         }
     }
 }
 
-int ThermalPN::GlobalIndex( int l, int k ) const {
+int ThermalPN1D::GlobalIndex( int l, int k ) const {
     if( l != 1 ) {
         int numIndicesPrevLevel  = l * l;    // number of previous indices untill level l-1
         int prevIndicesThisLevel = k + l;    // number of previous indices in current level
@@ -226,7 +204,7 @@ int ThermalPN::GlobalIndex( int l, int k ) const {
     }
 }
 
-Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned level ) const {
+Tensor ThermalPN1D::Source( const Tensor& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates             = static_cast<unsigned>( uQ.frontRows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
@@ -243,7 +221,7 @@ Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned 
     // double varianceVal = 0;
     for( unsigned l = 0; l < nMultiElements; ++l ) {
         for( unsigned k = 0; k < qIndex.size(); ++k ) {
-            if( _testCase == TPNG_SUOLSON && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
+            if( _testCase == TPN_SUOLSON && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
                 S           = _a;
                 varianceVal = _variances[0];
             }
@@ -285,9 +263,6 @@ Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned 
                 // keep fixed energy at boundary cell
                 if( fabs( x[0] - _mesh->GetCell( 0 )->GetCenter()[0] ) < 1e-7 ) {
                     y( _nMoments, l, k ) = 0.0;
-                    // std::cout << "Source E = " << y( 0, k ) - E << std::endl;
-                    // std::cout << "Source E = " << y( 0, k ) << std::endl;
-                    // std::cout << "E = " << E << std::endl;
                 }
             }
             else {
@@ -318,7 +293,7 @@ Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned 
     return y;
 }
 
-Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+Matrix ThermalPN1D::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
@@ -331,7 +306,7 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
     double varianceVal = 0;
 
     for( unsigned k = 0; k < qIndex.size(); ++k ) {
-        if( _testCase == TPNG_SUOLSON && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
+        if( _testCase == TPN_SUOLSON && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
             S           = _a;
             varianceVal = _variances[0];
         }
@@ -373,9 +348,6 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
             // keep fixed energy at boundary cell
             if( fabs( x[0] - _mesh->GetCell( 0 )->GetCenter()[0] ) < 1e-7 ) {
                 y( _nMoments, k ) = 0.0;
-                // std::cout << "Source E = " << y( 0, k ) - E << std::endl;
-                // std::cout << "Source E = " << y( 0, k ) << std::endl;
-                // std::cout << "E = " << E << std::endl;
             }
         }
         else {
@@ -404,28 +376,8 @@ Matrix ThermalPN::Source( const Matrix& uQ, const Vector& x, double t, unsigned 
     }
     return y;
 }
-/*
-void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
-    unsigned nStates             = static_cast<unsigned>( uQ.rows() );
-    unsigned Nq                  = _settings->GetNqPEAtRef( level );
-    std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
-    Matrix y( nStates, Nq, 0.0 );
-    for( unsigned k = 0; k < qIndex.size(); ++k ) {
-        double E      = uQ( 0, k );
-        double eTilde = uQ( _nMoments, k );    // scaled internal energy
-        if( eTilde < 0 ) {
-            std::cout << "eTilde < 0 !!!!" << std::endl;
-            std::cout << "eTilde = " << eTilde << std::endl;
-            std::cout << "E = " << E << std::endl;
-        }
-        double dt    = _settings->GetDT();
-        double gamma = pow( _a * pow( _TRef, 3 ) / _cV, 4 );
-        for( unsigned i = 0; i < _nMoments; ++i ) uQNew( i, k ) = uQTilde( i, k );
-        uQNew( _nMoments, k ) = uQTilde( _nMoments, k ) / ( 1.0 + dt * dt * 4.0 * gamma * pow( uQ( _nMoments, k ), 3 ) );
-    }
-}*/
 
-void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
+void ThermalPN1D::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
     unsigned nStates             = static_cast<unsigned>( uQ.rows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
@@ -448,7 +400,7 @@ void ThermalPN::SourceImplicit( Matrix& uQNew, const Matrix& uQTilde, const Matr
     }
 }
 
-double ThermalPN::ScaledInternalEnergy( double TTilde ) const {
+double ThermalPN1D::ScaledInternalEnergy( double TTilde ) const {
     double T = TTilde * _TRef;
     // std::cout << "T = " << T << std::endl;
     double e;
@@ -462,7 +414,7 @@ double ThermalPN::ScaledInternalEnergy( double TTilde ) const {
     return e / ( _a * pow( _TRef, 4 ) );
 }
 
-double ThermalPN::ScaledTemperature( double eTilde ) const {
+double ThermalPN1D::ScaledTemperature( double eTilde ) const {
     double e = eTilde * _a * pow( _TRef, 4 );
     double T;
     if( _constitutiveLaw == 1 ) {
@@ -474,12 +426,12 @@ double ThermalPN::ScaledTemperature( double eTilde ) const {
     return T / _TRef;
 }
 
-Matrix ThermalPN::F( const Matrix& u ) {
-    _log->error( "[ThermalPN] Flux not implemented" );
+Matrix ThermalPN1D::F( const Matrix& u ) {
+    _log->error( "[ThermalPN1D] Flux not implemented" );
     exit( EXIT_FAILURE );
 }
 
-double ThermalPN::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
+double ThermalPN1D::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
     double cfl = _settings->GetCFL();
 
     double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
@@ -488,7 +440,7 @@ double ThermalPN::ComputeDt( const Tensor& u, double dx, unsigned level ) const 
     return ( cfl * dx ) / maxVelocity;
 }
 
-Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
+Vector ThermalPN1D::IC( const Vector& x, const Vector& xi ) {
     Vector y( _nStates, 0.0 );
     auto sigma      = _settings->GetSigma();
     double sigmaXi1 = 0.0;
@@ -501,14 +453,14 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     double T = 0.02 * 11604.0;
     double internalEnergy;
 
-    if( _testCase == TPNG_SUOLSON ) {
+    if( _testCase == TPN_SUOLSON ) {
         E = 0.0;    // std::fmax( 1e-4 * _a,
                     //_a * pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi1 + 2.0, 2 ) ) *
                     //  exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi1 + 2.0, 2 ) ) );
         F              = 0;
         internalEnergy = 1e-7 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy - use 1e-3 without IPM
     }
-    else if( _testCase == TPNG_RADIATINGSHOCK ) {
+    else if( _testCase == TPN_RADIATINGSHOCK ) {
         double a = 0.275;
         double b = 0.1;
         if( xi.size() > 1 && false ) {
@@ -537,11 +489,11 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     }
 
     y[0] = E / _a / pow( _TRef, 4 );
-    if( _testCase != TPNG_SUOLSON ) y[0] = std::pow( T / _TRef, 4 );
+    if( _testCase != TPN_SUOLSON ) y[0] = std::pow( T / _TRef, 4 );
     y[3]         = F / _a / pow( _TRef, 4 );
     y[_nMoments] = internalEnergy / ( _a * pow( _TRef, 4 ) );
 
-    if( _testCase == TPNG_MARSHAK ) {
+    if( _testCase == TPN_MARSHAK ) {
         y[3] = F / _a / pow( _TRef, 4 );
         if( fabs( x[0] - _mesh->GetCenterPos( 0 )[0] ) < 1e-7 ) {
             y[_nMoments] = ScaledInternalEnergy( ( 80.0 + sigmaXi1 ) * 11604.0 / _TRef );
@@ -560,32 +512,36 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     return y;
 }
 
-Vector ThermalPN::LoadIC( const Vector& x, const Vector& xi ) {
-    _log->error( "[ThermalPN: LoadIC not implemented]" );
+Vector ThermalPN1D::LoadIC( const Vector& x, const Vector& xi ) {
+    _log->error( "[ThermalPN1D: LoadIC not implemented]" );
     exit( EXIT_FAILURE );
 }
 
-double ThermalPN::AParam( int l, int k ) const {
+double ThermalPN1D::AParam( int l, int k ) const {
     return std::sqrt( double( ( l - k + 1 ) * ( l + k + 1 ) ) / double( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) );
 }
 
-double ThermalPN::BParam( int l, int k ) const { return std::sqrt( double( ( l - k ) * ( l + k ) ) / double( ( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ) ); }
+double ThermalPN1D::BParam( int l, int k ) const {
+    return std::sqrt( double( ( l - k ) * ( l + k ) ) / double( ( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ) );
+}
 
-double ThermalPN::CParam( int l, int k ) const {
+double ThermalPN1D::CParam( int l, int k ) const {
     return std::sqrt( double( ( l + k + 1 ) * ( l + k + 2 ) ) / double( ( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) ) );
 }
 
-double ThermalPN::DParam( int l, int k ) const {
+double ThermalPN1D::DParam( int l, int k ) const {
     return std::sqrt( double( ( l - k ) * ( l - k - 1 ) ) / double( ( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ) );
 }
 
-double ThermalPN::EParam( int l, int k ) const {
+double ThermalPN1D::EParam( int l, int k ) const {
     return std::sqrt( double( ( l - k + 1 ) * ( l - k + 2 ) ) / double( ( ( 2 * l + 3 ) * ( 2 * l + 1 ) ) ) );
 }
 
-double ThermalPN::FParam( int l, int k ) const { return std::sqrt( double( ( l + k ) * ( l + k - 1 ) ) / double( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) ); }
+double ThermalPN1D::FParam( int l, int k ) const {
+    return std::sqrt( double( ( l + k ) * ( l + k - 1 ) ) / double( ( 2 * l + 1 ) * ( 2 * l - 1 ) ) );
+}
 
-double ThermalPN::CTilde( int l, int k ) const {
+double ThermalPN1D::CTilde( int l, int k ) const {
     if( k < 0 ) return 0.0;
     if( k == 0 )
         return std::sqrt( 2 ) * CParam( l, k );
@@ -593,7 +549,7 @@ double ThermalPN::CTilde( int l, int k ) const {
         return CParam( l, k );
 }
 
-double ThermalPN::DTilde( int l, int k ) const {
+double ThermalPN1D::DTilde( int l, int k ) const {
     if( k < 0 ) return 0.0;
     if( k == 0 )
         return std::sqrt( 2 ) * DParam( l, k );
@@ -601,14 +557,14 @@ double ThermalPN::DTilde( int l, int k ) const {
         return DParam( l, k );
 }
 
-double ThermalPN::ETilde( int l, int k ) const {
+double ThermalPN1D::ETilde( int l, int k ) const {
     if( k == 1 )
         return std::sqrt( 2 ) * EParam( l, k );
     else
         return EParam( l, k );
 }
 
-double ThermalPN::FTilde( int l, int k ) const {
+double ThermalPN1D::FTilde( int l, int k ) const {
     if( k == 1 )
         return std::sqrt( 2 ) * FParam( l, k );
     else {
@@ -616,18 +572,18 @@ double ThermalPN::FTilde( int l, int k ) const {
     }
 }
 
-int ThermalPN::Sgn( int k ) const {
+int ThermalPN1D::Sgn( int k ) const {
     if( k >= 0 )
         return 1;
     else
         return -1;
 }
 
-int ThermalPN::kPlus( int k ) const { return k + Sgn( k ); }
+int ThermalPN1D::kPlus( int k ) const { return k + Sgn( k ); }
 
-int ThermalPN::kMinus( int k ) const { return k - Sgn( k ); }
+int ThermalPN1D::kMinus( int k ) const { return k - Sgn( k ); }
 
-Vector ThermalPN::SF( const Vector& u, const Vector& uOld ) const {
+Vector ThermalPN1D::SF( const Vector& u, const Vector& uOld ) const {
     Vector y( 2 );
     double E     = u[0];
     double e     = u[1];
@@ -640,7 +596,7 @@ Vector ThermalPN::SF( const Vector& u, const Vector& uOld ) const {
     return y;
 }
 
-Matrix ThermalPN::DSF( const Vector& u ) const {
+Matrix ThermalPN1D::DSF( const Vector& u ) const {
     Matrix y( 2, 2 );
     double E     = u[0];
     double e     = u[1];
@@ -653,7 +609,7 @@ Matrix ThermalPN::DSF( const Vector& u ) const {
     return y;
 }
 
-Vector ThermalPN::Newton( Vector& u, const Vector& uOld ) const {
+Vector ThermalPN1D::Newton( Vector& u, const Vector& uOld ) const {
     // std::cout << "============" << std::endl;
     int maxRefinements     = 10000;
     unsigned maxIterations = 10000;
@@ -689,7 +645,7 @@ Vector ThermalPN::Newton( Vector& u, const Vector& uOld ) const {
                 return uNew;
             }
             else if( ++refinementCounter > maxRefinements ) {
-                _log->error( "[ThermalPN] Newton needed too many refinement steps!" );
+                _log->error( "[ThermalPN1D] Newton needed too many refinement steps!" );
                 exit( EXIT_FAILURE );
             }
         }

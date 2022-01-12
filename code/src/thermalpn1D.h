@@ -1,14 +1,14 @@
-#ifndef THERMALPN_H
-#define THERMALPN_H
+#ifndef THERMALPN1D_H
+#define THERMALPN1D_H
 
 #include "mathtools.h"
 #include "problem.h"
 
-enum TestCaseTPNG { TPNG_SUOLSON, TPNG_MARSHAK, TPNG_RADIATINGSHOCK };
+enum TestCase { TPN_SUOLSON, TPN_MARSHAK, TPN_RADIATINGSHOCK };
 
 class QuadratureGrid;
 
-class ThermalPN : public Problem
+class ThermalPN1D : public Problem
 {
   private:
     QuadratureGrid* _grid;
@@ -36,7 +36,7 @@ class ThermalPN : public Problem
     unsigned _nMoments;    // number of radiative moments
     unsigned _N;
 
-    TestCaseTPNG _testCase;
+    TestCase _testCase;
 
     // parameter functions for setting up system matrix
     double AParam( int l, int k ) const;
@@ -61,8 +61,8 @@ class ThermalPN : public Problem
     Vector Newton( Vector& u, const Vector& uOld ) const;
 
   public:
-    ThermalPN( Settings* settings );
-    virtual ~ThermalPN();
+    ThermalPN1D( Settings* settings );
+    virtual ~ThermalPN1D();
     inline Vector G( const Vector& u, const Vector& v, const Vector& nUnit, const Vector& n );
     virtual Matrix G( const Matrix& u, const Matrix& v, const Vector& nUnit, const Vector& n, unsigned level );
     Matrix F( const Vector& u );
@@ -75,4 +75,4 @@ class ThermalPN : public Problem
     virtual Vector LoadIC( const Vector& x, const Vector& xi );
 };
 
-#endif    // THERMALPN_H
+#endif    // THERMALPN1D_H

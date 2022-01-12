@@ -15,6 +15,7 @@
 #include "shallowwater.h"
 #include "shallowwater2d.h"
 #include "thermalpn.h"
+#include "thermalpn1D.h"
 #include "thermalpn2d.h"
 #include "thermalradiative.h"
 #include "thermalradiativegeneral.h"
