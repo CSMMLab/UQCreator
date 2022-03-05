@@ -506,7 +506,7 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
                     //_a * pow( 50.0, 2 ) / ( 8.0 * M_PI * pow( sigmaXi1 + 2.0, 2 ) ) *
                     //  exp( -0.5 * pow( 50.0 * ( x[0] - x0 ), 2 ) / pow( sigmaXi1 + 2.0, 2 ) ) );
         F              = 0;
-        internalEnergy = 1e-7 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy - use 1e-3 without IPM
+        internalEnergy = 1e-3 * _a * pow( _TRef, 4 );    // fix to ensure positive values of the inner energy - use 1e-3 without IPM, else 1e-7
     }
     else if( _testCase == TPNG_RADIATINGSHOCK ) {
         double a = 0.275;

@@ -6,8 +6,9 @@ ThermalRadiativeGeneral::ThermalRadiativeGeneral( Settings* settings ) : Problem
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
     _settings->SetSource( true );
-    _suOlson         = false;
-    _constitutiveLaw = 2;    // 1 is Su Olson, 2 is constant
+    _suOlson         = true;
+    _constitutiveLaw = 1;    // 1 is Su Olson, 2 is constant
+    std::cout << "ThermalRadiativeGeneral" << std::endl;
 
     // physical constants
     _c             = 299792458.0 * 100.0;    // speed of light in [cm/s]

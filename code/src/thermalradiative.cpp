@@ -8,6 +8,8 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     _settings->SetSource( true );
     _suOlson = false;
 
+    std::cout << "ThermalRadiative" << std::endl;
+
     // physical constants
     _c             = 299792458.0 * 100.0;    // speed of light in [cm/s]
     _a             = 7.5657 * 1e-15;         // radiation constant [erg/(cm^3 K^4)]

@@ -1,0 +1,31 @@
+[general]
+problem = "ThermalPN"
+outputDir = "../results/thermal/gif"
+testCase = "SuOlson"
+#writeFrequency = 50
+#restartFile = "../input/restart_rad_hydro_Ma4"
+
+[mesh]
+dimension = 1
+numberOfCells = 3000
+a = -10
+b = 10
+outputFile = "ThermalRadiativeTransferSuOlson_tau1-0Sigma0-2"
+
+[problem]
+# available timesteppings: explicitEuler
+timestepping = "explicitEuler"
+# available distributions: Legendre, Hermite
+distribution = [["Legendre"],[0.2]]
+CFL = 0.7# 0.1
+tEnd = 1.0
+nPNMoments = 3
+
+[moment_system]
+# available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics, M1, ThermalRadiation
+closure = "ThermalRadiation"
+moments = [["totalDegree"],[5]]
+quadPoints = [["tensorizedGrid"],[20]]
+#refinementThresholds = [0.1,0.001]
+maxIterations = 1000
+epsilon = 1e-5

@@ -20,21 +20,21 @@ b = 10.799136069114475
 # b = 1.0/92.6/1e-6 / 100 * 0.025 original choice
 #b = 10.799136069114475
 # b = 1.0/92.6/1e-6 / 100 * 0.1 corrected choice due to error in paper
-outputFile = "Marshak1DUncertainty"
+outputFile = "Marshak1DUncertainty_PN3"
 
 [problem]
 # available timesteppings: explicitEuler
 timestepping = "explicitEuler"
 # available distributions: Legendre, Hermite
 distribution = [["Legendre"],[1.0]]
-CFL = 0.7
+CFL = 0.6
 #tEnd = 1.5604747813822897e6 # epsilon = 0
 tEnd = 1444.99964756299792458
 # tEnd = 48.2 * 1e-9 * 299792458.0 * 100.0 
 #tEnd = 4.796679328
 #tEnd = 100
 #tEnd = 156155.50755939528
-nPNMoments = 2
+nPNMoments = 3
 
 [moment_system]
 # available closures: StochasticGalerkin, Euler, Euler2D, L2Filter, LassoFilter, RegularizedEuler, RadiationHydrodynamics, M1, ThermalRadiation
