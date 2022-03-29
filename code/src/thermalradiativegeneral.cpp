@@ -97,41 +97,45 @@ Matrix ThermalRadiativeGeneral::F( const Vector& u ) {
     return flux;
 }
 
-Matrix ThermalRadiativeGeneral::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
-    unsigned nStates             = static_cast<unsigned>( uQ.rows() );
+Tensor ThermalRadiativeGeneral::Source( const Tensor& uQ, const Vector& x, double t, unsigned level ) const {
+    unsigned nStates             = static_cast<unsigned>( uQ.frontRows() );
     unsigned Nq                  = _settings->GetNqPEAtRef( level );
     std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
 
-    Matrix y( nStates, Nq, 0.0 );
     double S = 0.0;    // source, needs to be defined
     // double varianceVal = 0;
 
+    unsigned nMultiElements = _settings->GetNMultiElements();
+    Tensor y( nStates, nMultiElements, Nq, 0.0 );
+
     for( unsigned k = 0; k < qIndex.size(); ++k ) {
-        if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
-            S = _a;
-            // varianceVal = _variances[0];
-        }
-        else {
-            S = 0.0;
-        }
+        for( unsigned l = 0; l < nMultiElements; ++l ) {
+            if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[qIndex[k]][0] ) {
+                S = _a;
+                // varianceVal = _variances[0];
+            }
+            else {
+                S = 0.0;
+            }
 
-        double Q = S / _sigma / _a / std::pow( _TRef, 4 );
+            double Q = S / _sigma / _a / std::pow( _TRef, 4 );
 
-        double E      = uQ( 0, k );
-        double F      = uQ( 1, k );
-        double eTilde = uQ( 2, k );    // scaled internal energy
-        if( eTilde < 0 ) {
-            std::cout << "eTilde < 0 !!!!" << std::endl;
-            std::cout << "eTilde = " << eTilde << std::endl;
-            std::cout << "E = " << E << std::endl;
-            std::cout << "F = " << F << std::endl;
+            double E      = uQ( 0, l, k );
+            double F      = uQ( 1, l, k );
+            double eTilde = uQ( 2, l, k );    // scaled internal energy
+            if( eTilde < 0 ) {
+                std::cout << "eTilde < 0 !!!!" << std::endl;
+                std::cout << "eTilde = " << eTilde << std::endl;
+                std::cout << "E = " << E << std::endl;
+                std::cout << "F = " << F << std::endl;
+            }
+            double TTilde = ScaledTemperature( eTilde );
+            // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
+
+            y( 0, l, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
+            y( 1, l, k ) = -F / _epsilon;
+            y( 2, l, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
         }
-        double TTilde = ScaledTemperature( eTilde );
-        // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
-
-        y( 0, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
-        y( 1, k ) = -F / _epsilon;
-        y( 2, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
     }
 
     return y;
@@ -170,14 +174,13 @@ Matrix ThermalRadiativeGeneral::F( const Matrix& u ) {
     exit( EXIT_FAILURE );
 }
 
-double ThermalRadiativeGeneral::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+double ThermalRadiativeGeneral::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
     unused( u );
-    unused( dx );
     unused( level );
 
     double cfl = _settings->GetCFL();
 
-    double maxVelocity = std::sqrt( 1 / 3.0 ) / _epsilon;
+    double maxVelocity = std::sqrt( 1.0 / 3.0 ) / _epsilon;
 
     return ( cfl * dx ) / maxVelocity;
 }

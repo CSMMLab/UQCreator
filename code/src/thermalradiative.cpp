@@ -6,7 +6,7 @@ ThermalRadiative::ThermalRadiative( Settings* settings ) : Problem( settings ) {
     settings->SetNStates( _nStates );
     _settings->SetExactSolution( false );
     _settings->SetSource( true );
-    _suOlson = false;
+    _suOlson = true;
 
     std::cout << "ThermalRadiative" << std::endl;
 
@@ -93,33 +93,37 @@ Matrix ThermalRadiative::F( const Vector& u ) {
     return flux;
 }
 
-Matrix ThermalRadiative::Source( const Matrix& uQ, const Vector& x, double t, unsigned level ) const {
-    unsigned nStates = static_cast<unsigned>( uQ.rows() );
-    unsigned Nq      = _settings->GetNqPEAtRef( level );
-    Matrix y( nStates, Nq, 0.0 );
-    double S = 0.0;    // source, needs to be defined
+Tensor ThermalRadiative::Source( const Tensor& uQ, const Vector& x, double t, unsigned level ) const {
+    unsigned nStates             = static_cast<unsigned>( uQ.frontRows() );
+    unsigned Nq                  = _settings->GetNqPEAtRef( level );
+    std::vector<unsigned> qIndex = _settings->GetIndicesQforRef( level );    // get indices in quadrature array for current refinement level
+    double S                     = 0.0;                                      // source, needs to be defined
     // double varianceVal = 0;
+    unsigned nMultiElements = _settings->GetNMultiElements();
+    Tensor y( nStates, nMultiElements, Nq, 0.0 );
 
     // std::cout << "level " << level << ", Nq = " << Nq << std::endl;
 
     for( unsigned k = 0; k < Nq; ++k ) {
-        if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[k][0] ) {
-            S = _a;
-            // varianceVal = _variances[0];
-        }
-        else {
-            S = 0.0;
-        }
+        for( unsigned l = 0; l < nMultiElements; ++l ) {
+            if( _suOlson && t < 10 && std::fabs( x[0] ) < 0.5 + _variances[0] * _xiQuad[k][0] ) {
+                S = _a;
+                // varianceVal = _variances[0];
+            }
+            else {
+                S = 0.0;
+            }
 
-        double Q = S / _sigma / _a / std::pow( _TRef, 4 );
+            double Q = S / _sigma / _a / std::pow( _TRef, 4 );
 
-        double E = uQ( 0, k );
-        double F = uQ( 1, k );
-        double U = uQ( 2, k );
-        // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
-        y( 0, k ) = ( -( E - U ) + Q ) / _epsilon;
-        y( 1, k ) = -F / _epsilon;
-        y( 2, k ) = E - U;
+            double E = uQ( 0, l, k );
+            double F = uQ( 1, l, k );
+            double U = uQ( 2, l, k );
+            // y( 0, k ) = ( -( E - U ) + ( Q + varianceVal * _xiQuad[k][0] ) ) / _epsilon;
+            y( 0, l, k ) = ( -( E - U ) + Q ) / _epsilon;
+            y( 1, l, k ) = -F / _epsilon;
+            y( 2, l, k ) = E - U;
+        }
     }
 
     return y;
@@ -132,7 +136,7 @@ Matrix ThermalRadiative::F( const Matrix& u ) {
     exit( EXIT_FAILURE );
 }
 
-double ThermalRadiative::ComputeDt( const Matrix& u, double dx, unsigned level ) const {
+double ThermalRadiative::ComputeDt( const Tensor& u, double dx, unsigned level ) const {
     unused( u );
     unused( level );
 

@@ -236,6 +236,7 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
     writer->Write();
 
     std::ofstream out( _settings->GetOutputFile() + "ExpectedValue" + append );
+    std::cout << "Writing output to " << _settings->GetOutputFile() + "ExpectedValue" + append << std::endl;
     for( unsigned j = 0; j < _settings->GetNumCells(); ++j ) {
         out << GetCenterPos( j )[0];
         for( unsigned s = 0; s < _settings->GetNStates(); ++s ) {

@@ -51,6 +51,10 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     else if( _testCase == TPNG_RADIATINGSHOCK ) {
         _cV = 0.718 * 1e-13;    // heat capacity. Air has cV = 0.718*1e7 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]   density * 0.831 * 1e-7
     }
+    else if( _testCase == TPNG_SUOLSON ) {
+        _sigma = 1.0;
+        _cV    = 0.718 * 1e-13;
+    }
 
     _epsilon = 1.0 / _sigma;
 
