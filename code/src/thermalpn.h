@@ -4,7 +4,7 @@
 #include "mathtools.h"
 #include "problem.h"
 
-enum TestCaseTPNG { TPNG_SUOLSON, TPNG_MARSHAK, TPNG_RADIATINGSHOCK };
+enum TestCaseTPNG { TPNG_SUOLSON, TPNG_MARSHAK, TPNG_MARSHAKEFF, TPNG_RADIATINGSHOCK };
 
 class QuadratureGrid;
 

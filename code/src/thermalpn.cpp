@@ -11,6 +11,8 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
         auto problemTypeString = general->get_as<std::string>( "testCase" );
         if( problemTypeString->compare( "Marshak" ) == 0 )
             _testCase = TPNG_MARSHAK;
+        else if( problemTypeString->compare( "MarshakEfficient" ) == 0 )
+            _testCase = TPNG_MARSHAKEFF;
         else if( problemTypeString->compare( "SuOlson" ) == 0 )
             _testCase = TPNG_SUOLSON;
         else if( problemTypeString->compare( "radiatingShock" ) == 0 )
@@ -45,18 +47,28 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     double sigmaSB = 5.6704 * 1e-5;                // Stefan Boltzmann constant in [erg/cm^2/s/K^4]
     _a             = 4.0 * sigmaSB / _c;
     double density = 2.7;
+
+    if( _testCase == TPNG_MARSHAKEFF ) {
+        density  = 10000.0;                         // 0.01;
+        _sigma   = 100.0 / 0.926 / 1e-6 / 100.0;    // 1.0 / 0.926 / 1e-6 / 100.0;
+        _cV      = density * 0.831 * 1e7;
+        _epsilon = 1.0 / _c;
+        _TRef    = 1.0;
+    }
+
     if( _testCase == TPNG_MARSHAK ) {
         _cV = density * 0.831 * 1e7;    // heat capacity: [kJ/(kg K)] = [1000 m^2 / s^2 / K] therefore density * 0.831 * 1e7
     }
     else if( _testCase == TPNG_RADIATINGSHOCK ) {
-        _cV = 0.718 * 1e-13;    // heat capacity. Air has cV = 0.718*1e7 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]   density * 0.831 * 1e-7
+        _cV = 0.718 * 1e-13;    // heat capacity. Air has cV = 0.718*1e7 in [kJ/(kg K)] = [1000 m^2 / s^2 / K]
+                                // density * 0.831 * 1e-7
+        _epsilon = 1.0 / _sigma;
     }
     else if( _testCase == TPNG_SUOLSON ) {
-        _sigma = 1.0;
-        _cV    = 0.718 * 1e-13;
+        _sigma   = 1.0;
+        _cV      = 0.718 * 1e-13;
+        _epsilon = 1.0 / _sigma;
     }
-
-    _epsilon = 1.0 / _sigma;
 
     if( _testCase == TPNG_SUOLSON || _testCase == TPNG_RADIATINGSHOCK ) {
         _epsilon = 4.0 * _a / _alpha;
@@ -76,8 +88,9 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     _xiQuad   = grid->GetNodes();
 
     // scale refinement threshholds
-    //_settings->SetRefinementThreshold( 1e-27 * _settings->GetRefinementThreshold() / ( _a * pow( _TRef, 4 ) ) );
-    //_settings->SetCoarsenThreshold( 1e-27 * _settings->GetCoarsenThreshold() / ( _a * pow( _TRef, 4 ) ) );
+    //_settings->SetRefinementThreshold( 1e-27 * _settings->GetRefinementThreshold() / ( _a * pow( _TRef, 4 )
+    //) ); _settings->SetCoarsenThreshold( 1e-27 * _settings->GetCoarsenThreshold() / ( _a * pow( _TRef, 4 ) )
+    //);
 
     _settings->SetRefinementThreshold( 1e-15 * _settings->GetRefinementThreshold() / ( _a * pow( _TRef, 4 ) ) );
     _settings->SetCoarsenThreshold( 1e-15 * _settings->GetCoarsenThreshold() / ( _a * pow( _TRef, 4 ) ) );
@@ -555,6 +568,21 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
         }
         y[0] = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
         // y[0] = 0.0;
+    }
+
+    if( _testCase == TPNG_MARSHAKEFF ) {
+        if( fabs( x[0] - _mesh->GetCenterPos( 0 )[0] ) < 1e-7 ) {
+            double T     = 80000.0 * 11604.0;    // 80.0 * 11604.0
+            y[0]         = _a * _c / 4.0 / PI * pow( T, 4 );
+            y[_nMoments] = ScaledInternalEnergy( ( 80.0 + sigmaXi1 ) * 11604.0 / _TRef );
+        }
+        else {
+            double T     = 0.02 * 11604.0;
+            y[0]         = _a * _c / 4.0 / PI * pow( T, 4 );
+            y[_nMoments] = ScaledInternalEnergy( 0.02 * 11604.0 / _TRef );
+        }
+        // y[0] = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
+        //  y[0] = 0.0;
     }
 
     // double t = 48.2 * 1e-9;
