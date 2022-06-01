@@ -49,10 +49,10 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     double density = 2.7;
 
     if( _testCase == TPNG_MARSHAKEFF ) {
-        density  = 10000.0;                         // 0.01;
-        _sigma   = 100.0 / 0.926 / 1e-6 / 100.0;    // 1.0 / 0.926 / 1e-6 / 100.0;
+        density  = 1e-4;                         // 0.01;
+        _sigma   = 1.0 / 92.6 / 1e-6 / 100.0;    // 1.0 / 0.926 / 1e-6 / 100.0;
         _cV      = density * 0.831 * 1e7;
-        _epsilon = 1.0 / _c;
+        _epsilon = 1.0 / _sigma;
         _TRef    = 1.0;
     }
 
@@ -276,7 +276,8 @@ Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned 
 
             if( expl ) {
                 double TTilde = ScaledTemperature( eTilde );
-                y( 0, l, k )  = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
+                // std::cout << "Temperature is " << TTilde << std::endl;
+                y( 0, l, k ) = ( -( E - std::pow( TTilde, 4 ) ) + Q ) / _epsilon;
                 for( unsigned i = 1; i < _nMoments; ++i ) y( i, l, k ) = -uQ( i, l, k ) / _epsilon;
                 y( _nMoments, l, k ) = ( E - std::pow( TTilde, 4 ) ) / _epsilon;
             }
@@ -310,6 +311,7 @@ Tensor ThermalPN::Source( const Tensor& uQ, const Vector& x, double t, unsigned 
             else {
                 // compute conserved/primitive variables
                 double TTilde = ScaledTemperature( eTilde );
+                std::cout << "Temperature is " << TTilde << std::endl;
 
                 // compute Fleck constant
                 double f  = 1.0 / ( 1.0 + 4.0 / _epsilon * pow( TTilde, 3 ) * dt / _cV );
@@ -571,15 +573,19 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
     }
 
     if( _testCase == TPNG_MARSHAKEFF ) {
+        double TfacL = 80.0;
+        double TfacR = 0.2;
         if( fabs( x[0] - _mesh->GetCenterPos( 0 )[0] ) < 1e-7 ) {
-            double T     = 80000.0 * 11604.0;    // 80.0 * 11604.0
+
+            double T     = TfacL * 11604.0;    // 80.0 * 11604.0
             y[0]         = _a * _c / 4.0 / PI * pow( T, 4 );
-            y[_nMoments] = ScaledInternalEnergy( ( 80.0 + sigmaXi1 ) * 11604.0 / _TRef );
+            y[_nMoments] = ScaledInternalEnergy( ( TfacR + sigmaXi1 ) * 11604.0 / _TRef );
         }
         else {
-            double T     = 0.02 * 11604.0;
+            double Tfac  = 0.2;
+            double T     = TfacR * 11604.0;
             y[0]         = _a * _c / 4.0 / PI * pow( T, 4 );
-            y[_nMoments] = ScaledInternalEnergy( 0.02 * 11604.0 / _TRef );
+            y[_nMoments] = ScaledInternalEnergy( TfacR * 11604.0 / _TRef );
         }
         // y[0] = std::pow( ScaledTemperature( y[_nMoments] ), 4 );
         //  y[0] = 0.0;

@@ -256,14 +256,16 @@ void Mesh1D::Export( const Matrix& results, std::string append ) const {
             out << " " << pow( results( 0, j ), 1.0 / 4.0 );
         }
         if( _settings->GetProblemType() == P_THERMALPN_1D ) {
+            std::cout << "Writing temperature ";
             double _TRef   = 11604.0;
             double density = 2.7;
             double _cV     = density * 0.831 * 1e-7;
             double _a      = 7.5657 * 1e-15;
             double beta    = _a * pow( _TRef, 3 ) / _cV;
-            double e       = results( 4, j );
+            double e       = results( _settings->GetNStates() - 1, j );
             double T       = beta * e;
             out << " " << T;
+            std::cout << T << std::endl;
         }
         out << std::endl;
     }

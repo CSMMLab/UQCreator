@@ -8,7 +8,7 @@ writeFrequency = 10000
 dimension = 1
 numberOfCells = 100
 a = 0.0
-b = 0.2
+b = 0.1
 # b = 1.0/92.6/1e-6 / 100 * 0.1 choice Ryan for lambda = 92.6*1e-6 but smaller domain
 #b = 64.79481641468684
 # b = 1.0/9.26/1e-6 / 100 * 0.06 choice Ryan for lambda = 9.26*1e-6
@@ -29,7 +29,7 @@ timestepping = "explicitEuler"
 distribution = [["Legendre"],[0.0]]
 CFL = 0.5
 #tEnd = 1.5604747813822897e6 # epsilon = 0
-tEnd = 5e-12
+tEnd = 0.0005
 # tEnd = 48.2 * 1e-9 * 299792458.0 * 100.0 
 #tEnd = 4.796679328
 #tEnd = 100

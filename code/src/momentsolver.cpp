@@ -352,7 +352,7 @@ void MomentSolver::Source( MatTens& uQNew, const MatTens& uQ, double dt, double 
     auto uQTilde = uQNew;
 
     for( unsigned j = 0; j < _nCells; ++j ) {
-        if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
+        // if( _mesh->GetBoundaryType( j ) == BoundaryType::DIRICHLET ) continue;
         Tensor out = _problem->Source( uQNew[j], _mesh->GetCenterPos( j ), t, refLevel[j] );    //  use uQ or uQNew?
         uQNew[j]   = uQNew[j] + out * dt;
     }
