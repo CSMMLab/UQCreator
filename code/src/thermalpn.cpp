@@ -49,10 +49,10 @@ ThermalPN::ThermalPN( Settings* settings ) : Problem( settings ) {
     double density = 2.7;
 
     if( _testCase == TPNG_MARSHAKEFF ) {
-        density  = 1e-4;                         // 0.01;
-        _sigma   = 1.0 / 92.6 / 1e-6 / 100.0;    // 1.0 / 0.926 / 1e-6 / 100.0;
+        density  = 0.01;                          // 0.01;
+        _sigma   = 1.0 / 0.926 / 1e-6 / 100.0;    // 1.0 / 0.926 / 1e-6 / 100.0;
         _cV      = density * 0.831 * 1e7;
-        _epsilon = 1.0 / _sigma;
+        _epsilon = 1.0;
         _TRef    = 1.0;
     }
 
@@ -579,10 +579,10 @@ Vector ThermalPN::IC( const Vector& x, const Vector& xi ) {
 
             double T     = TfacL * 11604.0;    // 80.0 * 11604.0
             y[0]         = _a * _c / 4.0 / PI * pow( T, 4 );
-            y[_nMoments] = ScaledInternalEnergy( ( TfacR + sigmaXi1 ) * 11604.0 / _TRef );
+            y[_nMoments] = ScaledInternalEnergy( ( TfacL + sigmaXi1 ) * 11604.0 / _TRef );
         }
         else {
-            double Tfac  = 0.2;
+            TfacR        = 0.0;
             double T     = TfacR * 11604.0;
             y[0]         = _a * _c / 4.0 / PI * pow( T, 4 );
             y[_nMoments] = ScaledInternalEnergy( TfacR * 11604.0 / _TRef );
